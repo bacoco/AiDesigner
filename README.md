@@ -34,7 +34,7 @@ BMAD-Invisible wraps BMAD-METHOD™'s powerful agile AI framework in a conversat
 
 ```bash
 # Just run this - it does everything!
-npx bmad-invisible start
+npx bmad-invisible@latest start
 ```
 
 That's it! This single command will:
@@ -43,11 +43,13 @@ That's it! This single command will:
 - Install all dependencies
 - Launch the chat interface
 
+> **💡 Tip**: Always use `@latest` to ensure you get the newest version!
+
 #### Option 1b: NPX Step-by-Step
 
 ```bash
 # Initialize in your project directory
-npx bmad-invisible init
+npx bmad-invisible@latest init
 
 # Install dependencies
 npm install

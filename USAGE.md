@@ -6,16 +6,18 @@
 
 ```bash
 # In any directory, just run:
-npx bmad-invisible start
+npx bmad-invisible@latest start
 ```
 
 This does everything: creates structure, installs dependencies, and launches chat!
+
+> **💡 Tip**: Always use `@latest` to get the newest version!
 
 ### Alternative: Step-by-Step
 
 ```bash
 # Initialize project
-npx bmad-invisible init
+npx bmad-invisible@latest init
 
 # Install dependencies
 npm install

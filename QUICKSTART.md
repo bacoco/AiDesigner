@@ -15,7 +15,7 @@ BMAD-Invisible provides a **natural conversational interface** that guides you t
 mkdir my-project && cd my-project
 
 # Run this ONE command - it does everything!
-npx bmad-invisible start
+npx bmad-invisible@latest start
 ```
 
 Done! This automatically:
@@ -25,6 +25,8 @@ Done! This automatically:
 - Installs all dependencies
 - Launches the chat interface
 
+> **💡 Tip**: Always use `@latest` to avoid npx cache issues!
+
 ### Option 1b: NPX Step-by-Step
 
 ```bash
@@ -32,7 +34,7 @@ Done! This automatically:
 cd your-project
 
 # Initialize BMAD-invisible
-npx bmad-invisible init
+npx bmad-invisible@latest init
 
 # Install dependencies
 npm install

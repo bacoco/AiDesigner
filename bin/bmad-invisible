@@ -15,13 +15,17 @@ const path = require('path');
 
 const [, , command, ...args] = process.argv;
 
+// Get current package version
+const packageJsonPath = path.join(__dirname, '..', 'package.json');
+const currentVersion = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
+
 // Show help if no command provided
 if (!command || command === '--help' || command === '-h') {
   console.log(`
-BMAD Invisible - Zero-knowledge AI orchestration
+BMAD Invisible - Zero-knowledge AI orchestration (v${currentVersion})
 
 Usage:
-  npx bmad-invisible <command> [options]
+  npx bmad-invisible@latest <command> [options]
 
 Commands:
   start                🚀 ONE-COMMAND SETUP: init + install + chat (recommended!)
@@ -34,10 +38,12 @@ Commands:
   help                 Show this help message
 
 Examples:
-  npx bmad-invisible start             # 🚀 Do everything in one command!
-  npx bmad-invisible init              # Setup in current project
-  npx bmad-invisible chat              # Start conversation
-  npx bmad-invisible install           # Global installation
+  npx bmad-invisible@latest start      # 🚀 Do everything in one command!
+  npx bmad-invisible@latest init       # Setup in current project
+  npm run bmad:chat                    # Start conversation (after install)
+
+💡 Tip: Always use @latest to get the newest version:
+   npx bmad-invisible@latest start
 
 For more information: https://github.com/bacoco/BMAD-invisible
 `);
@@ -282,10 +288,10 @@ For detailed documentation, visit:
   help: () => {
     // Show help message
     console.log(`
-BMAD Invisible - Zero-knowledge AI orchestration
+BMAD Invisible - Zero-knowledge AI orchestration (v${currentVersion})
 
 Usage:
-  npx bmad-invisible <command> [options]
+  npx bmad-invisible@latest <command> [options]
 
 Commands:
   start                🚀 ONE-COMMAND SETUP: init + install + chat (recommended!)
@@ -298,10 +304,12 @@ Commands:
   help                 Show this help message
 
 Examples:
-  npx bmad-invisible start             # 🚀 Do everything in one command!
-  npx bmad-invisible init              # Setup in current project
-  npx bmad-invisible chat              # Start conversation
-  npx bmad-invisible install           # Global installation
+  npx bmad-invisible@latest start      # 🚀 Do everything in one command!
+  npx bmad-invisible@latest init       # Setup in current project
+  npm run bmad:chat                    # Start conversation (after install)
+
+💡 Tip: Always use @latest to get the newest version:
+   npx bmad-invisible@latest start
 
 For more information: https://github.com/bacoco/BMAD-invisible
 `);
