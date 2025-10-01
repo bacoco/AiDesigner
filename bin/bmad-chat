@@ -51,7 +51,7 @@ console.log('💬 Type your project idea to begin!\n');
 // Launch Claude CLI
 const claude = spawn('claude', claudeArgs, {
   stdio: 'inherit',
-  shell: true,
+  shell: false, // Don't use shell to avoid parsing issues with multi-line content
 });
 
 claude.on('error', (error) => {
