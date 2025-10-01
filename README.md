@@ -10,6 +10,7 @@ An invisible orchestrator layer that allows users to benefit from BMAD's proven 
 ## 🎯 What is BMAD-Invisible?
 
 BMAD-Invisible wraps BMAD-METHOD™'s powerful agile AI framework in a conversational interface. Users chat naturally about their project, and the system automatically:
+
 - Gathers requirements (Analyst phase)
 - Creates development plans (PM phase)
 - Designs architecture (Architect phase)
@@ -26,20 +27,26 @@ BMAD-Invisible wraps BMAD-METHOD™'s powerful agile AI framework in a conversat
 - Node.js ≥ 20.0.0
 - npm ≥ 9.0.0
 - Git
+- **Claude Code CLI** (uses your Claude Pro subscription - no API keys needed!)
 
 ### Installation
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/bacoco/BMAD-invisible.git
 cd BMAD-invisible
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Start a project conversation
-npx bmad-invisible chat
+# 3. Build the MCP server
+npm run build:mcp
+
+# 4. Start conversational interface
+npm run chat
 ```
+
+> **Note**: This uses the Model Context Protocol (MCP) with Claude Code CLI. No API costs - it leverages your existing Claude Pro subscription!
 
 ## 📖 How It Works
 
@@ -73,8 +80,13 @@ Assistant: "Here's the technical approach..."
 
 ### Example 1: Simple App Project
 
-```bash
-$ npx bmad-invisible chat
+````bash
+$ npm run chat
+
+🎯 Starting BMAD Invisible Orchestrator...
+📡 MCP Server: bmad-invisible-orchestrator
+🤖 Agent: Invisible BMAD Orchestrator
+💬 Type your project idea to begin!
 
 Welcome! I'm here to help you build your project.
 What would you like to create?
@@ -184,9 +196,10 @@ Perfect! Here's your first feature to build:
    - description (optional)
    - points (1-5, default: 3)
    - dueDate (optional)
-   ```
+````
 
 2. **Firestore Structure**:
+
    ```javascript
    tasks/{taskId}
    {
@@ -209,12 +222,14 @@ Perfect! Here's your first feature to build:
    - [ ] Show success/error feedback
 
 **Acceptance Criteria**:
+
 - ✓ Can create task with all fields
 - ✓ Task appears instantly in list
 - ✓ Empty names are prevented
 - ✓ Handles offline gracefully
 
 **Testing**:
+
 - Create task with all fields → appears in list
 - Try empty name → shows validation error
 - Create while offline → syncs when back online
@@ -224,12 +239,14 @@ Want the complete code examples or ready to implement? (code/ready)
 > ready
 
 Awesome! When you're done, let me know and I'll help you:
+
 - Review the implementation
 - Add tests
 - Move to the next story
 
 Type 'done' when ready for review, or 'help' if you get stuck.
-```
+
+````
 
 ### Example 2: Adding a Feature to Existing Project
 
@@ -301,7 +318,7 @@ Want detailed code for each step? (y/n)
 [Provides step-by-step implementation with code examples]
 
 Once you're done, I'll help you test it thoroughly!
-```
+````
 
 ## 🛠️ Current Implementation Status
 
@@ -371,14 +388,32 @@ bmad-invisible/
 
 All phases execute invisibly based on conversation context.
 
+## 🏗️ Architecture
+
+### MCP-Powered Design
+
+```
+User → Claude CLI → MCP Server → BMAD Agents → Deliverables
+                     ↓
+              Project State
+              Phase Detection
+              Context Preservation
+```
+
+**Key Components:**
+
+- **MCP Server** (`mcp/server.ts`) - 10 orchestration tools
+- **Project State** (`lib/project-state.js`) - Conversation & state tracking
+- **BMAD Bridge** (`lib/bmad-bridge.js`) - Integration with BMAD agents
+- **Deliverable Generator** (`lib/deliverable-generator.js`) - Creates docs automatically
+
+**No API Costs** - Uses your Claude Pro subscription via Claude Code CLI!
+
 ## 🔧 Development Setup
 
 ```bash
 # Install dependencies
 npm install
-
-# Fix MCP SDK version
-npm install --save-dev @modelcontextprotocol/sdk@^1.18.2
 
 # Build MCP server
 npm run build:mcp
@@ -386,28 +421,39 @@ npm run build:mcp
 # Run tests
 npm test
 
-# Start MCP server
+# Start standalone MCP server (optional)
 npm run mcp
 ```
 
 ## 📚 Documentation
 
-- **[IMPLEMENTATION_ANALYSIS.md](IMPLEMENTATION_ANALYSIS.md)** - Detailed implementation analysis and roadmap
+- **[QUICKSTART.md](QUICKSTART.md)** - ⭐ Start here! Quick installation and first use
+- **[USAGE.md](USAGE.md)** - Complete usage guide with examples
+- **[IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md)** - Full implementation details
+- **[IMPLEMENTATION_ANALYSIS.md](IMPLEMENTATION_ANALYSIS.md)** - Original analysis and roadmap
 - **[CLAUDE.md](CLAUDE.md)** - Guide for Claude Code development
-- **[docs/INVISIBLE_ORCHESTRATOR_README.md](docs/INVISIBLE_ORCHESTRATOR_README.md)** - Original concept documentation
-- **[BMAD-METHOD™ Docs](https://github.com/bmadcode/bmad-method)** - Core framework documentation
+- **[BMAD-METHOD™](https://github.com/bmadcode/bmad-method)** - Core framework
 
-## 🎯 Vision: How It Should Work
+## ✅ Current Status
 
-### Ideal User Experience
+**FULLY IMPLEMENTED AND WORKING!**
+
+### What Works Now
+
+✅ MCP-based orchestration with 10 tools
+✅ Claude CLI integration (no API costs)
+✅ Natural conversation interface
+✅ Phase detection and transitions
+✅ Deliverable generation (PRD, architecture, stories)
+✅ Project state persistence
+✅ User validation checkpoints
+✅ Full BMAD agent integration
+
+### How to Use
 
 ```bash
-# Start any time, from anywhere
-npx bmad-invisible chat
-
-# Or within a project
-cd my-project
-npx bmad-invisible chat
+# Start conversation
+npm run chat
 
 # Natural conversation
 > I want to add user authentication
@@ -437,6 +483,7 @@ my-project/
 ### User Validation Points
 
 After each major phase:
+
 ```
 Assistant: "Here's what I've created... [summary]"
            "Does this look good?"
@@ -453,21 +500,25 @@ Options:
 See [IMPLEMENTATION_ANALYSIS.md](IMPLEMENTATION_ANALYSIS.md) for the complete roadmap.
 
 **Week 1-2**: Core Infrastructure
+
 - CLI chat interface
 - LLM integration
 - BMAD bridge
 
 **Week 3-4**: Phase Integration
+
 - Connect to real BMAD agents
 - Deliverable generation
 - File I/O
 
 **Week 5-6**: User Experience
+
 - Validation checkpoints
 - Iterative refinement
 - Error handling
 
 **Week 7-8**: Polish & Release
+
 - Comprehensive examples
 - Documentation
 - Community feedback
@@ -477,6 +528,7 @@ See [IMPLEMENTATION_ANALYSIS.md](IMPLEMENTATION_ANALYSIS.md) for the complete ro
 We welcome contributions! This is an experimental feature that could greatly improve BMAD accessibility.
 
 Key areas needing help:
+
 - CLI chat interface implementation
 - LLM client integrations (Claude, GPT, Gemini)
 - BMAD core integration bridge
