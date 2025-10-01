@@ -1,0 +1,44 @@
+{
+  "name": "bmad-method",
+  "version": "4.43.0",
+  "description": "BMad Method installer - AI-powered Agile development framework",
+  "keywords": [
+    "bmad",
+    "agile",
+    "ai",
+    "development",
+    "framework",
+    "installer",
+    "agents"
+  ],
+  "homepage": "https://github.com/bmad-team/bmad-method#readme",
+  "bugs": {
+    "url": "https://github.com/bmad-team/bmad-method/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bmad-team/bmad-method.git"
+  },
+  "license": "MIT",
+  "author": "BMad Team",
+  "main": "lib/installer.js",
+  "bin": {
+    "bmad": "./bin/bmad.js",
+    "bmad-method": "./bin/bmad.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^14.0.0",
+    "fs-extra": "^11.3.0",
+    "inquirer": "^8.2.6",
+    "js-yaml": "^4.1.0",
+    "ora": "^5.4.1",
+    "semver": "^7.6.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
