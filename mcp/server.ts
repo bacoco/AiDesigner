@@ -50,7 +50,40 @@ async function initializeProject(projectPath: string = process.cwd()) {
   // Bind phase transition hooks
   phaseTransitionHooks.bindDependencies({
     triggerAgent: async (agentId: string, context: any) => {
-      return await bmadBridge.runAgent(agentId, context);
+      const result = await bmadBridge.runAgent(agentId, context);
+
+      if (!result) {
+        return null;
+      }
+
+      const rawResponse = result.response;
+
+      if (rawResponse == null) {
+        return null;
+      }
+
+      if (typeof rawResponse === "string") {
+        try {
+          return JSON.parse(rawResponse);
+        } catch (error) {
+          console.error(
+            `[MCP] Failed to parse response from agent ${agentId}: ${error instanceof Error ? error.message : error}`
+          );
+          return {
+            error: `Failed to parse response from agent ${agentId}`,
+            rawResponse,
+          };
+        }
+      }
+
+      if (typeof rawResponse === "object") {
+        return rawResponse;
+      }
+
+      return {
+        error: `Unsupported response type from agent ${agentId}`,
+        rawResponse,
+      };
     },
     triggerCommand: async (command: string, context: any) => {
       // Execute auto-commands
