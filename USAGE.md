@@ -248,7 +248,7 @@ Resume later - state persists!
 ## Support
 
 - **Issues**: https://github.com/bacoco/BMAD-invisible/issues
-- **Docs**: See README.md and IMPLEMENTATION_ANALYSIS.md
+- **Docs**: See README.md and DUAL_LANE_ORCHESTRATION.md
 - **Base BMAD**: https://github.com/bacoco/BMAD-METHOD
 
 ---
