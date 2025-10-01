@@ -14,6 +14,8 @@ let ProjectState: any;
 let BMADBridge: any;
 let DeliverableGenerator: any;
 let BrownfieldAnalyzer: any;
+let QuickLane: any;
+let LaneSelector: any;
 let phaseTransitionHooks: any;
 let contextPreservation: any;
 
@@ -25,6 +27,8 @@ async function loadDependencies() {
   BMADBridge = (await import(path.join(libPath, "bmad-bridge.js"))).BMADBridge;
   DeliverableGenerator = (await import(path.join(libPath, "deliverable-generator.js"))).DeliverableGenerator;
   BrownfieldAnalyzer = (await import(path.join(libPath, "brownfield-analyzer.js"))).BrownfieldAnalyzer;
+  QuickLane = (await import(path.join(libPath, "quick-lane.js"))).QuickLane;
+  LaneSelector = await import(path.join(libPath, "lane-selector.js"));
   phaseTransitionHooks = await import(path.join(hooksPath, "phase-transition.js"));
   contextPreservation = await import(path.join(hooksPath, "context-preservation.js"));
 }
@@ -34,6 +38,7 @@ let projectState: any;
 let bmadBridge: any;
 let deliverableGen: any;
 let brownfieldAnalyzer: any;
+let quickLane: any;
 
 async function initializeProject(projectPath: string = process.cwd()) {
   if (!projectState) {
@@ -53,6 +58,11 @@ async function initializeProject(projectPath: string = process.cwd()) {
 
   if (!brownfieldAnalyzer) {
     brownfieldAnalyzer = new BrownfieldAnalyzer(projectPath);
+  }
+
+  if (!quickLane) {
+    quickLane = new QuickLane(projectPath, { llmClient: bmadBridge.llmClient });
+    await quickLane.initialize();
   }
 
   // Bind phase transition hooks
@@ -333,6 +343,42 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {},
+        },
+      },
+      {
+        name: "select_development_lane",
+        description: "Analyze user message to determine whether to use complex (multi-agent) or quick (template-based) lane",
+        inputSchema: {
+          type: "object",
+          properties: {
+            userMessage: {
+              type: "string",
+              description: "User's message/request to analyze",
+            },
+            context: {
+              type: "object",
+              description: "Additional context (previousPhase, projectComplexity, forceLane, etc.)",
+            },
+          },
+          required: ["userMessage"],
+        },
+      },
+      {
+        name: "execute_workflow",
+        description: "Execute development workflow - automatically routes between quick and complex lanes, outputs to docs/",
+        inputSchema: {
+          type: "object",
+          properties: {
+            userRequest: {
+              type: "string",
+              description: "User's feature request or task description",
+            },
+            context: {
+              type: "object",
+              description: "Additional context (forceLane, projectComplexity, etc.)",
+            },
+          },
+          required: ["userRequest"],
         },
       },
     ],
@@ -623,6 +669,102 @@ ${agent.content}`,
             {
               type: "text",
               text: summary.summary, // Returns formatted markdown summary
+            },
+          ],
+        };
+      }
+
+      case "select_development_lane": {
+        const params = args as { userMessage: string; context?: any };
+
+        // Build context from project state
+        const context = {
+          ...params.context,
+          previousPhase: projectState.state.currentPhase,
+          hasExistingPRD: Object.keys(projectState.deliverables).length > 0,
+        };
+
+        // Use lane selector
+        const decision = await LaneSelector.selectLaneWithLog(
+          params.userMessage,
+          context,
+          projectState.projectPath
+        );
+
+        // Record in project state
+        await projectState.recordLaneDecision(
+          decision.lane,
+          decision.rationale,
+          decision.confidence,
+          params.userMessage
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(decision, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "execute_workflow": {
+        const params = args as { userRequest: string; context?: any };
+
+        // Build context from project state
+        const context = {
+          ...params.context,
+          previousPhase: projectState.state.currentPhase,
+          hasExistingPRD: Object.keys(projectState.deliverables).length > 0,
+        };
+
+        // Select lane
+        const decision = await LaneSelector.selectLaneWithLog(
+          params.userRequest,
+          context,
+          projectState.projectPath
+        );
+
+        // Record decision
+        await projectState.recordLaneDecision(
+          decision.lane,
+          decision.rationale,
+          decision.confidence,
+          params.userRequest
+        );
+
+        let result: any;
+
+        if (decision.lane === "quick") {
+          // Quick lane: template-based generation
+          console.error("[MCP] Executing quick lane workflow...");
+          result = await quickLane.execute(params.userRequest, context);
+          result.lane = "quick";
+          result.decision = decision;
+        } else {
+          // Complex lane: full BMAD workflow
+          console.error("[MCP] Executing complex lane workflow...");
+
+          // Run through BMAD phases
+          await bmadBridge.executePhaseWorkflow("analyst", { userMessage: params.userRequest, ...context });
+          await bmadBridge.executePhaseWorkflow("pm", context);
+          await bmadBridge.executePhaseWorkflow("architect", context);
+          await bmadBridge.executePhaseWorkflow("sm", context);
+
+          result = {
+            lane: "complex",
+            decision,
+            files: ["docs/prd.md", "docs/architecture.md", "docs/stories/*.md"],
+            message: "Complex workflow executed through BMAD agents",
+          };
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
             },
           ],
         };

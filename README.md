@@ -20,6 +20,17 @@ BMAD-Invisible wraps BMAD-METHOD™'s powerful agile AI framework in a conversat
 
 **All while keeping the methodology completely invisible.**
 
+### 🚀 NEW: Dual-Lane Orchestration (v1.2+)
+
+BMAD-Invisible intelligently routes tasks between two development approaches:
+
+- **Complex Lane**: Full multi-agent BMAD workflow for substantial features
+- **Quick Lane**: Template-based rapid development for small, focused tasks
+
+The orchestrator automatically selects the appropriate lane based on task complexity. Simple typos and config changes go through the fast Quick lane, while complex features get the full BMAD treatment. Both lanes output to the same `docs/` folder - the only difference is _how_ the artifacts are generated.
+
+→ **See [DUAL_LANE_ORCHESTRATION.md](docs/DUAL_LANE_ORCHESTRATION.md) for details**
+
 ## 🔥 Quick Start
 
 ### Prerequisites
@@ -472,6 +483,7 @@ npm run mcp
 
 - **[QUICKSTART.md](QUICKSTART.md)** - ⭐ Start here! Quick installation and first use
 - **[USAGE.md](USAGE.md)** - Complete usage guide with examples
+- **[DUAL_LANE_ORCHESTRATION.md](docs/DUAL_LANE_ORCHESTRATION.md)** - 🆕 Quick vs Complex lane routing
 - **[IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md)** - Full implementation details
 - **[IMPLEMENTATION_ANALYSIS.md](IMPLEMENTATION_ANALYSIS.md)** - Original analysis and roadmap
 - **[CLAUDE.md](CLAUDE.md)** - Guide for Claude Code development
