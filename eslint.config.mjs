@@ -84,6 +84,30 @@ export default [
     },
   },
 
+  // Jest test files
+  {
+    files: ['test/**/*.js'],
+    languageOptions: {
+      globals: {
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        jest: 'readonly',
+      },
+    },
+    rules: {
+      // Allow CommonJS in tests
+      'unicorn/prefer-module': 'off',
+      // Tests may use abbreviated names
+      'unicorn/prevent-abbreviations': 'off',
+    },
+  },
+
   // ESLint config file should not be checked for publish-related Node rules
   {
     files: ['eslint.config.mjs'],
