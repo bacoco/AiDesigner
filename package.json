@@ -1,0 +1,18 @@
+{
+  "name": "bmad-method",
+  "private": true,
+  "scripts": {
+    "build:mcp": "tsc -p mcp/tsconfig.json",
+    "mcp": "node dist/mcp/server.js",
+    "test": "jest --runInBand"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^0.1.0",
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "zod": "^3.23.8"
+  }
+}
+
