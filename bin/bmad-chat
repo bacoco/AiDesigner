@@ -25,8 +25,11 @@ if (!fs.existsSync(orchestratorPath)) {
   process.exit(1);
 }
 
-// Read orchestrator content
-const orchestratorContent = fs.readFileSync(orchestratorPath, 'utf8');
+// Read orchestrator content and strip YAML frontmatter
+let orchestratorContent = fs.readFileSync(orchestratorPath, 'utf8');
+
+// Remove YAML frontmatter (everything between --- markers)
+orchestratorContent = orchestratorContent.replace(/^---\n[\s\S]*?\n---\n/, '');
 
 // Build Claude command
 const claudeArgs = [
