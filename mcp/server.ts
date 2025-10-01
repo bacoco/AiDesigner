@@ -13,6 +13,7 @@ import { executeAutoCommand } from "../lib/auto-commands.js";
 let ProjectState: any;
 let BMADBridge: any;
 let DeliverableGenerator: any;
+let BrownfieldAnalyzer: any;
 let phaseTransitionHooks: any;
 let contextPreservation: any;
 
@@ -23,6 +24,7 @@ async function loadDependencies() {
   ProjectState = (await import(path.join(libPath, "project-state.js"))).ProjectState;
   BMADBridge = (await import(path.join(libPath, "bmad-bridge.js"))).BMADBridge;
   DeliverableGenerator = (await import(path.join(libPath, "deliverable-generator.js"))).DeliverableGenerator;
+  BrownfieldAnalyzer = (await import(path.join(libPath, "brownfield-analyzer.js"))).BrownfieldAnalyzer;
   phaseTransitionHooks = await import(path.join(hooksPath, "phase-transition.js"));
   contextPreservation = await import(path.join(hooksPath, "context-preservation.js"));
 }
@@ -31,6 +33,7 @@ async function loadDependencies() {
 let projectState: any;
 let bmadBridge: any;
 let deliverableGen: any;
+let brownfieldAnalyzer: any;
 
 async function initializeProject(projectPath: string = process.cwd()) {
   if (!projectState) {
@@ -46,6 +49,10 @@ async function initializeProject(projectPath: string = process.cwd()) {
   if (!deliverableGen) {
     deliverableGen = new DeliverableGenerator(projectPath, { bmadBridge });
     await deliverableGen.initialize();
+  }
+
+  if (!brownfieldAnalyzer) {
+    brownfieldAnalyzer = new BrownfieldAnalyzer(projectPath);
   }
 
   // Bind phase transition hooks
@@ -296,6 +303,38 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["phase"],
         },
       },
+      {
+        name: "scan_codebase",
+        description: "Scan existing codebase structure, tech stack, and architecture (for brownfield projects)",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "detect_existing_docs",
+        description: "Find and load existing BMAD documentation (brief, prd, architecture, stories)",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "load_previous_state",
+        description: "Load state from previous BMAD session to resume work",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "get_codebase_summary",
+        description: "Get comprehensive codebase analysis including structure, tech stack, and existing BMAD docs",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
     ],
   };
 });
@@ -518,6 +557,72 @@ ${agent.content}`,
             {
               type: "text",
               text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "scan_codebase": {
+        const codebase = await brownfieldAnalyzer.scanCodebase();
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(codebase, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "detect_existing_docs": {
+        const docs = await brownfieldAnalyzer.detectExistingDocs();
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(docs, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "load_previous_state": {
+        const previousState = await brownfieldAnalyzer.detectPreviousState();
+
+        if (previousState.exists && previousState.state) {
+          // Load the previous state into current project state
+          await projectState.updateState(previousState.state);
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Previous session loaded successfully!\n\nLast Phase: ${previousState.lastPhase}\nLast Updated: ${previousState.lastUpdated}\n\n${JSON.stringify(previousState.state, null, 2)}`,
+              },
+            ],
+          };
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: "No previous BMAD session found. Starting fresh.",
+            },
+          ],
+        };
+      }
+
+      case "get_codebase_summary": {
+        const summary = await brownfieldAnalyzer.generateCodebaseSummary();
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: summary.summary, // Returns formatted markdown summary
             },
           ],
         };

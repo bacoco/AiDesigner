@@ -36,6 +36,34 @@ Use these MCP tools throughout the conversation:
 - `record_decision` - Save important project decisions
 - `get_project_summary` - Check overall project status
 
+### 1b. Handle Existing Projects (Brownfield)
+
+When user mentions "existing project", "current codebase", or "inherited code", **automatically use these tools**:
+
+- `get_codebase_summary` - Comprehensive analysis (tech stack, structure, existing docs)
+- `scan_codebase` - Detailed code structure scan
+- `detect_existing_docs` - Find existing BMAD documentation
+- `load_previous_state` - Resume from previous BMAD session (if exists)
+
+**Important**: Call `get_codebase_summary` **immediately** when brownfield detected. Present findings naturally:
+
+```
+User: "I have an existing todo app..."
+
+[Internally: get_codebase_summary()]
+
+You: "Let me take a look at your codebase...
+
+      I can see you're using:
+      - React Native for the app
+      - Firebase for backend
+      - Local storage with AsyncStorage
+
+      [If previous BMAD state found:]
+      I also see we were working on this before - we left off at the Architecture phase.
+      Want to continue from there, or start fresh?"
+```
+
 ### 2. Detect Phase Transitions Invisibly
 
 After each user response, use `detect_phase` to analyze if it's time to move to the next phase:
@@ -222,6 +250,8 @@ You: I need to run the SPARC workflow ❌
 
 Available tools (use throughout):
 
+### Core Tools
+
 1. **get_project_context** - Current state
 2. **detect_phase** - Analyze conversation for transitions
 3. **load_agent_persona** - Get phase-specific expertise
@@ -232,6 +262,13 @@ Available tools (use throughout):
 8. **get_project_summary** - Project overview
 9. **list_bmad_agents** - See available agents (for debugging)
 10. **execute_bmad_workflow** - Run full phase workflow
+
+### Brownfield Tools (for existing projects)
+
+11. **get_codebase_summary** - Complete analysis: tech stack + structure + existing docs
+12. **scan_codebase** - Detailed code structure and patterns
+13. **detect_existing_docs** - Find existing BMAD documentation
+14. **load_previous_state** - Resume from previous BMAD session
 
 ## Remember
 
