@@ -70,14 +70,20 @@ const commands = {
       console.log('✅ Created .claude directory');
     }
 
-    // Copy MCP config template
-    const mcpConfigSource = path.join(__dirname, '..', '.claude', 'mcp-config.json');
+    // Create MCP config (inline template since we might be running from npx cache)
     const mcpConfigDest = path.join(claudeDir, 'mcp-config.json');
     if (!fs.existsSync(mcpConfigDest)) {
-      if (fs.existsSync(mcpConfigSource)) {
-        fs.copyFileSync(mcpConfigSource, mcpConfigDest);
-        console.log('✅ Created MCP configuration');
-      }
+      const mcpConfig = {
+        mcpServers: {
+          'bmad-invisible-orchestrator': {
+            command: 'node',
+            args: ['${workspaceFolder}/node_modules/bmad-invisible/dist/mcp/server.js'],
+            disabled: false,
+          },
+        },
+      };
+      fs.writeFileSync(mcpConfigDest, JSON.stringify(mcpConfig, null, 2));
+      console.log('✅ Created MCP configuration');
     }
 
     // Create docs directory
@@ -109,30 +115,43 @@ const commands = {
       console.log('✅ Added npm scripts to package.json');
     }
 
+    // Add bmad-invisible as a dependency
+    const needsInstall = !packageJson.dependencies || !packageJson.dependencies['bmad-invisible'];
+    if (needsInstall) {
+      packageJson.dependencies = packageJson.dependencies || {};
+      packageJson.dependencies['bmad-invisible'] = '^1.0.0';
+      fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
+      console.log('✅ Added bmad-invisible to dependencies');
+    }
+
     console.log(`
 ✨ BMAD-invisible initialized successfully!
 
 Next steps:
-  1. Install Claude Code CLI if not already installed:
-     npm install -g @anthropic-ai/claude-code
+  1. Install dependencies:
+     npm install
 
-  2. Build the MCP server:
-     npm run bmad:build
+  2. Install Claude Code CLI if not already installed:
+     npm install -g @anthropic-ai/claude-code
 
   3. Start chatting:
      npm run bmad:chat
 
-For detailed documentation, see:
-  - README.md
-  - QUICKSTART.md
-  - USAGE.md
+For detailed documentation, visit:
+  https://github.com/bacoco/BMAD-invisible
 `);
   },
 
   chat: async () => {
-    const chatScript = path.join(__dirname, 'bmad-chat');
+    // Check if bmad-invisible is installed locally first
+    const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
+    const chatScript = fs.existsSync(localInstall)
+      ? path.join(localInstall, 'bin', 'bmad-chat')
+      : path.join(__dirname, 'bmad-chat');
+
     if (!fs.existsSync(chatScript)) {
-      console.error('❌ Chat script not found. Run "npx bmad-invisible build" first.');
+      console.error('❌ BMAD-invisible not found. Please run "npm install" first.');
+      console.error('   Or initialize with: npx bmad-invisible init && npm install');
       process.exit(1);
     }
 
@@ -166,7 +185,19 @@ For detailed documentation, see:
   build: async () => {
     console.log('🔨 Building MCP server...\n');
 
-    const rootDir = path.join(__dirname, '..');
+    // Check if running from local install or global/npx
+    const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
+    const rootDir = fs.existsSync(localInstall) ? localInstall : path.join(__dirname, '..');
+
+    // The MCP server is already pre-built in dist/, but we'll check TypeScript is available
+    const distMcp = path.join(rootDir, 'dist', 'mcp', 'server.js');
+    if (fs.existsSync(distMcp)) {
+      console.log('✅ MCP server already built and ready!');
+      console.log(`   Location: ${distMcp}`);
+      return;
+    }
+
+    // If not found, try to build it
     const child = spawn('npm', ['run', 'build:mcp'], {
       stdio: 'inherit',
       cwd: rootDir,
