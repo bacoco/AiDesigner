@@ -54,14 +54,19 @@ async function executeTransition(fromPhase, toPhase, context) {
   await savePhaseDeliverables(fromPhase, context);
 
   const newContext = await loadPhaseContext(toPhase, context);
-  await triggerCommand(`auto-${toPhase}`, newContext);
+  const workflowResult = await triggerCommand(`auto-${toPhase}`, newContext);
   await updateProjectState({
     currentPhase: toPhase,
     previousPhase: fromPhase,
     transitionTime: new Date().toISOString(),
     context: newContext
   });
-  return { newPhase: toPhase, context: newContext, message: await getTransitionMessage(toPhase) };
+  return {
+    newPhase: toPhase,
+    context: newContext,
+    workflowResult,
+    message: await getTransitionMessage(toPhase)
+  };
 }
 
 async function checkTransition(conversationContext, userMessage, currentPhase) {
