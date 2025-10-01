@@ -7,6 +7,7 @@ import {
 import { z } from "zod";
 import * as path from "path";
 import * as fs from "fs/promises";
+import { executeAutoCommand } from "../lib/auto-commands.js";
 
 // Dynamic imports for CommonJS modules
 let ProjectState: any;
@@ -53,9 +54,8 @@ async function initializeProject(projectPath: string = process.cwd()) {
       return await bmadBridge.runAgent(agentId, context);
     },
     triggerCommand: async (command: string, context: any) => {
-      // Execute auto-commands
       console.error(`[MCP] Executing command: ${command}`);
-      return { success: true, command, context };
+      return executeAutoCommand(command, context, bmadBridge);
     },
     updateProjectState: async (updates: any) => {
       await projectState.updateState(updates);
