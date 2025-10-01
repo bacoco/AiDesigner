@@ -30,17 +30,30 @@ BMAD-Invisible wraps BMAD-METHOD™'s powerful agile AI framework in a conversat
 
 ### Installation
 
-#### Option 1: NPX (Easiest - No Installation Required)
+#### Option 1: NPX One-Command Setup (Easiest!)
+
+```bash
+# Just run this - it does everything!
+npx bmad-invisible start
+```
+
+That's it! This single command will:
+
+- Create project structure
+- Install all dependencies
+- Launch the chat interface
+
+#### Option 1b: NPX Step-by-Step
 
 ```bash
 # Initialize in your project directory
 npx bmad-invisible init
 
-# Build MCP server
-npx bmad-invisible build
+# Install dependencies
+npm install
 
 # Start chatting!
-npx bmad-invisible chat
+npm run bmad:chat
 ```
 
 #### Option 2: Global Installation

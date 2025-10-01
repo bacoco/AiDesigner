@@ -24,6 +24,7 @@ Usage:
   npx bmad-invisible <command> [options]
 
 Commands:
+  start                🚀 ONE-COMMAND SETUP: init + install + chat (recommended!)
   init                 Initialize BMAD-invisible in current project
   chat                 Start conversational interface (requires Claude CLI)
   install              Install BMAD-invisible globally
@@ -33,6 +34,7 @@ Commands:
   help                 Show this help message
 
 Examples:
+  npx bmad-invisible start             # 🚀 Do everything in one command!
   npx bmad-invisible init              # Setup in current project
   npx bmad-invisible chat              # Start conversation
   npx bmad-invisible install           # Global installation
@@ -44,6 +46,35 @@ For more information: https://github.com/bacoco/BMAD-invisible
 
 // Command handlers
 const commands = {
+  start: async () => {
+    console.log('🚀 Starting BMAD-invisible setup...\n');
+
+    // Run init
+    await commands.init();
+
+    // Run npm install
+    console.log('\n📦 Installing dependencies...\n');
+    const install = spawn('npm', ['install'], {
+      stdio: 'inherit',
+      cwd: process.cwd(),
+      shell: true,
+    });
+
+    await new Promise((resolve, reject) => {
+      install.on('exit', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error('npm install failed'));
+        }
+      });
+    });
+
+    // Start chat
+    console.log('\n🎯 Starting BMAD Invisible Orchestrator...\n');
+    await commands.chat();
+  },
+
   init: async () => {
     console.log('🚀 Initializing BMAD-invisible...\n');
 
@@ -257,6 +288,7 @@ Usage:
   npx bmad-invisible <command> [options]
 
 Commands:
+  start                🚀 ONE-COMMAND SETUP: init + install + chat (recommended!)
   init                 Initialize BMAD-invisible in current project
   chat                 Start conversational interface (requires Claude CLI)
   install              Install BMAD-invisible globally
@@ -266,6 +298,7 @@ Commands:
   help                 Show this help message
 
 Examples:
+  npx bmad-invisible start             # 🚀 Do everything in one command!
   npx bmad-invisible init              # Setup in current project
   npx bmad-invisible chat              # Start conversation
   npx bmad-invisible install           # Global installation

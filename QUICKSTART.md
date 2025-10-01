@@ -8,7 +8,24 @@ BMAD-Invisible provides a **natural conversational interface** that guides you t
 
 ## Installation
 
-### Option 1: NPX (Recommended - Zero Setup)
+### Option 1: NPX One-Command (Recommended - Zero Setup)
+
+```bash
+# Navigate to your project directory (or create a new one)
+mkdir my-project && cd my-project
+
+# Run this ONE command - it does everything!
+npx bmad-invisible start
+```
+
+Done! This automatically:
+
+- Creates `package.json` if needed
+- Sets up project structure
+- Installs all dependencies
+- Launches the chat interface
+
+### Option 1b: NPX Step-by-Step
 
 ```bash
 # Navigate to your project directory
@@ -17,11 +34,11 @@ cd your-project
 # Initialize BMAD-invisible
 npx bmad-invisible init
 
-# Build MCP server
-npx bmad-invisible build
+# Install dependencies
+npm install
 
 # Start chatting!
-npx bmad-invisible chat
+npm run bmad:chat
 ```
 
 ### Option 2: Global Installation
