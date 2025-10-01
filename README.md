@@ -26,23 +26,51 @@ BMAD-Invisible wraps BMAD-METHOD™'s powerful agile AI framework in a conversat
 
 - Node.js ≥ 20.0.0
 - npm ≥ 9.0.0
-- Git
 - **Claude Code CLI** (uses your Claude Pro subscription - no API keys needed!)
 
 ### Installation
 
+#### Option 1: NPX (Easiest - No Installation Required)
+
 ```bash
-# 1. Clone the repository
+# Initialize in your project directory
+npx bmad-invisible init
+
+# Build MCP server
+npx bmad-invisible build
+
+# Start chatting!
+npx bmad-invisible chat
+```
+
+#### Option 2: Global Installation
+
+```bash
+# Install globally
+npm install -g bmad-invisible
+
+# Initialize in any project
+bmad-invisible init
+
+# Build and chat
+bmad-invisible build
+bmad-invisible chat
+```
+
+#### Option 3: Local Development
+
+```bash
+# Clone the repository
 git clone https://github.com/bacoco/BMAD-invisible.git
 cd BMAD-invisible
 
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Build the MCP server
+# Build the MCP server
 npm run build:mcp
 
-# 4. Start conversational interface
+# Start conversational interface
 npm run chat
 ```
 

@@ -8,16 +8,50 @@ BMAD-Invisible provides a **natural conversational interface** that guides you t
 
 ## Installation
 
+### Option 1: NPX (Recommended - Zero Setup)
+
 ```bash
-# 1. Clone the repository
+# Navigate to your project directory
+cd your-project
+
+# Initialize BMAD-invisible
+npx bmad-invisible init
+
+# Build MCP server
+npx bmad-invisible build
+
+# Start chatting!
+npx bmad-invisible chat
+```
+
+### Option 2: Global Installation
+
+```bash
+# Install globally once
+npm install -g bmad-invisible
+
+# Use anywhere
+cd your-project
+bmad-invisible init
+bmad-invisible build
+bmad-invisible chat
+```
+
+### Option 3: Local Development
+
+```bash
+# Clone the repository
 git clone https://github.com/bacoco/BMAD-invisible.git
 cd BMAD-invisible
 
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Build the MCP server
+# Build the MCP server
 npm run build:mcp
+
+# Start conversation
+npm run chat
 ```
 
 ## Prerequisites
@@ -34,13 +68,16 @@ claude --version
 
 ## Usage
 
-### Start a Conversation
+### Quick Commands
 
 ```bash
-npm run chat
+npx bmad-invisible init        # Initialize in project
+npx bmad-invisible build       # Build MCP server
+npx bmad-invisible chat        # Start conversation
+npx bmad-invisible test        # Run tests
+npx bmad-invisible validate    # Validate config
+npx bmad-invisible help        # Show all commands
 ```
-
-That's it! Just type your project idea and have a natural conversation.
 
 ### Example Session
 

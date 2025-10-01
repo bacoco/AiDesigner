@@ -1,0 +1,252 @@
+#!/usr/bin/env node
+
+/**
+ * BMAD Invisible - Main CLI entry point for npx deployment
+ *
+ * This executable provides easy installation and setup via:
+ *   npx bmad-invisible init
+ *   npx bmad-invisible chat
+ *   npx bmad-invisible install
+ */
+
+const { spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+const [, , command, ...args] = process.argv;
+
+// Show help if no command provided
+if (!command || command === '--help' || command === '-h') {
+  console.log(`
+BMAD Invisible - Zero-knowledge AI orchestration
+
+Usage:
+  npx bmad-invisible <command> [options]
+
+Commands:
+  init                 Initialize BMAD-invisible in current project
+  chat                 Start conversational interface (requires Claude CLI)
+  install              Install BMAD-invisible globally
+  build                Build MCP server
+  test                 Run test suite
+  validate             Validate configuration
+  help                 Show this help message
+
+Examples:
+  npx bmad-invisible init              # Setup in current project
+  npx bmad-invisible chat              # Start conversation
+  npx bmad-invisible install           # Global installation
+
+For more information: https://github.com/bacoco/BMAD-invisible
+`);
+  process.exit(0);
+}
+
+// Command handlers
+const commands = {
+  init: async () => {
+    console.log('🚀 Initializing BMAD-invisible...\n');
+
+    const projectRoot = process.cwd();
+    const packagePath = path.join(projectRoot, 'package.json');
+
+    // Check if package.json exists
+    if (!fs.existsSync(packagePath)) {
+      console.error('❌ No package.json found. Please run this in a Node.js project directory.');
+      process.exit(1);
+    }
+
+    // Create .bmad-invisible directory
+    const bmadDir = path.join(projectRoot, '.bmad-invisible');
+    if (!fs.existsSync(bmadDir)) {
+      fs.mkdirSync(bmadDir, { recursive: true });
+      console.log('✅ Created .bmad-invisible directory');
+    }
+
+    // Create .claude directory for MCP config
+    const claudeDir = path.join(projectRoot, '.claude');
+    if (!fs.existsSync(claudeDir)) {
+      fs.mkdirSync(claudeDir, { recursive: true });
+      console.log('✅ Created .claude directory');
+    }
+
+    // Copy MCP config template
+    const mcpConfigSource = path.join(__dirname, '..', '.claude', 'mcp-config.json');
+    const mcpConfigDest = path.join(claudeDir, 'mcp-config.json');
+    if (!fs.existsSync(mcpConfigDest)) {
+      if (fs.existsSync(mcpConfigSource)) {
+        fs.copyFileSync(mcpConfigSource, mcpConfigDest);
+        console.log('✅ Created MCP configuration');
+      }
+    }
+
+    // Create docs directory
+    const docsDir = path.join(projectRoot, 'docs');
+    if (!fs.existsSync(docsDir)) {
+      fs.mkdirSync(docsDir, { recursive: true });
+      console.log('✅ Created docs directory');
+    }
+
+    // Add to package.json scripts
+    const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+    packageJson.scripts = packageJson.scripts || {};
+
+    const scriptsToAdd = {
+      'bmad:chat': 'bmad-invisible chat',
+      'bmad:build': 'bmad-invisible build',
+    };
+
+    let scriptsAdded = false;
+    for (const [key, value] of Object.entries(scriptsToAdd)) {
+      if (!packageJson.scripts[key]) {
+        packageJson.scripts[key] = value;
+        scriptsAdded = true;
+      }
+    }
+
+    if (scriptsAdded) {
+      fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
+      console.log('✅ Added npm scripts to package.json');
+    }
+
+    console.log(`
+✨ BMAD-invisible initialized successfully!
+
+Next steps:
+  1. Install Claude Code CLI if not already installed:
+     npm install -g @anthropic-ai/claude-code
+
+  2. Build the MCP server:
+     npm run bmad:build
+
+  3. Start chatting:
+     npm run bmad:chat
+
+For detailed documentation, see:
+  - README.md
+  - QUICKSTART.md
+  - USAGE.md
+`);
+  },
+
+  chat: async () => {
+    const chatScript = path.join(__dirname, 'bmad-chat');
+    if (!fs.existsSync(chatScript)) {
+      console.error('❌ Chat script not found. Run "npx bmad-invisible build" first.');
+      process.exit(1);
+    }
+
+    const child = spawn('node', [chatScript, ...args], {
+      stdio: 'inherit',
+      cwd: process.cwd(),
+    });
+
+    child.on('exit', (code) => {
+      process.exit(code || 0);
+    });
+  },
+
+  install: async () => {
+    console.log('📦 Installing BMAD-invisible globally...\n');
+
+    const child = spawn('npm', ['install', '-g', 'bmad-invisible'], {
+      stdio: 'inherit',
+      shell: true,
+    });
+
+    child.on('exit', (code) => {
+      if (code === 0) {
+        console.log('\n✅ BMAD-invisible installed globally!');
+        console.log('You can now use: bmad-invisible <command>');
+      }
+      process.exit(code || 0);
+    });
+  },
+
+  build: async () => {
+    console.log('🔨 Building MCP server...\n');
+
+    const rootDir = path.join(__dirname, '..');
+    const child = spawn('npm', ['run', 'build:mcp'], {
+      stdio: 'inherit',
+      cwd: rootDir,
+      shell: true,
+    });
+
+    child.on('exit', (code) => {
+      if (code === 0) {
+        console.log('\n✅ MCP server built successfully!');
+      }
+      process.exit(code || 0);
+    });
+  },
+
+  test: async () => {
+    const rootDir = path.join(__dirname, '..');
+    const child = spawn('npm', ['test'], {
+      stdio: 'inherit',
+      cwd: rootDir,
+      shell: true,
+    });
+
+    child.on('exit', (code) => {
+      process.exit(code || 0);
+    });
+  },
+
+  validate: async () => {
+    const rootDir = path.join(__dirname, '..');
+    const child = spawn('npm', ['run', 'validate'], {
+      stdio: 'inherit',
+      cwd: rootDir,
+      shell: true,
+    });
+
+    child.on('exit', (code) => {
+      process.exit(code || 0);
+    });
+  },
+
+  help: () => {
+    // Show help message
+    console.log(`
+BMAD Invisible - Zero-knowledge AI orchestration
+
+Usage:
+  npx bmad-invisible <command> [options]
+
+Commands:
+  init                 Initialize BMAD-invisible in current project
+  chat                 Start conversational interface (requires Claude CLI)
+  install              Install BMAD-invisible globally
+  build                Build MCP server
+  test                 Run test suite
+  validate             Validate configuration
+  help                 Show this help message
+
+Examples:
+  npx bmad-invisible init              # Setup in current project
+  npx bmad-invisible chat              # Start conversation
+  npx bmad-invisible install           # Global installation
+
+For more information: https://github.com/bacoco/BMAD-invisible
+`);
+  },
+};
+
+// Execute command
+const handler = commands[command];
+if (!handler) {
+  console.error(`❌ Unknown command: ${command}`);
+  console.log('Run "npx bmad-invisible help" for usage information.');
+  process.exit(1);
+}
+
+// Handle both sync and async commands
+const result = handler();
+if (result && typeof result.catch === 'function') {
+  result.catch((error) => {
+    console.error('❌ Error:', error.message);
+    process.exit(1);
+  });
+}

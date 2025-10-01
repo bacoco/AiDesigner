@@ -22,8 +22,7 @@
   "author": "Loic Bacoco",
   "main": "tools/cli.js",
   "bin": {
-    "bmad": "tools/bmad-npx-wrapper.js",
-    "bmad-method": "tools/bmad-npx-wrapper.js"
+    "bmad-invisible": "bin/bmad-invisible"
   },
   "scripts": {
     "build": "node tools/cli.js build",
@@ -35,6 +34,7 @@
     "flatten": "node tools/flattener/main.js",
     "format": "prettier --write \"**/*.{js,cjs,mjs,json,md,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,cjs,mjs,json,md,yaml}\"",
+    "postinstall": "npm run build:mcp 2>/dev/null || true",
     "install:bmad": "node tools/installer/bin/bmad.js install",
     "lint": "eslint . --ext .js,.cjs,.mjs,.yaml --max-warnings=0",
     "lint:fix": "eslint . --ext .js,.cjs,.mjs,.yaml --fix",
