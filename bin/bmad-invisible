@@ -50,10 +50,20 @@ const commands = {
     const projectRoot = process.cwd();
     const packagePath = path.join(projectRoot, 'package.json');
 
-    // Check if package.json exists
+    // Create package.json if it doesn't exist
     if (!fs.existsSync(packagePath)) {
-      console.error('❌ No package.json found. Please run this in a Node.js project directory.');
-      process.exit(1);
+      console.log('📦 Creating package.json...');
+      const defaultPackage = {
+        name: path.basename(projectRoot),
+        version: '1.0.0',
+        description: 'Project powered by BMAD-invisible',
+        scripts: {},
+        keywords: [],
+        author: '',
+        license: 'ISC',
+      };
+      fs.writeFileSync(packagePath, JSON.stringify(defaultPackage, null, 2) + '\n');
+      console.log('✅ Created package.json');
     }
 
     // Create .bmad-invisible directory
