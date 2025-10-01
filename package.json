@@ -30,6 +30,7 @@
     "build:agents": "node tools/cli.js build --agents-only",
     "build:mcp": "tsc -p mcp/tsconfig.json",
     "build:teams": "node tools/cli.js build --teams-only",
+    "chat": "node bin/bmad-chat",
     "fix": "npm run format && npm run lint:fix",
     "flatten": "node tools/flattener/main.js",
     "format": "prettier --write \"**/*.{js,cjs,mjs,json,md,yaml}\"",

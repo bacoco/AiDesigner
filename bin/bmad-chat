@@ -1,0 +1,63 @@
+#!/usr/bin/env node
+
+/**
+ * BMAD Invisible Orchestrator - Chat Interface
+ * Launches Claude CLI with MCP server and orchestrator agent
+ */
+
+const { spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+
+// Get paths
+const rootDir = path.join(__dirname, '..');
+const mcpConfigPath = path.join(rootDir, 'mcp', 'bmad-config.json');
+const orchestratorPath = path.join(rootDir, 'agents', 'invisible-orchestrator.md');
+
+// Check if files exist
+if (!fs.existsSync(mcpConfigPath)) {
+  console.error('Error: MCP config not found. Run: npm run build:mcp');
+  process.exit(1);
+}
+
+if (!fs.existsSync(orchestratorPath)) {
+  console.error('Error: Orchestrator agent not found');
+  process.exit(1);
+}
+
+// Read orchestrator content
+const orchestratorContent = fs.readFileSync(orchestratorPath, 'utf8');
+
+// Build Claude command
+const claudeArgs = [
+  '--mcp-config', mcpConfigPath,
+  '--append-system-prompt', orchestratorContent,
+];
+
+// Add any additional args from user
+const userArgs = process.argv.slice(2);
+if (userArgs.length > 0) {
+  claudeArgs.push(...userArgs);
+}
+
+console.log('🎯 Starting BMAD Invisible Orchestrator...');
+console.log('📡 MCP Server: bmad-invisible-orchestrator');
+console.log('🤖 Agent: Invisible BMAD Orchestrator');
+console.log('💬 Type your project idea to begin!\n');
+
+// Launch Claude CLI
+const claude = spawn('claude', claudeArgs, {
+  stdio: 'inherit',
+  shell: true,
+});
+
+claude.on('error', (error) => {
+  console.error('Error launching Claude CLI:', error.message);
+  console.error('\nMake sure Claude CLI is installed and in your PATH');
+  console.error('Install: https://claude.ai/code');
+  process.exit(1);
+});
+
+claude.on('exit', (code) => {
+  process.exit(code || 0);
+});

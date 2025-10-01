@@ -7,7 +7,7 @@ import yml from 'eslint-plugin-yml';
 export default [
   // Global ignores for files/folders that should not be linted
   {
-    ignores: ['dist/**', 'coverage/**', '**/*.min.js'],
+    ignores: ['dist/**', 'coverage/**', '**/*.min.js', '**/node_modules/**'],
   },
 
   // Base JavaScript recommended rules
@@ -52,11 +52,11 @@ export default [
     },
   },
 
-  // CLI/CommonJS scripts under tools/**
+  // CLI/CommonJS scripts under tools/** and lib/**
   {
-    files: ['tools/**/*.js'],
+    files: ['tools/**/*.js', 'lib/**/*.js', 'hooks/**/*.js', 'bin/**/*.js'],
     rules: {
-      // Allow CommonJS patterns for Node CLI scripts
+      // Allow CommonJS patterns for Node CLI scripts and MCP integration
       'unicorn/prefer-module': 'off',
       'unicorn/import-style': 'off',
       'unicorn/no-process-exit': 'off',
