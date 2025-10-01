@@ -2,7 +2,36 @@
 
 ## Quick Start
 
+### Fastest Way (One Command!)
+
 ```bash
+# In any directory, just run:
+npx bmad-invisible start
+```
+
+This does everything: creates structure, installs dependencies, and launches chat!
+
+### Alternative: Step-by-Step
+
+```bash
+# Initialize project
+npx bmad-invisible init
+
+# Install dependencies
+npm install
+
+# Start chatting
+npm run bmad:chat
+```
+
+### For Local Development
+
+```bash
+# Clone and setup
+git clone https://github.com/bacoco/BMAD-invisible.git
+cd BMAD-invisible
+npm install
+
 # Build and run
 npm run build:mcp
 npm run chat
