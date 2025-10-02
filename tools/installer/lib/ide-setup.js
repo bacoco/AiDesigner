@@ -904,7 +904,8 @@ class IdeSetup extends BaseIdeSetup {
     const nonInteractive =
       process.env.CI === 'true' ||
       process.env.BMAD_NON_INTERACTIVE === '1' ||
-      (process.stdout && !process.stdout.isTTY);
+      (process.stdout && !process.stdout.isTTY) ||
+      (process.stdin && !process.stdin.isTTY);
 
     if (!skipConfig) {
       if (nonInteractive) {

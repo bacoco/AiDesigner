@@ -395,6 +395,7 @@ async function readConfig(
     await fs.copy(configPath, backupPath);
     const message = `Failed to parse existing Codex config. A backup was created at ${backupPath}. ${(error as Error).message}`;
     if (nonInteractive) {
+      console.warn(message);
       return { raw: null, data: {} };
     }
     throw new Error(message);
@@ -433,7 +434,7 @@ function mergeServers(existingServers: any): { servers: TomlTable[]; changed: bo
   }
 
   const existing = materialised[index] ?? {};
-  const merged = { ...existing, ...canonical };
+  const merged = { ...canonical, ...existing };
   const changed = JSON.stringify(existing) !== JSON.stringify(merged);
   materialised[index] = merged;
 
