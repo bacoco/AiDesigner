@@ -31,6 +31,7 @@ let orchestratorContent = fs.readFileSync(orchestratorPath, 'utf8');
 // Remove YAML frontmatter (everything between --- markers)
 orchestratorContent = orchestratorContent.replace(/^---\n[\s\S]*?\n---\n/, '');
 
+
 // Normalise CLI arguments (support `start` as default command)
 let userArgs = process.argv.slice(2);
 if (userArgs.length > 0 && ['start', 'chat', 'run'].includes(userArgs[0])) {
@@ -47,6 +48,7 @@ const codexArgs = [
 ];
 
 console.log('🎯 Starting BMAD Invisible Orchestrator with Codex...');
+
 console.log('📡 MCP Server: bmad-invisible-orchestrator');
 console.log('🤖 Agent: Invisible BMAD Orchestrator');
 console.log('💬 Type your project idea to begin!\n');
@@ -61,6 +63,7 @@ codex.on('error', (error) => {
   console.error('Error launching Codex CLI:', error.message);
   console.error('\nMake sure Codex CLI is installed and in your PATH');
   console.error('Install: https://platform.openai.com/docs/guides/codex');
+
   process.exit(1);
 });
 

@@ -14,24 +14,41 @@ const fs = require('fs');
 const path = require('path');
 
 const [, , command, ...args] = process.argv;
+const scriptFileName = path.basename(process.argv[1] || '');
+const isCodexVariant = scriptFileName.includes('codex');
+const chatLauncherName = isCodexVariant ? 'bmad-codex' : 'bmad-chat';
+const cliDisplayName = isCodexVariant ? 'Codex CLI' : 'Claude Code CLI';
+const packageCommand = isCodexVariant ? 'bmad-invisible-codex' : 'bmad-invisible';
+const chatCommandLabel = isCodexVariant
+  ? 'Start conversational interface (requires Codex CLI)'
+  : 'Start conversational interface (requires Claude CLI)';
+const startCommandSummary = isCodexVariant
+  ? '🚀 ONE-COMMAND SETUP: init + install + codex chat (recommended!)'
+  : '🚀 ONE-COMMAND SETUP: init + install + chat (recommended!)';
+const chatScriptName = isCodexVariant ? 'bmad:codex' : 'bmad:chat';
+const chatScriptValue = isCodexVariant ? 'bmad-invisible-codex chat' : 'bmad-invisible chat';
+const startChatBanner = isCodexVariant
+  ? '\\n🎯 Starting BMAD Invisible Orchestrator (Codex)...\\n'
+  : '\\n🎯 Starting BMAD Invisible Orchestrator...\\n';
 
 // Get current package version
 const packageJsonPath = path.join(__dirname, '..', 'package.json');
 const currentVersion = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
 
-// Show help if no command provided
-if (!command || command === '--help' || command === '-h') {
+const printHelp = () => {
   console.log(`
 BMAD Invisible - Zero-knowledge AI orchestration (v${currentVersion})
 
 Usage:
-  npx bmad-invisible@latest <command> [options]
+  npx ${packageCommand}@latest <command> [options]
 
 Commands:
+
   start                🚀 ONE-COMMAND SETUP: init + install + codex (recommended!)
   init                 Initialize BMAD-invisible in current project
   codex                Start conversational interface (requires Codex CLI)
   chat                 Start conversational interface with Claude CLI (legacy)
+
   install              Install BMAD-invisible globally
   build                Build MCP server
   test                 Run test suite
@@ -39,15 +56,22 @@ Commands:
   help                 Show this help message
 
 Examples:
+
   npx bmad-invisible@latest start      # 🚀 Do everything in one command!
   npx bmad-invisible@latest init       # Setup in current project
   npm run codex                        # Start conversation (after install)
 
+
 💡 Tip: Always use @latest to get the newest version:
-   npx bmad-invisible@latest start
+   npx ${packageCommand}@latest start
 
 For more information: https://github.com/bacoco/BMAD-invisible
 `);
+};
+
+// Show help if no command provided
+if (!command || command === '--help' || command === '-h') {
+  printHelp();
   process.exit(0);
 }
 
@@ -80,6 +104,7 @@ const commands = {
     // Start Codex session
     console.log('\n🎯 Starting BMAD Invisible Orchestrator with Codex...\n');
     await commands.codex();
+
   },
 
   init: async () => {
@@ -125,7 +150,7 @@ const commands = {
         mcpServers: {
           'bmad-invisible-orchestrator': {
             command: 'node',
-            args: ['${workspaceFolder}/node_modules/bmad-invisible/dist/mcp/server.js'],
+            args: ['${workspaceFolder}/node_modules/bmad-invisible/dist/mcp/mcp/server.js'],
             disabled: false,
           },
         },
@@ -146,11 +171,15 @@ const commands = {
     packageJson.scripts = packageJson.scripts || {};
 
     const scriptsToAdd = {
+
       codex: 'bmad-invisible codex',
       'bmad:codex': 'bmad-invisible codex',
       'bmad:chat': 'bmad-invisible chat',
+
       'bmad:build': 'bmad-invisible build',
     };
+
+    scriptsToAdd[chatScriptName] = chatScriptValue;
 
     let scriptsAdded = false;
     for (const [key, value] of Object.entries(scriptsToAdd)) {
@@ -181,11 +210,13 @@ Next steps:
   1. Install dependencies:
      npm install
 
+
   2. Install Codex CLI if not already installed:
      https://platform.openai.com/docs/guides/codex
 
   3. Start chatting:
      npm run codex
+
 
 For detailed documentation, visit:
   https://github.com/bacoco/BMAD-invisible
@@ -218,12 +249,12 @@ For detailed documentation, visit:
     // Check if bmad-invisible is installed locally first
     const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
     const chatScript = fs.existsSync(localInstall)
-      ? path.join(localInstall, 'bin', 'bmad-chat')
-      : path.join(__dirname, 'bmad-chat');
+      ? path.join(localInstall, 'bin', chatLauncherName)
+      : path.join(__dirname, chatLauncherName);
 
     if (!fs.existsSync(chatScript)) {
       console.error('❌ BMAD-invisible not found. Please run "npm install" first.');
-      console.error('   Or initialize with: npx bmad-invisible init && npm install');
+      console.error(`   Or initialize with: npx ${packageCommand} init && npm install`);
       process.exit(1);
     }
 
@@ -248,7 +279,7 @@ For detailed documentation, visit:
     child.on('exit', (code) => {
       if (code === 0) {
         console.log('\n✅ BMAD-invisible installed globally!');
-        console.log('You can now use: bmad-invisible <command>');
+        console.log(`You can now use: ${packageCommand} <command>`);
       }
       process.exit(code || 0);
     });
@@ -312,32 +343,7 @@ For detailed documentation, visit:
 
   help: () => {
     // Show help message
-    console.log(`
-BMAD Invisible - Zero-knowledge AI orchestration (v${currentVersion})
-
-Usage:
-  npx bmad-invisible@latest <command> [options]
-
-Commands:
-  start                🚀 ONE-COMMAND SETUP: init + install + chat (recommended!)
-  init                 Initialize BMAD-invisible in current project
-  chat                 Start conversational interface (requires Claude CLI)
-  install              Install BMAD-invisible globally
-  build                Build MCP server
-  test                 Run test suite
-  validate             Validate configuration
-  help                 Show this help message
-
-Examples:
-  npx bmad-invisible@latest start      # 🚀 Do everything in one command!
-  npx bmad-invisible@latest init       # Setup in current project
-  npm run bmad:chat                    # Start conversation (after install)
-
-💡 Tip: Always use @latest to get the newest version:
-   npx bmad-invisible@latest start
-
-For more information: https://github.com/bacoco/BMAD-invisible
-`);
+    printHelp();
   },
 };
 
@@ -345,7 +351,7 @@ For more information: https://github.com/bacoco/BMAD-invisible
 const handler = commands[command];
 if (!handler) {
   console.error(`❌ Unknown command: ${command}`);
-  console.log('Run "npx bmad-invisible help" for usage information.');
+  console.log(`Run "npx ${packageCommand} help" for usage information.`);
   process.exit(1);
 }
 

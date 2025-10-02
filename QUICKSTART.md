@@ -13,19 +13,23 @@ BMAD-Invisible provides a **natural conversational interface** that guides you t
 ```bash
 # Navigate to your project directory (or create a new one)
 mkdir my-project && cd my-project
+```
+
+Pick the assistant CLI you want and run the matching command:
 
 # Run this ONE command - it does everything!
+
 npx bmad-invisible-codex@latest start
 ```
 
-Done! This automatically:
+Done! Either command automatically:
 
 - Creates `package.json` if needed
 - Sets up project structure
 - Installs all dependencies
 - Launches the Codex-powered chat interface
 
-> **💡 Tip**: Always use `@latest` to avoid npx cache issues!
+> **💡 Tip**: Always use `@latest` to avoid npx cache issues on either flow!
 
 ### Option 1b: NPX Step-by-Step
 
@@ -39,8 +43,10 @@ npx bmad-invisible@latest init
 # Install dependencies
 npm install
 
+
 # Start chatting through Codex
 npm run codex
+
 ```
 
 ### Option 2: Global Installation
@@ -53,7 +59,9 @@ npm install -g bmad-invisible
 cd your-project
 bmad-invisible init
 bmad-invisible build
+
 bmad-invisible codex
+
 ```
 
 ### Option 3: Local Development
@@ -69,13 +77,16 @@ npm install
 # Build the MCP server
 npm run build:mcp
 
+
 # Start conversation
+
 npm run codex
 ```
 
 ## Prerequisites
 
 You need **OpenAI Codex CLI** installed:
+
 
 ```bash
 # Check if installed
@@ -85,6 +96,15 @@ codex --version
 # https://platform.openai.com/docs/guides/codex
 ```
 
+### Codex CLI
+
+```bash
+# Check if installed
+codex --version
+
+# If not installed, follow the setup instructions in your Codex workspace
+```
+
 ## Usage
 
 ### Quick Commands
@@ -92,14 +112,18 @@ codex --version
 ```bash
 npx bmad-invisible init        # Initialize in project
 npx bmad-invisible build       # Build MCP server
+
 npx bmad-invisible-codex start # One-command Codex launch
 npm run codex                  # Start conversation after install
+
 npx bmad-invisible test        # Run tests
 npx bmad-invisible validate    # Validate config
 npx bmad-invisible help        # Show all commands
 ```
 
 ### Example Session
+
+Start the CLI you prefer (`npm run chat` for Claude, `npm run codex` for Codex) and you'll see an experience like this:
 
 ```
 🎯 Starting BMAD Invisible Orchestrator...

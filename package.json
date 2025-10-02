@@ -23,12 +23,15 @@
   "main": "tools/cli.js",
   "bin": {
     "bmad-invisible": "bin/bmad-invisible",
+
     "bmad-invisible-codex": "bin/bmad-codex"
+
   },
   "scripts": {
+    "bmad:codex": "bmad-invisible-codex chat",
     "build": "node tools/cli.js build",
     "build:agents": "node tools/cli.js build --agents-only",
-    "build:mcp": "tsc -p mcp/tsconfig.json",
+    "build:mcp": "tsc -p mcp/tsconfig.json && tsc -p tsconfig.codex.json",
     "build:teams": "node tools/cli.js build --teams-only",
     "chat": "node bin/bmad-chat",
     "codex": "node bin/bmad-codex",
@@ -41,7 +44,7 @@
     "lint": "eslint . --ext .js,.cjs,.mjs,.yaml --max-warnings=0",
     "lint:fix": "eslint . --ext .js,.cjs,.mjs,.yaml --fix",
     "list:agents": "node tools/cli.js list:agents",
-    "mcp": "node dist/mcp/server.js",
+    "mcp": "node dist/mcp/mcp/server.js",
     "pre-release": "npm run validate && npm run format:check && npm run lint",
     "prepare": "husky",
     "preview:release": "node tools/preview-release-notes.js",
@@ -68,7 +71,7 @@
   },
   "lint-staged": {
     "**/*.{js,cjs,mjs}": [
-      "eslint --fix --max-warnings=0",
+      "eslint --fix --max-warnings=0 --no-warn-ignored",
       "prettier --write"
     ],
     "**/*.yaml": [
