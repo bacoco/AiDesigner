@@ -420,7 +420,10 @@ bmad-invisible/
 │   ├── phase-transition.js    # Handles phase transitions
 │   └── context-preservation.js # Maintains context across phases
 ├── mcp/                       # Model Context Protocol server
-│   └── server.ts              # State persistence
+│   └── server.ts              # StdIO entry point → shared runtime
+├── src/mcp-server/            # Shared runtime + Codex bridge
+│   ├── runtime.ts             # Orchestrator wiring
+│   └── codex-server.ts        # Codex-aware entry point (routing & approvals)
 └── test/                      # Test suite
     ├── phase-detector.contract.test.js
     └── phase-transition.safety.test.js
@@ -475,6 +478,28 @@ npm test
 # Start standalone MCP server (optional)
 npm run mcp
 ```
+
+### Codex CLI MCP bridge
+
+Register the Codex-aware MCP server with `npx bmad-invisible-codex` in your `~/.codex/config.toml`:
+
+```toml
+[[mcp]]
+id = "bmad-invisible-codex"
+command = "npx"
+args = ["bmad-invisible-codex"]
+autostart = true
+
+  [mcp.env]
+  # Optional: enforce guarded writes and approve individual operations
+  CODEX_APPROVAL_MODE = "true"
+  CODEX_APPROVED_OPERATIONS = "generate_deliverable:prd,execute_quick_lane"
+  # Optional: override LLM routing per lane
+  CODEX_QUICK_MODEL = "gpt-4.1-mini"
+  CODEX_COMPLEX_MODEL = "claude-3-5-sonnet-20241022"
+```
+
+Refer to [`codex-config.toml.example`](codex-config.toml.example) for a ready-to-copy snippet and additional options.
 
 ## 📚 Documentation
 
