@@ -9,6 +9,25 @@ BMAD-Invisible implements an "invisible" multi-agent agile orchestrator that exp
 The `codex-server.ts` script boots the orchestrator MCP server. Key responsibilities include:
 
 - **Environment-driven configuration** – Parses defaults such as provider, model, and token limits from `CODEX_*`/`LLM_*` environment variables, enabling deployment-time overrides without code changes.
+
+  ```bash
+  export CODEX_DEFAULT_PROVIDER="claude"
+  export CODEX_DEFAULT_MODEL="claude-3-5-sonnet-20241022"
+  export CODEX_MAX_TOKENS="4096"
+  export CODEX_QUICK_PROVIDER="claude"
+  export CODEX_QUICK_MODEL="claude-3-haiku-20240307"
+  export CODEX_QUICK_MAX_TOKENS="2048"
+  export CODEX_COMPLEX_PROVIDER="claude"
+  export CODEX_COMPLEX_MODEL="claude-3-opus-20240229"
+  export CODEX_COMPLEX_MAX_TOKENS="8192"
+  export CODEX_APPROVAL_MODE="true"
+  export CODEX_AUTO_APPROVE="false"
+  export CODEX_APPROVED_OPERATIONS="plan.generate,plan.apply"
+
+  export LLM_PROVIDER="claude"
+  export LLM_MODEL="claude-3-5-sonnet-20241022"
+  ```
+
 - **Model routing** – The `ModelRouter` class maps logical lanes (default, quick, complex) and friendly aliases to concrete model selections. It supports granular overrides by operation metadata (e.g., decision lane) while falling back to sensible defaults.
 - **Codex client lifecycle** – `CodexClient.fromEnvironment()` wires up lane-specific LLM clients, approval workflows, and automatic approval heuristics. It maintains an internal cache keyed by provider/model to avoid redundant client instantiations.
 - **Authorization guardrails** – `ensureOperationAllowed()` leverages a normalized operation key (including metadata such as operation type or lane) to decide whether an action requires explicit approval, integrates auto-approval lists, and logs rejected operations for transparency.
