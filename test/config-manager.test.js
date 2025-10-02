@@ -1,12 +1,10 @@
-const { describe, it, expect } = require('@jest/globals');
-
 // Mock the config-manager module since it's TypeScript
 // This is a placeholder test to document expected behavior
 describe('config-manager mergeServers', () => {
   it('should preserve user customizations when merging server defaults', () => {
     // Expected behavior:
     // Given existing servers with user customizations:
-    const existingServers = [
+    const _existingServers = [
       {
         name: 'bmad-mcp',
         autoStart: false, // User explicitly disabled
@@ -31,7 +29,7 @@ describe('config-manager mergeServers', () => {
   it('should add missing default keys without overwriting existing ones', () => {
     // Expected behavior:
     // User config with partial settings should get defaults for missing keys only
-    const existingServers = [
+    const _existingServers = [
       {
         name: 'bmad-mcp',
         autoStart: false,
@@ -50,7 +48,7 @@ describe('config-manager mergeServers', () => {
   it('should handle case-insensitive server name matching', () => {
     // Expected behavior:
     // Server names should match case-insensitively
-    const existingServers = [
+    const _existingServers = [
       {
         name: 'BMAD-MCP', // Different case
         autoStart: false,
@@ -66,7 +64,7 @@ describe('config-manager mergeServers', () => {
 
   it('should add new server if not found in existing servers', () => {
     // Expected behavior:
-    const existingServers = [
+    const _existingServers = [
       {
         name: 'other-mcp',
         autoStart: true,

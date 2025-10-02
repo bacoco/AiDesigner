@@ -105,6 +105,12 @@ export default [
       'unicorn/prefer-module': 'off',
       // Tests may use abbreviated names
       'unicorn/prevent-abbreviations': 'off',
+      // Allow @jest/globals dev dependency in tests
+      'n/no-extraneous-require': 'off',
+      // Allow unused vars in placeholder tests
+      'no-unused-vars': 'off',
+      // Allow useless spread in test fixtures
+      'unicorn/no-useless-fallback-in-spread': 'off',
     },
   },
 
