@@ -37,24 +37,37 @@ The orchestrator automatically selects the appropriate lane based on task comple
 
 - Node.js ≥ 20.0.0
 - npm ≥ 9.0.0
-- **Claude Code CLI** (uses your Claude Pro subscription - no API keys needed!)
+- Choose your assistant CLI:
+  - **Claude Code CLI** (uses your Claude Pro subscription - no API keys needed!)
+  - **Codex CLI** (uses OpenAI's Codex workspace experience)
 
 ### Installation
 
 #### Option 1: NPX One-Command Setup (Easiest!)
+
+Pick the assistant CLI you want to work with and run the matching command:
+
+**Claude Code CLI Flow**
 
 ```bash
 # Just run this - it does everything!
 npx bmad-invisible@latest start
 ```
 
-That's it! This single command will:
+**Codex CLI Flow**
+
+```bash
+# Same experience, powered by Codex CLI
+npx bmad-invisible-codex@latest start
+```
+
+That's it! Each command will:
 
 - Create project structure
 - Install all dependencies
 - Launch the chat interface
 
-> **💡 Tip**: Always use `@latest` to ensure you get the newest version!
+> **💡 Tip**: Always use `@latest` to ensure you get the newest version of either flow!
 
 #### Option 1b: NPX Step-by-Step
 
@@ -65,8 +78,11 @@ npx bmad-invisible@latest init
 # Install dependencies
 npm install
 
-# Start chatting!
+# Start chatting with Claude CLI
 npm run bmad:chat
+
+# ...or chat via Codex CLI
+npm run bmad:codex
 ```
 
 #### Option 2: Global Installation
@@ -80,7 +96,8 @@ bmad-invisible init
 
 # Build and chat
 bmad-invisible build
-bmad-invisible chat
+bmad-invisible chat             # Claude CLI flow
+bmad-invisible-codex chat       # Codex CLI flow
 ```
 
 #### Option 3: Local Development
@@ -96,11 +113,14 @@ npm install
 # Build the MCP server
 npm run build:mcp
 
-# Start conversational interface
+# Start conversational interface (Claude CLI)
 npm run chat
+
+# ...or Codex CLI flow
+npm run codex
 ```
 
-> **Note**: This uses the Model Context Protocol (MCP) with Claude Code CLI. No API costs - it leverages your existing Claude Pro subscription!
+> **Note**: Both flows use the Model Context Protocol (MCP) with your chosen CLI. Claude Code CLI leverages your existing Claude Pro subscription, while Codex CLI uses your Codex workspace access.
 
 ## 📖 How It Works
 
@@ -131,6 +151,8 @@ Assistant: "Here's the technical approach..."
 ```
 
 ## 💡 Usage Examples
+
+Run whichever CLI you prefer (`npm run chat` for Claude, `npm run codex` for Codex). The experience looks like this:
 
 ### Example 1: Simple App Project
 
