@@ -163,7 +163,7 @@ npm run build
 npm run mcp
 
 # Or with custom path
-node dist/mcp/server.js
+node dist/mcp/mcp/server.js
 ```
 
 ### Using in IDEs
@@ -198,8 +198,8 @@ This step is skipped automatically in non-interactive environments. See [`codex-
 # Rebuild
 npm run build:mcp
 
-# Check dist/mcp/server.js exists
-ls -la dist/mcp/
+# Check the compiled entrypoint exists
+ls -la dist/mcp/mcp/
 ```
 
 ### Permission denied on bin/bmad-chat

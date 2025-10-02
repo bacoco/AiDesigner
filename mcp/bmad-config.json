@@ -2,7 +2,7 @@
   "mcpServers": {
     "bmad-invisible": {
       "command": "node",
-      "args": ["dist/mcp/server.js"]
+      "args": ["dist/mcp/mcp/server.js"]
     }
   }
 }
