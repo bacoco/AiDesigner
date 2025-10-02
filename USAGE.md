@@ -163,7 +163,7 @@ npm run build
 npm run mcp
 
 # Or with custom path
-node dist/mcp/server.js
+node dist/mcp/mcp/server.js
 ```
 
 ### Using in IDEs
@@ -172,6 +172,16 @@ The MCP config at `.claude/mcp-config.json` works with:
 
 - Claude Code (CLI and Desktop)
 - Any MCP-compatible IDE
+
+### Codex CLI Defaults
+
+When you include Codex CLI during installation, the wizard now also prepares your global configuration:
+
+- Creates `~/.codex/config.toml` if it is missing.
+- Adds the `bmad_invisible` MCP server pointing to `npx bmad-invisible mcp`.
+- Sets default Codex preferences (`GPT-5-Codex`, medium reasoning, automatic approvals) without overwriting existing overrides.
+
+This step is skipped automatically in non-interactive environments. See [`codex-config.toml.example`](./codex-config.toml.example) for the full TOML structure you can tailor afterwards.
 
 ## Troubleshooting
 
@@ -188,8 +198,8 @@ The MCP config at `.claude/mcp-config.json` works with:
 # Rebuild
 npm run build:mcp
 
-# Check dist/mcp/server.js exists
-ls -la dist/mcp/
+# Check the compiled entrypoint exists
+ls -la dist/mcp/mcp/
 ```
 
 ### Permission denied on bin/bmad-chat

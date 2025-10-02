@@ -487,7 +487,7 @@ Both produce the same `docs/` structure, so you can switch between them!
 npm run build:mcp
 
 # Verify it exists
-ls -la dist/mcp/server.js
+ls -la dist/mcp/mcp/server.js
 ```
 
 ### "Command not found: claude"
