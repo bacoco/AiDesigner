@@ -13,19 +13,26 @@ BMAD-Invisible provides a **natural conversational interface** that guides you t
 ```bash
 # Navigate to your project directory (or create a new one)
 mkdir my-project && cd my-project
-
-# Run this ONE command - it does everything!
-npx bmad-invisible@latest start
 ```
 
-Done! This automatically:
+Pick the assistant CLI you want and run the matching command:
+
+```bash
+# Claude Code CLI flow - one command does everything
+npx bmad-invisible@latest start
+
+# Codex CLI flow - same experience via Codex CLI
+npx bmad-invisible-codex@latest start
+```
+
+Done! Either command automatically:
 
 - Creates `package.json` if needed
 - Sets up project structure
 - Installs all dependencies
 - Launches the chat interface
 
-> **💡 Tip**: Always use `@latest` to avoid npx cache issues!
+> **💡 Tip**: Always use `@latest` to avoid npx cache issues on either flow!
 
 ### Option 1b: NPX Step-by-Step
 
@@ -39,8 +46,11 @@ npx bmad-invisible@latest init
 # Install dependencies
 npm install
 
-# Start chatting!
+# Start chatting with Claude CLI
 npm run bmad:chat
+
+# ...or chat via Codex CLI
+npm run bmad:codex
 ```
 
 ### Option 2: Global Installation
@@ -53,7 +63,8 @@ npm install -g bmad-invisible
 cd your-project
 bmad-invisible init
 bmad-invisible build
-bmad-invisible chat
+bmad-invisible chat             # Claude CLI flow
+bmad-invisible-codex chat       # Codex CLI flow
 ```
 
 ### Option 3: Local Development
@@ -69,13 +80,18 @@ npm install
 # Build the MCP server
 npm run build:mcp
 
-# Start conversation
+# Start conversation (Claude CLI)
 npm run chat
+
+# ...or Codex CLI flow
+npm run codex
 ```
 
 ## Prerequisites
 
-You need **Claude Code CLI** installed (uses your Claude Pro subscription):
+You need one of the supported conversational CLIs installed:
+
+### Claude Code CLI
 
 ```bash
 # Check if installed
@@ -85,6 +101,15 @@ claude --version
 # https://claude.ai/code
 ```
 
+### Codex CLI
+
+```bash
+# Check if installed
+codex --version
+
+# If not installed, follow the setup instructions in your Codex workspace
+```
+
 ## Usage
 
 ### Quick Commands
@@ -92,13 +117,16 @@ claude --version
 ```bash
 npx bmad-invisible init        # Initialize in project
 npx bmad-invisible build       # Build MCP server
-npx bmad-invisible chat        # Start conversation
+npx bmad-invisible chat        # Start conversation (Claude CLI)
+npx bmad-invisible-codex chat  # Start conversation (Codex CLI)
 npx bmad-invisible test        # Run tests
 npx bmad-invisible validate    # Validate config
 npx bmad-invisible help        # Show all commands
 ```
 
 ### Example Session
+
+Start the CLI you prefer (`npm run chat` for Claude, `npm run codex` for Codex) and you'll see an experience like this:
 
 ```
 🎯 Starting BMAD Invisible Orchestrator...
