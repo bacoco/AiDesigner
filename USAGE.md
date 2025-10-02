@@ -183,6 +183,13 @@ When you include Codex CLI during installation, the wizard now also prepares you
 
 This step is skipped automatically in non-interactive environments. See [`codex-config.toml.example`](./codex-config.toml.example) for the full TOML structure you can tailor afterwards.
 
+### Invisible Story Context Packets
+
+- When the orchestrator transitions into development or QA, it now assembles a just-in-time story packet inspired by V6’s `story-context` command.
+- Persona reminders, acceptance criteria, definition of done, and testing notes are pulled from the active story file (or from `context.story` if you provide metadata programmatically).
+- Additional enrichers can be registered at runtime via `bmadBridge.registerContextEnricher(fn)` if you need to inject architecture updates or custom quality gates.
+- See [`docs/STORY_CONTEXT.md`](docs/STORY_CONTEXT.md) for a deep dive into the enrichment flow and how to extend it.
+
 ## Troubleshooting
 
 ### Claude CLI not found

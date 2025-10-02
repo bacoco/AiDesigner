@@ -155,7 +155,7 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 
 ### Features Worth Cherry-Picking (Without Full Migration)
 
-- [ ] JIT context injection concept (adapt to invisible orchestrator)
+- [x] JIT context injection concept (adapt to invisible orchestrator)
 - [ ] Fresh context validation pattern (different models for dev/review)
 - [ ] Hash file checking (prevent customization overwrites)
 - [ ] Scale-adaptive workflow logic (integrate into phase detector)
