@@ -1,0 +1,41 @@
+# Prototype module manifest generated during V6 compatibility spike
+name: phaser-2d-game
+version: 0.1.0
+source-pack: bmad-2d-phaser-game-dev
+summary: Phaser 3 2D game development workflows packaged as a V6-style module
+maintainers:
+  - name: BMAD-Invisible Team
+    contact: team@bmad.dev
+content:
+  agents:
+    - agents/game-designer.md
+    - agents/game-sm.md
+    - agents/game-developer.md
+  teams:
+    - teams/phaser-2d-nodejs-game-team.yaml
+  workflows:
+    tasks:
+      - workflows/tasks/create-game-story.md
+      - workflows/tasks/advanced-elicitation.md
+      - workflows/tasks/game-design-brainstorming.md
+  templates:
+    - templates/game-brief-tmpl.yaml
+    - templates/game-design-doc-tmpl.yaml
+    - templates/game-architecture-tmpl.yaml
+    - templates/game-story-tmpl.yaml
+    - templates/level-design-doc-tmpl.yaml
+  assets:
+    data:
+      - assets/data/bmad-kb.md
+      - assets/data/development-guidelines.md
+compatibility:
+  minimum-core-version: 1.13.0
+  workflows:
+    - type: phaser-2d-game-dev
+      phases:
+        - planning
+        - development
+notes:
+  - This manifest maintains one-to-one mapping with the legacy expansion pack folders.
+  - Task markdown files remain unchanged and are referenced through the workflows.tasks list.
+  - Data assets are surfaced explicitly so downstream tooling can bundle them with the module.

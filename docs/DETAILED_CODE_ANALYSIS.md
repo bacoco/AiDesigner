@@ -4,6 +4,11 @@
 
 BMAD-Invisible implements an "invisible" multi-agent agile orchestrator that exposes a conversational workflow through the Model Context Protocol (MCP). The codebase primarily targets execution in the OpenAI Codex CLI runtime, bridging BMAD-METHOD™ tooling with dynamic lane selection to balance speed and thoroughness. The core runtime lives under `src/mcp-server`, while supporting orchestration, planning, and deliverable generation utilities reside in the `lib/` and `hooks/` directories.
 
+- **Related Documentation**
+  - [Dual-Lane Orchestration Guide](DUAL_LANE_ORCHESTRATION.md)
+  - [Invisible Orchestrator README](INVISIBLE_ORCHESTRATOR_README.md)
+  - [Core Architecture Overview](core-architecture.md)
+
 ## Runtime Entry Point (`src/mcp-server/codex-server.ts`)
 
 The `codex-server.ts` script boots the orchestrator MCP server. Key responsibilities include:
@@ -77,7 +82,6 @@ flowchart TD
 4. **Plan execution** – Selected lanes drive BMAD phases via `BMADBridge` and `QuickLane`, with deliverables captured through `DeliverableGenerator`.
 5. **Approval enforcement** – Before executing sensitive operations, `ensureOperationAllowed()` validates against configured allowlists/approvals, possibly prompting the operator.
 6. **Result delivery** – Generated artifacts and lane decisions surface back through MCP responses and persisted documentation, maintaining BMAD’s invisible yet auditable workflow.
-
 
 ## Observed Strengths
 
