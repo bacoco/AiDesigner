@@ -138,20 +138,22 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 ### Good Reasons to Migrate
 
 - [ ] V6 reaches beta or stable release
+
 - [ ] Scale-adaptive workflows (0-4) align with invisible orchestration
 - [x] Modular plugin system benefits our expansion strategy
 - [ ] JIT context injection improves invisible agent performance
+
 - [ ] Web bundles become production-ready
 - [ ] Community adoption makes it the standard
 
 ### Prerequisites Before Migration
 
 - [ ] V6 stability confirmed (beta/stable release)
-- [ ] Migration path tested for custom features
+- [ ] Migration path tested for custom features _(POC blockers logged; see `docs/v6-migration/poc-report.md`)_
 - [ ] Invisible orchestrator compatible with v6 module system
 - [ ] MCP server integration maintained
 - [ ] Codex CLI compatibility verified
-- [ ] Dual-lane orchestration adaptable to v6 workflows
+- [ ] Dual-lane orchestration adaptable to v6 workflows _(lane selector prototype maps quick vs complex phase plans; validate against real V6 runtime when available)_
 
 ### Features Worth Cherry-Picking (Without Full Migration)
 

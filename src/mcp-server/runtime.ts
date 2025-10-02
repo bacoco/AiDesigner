@@ -7,6 +7,135 @@ import {
 import * as path from "node:path";
 import { executeAutoCommand } from "../../lib/auto-commands.js";
 
+type TargetedSection = {
+  title: string;
+  body: string;
+  priority?: string | number;
+};
+
+function stringifyValue(value: unknown): string {
+  if (value == null) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => `- ${stringifyValue(item)}`)
+      .join("\n");
+  }
+
+  if (typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .map(([key, val]) => `- ${key}: ${stringifyValue(val)}`)
+      .join("\n");
+  }
+
+  return JSON.stringify(value, null, 2);
+}
+
+function buildDeveloperContextSections(projectState: any): TargetedSection[] {
+  if (!projectState) {
+    return [];
+  }
+
+  const sections: TargetedSection[] = [];
+  const state = typeof projectState.getState === "function" ? projectState.getState() : {};
+
+  const story =
+    typeof projectState.getDeliverable === "function"
+      ? projectState.getDeliverable("sm", "story")
+      : null;
+
+  if (story?.content) {
+    sections.push({
+      title: "Current Story Overview",
+      body: typeof story.content === "string" ? story.content : stringifyValue(story.content),
+      priority: "high",
+    });
+  }
+
+  if (state?.requirements && Object.keys(state.requirements).length > 0) {
+    sections.push({
+      title: "Key Requirements Snapshot",
+      body: stringifyValue(state.requirements),
+      priority: "high",
+    });
+  }
+
+  if (state?.decisions && Object.keys(state.decisions).length > 0) {
+    sections.push({
+      title: "Relevant Decisions",
+      body: stringifyValue(
+        Object.fromEntries(
+          Object.entries(state.decisions).map(([key, entry]: [string, any]) => [
+            key,
+            entry?.value ?? entry,
+          ])
+        )
+      ),
+      priority: "medium",
+    });
+  }
+
+  if (state?.nextSteps) {
+    sections.push({
+      title: "Next Steps from SM",
+      body: stringifyValue(state.nextSteps),
+      priority: "medium",
+    });
+  }
+
+  const recentConversation =
+    typeof projectState.getConversation === "function"
+      ? projectState.getConversation(5)
+      : [];
+
+  if (Array.isArray(recentConversation) && recentConversation.length > 0) {
+    const conversationBody = recentConversation
+      .map((msg: any) => {
+        const role = msg?.role ?? "unknown";
+        const phase = msg?.phase ? ` [${msg.phase}]` : "";
+        const content = msg?.content ?? "";
+        return `- ${role}${phase}: ${content}`;
+      })
+      .join("\n");
+
+    sections.push({
+      title: "Recent Conversation Signals",
+      body: conversationBody,
+      priority: "low",
+    });
+  }
+
+  return sections;
+}
+
+function createDeveloperContextInjector(projectState: any) {
+  return async function developerContextInjector({ agentId }: { agentId: string }) {
+    if (agentId !== "dev") {
+      return null;
+    }
+
+    const sections = buildDeveloperContextSections(projectState);
+
+    if (!sections.length) {
+      return null;
+    }
+
+    return {
+      sections,
+    };
+  };
+}
+
 export type LaneKey = "default" | "quick" | "complex" | string;
 
 export interface OrchestratorServerOptions {
@@ -76,6 +205,7 @@ export async function runOrchestratorServer(
   let brownfieldAnalyzer: any;
   let quickLane: any;
   const laneDecisions: LaneDecisionRecord[] = [];
+  let developerContextInjectorRegistered = false;
 
   async function loadDependencies() {
     const libPath = path.join(__dirname, "..", "..", "lib");
@@ -117,6 +247,11 @@ export async function runOrchestratorServer(
       const llmClient = await createLLMClient("default");
       bmadBridge = new BMADBridge({ llmClient });
       await bmadBridge.initialize();
+
+      if (!developerContextInjectorRegistered) {
+        bmadBridge.registerContextInjector(createDeveloperContextInjector(projectState));
+        developerContextInjectorRegistered = true;
+      }
     }
 
     if (!deliverableGen) {
