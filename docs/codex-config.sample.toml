@@ -1,0 +1,18 @@
+[cli]
+auto_approve_tools = false
+default_model = "anthropic.claude-3.7-sonnet"
+require_manual_approval = true
+
+[mcp]
+auto_approve = false
+require_manual_approval = true
+
+[[mcp.servers]]
+args = ["bmad-invisible", "mcp"]
+autoApprove = false
+autoStart = true
+command = "npx"
+description = "BMAD Invisible MCP server for orchestrating BMAD agents."
+displayName = "BMAD Invisible MCP"
+name = "bmad-mcp"
+transport = "stdio"
