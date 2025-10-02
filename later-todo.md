@@ -137,7 +137,8 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 
 ### Good Reasons to Migrate
 
-- [ ] V6 reaches beta or stable release
+
+- [x] V6 reaches beta or stable release
 
 - [ ] Scale-adaptive workflows (0-4) align with invisible orchestration
 - [x] Modular plugin system benefits our expansion strategy
