@@ -7,6 +7,7 @@ const cjson = require('comment-json');
 const fileManager = require('./file-manager');
 const configLoader = require('./config-loader');
 const { extractYamlFromAgent } = require('../../lib/yaml-utils');
+const { ensureCodexConfig } = require('../../../lib/codex/config-manager');
 const BaseIdeSetup = require('./ide-base-setup');
 const resourceLocator = require('./resource-locator');
 
@@ -94,6 +95,41 @@ class IdeSetup extends BaseIdeSetup {
         console.log(chalk.yellow(`\nIDE ${ide} not yet supported`));
         return false;
       }
+    }
+  }
+
+  async configureCodexCli(options = {}) {
+    const explicitFlag =
+      typeof options?.nonInteractive === 'boolean' ? options.nonInteractive : null;
+
+    // Determine if we're in a non-interactive environment
+    const isNonInteractive =
+      process.env.CI === 'true' ||
+      process.env.BMAD_NON_INTERACTIVE === '1' ||
+      (process.stdout && !process.stdout.isTTY) ||
+      (process.stdin && !process.stdin.isTTY);
+
+    const skip = explicitFlag ?? isNonInteractive;
+
+    if (skip) {
+      console.log(
+        chalk.yellow('⚠︎ Skipping Codex CLI global config (non-interactive environment).'),
+      );
+      return;
+    }
+
+    try {
+      const result = await ensureCodexConfig();
+
+      if (result.changed) {
+        console.log(chalk.green(`✓ Provisioned Codex CLI defaults at ${result.configPath}`));
+      } else {
+        console.log(chalk.dim(`Codex CLI config already up to date at ${result.configPath}`));
+      }
+    } catch (error) {
+      console.log(
+        chalk.yellow(`⚠︎ Could not configure Codex CLI defaults automatically: ${error.message}`),
+      );
     }
   }
 
@@ -839,6 +875,8 @@ class IdeSetup extends BaseIdeSetup {
       ),
     );
 
+    await this.configureCodexCli(options);
+
     // Optionally add helpful npm scripts if a package.json exists
     try {
       const pkgPath = path.join(installDir, 'package.json');
@@ -897,6 +935,36 @@ class IdeSetup extends BaseIdeSetup {
       }
     } catch {
       console.log(chalk.yellow('⚠︎ Could not update .gitignore (skipping)'));
+    }
+
+    const skipConfig = options?.skipGlobalConfig === true;
+    const nonInteractive =
+      process.env.CI === 'true' ||
+      process.env.BMAD_NON_INTERACTIVE === '1' ||
+      (process.stdout && !process.stdout.isTTY) ||
+      (process.stdin && !process.stdin.isTTY);
+
+    if (!skipConfig) {
+      if (nonInteractive) {
+        console.log(
+          chalk.yellow('⚠︎ Skipping Codex CLI global config update (non-interactive environment)'),
+        );
+      } else {
+        try {
+          const { configPath, changed } = await ensureCodexConfig({ nonInteractive: false });
+          if (changed) {
+            console.log(chalk.green('✓ Prepared Codex CLI global config with BMAD defaults'));
+          } else {
+            console.log(chalk.dim('Codex CLI global config already contained BMAD defaults'));
+          }
+          console.log(chalk.dim(`  File: ${configPath}`));
+        } catch (error) {
+          console.log(
+            chalk.yellow('⚠︎ Could not update Codex CLI global config automatically'),
+            error.message,
+          );
+        }
+      }
     }
 
     return true;

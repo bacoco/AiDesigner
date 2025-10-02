@@ -252,6 +252,32 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
     - Tasks with quick usage notes
   - If a `package.json` exists, helpful scripts are added:
     - `bmad:refresh`, `bmad:list`, `bmad:validate`
+  - Global Codex CLI defaults are merged into `~/.codex/config.toml` (skipped automatically in CI/non-interactive runs).
+    - Ensures BMAD's MCP server is registered and tool approvals remain manual by default.
+    - Resulting snippet:
+
+      ```toml
+      [cli]
+      auto_approve_tools = false
+      default_model = "anthropic.claude-3.7-sonnet"
+      require_manual_approval = true
+
+      [mcp]
+      auto_approve = false
+      require_manual_approval = true
+
+      [[mcp.servers]]
+      args = ["bmad-invisible", "mcp"]
+      autoApprove = false
+      autoStart = true
+      command = "npx"
+      description = "BMAD Invisible MCP server for orchestrating BMAD agents."
+      displayName = "BMAD Invisible MCP"
+      name = "bmad-mcp"
+      transport = "stdio"
+      ```
+
+    - A copy of this config lives in `docs/codex-config.sample.toml` for reference.
 
 - Using Codex:
   - CLI: run `codex` in the project root and prompt naturally, e.g., “As dev, implement …”.
