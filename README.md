@@ -37,7 +37,7 @@ The orchestrator automatically selects the appropriate lane based on task comple
 
 - Node.js ≥ 20.0.0
 - npm ≥ 9.0.0
-- **Claude Code CLI** (uses your Claude Pro subscription - no API keys needed!)
+- **OpenAI Codex CLI** (connects BMAD orchestrator to your local Codex workspace)
 
 ### Installation
 
@@ -45,14 +45,14 @@ The orchestrator automatically selects the appropriate lane based on task comple
 
 ```bash
 # Just run this - it does everything!
-npx bmad-invisible@latest start
+npx bmad-invisible-codex@latest start
 ```
 
 That's it! This single command will:
 
 - Create project structure
 - Install all dependencies
-- Launch the chat interface
+- Launch the Codex-powered chat interface
 
 > **💡 Tip**: Always use `@latest` to ensure you get the newest version!
 
@@ -65,8 +65,8 @@ npx bmad-invisible@latest init
 # Install dependencies
 npm install
 
-# Start chatting!
-npm run bmad:chat
+# Start chatting through Codex
+npm run codex
 ```
 
 #### Option 2: Global Installation
@@ -80,7 +80,7 @@ bmad-invisible init
 
 # Build and chat
 bmad-invisible build
-bmad-invisible chat
+bmad-invisible codex
 ```
 
 #### Option 3: Local Development
@@ -97,10 +97,10 @@ npm install
 npm run build:mcp
 
 # Start conversational interface
-npm run chat
+npm run codex
 ```
 
-> **Note**: This uses the Model Context Protocol (MCP) with Claude Code CLI. No API costs - it leverages your existing Claude Pro subscription!
+> **Note**: This uses the Model Context Protocol (MCP) with OpenAI Codex CLI so you can work locally without managing API keys.
 
 ## 📖 How It Works
 
@@ -135,7 +135,7 @@ Assistant: "Here's the technical approach..."
 ### Example 1: Simple App Project
 
 ````bash
-$ npm run chat
+$ npm run codex
 
 🎯 Starting BMAD Invisible Orchestrator...
 📡 MCP Server: bmad-invisible-orchestrator
@@ -395,8 +395,8 @@ BMAD-invisible v1.2 is a complete, working system that combines:
 ✅ **Complex lane** - complete BMAD workflow (10-15 min)
 ✅ **Deliverable generation** - PRD, architecture, stories
 ✅ **State persistence** - resume anytime
-✅ **CLI interface** - `npm run chat`
-✅ **Zero API costs** - uses Claude Pro subscription
+✅ **CLI interface** - `npm run codex`
+✅ **Zero API costs** - powered by local OpenAI Codex CLI session
 
 ## 🏗️ Architecture
 
@@ -444,7 +444,7 @@ All phases execute invisibly based on conversation context.
 ### MCP-Powered Design
 
 ```
-User → Claude CLI → MCP Server → BMAD Agents → Deliverables
+User → Codex CLI → MCP Server → BMAD Agents → Deliverables
                      ↓
               Project State
               Phase Detection
@@ -458,7 +458,7 @@ User → Claude CLI → MCP Server → BMAD Agents → Deliverables
 - **BMAD Bridge** (`lib/bmad-bridge.js`) - Integration with BMAD agents
 - **Deliverable Generator** (`lib/deliverable-generator.js`) - Creates docs automatically
 
-**No API Costs** - Uses your Claude Pro subscription via Claude Code CLI!
+**No API Costs** - Runs entirely through your local Codex CLI session!
 
 ## 🔧 Development Setup
 
@@ -492,7 +492,7 @@ npm run mcp
 ### What Works Now
 
 ✅ MCP-based orchestration with 10 tools
-✅ Claude CLI integration (no API costs)
+✅ Codex CLI integration (no API costs)
 ✅ Natural conversation interface
 ✅ Phase detection and transitions
 ✅ Deliverable generation (PRD, architecture, stories)
@@ -504,7 +504,7 @@ npm run mcp
 
 ```bash
 # Start conversation
-npm run chat
+npm run codex
 
 # Natural conversation
 > I want to add user authentication

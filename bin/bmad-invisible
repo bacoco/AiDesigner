@@ -28,9 +28,10 @@ Usage:
   npx bmad-invisible@latest <command> [options]
 
 Commands:
-  start                🚀 ONE-COMMAND SETUP: init + install + chat (recommended!)
+  start                🚀 ONE-COMMAND SETUP: init + install + codex (recommended!)
   init                 Initialize BMAD-invisible in current project
-  chat                 Start conversational interface (requires Claude CLI)
+  codex                Start conversational interface (requires Codex CLI)
+  chat                 Start conversational interface with Claude CLI (legacy)
   install              Install BMAD-invisible globally
   build                Build MCP server
   test                 Run test suite
@@ -40,7 +41,7 @@ Commands:
 Examples:
   npx bmad-invisible@latest start      # 🚀 Do everything in one command!
   npx bmad-invisible@latest init       # Setup in current project
-  npm run bmad:chat                    # Start conversation (after install)
+  npm run codex                        # Start conversation (after install)
 
 💡 Tip: Always use @latest to get the newest version:
    npx bmad-invisible@latest start
@@ -76,9 +77,9 @@ const commands = {
       });
     });
 
-    // Start chat
-    console.log('\n🎯 Starting BMAD Invisible Orchestrator...\n');
-    await commands.chat();
+    // Start Codex session
+    console.log('\n🎯 Starting BMAD Invisible Orchestrator with Codex...\n');
+    await commands.codex();
   },
 
   init: async () => {
@@ -145,6 +146,8 @@ const commands = {
     packageJson.scripts = packageJson.scripts || {};
 
     const scriptsToAdd = {
+      codex: 'bmad-invisible codex',
+      'bmad:codex': 'bmad-invisible codex',
       'bmad:chat': 'bmad-invisible chat',
       'bmad:build': 'bmad-invisible build',
     };
@@ -178,15 +181,37 @@ Next steps:
   1. Install dependencies:
      npm install
 
-  2. Install Claude Code CLI if not already installed:
-     npm install -g @anthropic-ai/claude-code
+  2. Install Codex CLI if not already installed:
+     https://platform.openai.com/docs/guides/codex
 
   3. Start chatting:
-     npm run bmad:chat
+     npm run codex
 
 For detailed documentation, visit:
   https://github.com/bacoco/BMAD-invisible
 `);
+  },
+
+  codex: async () => {
+    const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
+    const codexScript = fs.existsSync(localInstall)
+      ? path.join(localInstall, 'bin', 'bmad-codex')
+      : path.join(__dirname, 'bmad-codex');
+
+    if (!fs.existsSync(codexScript)) {
+      console.error('❌ BMAD-invisible not found. Please run "npm install" first.');
+      console.error('   Or initialize with: npx bmad-invisible init && npm install');
+      process.exit(1);
+    }
+
+    const child = spawn('node', [codexScript, ...args], {
+      stdio: 'inherit',
+      cwd: process.cwd(),
+    });
+
+    child.on('exit', (code) => {
+      process.exit(code || 0);
+    });
   },
 
   chat: async () => {

@@ -22,7 +22,8 @@
   "author": "Loic Bacoco",
   "main": "tools/cli.js",
   "bin": {
-    "bmad-invisible": "bin/bmad-invisible"
+    "bmad-invisible": "bin/bmad-invisible",
+    "bmad-invisible-codex": "bin/bmad-codex"
   },
   "scripts": {
     "build": "node tools/cli.js build",
@@ -30,6 +31,7 @@
     "build:mcp": "tsc -p mcp/tsconfig.json",
     "build:teams": "node tools/cli.js build --teams-only",
     "chat": "node bin/bmad-chat",
+    "codex": "node bin/bmad-codex",
     "fix": "npm run format && npm run lint:fix",
     "flatten": "node tools/flattener/main.js",
     "format": "prettier --write \"**/*.{js,cjs,mjs,json,md,yaml}\"",

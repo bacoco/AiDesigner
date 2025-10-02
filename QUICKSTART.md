@@ -15,7 +15,7 @@ BMAD-Invisible provides a **natural conversational interface** that guides you t
 mkdir my-project && cd my-project
 
 # Run this ONE command - it does everything!
-npx bmad-invisible@latest start
+npx bmad-invisible-codex@latest start
 ```
 
 Done! This automatically:
@@ -23,7 +23,7 @@ Done! This automatically:
 - Creates `package.json` if needed
 - Sets up project structure
 - Installs all dependencies
-- Launches the chat interface
+- Launches the Codex-powered chat interface
 
 > **💡 Tip**: Always use `@latest` to avoid npx cache issues!
 
@@ -39,8 +39,8 @@ npx bmad-invisible@latest init
 # Install dependencies
 npm install
 
-# Start chatting!
-npm run bmad:chat
+# Start chatting through Codex
+npm run codex
 ```
 
 ### Option 2: Global Installation
@@ -53,7 +53,7 @@ npm install -g bmad-invisible
 cd your-project
 bmad-invisible init
 bmad-invisible build
-bmad-invisible chat
+bmad-invisible codex
 ```
 
 ### Option 3: Local Development
@@ -70,19 +70,19 @@ npm install
 npm run build:mcp
 
 # Start conversation
-npm run chat
+npm run codex
 ```
 
 ## Prerequisites
 
-You need **Claude Code CLI** installed (uses your Claude Pro subscription):
+You need **OpenAI Codex CLI** installed:
 
 ```bash
 # Check if installed
-claude --version
+codex --version
 
 # If not installed, get it from:
-# https://claude.ai/code
+# https://platform.openai.com/docs/guides/codex
 ```
 
 ## Usage
@@ -92,7 +92,8 @@ claude --version
 ```bash
 npx bmad-invisible init        # Initialize in project
 npx bmad-invisible build       # Build MCP server
-npx bmad-invisible chat        # Start conversation
+npx bmad-invisible-codex start # One-command Codex launch
+npm run codex                  # Start conversation after install
 npx bmad-invisible test        # Run tests
 npx bmad-invisible validate    # Validate config
 npx bmad-invisible help        # Show all commands
