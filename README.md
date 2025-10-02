@@ -45,29 +45,18 @@ The orchestrator automatically selects the appropriate lane based on task comple
 
 #### Option 1: NPX One-Command Setup (Easiest!)
 
-Pick the assistant CLI you want to work with and run the matching command:
-
-**Claude Code CLI Flow**
-
 ```bash
 # Just run this - it does everything!
-npx bmad-invisible-codex@latest start
+npx bmad-invisible@latest start
 ```
 
-**Codex CLI Flow**
-
-```bash
-# Same experience, powered by Codex CLI
-npx bmad-invisible-codex@latest start
-```
-
-That's it! Each command will:
+That's it! This command will:
 
 - Create project structure
 - Install all dependencies
 - Launch the Codex-powered chat interface
 
-> **💡 Tip**: Always use `@latest` to ensure you get the newest version of either flow!
+> **💡 Tip**: Always use `@latest` to ensure you get the newest version!
 
 #### Option 1b: NPX Step-by-Step
 

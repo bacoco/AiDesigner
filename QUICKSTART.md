@@ -19,7 +19,7 @@ Pick the assistant CLI you want and run the matching command:
 
 # Run this ONE command - it does everything!
 
-npx bmad-invisible-codex@latest start
+npx bmad-invisible@latest start
 ```
 
 Done! Either command automatically:
@@ -110,15 +110,14 @@ codex --version
 ### Quick Commands
 
 ```bash
-npx bmad-invisible init        # Initialize in project
-npx bmad-invisible build       # Build MCP server
+npx bmad-invisible@latest start # 🚀 One-command setup and launch!
+npx bmad-invisible init         # Initialize in project
+npx bmad-invisible build        # Build MCP server
+npm run codex                   # Start conversation after install
 
-npx bmad-invisible-codex start # One-command Codex launch
-npm run codex                  # Start conversation after install
-
-npx bmad-invisible test        # Run tests
-npx bmad-invisible validate    # Validate config
-npx bmad-invisible help        # Show all commands
+npx bmad-invisible test         # Run tests
+npx bmad-invisible validate     # Validate config
+npx bmad-invisible help         # Show all commands
 ```
 
 ### Example Session
