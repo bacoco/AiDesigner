@@ -7,13 +7,9 @@ const cjson = require('comment-json');
 const fileManager = require('./file-manager');
 const configLoader = require('./config-loader');
 const { extractYamlFromAgent } = require('../../lib/yaml-utils');
-const {
-  ensureCodexConfig,
-  isNonInteractiveEnvironment,
-} = require('../../../lib/codex/config-manager');
+const { ensureCodexConfig } = require('../../../lib/codex/config-manager');
 const BaseIdeSetup = require('./ide-base-setup');
 const resourceLocator = require('./resource-locator');
-const { ensureCodexConfig } = require('../../../lib/codex/config-manager');
 
 class IdeSetup extends BaseIdeSetup {
   constructor() {
@@ -105,7 +101,15 @@ class IdeSetup extends BaseIdeSetup {
   async configureCodexCli(options = {}) {
     const explicitFlag =
       typeof options?.nonInteractive === 'boolean' ? options.nonInteractive : null;
-    const skip = explicitFlag ?? isNonInteractiveEnvironment();
+
+    // Determine if we're in a non-interactive environment
+    const isNonInteractive =
+      process.env.CI === 'true' ||
+      process.env.BMAD_NON_INTERACTIVE === '1' ||
+      (process.stdout && !process.stdout.isTTY) ||
+      (process.stdin && !process.stdin.isTTY);
+
+    const skip = explicitFlag ?? isNonInteractive;
 
     if (skip) {
       console.log(
@@ -117,15 +121,7 @@ class IdeSetup extends BaseIdeSetup {
     try {
       const result = await ensureCodexConfig();
 
-      if (result.parseError && result.backupPath) {
-        console.log(
-          chalk.yellow(
-            `⚠︎ Existing Codex CLI config was invalid and was backed up to ${result.backupPath}. Regenerating defaults.`,
-          ),
-        );
-      }
-
-      if (result.updated) {
+      if (result.changed) {
         console.log(chalk.green(`✓ Provisioned Codex CLI defaults at ${result.configPath}`));
       } else {
         console.log(chalk.dim(`Codex CLI config already up to date at ${result.configPath}`));
