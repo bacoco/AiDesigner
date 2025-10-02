@@ -151,7 +151,7 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 - [ ] Invisible orchestrator compatible with v6 module system
 - [ ] MCP server integration maintained
 - [ ] Codex CLI compatibility verified
-- [ ] Dual-lane orchestration adaptable to v6 workflows
+- [ ] Dual-lane orchestration adaptable to v6 workflows _(lane selector prototype maps quick vs complex phase plans; validate against real V6 runtime when available)_
 
 ### Features Worth Cherry-Picking (Without Full Migration)
 
