@@ -9,6 +9,7 @@ const configLoader = require('./config-loader');
 const { extractYamlFromAgent } = require('../../lib/yaml-utils');
 const BaseIdeSetup = require('./ide-base-setup');
 const resourceLocator = require('./resource-locator');
+const { ensureCodexConfig } = require('../../../lib/codex/config-manager');
 
 class IdeSetup extends BaseIdeSetup {
   constructor() {
@@ -897,6 +898,35 @@ class IdeSetup extends BaseIdeSetup {
       }
     } catch {
       console.log(chalk.yellow('⚠︎ Could not update .gitignore (skipping)'));
+    }
+
+    const skipConfig = options?.skipGlobalConfig === true;
+    const nonInteractive =
+      process.env.CI === 'true' ||
+      process.env.BMAD_NON_INTERACTIVE === '1' ||
+      (process.stdout && !process.stdout.isTTY);
+
+    if (!skipConfig) {
+      if (nonInteractive) {
+        console.log(
+          chalk.yellow('⚠︎ Skipping Codex CLI global config update (non-interactive environment)'),
+        );
+      } else {
+        try {
+          const { configPath, changed } = await ensureCodexConfig({ nonInteractive: false });
+          if (changed) {
+            console.log(chalk.green('✓ Prepared Codex CLI global config with BMAD defaults'));
+          } else {
+            console.log(chalk.dim('Codex CLI global config already contained BMAD defaults'));
+          }
+          console.log(chalk.dim(`  File: ${configPath}`));
+        } catch (error) {
+          console.log(
+            chalk.yellow('⚠︎ Could not update Codex CLI global config automatically'),
+            error.message,
+          );
+        }
+      }
     }
 
     return true;
