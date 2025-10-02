@@ -7,6 +7,10 @@ const cjson = require('comment-json');
 const fileManager = require('./file-manager');
 const configLoader = require('./config-loader');
 const { extractYamlFromAgent } = require('../../lib/yaml-utils');
+const {
+  ensureCodexConfig,
+  isNonInteractiveEnvironment,
+} = require('../../../lib/codex/config-manager');
 const BaseIdeSetup = require('./ide-base-setup');
 const resourceLocator = require('./resource-locator');
 
@@ -94,6 +98,41 @@ class IdeSetup extends BaseIdeSetup {
         console.log(chalk.yellow(`\nIDE ${ide} not yet supported`));
         return false;
       }
+    }
+  }
+
+  async configureCodexCli(options = {}) {
+    const explicitFlag =
+      typeof options?.nonInteractive === 'boolean' ? options.nonInteractive : null;
+    const skip = explicitFlag ?? isNonInteractiveEnvironment();
+
+    if (skip) {
+      console.log(
+        chalk.yellow('⚠︎ Skipping Codex CLI global config (non-interactive environment).'),
+      );
+      return;
+    }
+
+    try {
+      const result = await ensureCodexConfig();
+
+      if (result.parseError && result.backupPath) {
+        console.log(
+          chalk.yellow(
+            `⚠︎ Existing Codex CLI config was invalid and was backed up to ${result.backupPath}. Regenerating defaults.`,
+          ),
+        );
+      }
+
+      if (result.updated) {
+        console.log(chalk.green(`✓ Provisioned Codex CLI defaults at ${result.configPath}`));
+      } else {
+        console.log(chalk.dim(`Codex CLI config already up to date at ${result.configPath}`));
+      }
+    } catch (error) {
+      console.log(
+        chalk.yellow(`⚠︎ Could not configure Codex CLI defaults automatically: ${error.message}`),
+      );
     }
   }
 
@@ -838,6 +877,8 @@ class IdeSetup extends BaseIdeSetup {
         'Codex reads AGENTS.md automatically. Run `codex` in this project to use BMAD agents.',
       ),
     );
+
+    await this.configureCodexCli(options);
 
     // Optionally add helpful npm scripts if a package.json exists
     try {

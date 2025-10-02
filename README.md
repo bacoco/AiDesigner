@@ -122,6 +122,16 @@ npm run codex
 
 > **Note**: Both flows use the Model Context Protocol (MCP) with your chosen CLI. Claude Code CLI leverages your existing Claude Pro subscription, while Codex CLI uses your Codex workspace access.
 
+#### Codex CLI Integration
+
+Interactive installs now auto-provision Codex CLI so you can run `codex` immediately after setup:
+
+- Generates/updates `AGENTS.md` with BMAD agent context for Codex memory.
+- Ensures `~/.codex/config.toml` exists with the `bmad_invisible` MCP server entry.
+- Applies sensible defaults (`GPT-5-Codex` model, medium reasoning, automatic approvals) unless you have overrides.
+
+Non-interactive environments (like CI) skip the global config step, but you can review and customize the defaults via [`codex-config.toml.example`](./codex-config.toml.example).
+
 ## 📖 How It Works
 
 ### The Invisible Flow
