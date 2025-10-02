@@ -29,6 +29,11 @@ const DEFAULT_SERVER = {
   autoApprove: false,
 };
 
+/**
+ * Strips inline comments from a TOML line while preserving # characters inside strings.
+ * @param line - The TOML line to process
+ * @returns The line with comments removed
+ */
 function stripInlineComments(line: string): string {
   let result = '';
   let inString = false;
@@ -70,6 +75,11 @@ function stripInlineComments(line: string): string {
   return result;
 }
 
+/**
+ * Parses a TOML string value, handling escape sequences.
+ * @param value - The quoted string to parse
+ * @returns The unescaped string value
+ */
 function parseString(value: string): string {
   const quote = value[0];
   let result = '';
@@ -236,7 +246,7 @@ function parseToml(content: string): TomlTable {
 
       if (isArray) {
         const parentSegments = segments.slice(0, -1);
-        const key = segments[segments.length - 1];
+        const key = segments.at(-1)!;
         const parent = ensureObjectPath(root, parentSegments);
         if (!Array.isArray(parent[key])) {
           parent[key] = [];
@@ -269,7 +279,7 @@ function parseToml(content: string): TomlTable {
       .filter(Boolean);
     const target =
       keyParts.length > 1 ? ensureObjectPath(currentTable, keyParts.slice(0, -1)) : currentTable;
-    const key = keyParts[keyParts.length - 1];
+    const key = keyParts.at(-1)!;
     target[key] = parseValue(valueSegment);
   }
 
@@ -318,7 +328,7 @@ function writeTable(
   keys.sort((a, b) => a.localeCompare(b));
 
   if (!skipHeader && pathSegments.length > 0) {
-    if (lines.length > 0 && lines[lines.length - 1] !== '') {
+    if (lines.length > 0 && lines.at(-1) !== '') {
       lines.push('');
     }
     lines.push(`[${pathSegments.join('.')}]`);
@@ -416,6 +426,13 @@ function normaliseCliConfig(cli: TomlTable | undefined): TomlTable {
   return next;
 }
 
+/**
+ * Merges the BMAD MCP server into the existing servers list.
+ * Preserves user customizations by only adding missing keys from defaults.
+ * Case-insensitive server name matching.
+ * @param existingServers - The existing servers array from config
+ * @returns Object containing merged servers array and whether changes were made
+ */
 function mergeServers(existingServers: any): { servers: TomlTable[]; changed: boolean } {
   const servers = Array.isArray(existingServers) ? [...existingServers] : [];
   const materialised: TomlTable[] = servers.filter((server): server is TomlTable =>
