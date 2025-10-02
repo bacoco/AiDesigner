@@ -138,7 +138,7 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 ### Good Reasons to Migrate
 
 - [ ] V6 reaches beta or stable release
-- [ ] Scale-adaptive workflows (0-4) align with invisible orchestration
+- [x] Scale-adaptive workflows (0-4) align with invisible orchestration (see `docs/v6-level-alignment-note.md`)
 - [ ] Modular plugin system benefits our expansion strategy
 - [ ] JIT context injection improves invisible agent performance
 - [ ] Web bundles become production-ready
