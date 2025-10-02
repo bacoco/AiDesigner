@@ -42,6 +42,16 @@ These components supply the modular building blocks the MCP runtime wires togeth
 
 ## Workflow Highlights
 
+```mermaid
+flowchart TD
+    A[codex-server bootstrap] --> B{Lane selector decision}
+    B -->|Quick lane| C[Quick lane execution]
+    B -->|Complex lane| D[Complex lane execution]
+    C --> E[Deliverable generation]
+    D --> E
+    E --> F[MCP response]
+```
+
 1. **Server start** – `codex-server.ts` assembles configuration, constructs a `CodexClient`, and invokes `runOrchestratorServer()`.
 2. **Dependency bootstrap** – `runOrchestratorServer()` lazily loads libraries, initializes project state, and prepares lane-specific LLM clients.
 3. **Task routing** – When a tool request arrives, the runtime consults `LaneSelector` to choose between complex or quick lanes, recording rationale for traceability.
