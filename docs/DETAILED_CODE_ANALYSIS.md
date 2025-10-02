@@ -42,12 +42,29 @@ These components supply the modular building blocks the MCP runtime wires togeth
 
 ## Workflow Highlights
 
-1. **Server start** – `codex-server.ts` assembles configuration, constructs a `CodexClient`, and invokes `runOrchestratorServer()`.
-2. **Dependency bootstrap** – `runOrchestratorServer()` lazily loads libraries, initializes project state, and prepares lane-specific LLM clients.
-3. **Task routing** – When a tool request arrives, the runtime consults `LaneSelector` to choose between complex or quick lanes, recording rationale for traceability.
-4. **Plan execution** – Selected lanes drive BMAD phases via `BMADBridge` and `QuickLane`, with deliverables captured through `DeliverableGenerator`.
-5. **Approval enforcement** – Before executing sensitive operations, `ensureOperationAllowed()` validates against configured allowlists/approvals, possibly prompting the operator.
-6. **Result delivery** – Generated artifacts and lane decisions surface back through MCP responses and persisted documentation, maintaining BMAD’s invisible yet auditable workflow.
+### Server Start
+
+`codex-server.ts` assembles configuration, constructs a `CodexClient`, and invokes `runOrchestratorServer()`.
+
+### Dependency Bootstrap
+
+`runOrchestratorServer()` lazily loads libraries, initializes project state, and prepares lane-specific LLM clients.
+
+### Task Routing
+
+When a tool request arrives, the runtime consults `LaneSelector` to choose between complex or quick lanes, recording rationale for traceability.
+
+### Plan Execution
+
+Selected lanes drive BMAD phases via `BMADBridge` and `QuickLane`, with deliverables captured through `DeliverableGenerator`.
+
+### Approval Enforcement
+
+Before executing sensitive operations, `ensureOperationAllowed()` validates against configured allowlists/approvals, possibly prompting the operator.
+
+### Result Delivery
+
+Generated artifacts and lane decisions surface back through MCP responses and persisted documentation, maintaining BMAD’s invisible yet auditable workflow.
 
 ## Observed Strengths
 
@@ -69,3 +86,7 @@ These components supply the modular building blocks the MCP runtime wires togeth
 - Add integration tests exercising quick versus complex lane flows using mocked `LLMClient` instances.
 - Extend approval handling with per-operation policies that include rate limits or escalation paths.
 - Document the responsibilities of `lib/` modules in dedicated docs to aid contributors onboarding into the invisible orchestrator architecture.
+
+---
+
+**Last Updated:** October 2025
