@@ -256,6 +256,20 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
 - Using Codex:
   - CLI: run `codex` in the project root and prompt naturally, e.g., “As dev, implement …”.
   - Web: commit `.bmad-core/` and `AGENTS.md`, then open the repo in Codex and prompt the same way.
+  - CLI + MCP server:
+    1. Build the Codex bundle with `npm run build:mcp` (this emits `dist/codex/server.js`).
+    2. Copy `codex-config.toml.example` to a location Codex can read (for example `~/.codex/bmad.toml`) and customise model routing / approval preferences.
+    3. Register the server in `~/.codex/config.toml` by adding an entry such as:
+       ```toml
+       [[mcp.servers]]
+       id = "bmad"
+       name = "BMAD Invisible Orchestrator"
+       command = "npx"
+       args = ["bmad-invisible-codex"]
+       cwd = "/path/to/your/project"
+       env.CODEX_CONFIG = "/path/to/bmad.toml"
+       ```
+       The `bmad-invisible-codex` binary launches the MCP transport on stdio and reads the TOML config to map models, approvals, and conversation state bridging for Codex CLI.
 
 - Refresh after changes:
   - Re-run the appropriate install mode (`codex` or `codex-web`) to update the BMAD block in `AGENTS.md`.

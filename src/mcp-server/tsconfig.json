@@ -4,10 +4,10 @@
     "module": "Node16",
     "moduleResolution": "node16",
     "declaration": true,
-    "outDir": "../dist/mcp",
+    "outDir": "../../dist/codex",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["server.ts", "runtime.ts"]
+  "include": ["codex-server.ts", "server.ts"]
 }

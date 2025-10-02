@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+const { spawn } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const codexServer = path.join(__dirname, '..', 'dist', 'codex', 'server.js');
+const fallback = path.join(__dirname, '..', 'dist', 'codex', 'codex-server.js');
+const entry = fs.existsSync(codexServer) ? codexServer : fallback;
+
+if (!fs.existsSync(entry)) {
+  console.error('Codex MCP bundle not found. Run "npm run build:mcp" first.');
+  process.exit(1);
+}
+
+const child = spawn('node', [entry], {
+  stdio: 'inherit',
+  env: process.env,
+});
+
+child.on('exit', (code) => {
+  process.exit(code ?? 0);
+});

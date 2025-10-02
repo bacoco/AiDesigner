@@ -1,0 +1,43 @@
+# Example configuration for the BMAD Codex MCP server
+# Copy this file to codex-config.toml (either in your project root or ~/.codex/config.toml)
+# and adjust the values to match your workspace.
+
+[codex]
+# Optional display name surfaced inside Codex CLI when listing MCP servers
+name = "bmad-invisible-codex"
+
+[models]
+# Provider accepted by BMAD's LLM client (claude|openai|gpt|gemini|google)
+provider = "openai"
+# Default model routed to BMAD agents when no override is provided
+default = "gpt-4o-mini"
+
+[models.overrides]
+# Override individual tool invocations
+execute_workflow = "gpt-4.1"
+generate_deliverable = "gpt-4.1-mini"
+
+[models.phases]
+# Optional phase-based routing
+analyst = "gpt-4.1-mini"
+architect = "gpt-4.1-mini"
+dev = "gpt-4o"
+
+[approvals]
+# auto   -> never prompt for approval unless explicitly listed under `require`
+# prompt -> require confirmation for tools not listed in `auto`
+# require -> require confirmation for every tool unless listed in `auto`
+default = "prompt"
+require = ["execute_workflow", "transition_phase"]
+auto = ["get_project_context", "get_project_summary"]
+message = "Approval required. Re-run with __codex.approved = true to continue."
+
+[state]
+# Path passed to BMAD project-state management (relative paths resolved from the current working directory)
+projectRoot = "."
+# When true, Codex conversation snippets sent through __codex.conversation[] will be stored in BMAD state
+conversationSync = true
+conversationLimit = 25
+conversationTag = "codex"
+# Persist the latest tool response into conversation history (turn off for extremely large responses)
+persistAssistantResponses = true
