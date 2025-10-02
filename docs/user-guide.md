@@ -93,6 +93,15 @@ QA Assessments   → docs/qa/assessments/
 QA Gates         → docs/qa/gates/
 ```
 
+#### Targeted Epic Specs (Next-Incomplete Focus)
+
+- Run the Architect command `cmd tech-spec` whenever you're ready to advance an epic.
+- The deliverable generator captures only the next incomplete epic and stores:
+  - Structured JSON at `docs/epics/epic-<n>-<slug>.spec.json`
+  - A readable summary at `docs/epics/epic-<n>-<slug>.spec.md`
+- When you trigger `cmd auto-stories`, the Scrum Master lane reads the JSON spec and injects an **Epic Spec Context** section into the new story draft.
+- Re-run the tech spec before starting a different epic to keep the context precise and avoid stale backlog assumptions.
+
 ### The Core Development Cycle (IDE)
 
 Once planning is complete and documents are sharded, BMad follows a structured development workflow:
