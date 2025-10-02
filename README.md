@@ -37,37 +37,26 @@ The orchestrator automatically selects the appropriate lane based on task comple
 
 - Node.js ≥ 20.0.0
 - npm ≥ 9.0.0
-- Choose your assistant CLI:
-  - **Claude Code CLI** (uses your Claude Pro subscription - no API keys needed!)
-  - **Codex CLI** (uses OpenAI's Codex workspace experience)
+
+- **OpenAI Codex CLI** (connects BMAD orchestrator to your local Codex workspace)
+
 
 ### Installation
 
 #### Option 1: NPX One-Command Setup (Easiest!)
-
-Pick the assistant CLI you want to work with and run the matching command:
-
-**Claude Code CLI Flow**
 
 ```bash
 # Just run this - it does everything!
 npx bmad-invisible@latest start
 ```
 
-**Codex CLI Flow**
-
-```bash
-# Same experience, powered by Codex CLI
-npx bmad-invisible-codex@latest start
-```
-
-That's it! Each command will:
+That's it! This command will:
 
 - Create project structure
 - Install all dependencies
-- Launch the chat interface
+- Launch the Codex-powered chat interface
 
-> **💡 Tip**: Always use `@latest` to ensure you get the newest version of either flow!
+> **💡 Tip**: Always use `@latest` to ensure you get the newest version!
 
 #### Option 1b: NPX Step-by-Step
 
@@ -78,11 +67,10 @@ npx bmad-invisible@latest init
 # Install dependencies
 npm install
 
-# Start chatting with Claude CLI
-npm run bmad:chat
 
-# ...or chat via Codex CLI
-npm run bmad:codex
+# Start chatting through Codex
+npm run codex
+
 ```
 
 #### Option 2: Global Installation
@@ -96,8 +84,9 @@ bmad-invisible init
 
 # Build and chat
 bmad-invisible build
-bmad-invisible chat             # Claude CLI flow
-bmad-invisible-codex chat       # Codex CLI flow
+
+bmad-invisible codex
+
 ```
 
 #### Option 3: Local Development
@@ -113,14 +102,13 @@ npm install
 # Build the MCP server
 npm run build:mcp
 
-# Start conversational interface (Claude CLI)
-npm run chat
 
-# ...or Codex CLI flow
+# Start conversational interface
 npm run codex
 ```
 
-> **Note**: Both flows use the Model Context Protocol (MCP) with your chosen CLI. Claude Code CLI leverages your existing Claude Pro subscription, while Codex CLI uses your Codex workspace access.
+> **Note**: This uses the Model Context Protocol (MCP) with OpenAI Codex CLI so you can work locally without managing API keys.
+
 
 #### Codex CLI Integration
 
@@ -167,7 +155,7 @@ Run whichever CLI you prefer (`npm run chat` for Claude, `npm run codex` for Cod
 ### Example 1: Simple App Project
 
 ````bash
-$ npm run chat
+$ npm run codex
 
 🎯 Starting BMAD Invisible Orchestrator...
 📡 MCP Server: bmad-invisible-orchestrator
@@ -427,8 +415,8 @@ BMAD-invisible v1.2 is a complete, working system that combines:
 ✅ **Complex lane** - complete BMAD workflow (10-15 min)
 ✅ **Deliverable generation** - PRD, architecture, stories
 ✅ **State persistence** - resume anytime
-✅ **CLI interface** - `npm run chat`
-✅ **Zero API costs** - uses Claude Pro subscription
+✅ **CLI interface** - `npm run codex`
+✅ **Zero API costs** - powered by local OpenAI Codex CLI session
 
 ## 🏗️ Architecture
 
@@ -479,7 +467,7 @@ All phases execute invisibly based on conversation context.
 ### MCP-Powered Design
 
 ```
-User → Claude CLI → MCP Server → BMAD Agents → Deliverables
+User → Codex CLI → MCP Server → BMAD Agents → Deliverables
                      ↓
               Project State
               Phase Detection
@@ -493,7 +481,7 @@ User → Claude CLI → MCP Server → BMAD Agents → Deliverables
 - **BMAD Bridge** (`lib/bmad-bridge.js`) - Integration with BMAD agents
 - **Deliverable Generator** (`lib/deliverable-generator.js`) - Creates docs automatically
 
-**No API Costs** - Uses your Claude Pro subscription via Claude Code CLI!
+**No API Costs** - Runs entirely through your local Codex CLI session!
 
 ## 🔧 Development Setup
 
@@ -549,7 +537,7 @@ Refer to [`codex-config.toml.example`](codex-config.toml.example) for a ready-to
 ### What Works Now
 
 ✅ MCP-based orchestration with 10 tools
-✅ Claude CLI integration (no API costs)
+✅ Codex CLI integration (no API costs)
 ✅ Natural conversation interface
 ✅ Phase detection and transitions
 ✅ Deliverable generation (PRD, architecture, stories)
@@ -561,7 +549,7 @@ Refer to [`codex-config.toml.example`](codex-config.toml.example) for a ready-to
 
 ```bash
 # Start conversation
-npm run chat
+npm run codex
 
 # Natural conversation
 > I want to add user authentication

@@ -17,12 +17,9 @@ mkdir my-project && cd my-project
 
 Pick the assistant CLI you want and run the matching command:
 
-```bash
-# Claude Code CLI flow - one command does everything
-npx bmad-invisible@latest start
+# Run this ONE command - it does everything!
 
-# Codex CLI flow - same experience via Codex CLI
-npx bmad-invisible-codex@latest start
+npx bmad-invisible@latest start
 ```
 
 Done! Either command automatically:
@@ -30,7 +27,7 @@ Done! Either command automatically:
 - Creates `package.json` if needed
 - Sets up project structure
 - Installs all dependencies
-- Launches the chat interface
+- Launches the Codex-powered chat interface
 
 > **💡 Tip**: Always use `@latest` to avoid npx cache issues on either flow!
 
@@ -46,11 +43,10 @@ npx bmad-invisible@latest init
 # Install dependencies
 npm install
 
-# Start chatting with Claude CLI
-npm run bmad:chat
 
-# ...or chat via Codex CLI
-npm run bmad:codex
+# Start chatting through Codex
+npm run codex
+
 ```
 
 ### Option 2: Global Installation
@@ -63,8 +59,9 @@ npm install -g bmad-invisible
 cd your-project
 bmad-invisible init
 bmad-invisible build
-bmad-invisible chat             # Claude CLI flow
-bmad-invisible-codex chat       # Codex CLI flow
+
+bmad-invisible codex
+
 ```
 
 ### Option 3: Local Development
@@ -80,25 +77,23 @@ npm install
 # Build the MCP server
 npm run build:mcp
 
-# Start conversation (Claude CLI)
-npm run chat
 
-# ...or Codex CLI flow
+# Start conversation
+
 npm run codex
 ```
 
 ## Prerequisites
 
-You need one of the supported conversational CLIs installed:
+You need **OpenAI Codex CLI** installed:
 
-### Claude Code CLI
 
 ```bash
 # Check if installed
-claude --version
+codex --version
 
 # If not installed, get it from:
-# https://claude.ai/code
+# https://platform.openai.com/docs/guides/codex
 ```
 
 ### Codex CLI
@@ -115,13 +110,14 @@ codex --version
 ### Quick Commands
 
 ```bash
-npx bmad-invisible init        # Initialize in project
-npx bmad-invisible build       # Build MCP server
-npx bmad-invisible chat        # Start conversation (Claude CLI)
-npx bmad-invisible-codex chat  # Start conversation (Codex CLI)
-npx bmad-invisible test        # Run tests
-npx bmad-invisible validate    # Validate config
-npx bmad-invisible help        # Show all commands
+npx bmad-invisible@latest start # 🚀 One-command setup and launch!
+npx bmad-invisible init         # Initialize in project
+npx bmad-invisible build        # Build MCP server
+npm run codex                   # Start conversation after install
+
+npx bmad-invisible test         # Run tests
+npx bmad-invisible validate     # Validate config
+npx bmad-invisible help         # Show all commands
 ```
 
 ### Example Session

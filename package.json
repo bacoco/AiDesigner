@@ -24,10 +24,8 @@
   "bin": {
     "bmad-invisible": "bin/bmad-invisible",
 
-    
-    "bmad-invisible-codex": "dist/codex/codex-server.js"
+    "bmad-invisible-codex": "bin/bmad-codex"
 
-    
   },
   "scripts": {
     "bmad:codex": "bmad-invisible-codex chat",
