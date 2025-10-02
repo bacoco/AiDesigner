@@ -117,6 +117,17 @@ export async function runOrchestratorServer(
       const llmClient = await createLLMClient("default");
       bmadBridge = new BMADBridge({ llmClient });
       await bmadBridge.initialize();
+
+      const environmentInfo =
+        typeof bmadBridge.getEnvironmentInfo === "function"
+          ? bmadBridge.getEnvironmentInfo()
+          : null;
+
+      if (environmentInfo?.mode === "v6-modules") {
+        log(
+          `[MCP] Detected BMAD v6 module layout at ${environmentInfo.modulesRoot || environmentInfo.root} (${environmentInfo.catalog?.moduleCount ?? 0} modules)`
+        );
+      }
     }
 
     if (!deliverableGen) {
