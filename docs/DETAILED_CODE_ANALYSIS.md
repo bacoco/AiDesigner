@@ -61,6 +61,10 @@ These components supply the modular building blocks the MCP runtime wires togeth
 - **Model override validation** – Additional schema validation for environment overrides could prevent misconfiguration when an operator supplies an unknown lane alias.
 - **Error propagation** – The runtime often logs parsing failures but returns generic fallbacks; assessing whether richer error propagation to clients would aid debugging.
 - **Testing coverage** – Consider adding automated tests (unit/integration) for lane selection and approval flows to prevent regressions as new lanes or hooks are introduced.
+  - Lane selection edge cases – Expand scenarios already exercised in `test/lane-selector.test.js` to include ambiguous prompts, conflicting overrides, and fallback lanes.
+  - Approval guardrails – Introduce focused suites that validate `ensureOperationAllowed()` decisions, complementing the dependency checks in `test/phase-transition.safety.test.js`.
+  - Integration with mocked LLM clients – Build on the environment/credential handling in `test/llm-client.test.js` to simulate multi-lane client wiring and approval callbacks.
+  - Error propagation checks – Ensure orchestrator failures surface descriptive messages similar to the assertions in `test/llm-client.test.js`, covering tool execution and deliverable generation paths.
 - **Observability** – Metrics or structured logs for lane decision confidence and tool invocation outcomes could enhance production monitoring.
 
 ## Recommendations for Future Work
