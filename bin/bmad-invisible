@@ -147,7 +147,7 @@ const commands = {
         mcpServers: {
           'bmad-invisible-orchestrator': {
             command: 'node',
-            args: ['${workspaceFolder}/node_modules/bmad-invisible/dist/mcp/server.js'],
+            args: ['${workspaceFolder}/node_modules/bmad-invisible/dist/mcp/mcp/server.js'],
             disabled: false,
           },
         },

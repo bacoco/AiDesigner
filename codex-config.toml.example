@@ -1,0 +1,15 @@
+# Example ~/.codex/config.toml entry for BMAD Invisible Codex bridge
+[[mcp]]
+id = "bmad-invisible-codex"
+command = "npx"
+args = ["bmad-invisible-codex"]
+autostart = true
+
+  [mcp.env]
+  # Enable guarded write operations. Set to "false" to disable approval flow.
+  CODEX_APPROVAL_MODE = "true"
+  # Allow the orchestrator to generate PRDs and run the quick lane without prompting.
+  CODEX_APPROVED_OPERATIONS = "generate_deliverable:prd,execute_quick_lane"
+  # Example model routing overrides (optional)
+  CODEX_QUICK_MODEL = "gpt-4.1-mini"
+  CODEX_COMPLEX_MODEL = "claude-3-5-sonnet-20241022"
