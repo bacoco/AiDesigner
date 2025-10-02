@@ -2,18 +2,50 @@
 // Safely transition between invisible phases based on conversation
 // Notes: replaces fragile patterns (double exports, 'this' binding issues) in early drafts.  [oai_citation:2‡phase_transition_hooks.js](file-service://file-JrapDFzkdDxUqv5pq36LZf)
 
-let triggerAgent = async () => { throw new Error('triggerAgent not bound'); };
-let triggerCommand = async () => { throw new Error('triggerCommand not bound'); };
-let updateProjectState = async () => { throw new Error('updateProjectState not bound'); };
-let saveDeliverable = async () => { /* no-op default */ };
-let loadPhaseContext = async () => ({});
+const unboundTriggerAgent = async () => {
+  throw new Error('triggerAgent not bound');
+};
+const unboundTriggerCommand = async () => {
+  throw new Error('triggerCommand not bound');
+};
+const unboundUpdateProjectState = async () => {
+  throw new Error('updateProjectState not bound');
+};
+const unboundSaveDeliverable = async () => {
+  throw new Error('saveDeliverable not bound');
+};
+const unboundLoadPhaseContext = async () => {
+  throw new Error('loadPhaseContext not bound');
+};
+
+let triggerAgent = unboundTriggerAgent;
+let triggerCommand = unboundTriggerCommand;
+let updateProjectState = unboundUpdateProjectState;
+let saveDeliverable = unboundSaveDeliverable;
+let loadPhaseContext = unboundLoadPhaseContext;
 
 function bindDependencies(deps = {}) {
+  const missing = [];
+
+  if (deps.saveDeliverable) {
+    saveDeliverable = deps.saveDeliverable;
+  } else if (saveDeliverable === unboundSaveDeliverable) {
+    missing.push('saveDeliverable');
+  }
+
+  if (deps.loadPhaseContext) {
+    loadPhaseContext = deps.loadPhaseContext;
+  } else if (loadPhaseContext === unboundLoadPhaseContext) {
+    missing.push('loadPhaseContext');
+  }
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required dependencies for phase transition: ${missing.join(', ')}`);
+  }
+
   if (deps.triggerAgent) triggerAgent = deps.triggerAgent;
   if (deps.triggerCommand) triggerCommand = deps.triggerCommand;
   if (deps.updateProjectState) updateProjectState = deps.updateProjectState;
-  if (deps.saveDeliverable) saveDeliverable = deps.saveDeliverable;
-  if (deps.loadPhaseContext) loadPhaseContext = deps.loadPhaseContext;
 }
 
 async function getTransitionMessage(phase) {
@@ -25,7 +57,7 @@ async function getTransitionMessage(phase) {
     dev: 'Time to focus on implementation details…',
     qa: 'Let me help you test and validate this…',
     ux: "Let's make sure this works well for users…",
-    po: "Let's do a final review and plan next steps…"
+    po: "Let's do a final review and plan next steps…",
   };
   return messages[phase] || 'Continuing with your project…';
 }
@@ -39,7 +71,7 @@ async function savePhaseDeliverables(phase, context) {
     dev: ['implementation_notes', 'code_guidelines'],
     qa: ['test_results', 'quality_metrics'],
     ux: ['ux_feedback', 'design_improvements'],
-    po: ['final_review', 'launch_plan']
+    po: ['final_review', 'launch_plan'],
   };
   for (const k of map[phase] || []) {
     if (context?.[k]) await saveDeliverable(k, context[k]);
@@ -59,13 +91,13 @@ async function executeTransition(fromPhase, toPhase, context) {
     currentPhase: toPhase,
     previousPhase: fromPhase,
     transitionTime: new Date().toISOString(),
-    context: newContext
+    context: newContext,
   });
   return {
     newPhase: toPhase,
     context: newContext,
     workflowResult,
-    message: await getTransitionMessage(toPhase)
+    message: await getTransitionMessage(toPhase),
   };
 }
 
@@ -73,7 +105,7 @@ async function checkTransition(conversationContext, userMessage, currentPhase) {
   const detected = await triggerAgent('phase-detector', {
     context: conversationContext,
     userMessage,
-    currentPhase
+    currentPhase,
   });
   // Expect JSON shape guaranteed by the detector prompt.  [oai_citation:3‡phase_detector_agent.md](file-service://file-PCqsBDyx6LqYNBC2Dit6x1)
   if (!detected || !detected.detected_phase) return null;
@@ -83,4 +115,3 @@ async function checkTransition(conversationContext, userMessage, currentPhase) {
 }
 
 module.exports = { bindDependencies, checkTransition, executeTransition };
-
