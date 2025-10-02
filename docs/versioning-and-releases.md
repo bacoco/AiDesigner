@@ -153,3 +153,9 @@ If your local files don't match the published version after a release:
 - Verify NPM tokens are configured
 - Ensure branch protection allows workflow pushes
 ````
+
+## 🧪 V6 Stability Evaluation (April 2024)
+
+- Attempted to clone `bmad-upstream/v6-alpha`, but the repository URL is unavailable in the current environment, so no dependencies could be installed.
+- Because the codebase is inaccessible, V6 build and test pipelines could not be executed and workflow reliability could not be evaluated.
+- BMAD-Invisible migration prerequisites remain unmet until a valid V6 source is provided for verification.
