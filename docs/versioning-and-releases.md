@@ -107,6 +107,13 @@ You can also trigger releases through GitHub Actions:
 3. Choose version bump type (patch/minor/major)
 4. Everything else happens automatically
 
+## 🔭 Upstream V6 Monitoring
+
+We track the upstream `bmad-upstream/v6-alpha` branch for signals that BMAD V6 has moved beyond its alpha phase. Key milestones:
+
+- **2025-08-14 — First beta tag.** The upstream repository published [`v6.0.0-beta.1`](https://github.com/bmadcode/BMAD-METHOD/releases/tag/v6.0.0-beta.1), marking the first beta cut of the V6 line. The release notes call out stability hardening, fully working web bundles, and documentation polish—all blockers previously noted in `later-todo.md`.
+- **Impact on BMAD-invisible.** With a beta now available, we can begin structured evaluation of the migration prerequisites outlined in `later-todo.md`, rather than blocking on alpha instability.
+
 ## 📈 Version Strategy
 
 - **Patch** (5.1.0 → 5.1.1): Bug fixes, minor improvements
