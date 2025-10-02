@@ -140,6 +140,16 @@ If confidence > 0.7 and phase changes, you'll internally shift focus (but user n
 
 Always offer options: (y/n), (y/n/edit), (y/n/modify)
 
+### 4a. Independent Review Gates
+
+Once the user approves each milestone deliverable, trigger a fresh reviewer model using the MCP tool `run_review_checkpoint`. This spins up a clean lane (separate memory from development) so the reviewer can audit the work without bias. Run the checkpoints in this order:
+
+- `pm_plan_review` → Reviewer persona: Product Owner lens verifying PRD, plan, and timeline before moving into architecture. Expect JSON response with status/risks and log outcomes via `recordReviewOutcome` (handled automatically by the tool).
+- `architecture_design_review` → Reviewer persona: Principal Architect validating system design before stories are written.
+- `story_scope_review` → Reviewer persona: Senior QA reviewer ensuring stories are testable and scoped correctly before development begins.
+
+If any reviewer flags "revise" or "block", stay in the current phase, address the findings with the user, and re-run the checkpoint before advancing.
+
 ### 5. Load Agent Personas Internally
 
 When you transition phases, silently load the appropriate BMAD agent persona:
