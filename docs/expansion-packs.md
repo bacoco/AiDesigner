@@ -1,3 +1,35 @@
+# Expansion Pack Module Migration Notes
+
+## V6 Module System Overview
+
+- V6 consolidates the legacy `bmad-core/` tree into a `src/core/` and `src/modules/` layout and introduces a modular plugin system built around BMM, BMB, and CIS domains.【F:later-todo.md†L16-L24】【F:later-todo.md†L110-L112】
+- Each module is intended to encapsulate its sub-agents and shared dependencies so they can be installed together through a single package surface.【F:later-todo.md†L16-L24】
+
+## Current Expansion Pack Structure
+
+- Expansion packs such as the Phaser 2D game dev pack ship as standalone folders with peer directories for agents, agent teams, tasks, templates, and data assets.【ae52bc†L1-L9】【34e834†L1-L1】【1818c6†L1-L2】
+- Configuration metadata (for example `config.yaml`) lives at the root of each expansion pack and describes naming, versioning, and author metadata separate from any manifest system.【F:expansion-packs/bmad-2d-phaser-game-dev/config.yaml†L1-L9】
+
+## Mapping Expansion Assets to Modules
+
+- Agent definitions can move directly under a module-scoped `agents/` folder without modifications because each entry is already self-contained markdown used during orchestration.【75bc8b†L1-L3】
+- Agent team compositions naturally map to a module-level `teams/` folder so they can be bundled alongside the agents they assemble.【6d6470†L1-L1】
+- Workflow task markdown documents translate to a nested `workflows/tasks/` hierarchy that mirrors V6’s emphasis on workflow phases while keeping task content unchanged.【3d002c†L1-L3】【F:later-todo.md†L73-L101】
+- Templates and reference data can be surfaced through dedicated `templates/` and `assets/data/` folders, making dependencies explicit for any bundler or installer.【34e834†L1-L1】【1818c6†L1-L2】
+
+## Phaser 2D Module Prototype
+
+- The prototype module keeps a manifest (`module.yaml`) that aligns with the existing expansion metadata while enumerating agents, teams, tasks, templates, and assets as module contents.【F:expansion-packs/modules-prototype/phaser-2d-game/module.yaml†L1-L39】
+- Supporting directories follow the proposed V6-style layout and simply copy the original markdown files without modification, demonstrating that migration can occur without rewriting content.【F:expansion-packs/modules-prototype/phaser-2d-game/README.md†L1-L11】
+
+## Evaluation
+
+- Enumerating assets in `module.yaml` exposes the full dependency surface to tooling, which is harder to infer when files are only implied by folder naming in the legacy packs.【F:expansion-packs/modules-prototype/phaser-2d-game/module.yaml†L10-L33】
+- The prototype confirms that a direct folder-to-folder migration is possible with minimal friction, suggesting the modular plugin system would benefit our expansion strategy by simplifying packaging and compatibility checks.【F:expansion-packs/modules-prototype/phaser-2d-game/module.yaml†L1-L39】【F:expansion-packs/modules-prototype/phaser-2d-game/README.md†L1-L11】
+- Remaining follow-up work includes automating manifest generation and verifying how module registries will ingest these manifests once V6 stabilizes.【F:expansion-packs/modules-prototype/phaser-2d-game/module.yaml†L35-L39】
+
+---
+
 # The Power of BMad Expansion Packs
 
 ## Overview
