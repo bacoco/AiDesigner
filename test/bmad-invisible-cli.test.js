@@ -1,4 +1,5 @@
 const path = require('node:path');
+const os = require('node:os');
 
 const mockSpawn = jest.fn();
 
@@ -152,5 +153,53 @@ describe('bmad-invisible start assistant selection', () => {
     expect(lastCall[2].env.LLM_PROVIDER).toBe('glm');
     expect(lastCall[2].env.ZHIPUAI_API_KEY).toBe('direct-key');
     expect(process.env.LLM_PROVIDER).toBeUndefined();
+  });
+});
+
+describe('bmad-invisible init npm scripts', () => {
+  let tempDir;
+  let originalCwd;
+  let originalIsTTY;
+
+  beforeEach(() => {
+    originalCwd = process.cwd();
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bmad-init-test-'));
+    process.chdir(tempDir);
+
+    originalIsTTY = process.stdout.isTTY;
+    process.stdout.isTTY = false;
+  });
+
+  afterEach(() => {
+    process.stdout.isTTY = originalIsTTY;
+    process.chdir(originalCwd);
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const readPackageJson = () => {
+    const file = fs.readFileSync(path.join(tempDir, 'package.json'), 'utf8');
+    return JSON.parse(file);
+  };
+
+  test('seeds bmad:opencode script in new projects', async () => {
+    await cli.commands.init();
+
+    const packageJson = readPackageJson();
+    expect(packageJson.scripts['bmad:opencode']).toBe('bmad-invisible opencode');
+  });
+
+  test('does not overwrite an existing bmad:opencode script', async () => {
+    const preexisting = {
+      name: 'fixture',
+      scripts: {
+        'bmad:opencode': 'custom-opencode',
+      },
+    };
+    fs.writeFileSync(path.join(tempDir, 'package.json'), JSON.stringify(preexisting, null, 2));
+
+    await cli.commands.init();
+
+    const packageJson = readPackageJson();
+    expect(packageJson.scripts['bmad:opencode']).toBe('custom-opencode');
   });
 });

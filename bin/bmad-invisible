@@ -1007,6 +1007,7 @@ const commands = {
       codex: 'bmad-invisible codex',
       'bmad:codex': 'bmad-invisible codex',
       'bmad:claude': 'bmad-invisible chat',
+      'bmad:opencode': 'bmad-invisible opencode',
       'bmad:build': 'bmad-invisible build',
     };
 
