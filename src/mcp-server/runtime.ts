@@ -79,7 +79,7 @@ function buildDeveloperContextSections(projectState: any): TargetedSection[] {
       overviewBody.push(structuredStory.description);
     }
 
-    const acceptanceCriteria = Array.isArray(structuredStory.acceptanceCriteria)
+    const acceptanceCriteria: unknown[] = Array.isArray(structuredStory.acceptanceCriteria)
       ? structuredStory.acceptanceCriteria
       : [];
 
@@ -87,7 +87,7 @@ function buildDeveloperContextSections(projectState: any): TargetedSection[] {
       overviewBody.push(
         "",
         "Acceptance Criteria:",
-        ...acceptanceCriteria.map((item) => `- ${item}`)
+        ...acceptanceCriteria.map((item: unknown) => `- ${String(item)}`)
       );
     }
 
