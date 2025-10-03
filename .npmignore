@@ -1,14 +1,11 @@
 # Development files - exclude from npm package to reduce size
 
+# Development directory (all source, tests, tools, config)
+.dev/
+
 # Tests
-test/
 *.test.js
 *.spec.js
-
-# Source files (TypeScript - we publish compiled dist/)
-src/
-lib/
-mcp/
 
 # Development tooling
 .github/
@@ -16,10 +13,6 @@ mcp/
 .vscode/
 .bmad-invisible/
 .claude/
-config/
-
-# Build tools (not needed at runtime)
-tools/
 
 # Development documentation
 docs/development/

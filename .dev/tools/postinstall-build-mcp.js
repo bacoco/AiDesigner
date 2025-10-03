@@ -45,9 +45,10 @@ let hadCompilationErrors = false;
 
 if (tscBin) {
   hadCompilationErrors =
-    !runTsc(tscBin, path.join(rootDir, 'mcp', 'tsconfig.json')) || hadCompilationErrors;
+    !runTsc(tscBin, path.join(rootDir, '.dev', 'mcp', 'tsconfig.json')) || hadCompilationErrors;
   hadCompilationErrors =
-    !runTsc(tscBin, path.join(rootDir, 'config', 'tsconfig.codex.json')) || hadCompilationErrors;
+    !runTsc(tscBin, path.join(rootDir, '.dev', 'config', 'tsconfig.codex.json')) ||
+    hadCompilationErrors;
 
   if (hadCompilationErrors) {
     console.warn('\n⚠️  Some TypeScript compilation issues occurred during postinstall.');
@@ -59,7 +60,7 @@ if (tscBin) {
 
 ensureDir(distMcpDir);
 
-copyDirectory(path.join(rootDir, 'lib'), path.join(distMcpDir, 'lib'));
+copyDirectory(path.join(rootDir, '.dev', 'lib'), path.join(distMcpDir, 'lib'));
 copyDirectory(path.join(rootDir, 'hooks'), path.join(distMcpDir, 'hooks'));
 
 /**

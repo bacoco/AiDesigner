@@ -5,11 +5,11 @@
     "module": "Node16",
     "moduleResolution": "node16",
     "declaration": true,
-    "outDir": "./dist/codex",
-    "rootDir": "./src/mcp-server",
+    "outDir": "../../dist/codex",
+    "rootDir": "../src/mcp-server",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src/mcp-server/**/*.ts"]
+  "include": ["../src/mcp-server/**/*.ts"]
 }

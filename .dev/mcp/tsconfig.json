@@ -4,7 +4,7 @@
     "module": "Node16",
     "moduleResolution": "node16",
     "declaration": true,
-    "outDir": "../dist/mcp",
+    "outDir": "../../dist/mcp",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
