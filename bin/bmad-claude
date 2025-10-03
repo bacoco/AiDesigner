@@ -79,6 +79,11 @@ async function main() {
 
   const claudeBinary = claudeCheck.binaryPath || 'claude';
   const { env: claudeEnv, isGlm } = buildAssistantSpawnEnv();
+  const mergedEnv = { ...process.env, ...claudeEnv };
+
+  if (process.env.BMAD_ASSISTANT_PROVIDER) {
+    mergedEnv.BMAD_ASSISTANT_PROVIDER = process.env.BMAD_ASSISTANT_PROVIDER;
+  }
 
   if (isGlm) {
     console.log('🌐 GLM mode active: routing Claude CLI through configured GLM endpoint.');
@@ -88,7 +93,7 @@ async function main() {
   const claude = spawn(claudeBinary, claudeArgs, {
     stdio: 'inherit',
     shell: false, // Don't use shell to avoid parsing issues with multi-line content
-    env: claudeEnv,
+    env: mergedEnv,
   });
 
   claude.on('error', (error) => {
