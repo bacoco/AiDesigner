@@ -46,7 +46,9 @@ npm install
 
 
 # Start chatting through your preferred CLI
-# (codex, chat, or opencode)
+# Codex: npm run codex
+# Claude: npm run bmad:chat
+# OpenCode: npx bmad-invisible opencode
 npm run codex
 
 ```

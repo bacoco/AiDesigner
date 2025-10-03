@@ -24,7 +24,10 @@ npx bmad-invisible@latest init
 # Install dependencies
 npm install
 
-# Start chatting (codex, chat, or opencode as desired)
+# Start chatting (pick your assistant)
+# Codex: npm run codex
+# Claude: npm run bmad:chat
+# OpenCode: npx bmad-invisible opencode
 npm run bmad:chat
 ```
 
