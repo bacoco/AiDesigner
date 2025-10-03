@@ -1,4 +1,5 @@
 const path = require('node:path');
+const os = require('node:os');
 
 const mockSpawn = jest.fn();
 
@@ -152,5 +153,72 @@ describe('bmad-invisible start assistant selection', () => {
     expect(lastCall[2].env.LLM_PROVIDER).toBe('glm');
     expect(lastCall[2].env.ZHIPUAI_API_KEY).toBe('direct-key');
     expect(process.env.LLM_PROVIDER).toBeUndefined();
+  });
+});
+
+describe('bmad-invisible init dependency management', () => {
+  let tempDir;
+  let originalCwd;
+  let originalIsTTY;
+  const packageVersion = require('../package.json').version;
+
+  const createPackageJson = (content) => {
+    const packagePath = path.join(tempDir, 'package.json');
+    fs.writeFileSync(packagePath, JSON.stringify(content, null, 2) + '\n');
+    return packagePath;
+  };
+
+  beforeEach(() => {
+    originalCwd = process.cwd();
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bmad-init-test-'));
+    process.chdir(tempDir);
+    originalIsTTY = process.stdout.isTTY;
+    process.stdout.isTTY = false;
+  });
+
+  afterEach(() => {
+    process.stdout.isTTY = originalIsTTY;
+    process.chdir(originalCwd);
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  test('adds the current package version as dependency when missing', async () => {
+    createPackageJson({
+      name: 'sample-app',
+      version: '0.0.0',
+      dependencies: {},
+      scripts: {},
+    });
+
+    await cli.commands.init();
+
+    const packagePath = path.join(tempDir, 'package.json');
+    const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+    expect(pkg.dependencies['bmad-invisible']).toBe(`^${packageVersion}`);
+  });
+
+  test('does not rewrite package.json when dependency already matches current version', async () => {
+    const desiredVersion = `^${packageVersion}`;
+    const packagePath = createPackageJson({
+      name: 'sample-app',
+      version: '0.0.0',
+      scripts: {
+        bmad: 'bmad-invisible start',
+        codex: 'bmad-invisible codex',
+        'bmad:codex': 'bmad-invisible codex',
+        'bmad:claude': 'bmad-invisible chat',
+        'bmad:build': 'bmad-invisible build',
+      },
+      dependencies: {
+        'bmad-invisible': desiredVersion,
+      },
+    });
+
+    const originalContent = fs.readFileSync(packagePath, 'utf8');
+
+    await cli.commands.init();
+
+    const postInitContent = fs.readFileSync(packagePath, 'utf8');
+    expect(postInitContent).toBe(originalContent);
   });
 });

@@ -1024,12 +1024,16 @@ const commands = {
     }
 
     // Add bmad-invisible as a dependency
-    const needsInstall = !packageJson.dependencies || !packageJson.dependencies['bmad-invisible'];
-    if (needsInstall) {
+    const desiredDependencyVersion = `^${currentVersion}`;
+    const existingDependencyVersion =
+      packageJson.dependencies && packageJson.dependencies['bmad-invisible'];
+    const needsDependencyUpdate = existingDependencyVersion !== desiredDependencyVersion;
+
+    if (needsDependencyUpdate) {
       packageJson.dependencies = packageJson.dependencies || {};
-      packageJson.dependencies['bmad-invisible'] = '^1.0.0';
+      packageJson.dependencies['bmad-invisible'] = desiredDependencyVersion;
       fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
-      console.log('✅ Added bmad-invisible to dependencies');
+      console.log(`✅ Ensured bmad-invisible@${desiredDependencyVersion} is listed in dependencies`);
     }
 
     // Only create components.json if shadcn MCP server is enabled
