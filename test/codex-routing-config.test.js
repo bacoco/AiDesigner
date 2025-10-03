@@ -2,10 +2,8 @@ const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 
 const NODE_EXEC = process.execPath;
-const TS_NODE_REGISTER = 'ts-node/register';
-const TS_NODE_PROJECT_PATH = path.resolve(__dirname, '../tsconfig.codex.json');
-const CODEX_CONFIG_PATH = path.resolve(__dirname, '../src/mcp-server/codex-config.ts');
-const CODEX_SERVER_PATH = path.resolve(__dirname, '../src/mcp-server/codex-server.ts');
+const CODEX_CONFIG_PATH = path.resolve(__dirname, '../dist/codex/codex-config.js');
+const CODEX_SERVER_PATH = path.resolve(__dirname, '../dist/codex/codex-server.js');
 
 function runLoadModelRoutingConfig(envOverrides = {}) {
   const script = `
@@ -20,16 +18,10 @@ function runLoadModelRoutingConfig(envOverrides = {}) {
     }
   `;
 
-  return spawnSync(NODE_EXEC, ['-r', TS_NODE_REGISTER, '-e', script], {
+  return spawnSync(NODE_EXEC, ['-e', script], {
     env: {
       ...process.env,
       ...envOverrides,
-      TS_NODE_PREFER_TS_EXTS: 'true',
-      TS_NODE_PROJECT: TS_NODE_PROJECT_PATH,
-      TS_NODE_COMPILER_OPTIONS: JSON.stringify({
-        module: 'nodenext',
-        moduleResolution: 'nodenext',
-      }),
       CODEX_DISABLE_AUTORUN: 'true',
     },
     encoding: 'utf8',
@@ -47,16 +39,10 @@ function runCodexClient(envOverrides = {}) {
     console.log(JSON.stringify({ quick, review }));
   `;
 
-  return spawnSync(NODE_EXEC, ['-r', TS_NODE_REGISTER, '-e', script], {
+  return spawnSync(NODE_EXEC, ['-e', script], {
     env: {
       ...process.env,
       ...envOverrides,
-      TS_NODE_PREFER_TS_EXTS: 'true',
-      TS_NODE_PROJECT: TS_NODE_PROJECT_PATH,
-      TS_NODE_COMPILER_OPTIONS: JSON.stringify({
-        module: 'nodenext',
-        moduleResolution: 'nodenext',
-      }),
     },
     encoding: 'utf8',
   });

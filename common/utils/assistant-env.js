@@ -7,8 +7,7 @@
  * Get the configured assistant provider from environment
  * @returns {string} Provider name (normalized to lowercase)
  */
-const getAssistantProvider = () =>
-  (process.env.BMAD_ASSISTANT_PROVIDER || '').trim().toLowerCase();
+const getAssistantProvider = () => (process.env.BMAD_ASSISTANT_PROVIDER || '').trim().toLowerCase();
 
 /**
  * Build spawn environment for assistant CLI with GLM support
@@ -28,39 +27,58 @@ const buildAssistantSpawnEnv = () => {
         return value;
       }
     }
-    return undefined;
+    return;
   };
 
   const env = { ...process.env };
-  const baseUrl = preferEnvValue('BMAD_GLM_BASE_URL', 'GLM_BASE_URL', 'ANTHROPIC_BASE_URL');
-  const authToken = preferEnvValue('BMAD_GLM_AUTH_TOKEN', 'GLM_AUTH_TOKEN', 'ANTHROPIC_AUTH_TOKEN');
-  const apiKey = preferEnvValue('BMAD_GLM_API_KEY', 'GLM_API_KEY', 'ANTHROPIC_API_KEY');
+
+  // Check if any GLM-specific variables are set
+  const hasGlmVars = !!(
+    process.env.BMAD_GLM_BASE_URL ||
+    process.env.GLM_BASE_URL ||
+    process.env.BMAD_GLM_AUTH_TOKEN ||
+    process.env.GLM_AUTH_TOKEN ||
+    process.env.BMAD_GLM_API_KEY ||
+    process.env.GLM_API_KEY
+  );
+
+  // Only use ANTHROPIC_* as fallback if NO GLM-specific variables are set
+  const baseUrl = hasGlmVars
+    ? preferEnvValue('BMAD_GLM_BASE_URL', 'GLM_BASE_URL')
+    : preferEnvValue('BMAD_GLM_BASE_URL', 'GLM_BASE_URL', 'ANTHROPIC_BASE_URL');
+  const authToken = hasGlmVars
+    ? preferEnvValue('BMAD_GLM_AUTH_TOKEN', 'GLM_AUTH_TOKEN')
+    : preferEnvValue('BMAD_GLM_AUTH_TOKEN', 'GLM_AUTH_TOKEN', 'ANTHROPIC_AUTH_TOKEN');
+  const apiKey = hasGlmVars
+    ? preferEnvValue('BMAD_GLM_API_KEY', 'GLM_API_KEY')
+    : preferEnvValue('BMAD_GLM_API_KEY', 'GLM_API_KEY', 'ANTHROPIC_API_KEY');
 
   // Validate that at least one required credential is present
   if (!baseUrl && !apiKey) {
     console.error(
       '❌ GLM mode requires at least one of: BMAD_GLM_BASE_URL, GLM_BASE_URL, BMAD_GLM_API_KEY, or GLM_API_KEY',
     );
+    // eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit -- CLI utility needs to exit on invalid config
     process.exit(1);
   }
 
   // Set Anthropic-compatible environment variables for GLM
-  if (baseUrl !== undefined) {
-    env.ANTHROPIC_BASE_URL = baseUrl;
-  } else {
+  if (baseUrl === undefined) {
     delete env.ANTHROPIC_BASE_URL;
+  } else {
+    env.ANTHROPIC_BASE_URL = baseUrl;
   }
 
-  if (authToken !== undefined) {
-    env.ANTHROPIC_AUTH_TOKEN = authToken;
-  } else {
+  if (authToken === undefined) {
     delete env.ANTHROPIC_AUTH_TOKEN;
+  } else {
+    env.ANTHROPIC_AUTH_TOKEN = authToken;
   }
 
-  if (apiKey !== undefined) {
-    env.ANTHROPIC_API_KEY = apiKey;
-  } else {
+  if (apiKey === undefined) {
     delete env.ANTHROPIC_API_KEY;
+  } else {
+    env.ANTHROPIC_API_KEY = apiKey;
   }
 
   env.LLM_PROVIDER = 'glm';
@@ -68,4 +86,5 @@ const buildAssistantSpawnEnv = () => {
   return { env, isGlm: true };
 };
 
+// eslint-disable-next-line unicorn/prefer-module -- CommonJS module for compatibility with existing tooling
 module.exports = { getAssistantProvider, buildAssistantSpawnEnv };

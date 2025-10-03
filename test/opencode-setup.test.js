@@ -90,7 +90,7 @@ describe('setupOpenCode model defaults', () => {
       expect(parsed.fallbackModels).toContain('Anthropic/CLAUDE-3.5-sonnet');
       expect(parsed.fallbackModels).toContain('custom/model');
       expect(parsed.fallbackModels).toContain('openai/gpt-4o-mini');
-      expect(parsed.fallbackModels).toHaveLength(6); // '', 'Anthropic/CLAUDE...', 'custom/model', '   ', 'openai/gpt-4o-mini'
+      expect(parsed.fallbackModels).toHaveLength(5); // '', 'Anthropic/CLAUDE...', 'custom/model', '   ', 'openai/gpt-4o-mini'
     } finally {
       await fs.remove(projectDir);
     }
