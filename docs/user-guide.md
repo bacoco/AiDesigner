@@ -259,10 +259,16 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
     - Agent Directory (Title, ID, When To Use)
     - Detailed per‑agent sections with source path, when-to-use, activation phrasing, and YAML
     - Tasks with quick usage notes
+  - Optional shadcn UI support drops a `components.json` at the root using the
+    canonical schema (`style`, `tailwind`, `aliases`, `typescript`, etc.) so the
+    `shadcn` CLI can scaffold UI components without re-prompting you for
+    preferences.
   - If a `package.json` exists, helpful scripts are added:
     - `bmad:refresh`, `bmad:list`, `bmad:validate`
   - Global Codex CLI defaults are merged into `~/.codex/config.toml` (skipped automatically in CI/non-interactive runs).
     - Ensures BMAD's MCP server is registered and Codex approvals run in fully automated mode by default.
+    - Registers optional `chrome-devtools` and `shadcn` MCP helpers with
+      `autoStart = false` so you can enable them post-install.
     - Resulting snippet:
 
       ```toml
@@ -284,9 +290,31 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
       displayName = "BMAD Invisible MCP"
       name = "bmad-mcp"
       transport = "stdio"
+
+      [[mcp.servers]]
+      args = ["@modelcontextprotocol/server-chrome-devtools@latest"]
+      autoApprove = false
+      autoStart = false
+      command = "npx"
+      description = "Optional Chrome DevTools recorder MCP server."
+      displayName = "Chrome DevTools MCP"
+      name = "chrome-devtools"
+      transport = "stdio"
+
+      [[mcp.servers]]
+      args = ["@shadcn/ui-cli@latest", "mcp"]
+      autoApprove = false
+      autoStart = false
+      command = "npx"
+      description = "Optional shadcn UI MCP helper."
+      displayName = "shadcn UI MCP"
+      name = "shadcn"
+      transport = "stdio"
       ```
 
     - A copy of this config lives in `docs/codex-config.sample.toml` for reference.
+    - Claude Code uses the JSON equivalent at `.claude/mcp-config.json`; optional
+      servers appear with `"disabled": true` until you flip them on.
 
 - Using Codex:
   - CLI: run `codex` in the project root and prompt naturally, e.g., “As dev, implement …”.

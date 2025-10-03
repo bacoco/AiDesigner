@@ -30,6 +30,11 @@ Done! The command automatically:
 - Installs all dependencies
 - Launches the selected chat interface
 
+If you opt into the bundled shadcn UI helpers, the installer writes
+`components.json` using the official shadcn schema so future component imports
+(`npx shadcn@latest add card`, etc.) know your Tailwind paths and alias
+configuration.
+
 > **💡 Tip**: Always use `@latest` to avoid npx cache issues on either flow!
 
 ### Option 1b: NPX Step-by-Step
@@ -86,6 +91,14 @@ npm run build:mcp
 # Start conversation (prompts for choice)
 npm run bmad
 ```
+
+> **MCP Config Formats**
+>
+> - `.claude/mcp-config.json` powers Claude Code. Optional `chrome-devtools` and
+>   `shadcn` servers are present but disabled until you install them.
+> - `~/.codex/config.toml` powers Codex CLI. The same servers appear as TOML
+>   tables (`[mcp_servers.chrome_devtools]`, `[mcp_servers.shadcn]`) with
+>   `auto_start = false` by default.
 
 ## Prerequisites
 
