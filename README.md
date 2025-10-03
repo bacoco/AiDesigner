@@ -110,7 +110,13 @@ AI: "I can help with that! I'll set up GitHub access.
 You: "ghp_****"
 
 AI: "✓ GitHub integration configured!
-     I can now create issues, manage PRs, and review code."
+     Please restart your chat session for changes to take effect."
+
+[You restart the CLI]
+
+You: "Create an issue for the login bug"
+
+AI: "✓ Created issue #42: 'Fix login authentication error'"
 ```
 
 ```
@@ -121,7 +127,7 @@ AI: "Sure! What database are you using?"
 You: "PostgreSQL at localhost"
 
 AI: "✓ PostgreSQL access configured!
-     I can now query and manage your database."
+     Restart your chat to start using database features."
 ```
 
 **Available integrations** (15+): GitHub, PostgreSQL, Filesystem, Puppeteer, Brave Search, Slack, AWS, and more.

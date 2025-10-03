@@ -2027,6 +2027,8 @@ export async function runOrchestratorServer(
                     serverName: server.name,
                     targetConfig,
                     message: `Successfully installed ${server.name} to ${targetConfig} configuration`,
+                    restartRequired: true,
+                    restartMessage: "Please restart your chat session for the MCP server to be loaded and available.",
                   },
                   null,
                   2
