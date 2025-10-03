@@ -401,37 +401,6 @@ const commands = {
       console.log('✅ Created docs directory');
     }
 
-    // Create shadcn/ui configuration if it doesn't exist
-    const componentsJsonPath = path.join(projectRoot, 'components.json');
-    const shadcnConfig = {
-      $schema: 'https://ui.shadcn.com/schema.json',
-      style: 'new-york',
-      rsc: true,
-      tsx: true,
-      tailwind: {
-        config: 'tailwind.config.ts',
-        css: 'app/globals.css',
-        baseColor: 'zinc',
-        cssVariables: true,
-      },
-      aliases: {
-        components: '@/components',
-        utils: '@/lib/utils',
-      },
-      registries: {
-        '@originui': 'https://originui.com/r/components.json',
-        '@aceternity': 'https://aceternity.com/r/components.json',
-        '@magicui': 'https://magicui.design/r/components.json',
-      },
-    };
-
-    if (fs.existsSync(componentsJsonPath)) {
-      console.log('⚠️ components.json already exists. Skipping creation to avoid overwriting.');
-    } else {
-      fs.writeFileSync(componentsJsonPath, JSON.stringify(shadcnConfig, null, 2) + '\n');
-      console.log('✅ Created shadcn UI config (components.json)');
-    }
-
     // Add to package.json scripts
     const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     packageJson.scripts = packageJson.scripts || {};
@@ -469,29 +438,134 @@ const commands = {
     const shadcnEnabled = mcpConfig.mcpServers.shadcn && !mcpConfig.mcpServers.shadcn.disabled;
     if (shadcnEnabled) {
       const componentsPath = path.join(projectRoot, 'components.json');
+
+      // Auto-detect project configuration for smart defaults
+      const detectProjectConfig = () => {
+        const config = {
+          cssPath: 'app/globals.css',
+          tailwindConfig: 'tailwind.config.ts',
+          useTsx: true,
+          useRsc: true,
+        };
+
+        // Detect CSS location (common Next.js paths)
+        const cssCandidates = [
+          'app/globals.css',
+          'src/app/globals.css',
+          'styles/globals.css',
+          'src/styles/globals.css',
+        ];
+        for (const candidate of cssCandidates) {
+          if (fs.existsSync(path.join(projectRoot, candidate))) {
+            config.cssPath = candidate;
+            break;
+          }
+        }
+
+        // Detect Tailwind config variant (.ts vs .js)
+        if (fs.existsSync(path.join(projectRoot, 'tailwind.config.js'))) {
+          config.tailwindConfig = 'tailwind.config.js';
+        } else if (fs.existsSync(path.join(projectRoot, 'tailwind.config.cjs'))) {
+          config.tailwindConfig = 'tailwind.config.cjs';
+        } else if (fs.existsSync(path.join(projectRoot, 'tailwind.config.mjs'))) {
+          config.tailwindConfig = 'tailwind.config.mjs';
+        }
+        // Default to .ts if nothing found (assume TypeScript project)
+
+        // Detect TypeScript usage
+        const hasTsConfig = fs.existsSync(path.join(projectRoot, 'tsconfig.json'));
+        const hasTypeScriptDep = fs.existsSync(packagePath) &&
+          (() => {
+            try {
+              const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+              return (pkg.dependencies && pkg.dependencies.typescript) ||
+                     (pkg.devDependencies && pkg.devDependencies.typescript);
+            } catch {
+              return false;
+            }
+          })();
+        config.useTsx = hasTsConfig || hasTypeScriptDep;
+
+        // Detect Next.js App Router vs Pages Router for RSC
+        const hasAppDir = fs.existsSync(path.join(projectRoot, 'app')) ||
+                         fs.existsSync(path.join(projectRoot, 'src/app'));
+        const hasPagesDir = fs.existsSync(path.join(projectRoot, 'pages')) ||
+                           fs.existsSync(path.join(projectRoot, 'src/pages'));
+        config.useRsc = hasAppDir || !hasPagesDir; // Default to RSC unless Pages Router is clearly used
+
+        return config;
+      };
+
+      // Validate shadcn prerequisites
+      const validateShadcnPrerequisites = () => {
+        const warnings = [];
+
+        try {
+          const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+          const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+
+          // Check for Next.js (shadcn primarily targets Next.js)
+          if (!allDeps.next && !allDeps.react) {
+            warnings.push('Neither Next.js nor React detected. shadcn components require React.');
+          }
+
+          // Check for Tailwind CSS
+          if (!allDeps.tailwindcss) {
+            warnings.push('Tailwind CSS not detected. shadcn components require Tailwind CSS.');
+          }
+        } catch {
+          // If we can't read package.json, skip validation (it was just created)
+        }
+
+        return warnings;
+      };
+
+      const detectedConfig = detectProjectConfig();
+      const validationWarnings = validateShadcnPrerequisites();
+
+      // Show validation warnings if any
+      if (validationWarnings.length > 0) {
+        console.warn('\n⚠️ shadcn prerequisites check:');
+        for (const warning of validationWarnings) {
+          console.warn(`   • ${warning}`);
+        }
+        console.warn('   You may need to install these dependencies for shadcn to work properly.\n');
+      }
+
       const shadcnConfig = {
         $schema: 'https://ui.shadcn.com/schema.json',
-        style: 'default',
-        rsc: false,
-        tsx: true,
+        style: 'new-york',
+        rsc: detectedConfig.useRsc,
+        tsx: detectedConfig.useTsx,
         tailwind: {
-          config: 'tailwind.config.js',
-          css: 'src/app/globals.css',
-          baseColor: 'slate',
+          config: detectedConfig.tailwindConfig,
+          css: detectedConfig.cssPath,
+          baseColor: 'zinc',
           cssVariables: true,
         },
         aliases: {
           components: '@/components',
           utils: '@/lib/utils',
         },
+        registries: {
+          '@originui': 'https://originui.com/r/components.json',
+          '@aceternity': 'https://aceternity.com/r/components.json',
+          '@magicui': 'https://magicui.design/r/components.json',
+        },
       };
 
       if (!fs.existsSync(componentsPath)) {
         fs.writeFileSync(componentsPath, JSON.stringify(shadcnConfig, null, 2) + '\n');
-        console.log('✅ Created default shadcn components.json');
+        console.log('✅ Created shadcn components.json (New York preset)');
+        if (detectedConfig.cssPath !== 'app/globals.css' ||
+            detectedConfig.tailwindConfig !== 'tailwind.config.ts') {
+          console.log(`   📍 Detected paths: ${detectedConfig.cssPath}, ${detectedConfig.tailwindConfig}`);
+        }
       } else {
-        console.warn('⚠️ components.json already exists. Leaving the current configuration untouched.');
+        console.warn('⚠️ components.json already exists. Leaving the current shadcn configuration untouched.');
       }
+    } else {
+      console.log('ℹ️ Skipped shadcn components.json creation (shadcn MCP server disabled).');
     }
 
     console.log(`
