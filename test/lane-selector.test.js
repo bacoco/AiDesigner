@@ -226,6 +226,32 @@ describe('Lane Selector', () => {
     });
   });
 
+  describe('Scale Levels', () => {
+    test('should classify quick fixes as scale level 0', () => {
+      const result = selectLane('Fix typo in README');
+
+      expect(result.factors.scaleLevel).toBe(0);
+      expect(result.scale.level).toBe(0);
+    });
+
+    test('should escalate integrations to scale level 2 or higher', () => {
+      const result = selectLane('Implement payment gateway integration across services');
+
+      expect(result.factors.scaleLevel).toBeGreaterThanOrEqual(2);
+      expect(result.lane).toBe('complex');
+    });
+
+    test('should mark enterprise overhauls as scale level 4', () => {
+      const result = selectLane(
+        'Lead enterprise multi-region platform overhaul for regulatory compliance',
+      );
+
+      expect(result.factors.scaleLevel).toBe(4);
+      expect(result.scale.level).toBe(4);
+      expect(result.lane).toBe('complex');
+    });
+  });
+
   describe('Scoring System', () => {
     test('should return score breakdown', () => {
       const result = selectLane('Add feature');
