@@ -1259,10 +1259,15 @@ For detailed documentation, visit:
 
     await ensureClaudeEnvironment({ projectRoot: process.cwd(), userArgs: args });
 
+    // Merge runtime LLM flags with Anthropic-compatible GLM env when active
+    const baseEnv = buildSpawnEnv();
+    const { env: glmCompatEnv, isGlm } = buildAssistantSpawnEnv();
+    const chatEnv = isGlm ? { ...baseEnv, ...glmCompatEnv } : baseEnv;
+
     const child = spawn('node', [chatScript, ...args], {
       stdio: 'inherit',
       cwd: process.cwd(),
-      env: buildSpawnEnv(),
+      env: chatEnv,
     });
 
     child.on('error', (error) => {
