@@ -70,6 +70,63 @@ describe('LLMClient', () => {
     expect(anthropicSpy).not.toHaveBeenCalled();
   });
 
+  it('uses a configured GLM base URL when making requests', async () => {
+    process.env.ZHIPUAI_API_KEY = 'glm-key';
+    process.env.BMAD_GLM_BASE_URL = 'https://custom.example.com:9443/custom/api/';
+
+    const responseListeners = {};
+    const mockResponse = {
+      statusCode: 200,
+      on: jest.fn((event, handler) => {
+        responseListeners[event] = handler;
+      }),
+    };
+
+    https.request.mockImplementation((options, callback) => {
+      callback(mockResponse);
+
+      if (responseListeners.data) {
+        responseListeners.data(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: 'glm custom response',
+                },
+              },
+            ],
+          }),
+        );
+      }
+
+      if (responseListeners.end) {
+        responseListeners.end();
+      }
+
+      return {
+        on: jest.fn(),
+        write: jest.fn(),
+        end: jest.fn(),
+      };
+    });
+
+    const client = new LLMClient({ provider: 'glm' });
+    const result = await client.chatGLM([{ role: 'user', content: 'Hello GLM' }], {
+      temperature: 0.7,
+      maxTokens: 120,
+    });
+
+    expect(result).toBe('glm custom response');
+    expect(https.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hostname: 'custom.example.com',
+        port: '9443',
+        path: '/custom/api/chat/completions',
+      }),
+      expect.any(Function),
+    );
+  });
+
   it('passes the port from ANTHROPIC_BASE_URL to https.request', async () => {
     const expectedPort = '8443';
     process.env.ANTHROPIC_API_KEY = 'test-key';
