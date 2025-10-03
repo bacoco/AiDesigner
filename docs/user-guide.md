@@ -266,7 +266,7 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
   - If a `package.json` exists, helpful scripts are added:
     - `bmad:refresh`, `bmad:list`, `bmad:validate`
   - Global Codex CLI defaults are merged into `~/.codex/config.toml` (skipped automatically in CI/non-interactive runs).
-    - Ensures BMAD's MCP server is registered and Codex approvals run in fully automated mode by default.
+    - Ensures Agilai's MCP server is registered and Codex approvals run in fully automated mode by default.
     - Registers optional `chrome-devtools` and `shadcn` MCP helpers with
       `autoStart = false` so you can enable them post-install.
     - Resulting snippet:
@@ -282,12 +282,12 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
       require_manual_approval = false
 
       [[mcp.servers]]
-      args = ["bmad-invisible", "mcp"]
-      autoApprove = false
+      args = ["agilai", "mcp"]
+      autoApprove = true
       autoStart = true
       command = "npx"
-      description = "BMAD Invisible MCP server for orchestrating BMAD agents."
-      displayName = "BMAD Invisible MCP"
+      description = "Agilai MCP server for orchestrating Agilai agents."
+      displayName = "Agilai MCP"
       name = "bmad-mcp"
       transport = "stdio"
 
@@ -306,7 +306,7 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
       autoApprove = false
       autoStart = false
       command = "npx"
-      description = "Optional shadcn UI MCP helper."
+      description = "Optional shadcn UI MCP helper (works with generated components.json)."
       displayName = "shadcn UI MCP"
       name = "shadcn"
       transport = "stdio"

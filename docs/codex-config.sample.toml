@@ -8,12 +8,12 @@ auto_approve = true
 require_manual_approval = false
 
 [[mcp.servers]]
-args = ["bmad-invisible", "mcp"]
+args = ["agilai", "mcp"]
 autoApprove = true
 autoStart = true
 command = "npx"
-description = "BMAD Invisible MCP server for orchestrating BMAD agents."
-displayName = "BMAD Invisible MCP"
+description = "Agilai MCP server for orchestrating Agilai agents."
+displayName = "Agilai MCP"
 name = "bmad-mcp"
 transport = "stdio"
 
