@@ -1,0 +1,32 @@
+# Example Codex MCP policy configuration.
+#
+# Provide the file path via CODEX_POLICY_PATH (or CODEX_POLICY_FILE) to enable
+# policy enforcement. Keys are matched against normalized operation names and
+# optional metadata derived from the MCP runtime. When a policy specifies both a
+# base operation (e.g. "generate_deliverable") and a lane-specific override
+# (e.g. "generate_deliverable@review"), the more specific entry wins.
+#
+# Supported fields per entry:
+# - maxExecutionsPerHour: Limits how frequently the operation can run inside a
+#   rolling one hour window. The counter resets automatically every hour.
+# - escalate: Marks the operation as requiring manual approval. The Codex server
+#   blocks execution unless the normalized key is present in
+#   CODEX_APPROVED_OPERATIONS.
+#
+# The optional `defaults` section applies when no explicit key matches.
+defaults:
+  maxExecutionsPerHour: 60
+
+operations:
+  execute_auto_command:
+    maxExecutionsPerHour: 15
+
+  run_review_checkpoint:
+    maxExecutionsPerHour: 4
+    escalate: true
+
+  generate_deliverable@review:
+    escalate: true
+
+  save_deliverable: # Prevent storage storms without a hard block.
+    maxExecutionsPerHour: 20

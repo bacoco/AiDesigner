@@ -5,11 +5,7 @@ import {
   OrchestratorServerOptions,
   runOrchestratorServer,
 } from "./runtime.js";
-import {
-  MetricsSink,
-  StructuredLogger,
-  createStructuredLogger,
-} from "./observability.js";
+import { OperationPolicyEnforcer } from "./operation-policy.js";
 
 interface ModelRoute {
   provider: string;
@@ -133,26 +129,26 @@ class ModelRouter {
   }
 }
 
-class CodexClient {
+export class CodexClient {
   private readonly router: ModelRouter;
   private readonly approvalMode: boolean;
   private readonly autoApprove: boolean;
   private readonly approvedOperations: Set<string>;
   private readonly llmCache: Map<string, LLMClient> = new Map();
-  private readonly logger: StructuredLogger;
+  private readonly policyEnforcer?: OperationPolicyEnforcer;
 
   constructor(
     router: ModelRouter,
     approvalMode: boolean,
     autoApprove: boolean,
     approvedOps: Set<string>,
-    logger: StructuredLogger
+    policyEnforcer?: OperationPolicyEnforcer
   ) {
     this.router = router;
     this.approvalMode = approvalMode;
     this.autoApprove = autoApprove;
     this.approvedOperations = approvedOps;
-    this.logger = logger;
+    this.policyEnforcer = policyEnforcer;
   }
 
   static fromEnvironment(): CodexClient {
@@ -175,45 +171,19 @@ class CodexClient {
         .filter((token) => token.length > 0)
     );
 
-    let logContext: Record<string, unknown> = {};
-    let logContextInvalid = false;
-    if (process.env.CODEX_LOG_CONTEXT) {
+    const policyPath = process.env.CODEX_POLICY_PATH || process.env.CODEX_POLICY_FILE;
+    let policyEnforcer: OperationPolicyEnforcer | undefined;
+
+    if (policyPath) {
       try {
-        logContext = JSON.parse(process.env.CODEX_LOG_CONTEXT);
+        policyEnforcer = OperationPolicyEnforcer.fromFile(policyPath);
       } catch (error) {
-        console.error(
-          "[Codex] Failed to parse CODEX_LOG_CONTEXT:",
-          error instanceof Error ? error.message : error
-        );
-        logContextInvalid = true;
+        console.error(`[Codex] FATAL: Failed to load policy from ${policyPath}:`, error);
+        console.error('[Codex] Server will run WITHOUT policy enforcement');
       }
     }
 
-    const metricSinks: MetricsSink[] = [];
-    if (parseBoolean(process.env.CODEX_METRICS_STDOUT, false)) {
-      metricSinks.push((event) => {
-        process.stdout.write(
-          `${JSON.stringify({ ts: new Date().toISOString(), type: "metric", ...event })}\n`
-        );
-      });
-    }
-
-    const logger = createStructuredLogger({
-      name: "bmad-codex",
-      base: {
-        component: "codex",
-        ...logContext,
-      },
-      metrics: metricSinks,
-    });
-
-    if (logContextInvalid) {
-      logger.warn("log_context_invalid", {
-        context: process.env.CODEX_LOG_CONTEXT,
-      });
-    }
-
-    return new CodexClient(router, approvalMode, autoApprove, approvedOps, logger);
+    return new CodexClient(router, approvalMode, autoApprove, approvedOps, policyEnforcer);
   }
 
   createLLMClient(lane?: LaneKey): LLMClient {
@@ -247,65 +217,39 @@ class CodexClient {
   }
 
   async ensureOperationAllowed(operation: string, metadata?: Record<string, unknown>): Promise<void> {
-    const stopTimer = this.logger.startTimer();
-    const lane =
-      (metadata as { lane?: string } | undefined)?.lane ??
-      (metadata as { decision?: { lane?: string } } | undefined)?.decision?.lane ??
-      "default";
-    const mode = this.approvalMode ? (this.autoApprove ? "auto" : "manual") : "disabled";
-
-    if (!this.approvalMode) {
-      const durationMs = stopTimer();
-      this.logger.debug("approval_bypassed", {
-        operation,
-        lane,
-        mode,
-        durationMs,
-      });
-      this.logger.recordTiming("codex.approval.duration_ms", durationMs, {
-        operation,
-        lane,
-        mode,
-        status: "bypassed",
-      });
-      return;
-    }
-
-    if (this.autoApprove) {
-      const durationMs = stopTimer();
-      this.logger.info("approval_auto_granted", {
-        operation,
-        lane,
-        mode,
-        durationMs,
-      });
-      this.logger.recordTiming("codex.approval.duration_ms", durationMs, {
-        operation,
-        lane,
-        mode,
-        status: "auto",
-      });
-      return;
-    }
-
     const keys = normalizeOperation(operation, metadata);
     const hasApproval = keys.some((key) => this.approvedOperations.has(key));
+    const assessment = this.policyEnforcer?.assess(operation, keys);
+
+    if (assessment?.violation) {
+      throw assessment.violation;
+    }
+
+    const requiresEscalation = assessment?.requiresEscalation ?? false;
+
+    if (requiresEscalation && !hasApproval) {
+      const ruleDescription = assessment?.matchedKey
+        ? `policy rule "${assessment.matchedKey}"`
+        : "the configured policy";
+
+      throw new Error(
+        `[Codex] Operation "${operation}" requires escalation per ${ruleDescription}. ` +
+          `Request approval or add a matching key to CODEX_APPROVED_OPERATIONS.`
+      );
+    }
+
+    if (!this.approvalMode) {
+      assessment?.commit?.();
+      return;
+    }
+
+    if (this.autoApprove && !requiresEscalation) {
+      assessment?.commit?.();
+      return;
+    }
 
     if (hasApproval) {
-      const durationMs = stopTimer();
-      this.logger.info("approval_granted", {
-        operation,
-        lane,
-        mode,
-        durationMs,
-        keys,
-      });
-      this.logger.recordTiming("codex.approval.duration_ms", durationMs, {
-        operation,
-        lane,
-        mode,
-        status: "granted",
-      });
+      assessment?.commit?.();
       return;
     }
 
@@ -344,8 +288,12 @@ class CodexClient {
     });
   }
 
-  getLogger(): StructuredLogger {
-    return this.logger;
+    if (this.policyEnforcer?.getSource()) {
+      console.error(`[Codex] Operation policy loaded from ${this.policyEnforcer.getSource()}`);
+    }
+
+    console.error("[Codex] Model routing:");
+    console.error(this.router.describe());
   }
 }
 
@@ -379,10 +327,10 @@ async function main(): Promise<void> {
   await runOrchestratorServer(options);
 }
 
-main().catch((error) => {
-  const logger = createStructuredLogger({
-    name: "bmad-codex",
-    base: { component: "codex" },
+if (require.main === module) {
+  main().catch((error) => {
+    console.error("[Codex] Server error:", error);
+    process.exit(1);
   });
   logger.error("server_error", {
     error: error instanceof Error ? error.message : String(error),
