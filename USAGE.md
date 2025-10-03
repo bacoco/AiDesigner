@@ -6,7 +6,7 @@
 
 ```bash
 # In any directory, just run:
-npx bmad-invisible@latest start
+npx agilai@latest start
 ```
 
 This does everything: creates structure, installs dependencies, and launches chat!
@@ -22,20 +22,20 @@ legacy Claude defaults.
 
 ```bash
 # Initialize project
-npx bmad-invisible@latest init
+npx agilai@latest init
 
 # Install dependencies
 npm install
 
 # Start chatting (pick your assistant)
 # Default orchestrator launcher
-npm run bmad
+npm run agilai
 # Codex front-end
-npm run bmad:codex
+npm run agilai:codex
 # Claude CLI front-end
-npm run bmad:claude
+npm run agilai:claude
 # OpenCode front-end
-npm run bmad:opencode
+npm run agilai:opencode
 # Add -- --glm to any npm script invocation to switch providers
 ```
 
@@ -48,18 +48,18 @@ npm run bmad:opencode
 
 ```bash
 # Clone and setup
-git clone https://github.com/bacoco/BMAD-invisible.git
-cd BMAD-invisible
+git clone https://github.com/bacoco/Agilai.git
+cd Agilai
 npm install
 
 # Build and run
 npm run build:mcp
-npm run bmad
+npm run agilai
 ```
 
 ### Selecting Your LLM Provider
 
-- Use `--glm` (alias for `--llm-provider=glm`) with any BMAD CLI command to run
+- Use `--glm` (alias for `--llm-provider=glm`) with any Agilai CLI command to run
   the orchestrator on ZhipuAI's GLM. Provide credentials via `ZHIPUAI_API_KEY`
   or the fallback `GLM_API_KEY`.
 - Override the model with `--llm-model=<model>` or by exporting `LLM_MODEL`.
@@ -82,7 +82,7 @@ npm run bmad
 ### MCP-Powered Architecture
 
 ```
-User → Claude CLI → MCP Server → BMAD Agents → Deliverables
+User → Claude CLI → MCP Server → Agilai Agents → Deliverables
                      ↓
               Project State
               Phase Detection
@@ -113,7 +113,7 @@ All files are automatically created in `docs/`:
 - `stories/` - Detailed development tasks
 - `qa/assessments/` - Test strategy
 
-Plus state tracking in `.bmad-invisible/`:
+Plus state tracking in `.agilai/`:
 
 - `state.json` - Current phase and project metadata
 - `conversation.json` - Full conversation history
@@ -121,7 +121,7 @@ Plus state tracking in `.bmad-invisible/`:
 
 ## MCP Tools Available
 
-The invisible orchestrator uses these MCP tools:
+The Agilai orchestrator uses these MCP tools:
 
 1. **get_project_context** - Current state
 2. **detect_phase** - Analyze for phase transitions
@@ -131,8 +131,8 @@ The invisible orchestrator uses these MCP tools:
 6. **record_decision** - Save key decisions
 7. **add_conversation_message** - Track conversation
 8. **get_project_summary** - Project overview
-9. **list_bmad_agents** - Available agents
-   1agilai. **execute_bmad_workflow** - Run phase workflows
+9. **list_agilai_agents** - Available agents
+10. **execute_agilai_workflow** - Run phase workflows
 
 ## Validation Checkpoints
 
@@ -176,17 +176,17 @@ Assistant: Absolutely! Let me update the architecture...
 
 ## Integrity Safeguards
 
-BMAD-Invisible now records SHA-256 hashes for critical, user-modifiable resources.
-When you launch any CLI entry point (`bmad-invisible`, `bmad-invisible-codex`, or
-`bmad-claude`), a quick pre-flight check compares the current files against the
-baseline stored in `.bmad-invisible/critical-hashes.json`.
+Agilai now records SHA-256 hashes for critical, user-modifiable resources.
+When you launch any CLI entry point (`agilai`, `agilai-codex`, or
+`npm run agilai:claude`), a quick pre-flight check compares the current files against the
+baseline stored in `.agilai/critical-hashes.json`.
 
 - ✅ Matching hashes: the CLI proceeds silently.
 - ⚠️ Diverging hashes: you receive a warning summarising which core files changed,
   went missing, or were newly added under tracked scopes such as:
-  - `bmad-core/core-config.yaml`
-  - `bmad-core/checklists/`
-  - `bmad-core/templates/`
+  - Agilai core configuration (`bmad-core/core-config.yaml`)
+  - Agilai core checklists (`bmad-core/checklists/`)
+  - Agilai core templates (`bmad-core/templates/`)
   - `expansion-packs/`
   - `codex-config.toml.example`
 
@@ -246,7 +246,7 @@ The MCP config at `.claude/mcp-config.json` works with:
 When you include Codex CLI during installation, the wizard now also prepares your global configuration:
 
 - Creates `~/.codex/config.toml` if it is missing.
-- Adds the `bmad_invisible` MCP server pointing to `npx bmad-invisible mcp` and
+- Adds the `agilai` MCP server pointing to `npx agilai mcp` and
   stubs for optional `chrome-devtools` and `shadcn` integrations (with
   `auto_start = false`).
 - Sets default Codex preferences (`GPT-5-Codex`, medium reasoning, automatic approvals) without overwriting existing overrides.
@@ -259,11 +259,11 @@ This step is skipped automatically in non-interactive environments. See [`codex-
 
 ### Automatic CLI Provisioning
 
-The `bin/bmad-codex` and `bin/bmad-claude` launchers now validate that the Codex and Claude CLIs are installed **before** spawning the orchestrator session. If a binary is missing, the script will:
+The Agilai Codex (`bin/bmad-codex`) and Agilai Claude (`bin/bmad-claude`) launchers now validate that the Codex and Claude CLIs are installed **before** spawning the orchestrator session. If a binary is missing, the script will:
 
 - Offer an interactive menu with installation helpers (for example `npm exec --yes @openai/codex-cli@latest -- codex --help`, Homebrew taps, and the official download docs).
 - Fall back to printing the same guidance when running in non-interactive contexts (CI, redirected stdin/stdout) so automation jobs fail fast but still surface the remediation steps.
-- Cache the resolved binary location in `.bmad-invisible/cli-state.json` once the CLI is detected so you are not prompted again on subsequent runs.
+- Cache the resolved binary location in `.agilai/cli-state.json` once the CLI is detected so you are not prompted again on subsequent runs.
 
 Ensure your environment has network access and an up-to-date Node.js runtime so that `npm exec`-based installers can complete successfully. If you prefer manual installation, pick the documentation option from the prompt and follow the upstream instructions before re-running the launcher.
 
@@ -271,7 +271,7 @@ Ensure your environment has network access and an up-to-date Node.js runtime so 
 
 - When the orchestrator transitions into development or QA, it now assembles a just-in-time story packet inspired by V6’s `story-context` command.
 - Persona reminders, acceptance criteria, definition of done, and testing notes are pulled from the active story file (or from `context.story` if you provide metadata programmatically).
-- Additional enrichers can be registered at runtime via `bmadBridge.registerContextEnricher(fn)` if you need to inject architecture updates or custom quality gates.
+- Additional enrichers can be registered at runtime via the Agilai bridge (`bmadBridge.registerContextEnricher(fn)`) if you need to inject architecture updates or custom quality gates.
 - See [`docs/STORY_CONTEXT.md`](docs/STORY_CONTEXT.md) for a deep dive into the enrichment flow and how to extend it.
 
 ## Troubleshooting
@@ -293,7 +293,7 @@ npm run build:mcp
 ls -la dist/mcp/mcp/
 ```
 
-### Permission denied on bin/bmad-claude
+### Permission denied on Agilai Claude (`bin/bmad-claude`)
 
 ```bash
 chmod +x bin/bmad-claude
@@ -308,7 +308,7 @@ Check that you're confirming at checkpoints. The system needs your `y` to procee
 ### New Project from Scratch
 
 ```
-1. npm run bmad
+1. npm run agilai
 2. "Help me build [your idea]"
 3. Answer discovery questions
 4. Review and confirm each phase
@@ -319,7 +319,7 @@ Check that you're confirming at checkpoints. The system needs your `y` to procee
 
 ```
 1. cd your-project
-2. npm run bmad
+2. npm run agilai
 3. "I need to add [feature]"
 4. System detects context, suggests approach
 5. Get stories and implementation guidance
@@ -331,7 +331,7 @@ Check anytime:
 
 ```
 docs/                  # Your deliverables
-.bmad-invisible/       # Project state
+.agilai/               # Project state
   state.json          # Current phase, decisions
   conversation.json   # Full history
   deliverables.json   # Generated content
@@ -350,9 +350,9 @@ Anthropic defaults.
 
 ## Support
 
-- **Issues**: https://github.com/bacoco/BMAD-invisible/issues
+- **Issues**: https://github.com/bacoco/Agilai/issues
 - **Docs**: See README.md and DUAL_LANE_ORCHESTRATION.md
-- **Base BMAD**: https://github.com/bacoco/BMAD-METHOD
+- **Base BMAD Method**: https://github.com/bacoco/BMAD-METHOD
 
 ---
 
