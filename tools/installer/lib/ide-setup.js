@@ -138,6 +138,11 @@ class IdeSetup extends BaseIdeSetup {
     // - If opencode.json or opencode.jsonc exists: only ensure instructions include .bmad-core/core-config.yaml
     // - If none exists: create minimal opencode.jsonc with $schema and instructions array including that file
 
+    const defaultModelSettings = {
+      model: 'codex/gpt-4.1',
+      fallbackModels: ['anthropic/claude-3.5-sonnet', 'openai/gpt-4o-mini'],
+    };
+
     const jsonPath = path.join(installDir, 'opencode.json');
     const jsoncPath = path.join(installDir, 'opencode.jsonc');
     const hasJson = await fileManager.pathExists(jsonPath);
@@ -204,6 +209,52 @@ class IdeSetup extends BaseIdeSetup {
       return obj;
     };
 
+    const mergeModelDefaults = (configObj) => {
+      const summary = { modelAdded: false, fallbackAdded: 0 };
+
+      const hasModel = typeof configObj.model === 'string' && configObj.model.trim().length > 0;
+      if (!hasModel) {
+        configObj.model = defaultModelSettings.model;
+        summary.modelAdded = true;
+      }
+
+      let fallbackArray;
+      if (Array.isArray(configObj.fallbackModels)) {
+        fallbackArray = configObj.fallbackModels;
+      } else if (
+        typeof configObj.fallbackModels === 'string' &&
+        configObj.fallbackModels.trim().length > 0
+      ) {
+        fallbackArray = [configObj.fallbackModels.trim()];
+      } else {
+        fallbackArray = [];
+      }
+
+      // Build a case-insensitive set of existing fallback models (string values only)
+      const seen = new Set();
+      for (const value of fallbackArray) {
+        if (typeof value === 'string' && value.trim().length > 0) {
+          seen.add(value.toLowerCase());
+        }
+        // Skip non-string or empty values - they won't be considered for duplicate detection
+      }
+
+      for (const fallbackModel of defaultModelSettings.fallbackModels) {
+        const key = fallbackModel.toLowerCase();
+        if (!seen.has(key)) {
+          fallbackArray.push(fallbackModel);
+          seen.add(key);
+          summary.fallbackAdded++;
+        }
+      }
+
+      if (!Array.isArray(configObj.fallbackModels)) {
+        configObj.fallbackModels = fallbackArray;
+      }
+
+      return summary;
+    };
+
     const mergeBmadAgentsAndCommands = async (configObj) => {
       // Ensure objects exist
       if (!configObj.agent || typeof configObj.agent !== 'object') configObj.agent = {};
@@ -221,6 +272,8 @@ class IdeSetup extends BaseIdeSetup {
         commandsAdded: 0,
         commandsUpdated: 0,
         commandsSkipped: 0,
+        modelAdded: false,
+        fallbackAdded: 0,
       };
 
       // Determine package scope: previously SELECTED packages in installer UI
@@ -556,6 +609,10 @@ class IdeSetup extends BaseIdeSetup {
         }
       }
 
+      const modelSummary = mergeModelDefaults(configObj);
+      summary.modelAdded = modelSummary.modelAdded;
+      summary.fallbackAdded = modelSummary.fallbackAdded;
+
       return { configObj, summary };
     };
 
@@ -569,6 +626,10 @@ class IdeSetup extends BaseIdeSetup {
         const agents = selectedAgent ? [selectedAgent] : await this.getAllAgentIds(installDir);
         const tasks = await this.getAllTaskIds(installDir);
 
+        const fallbackModelList = defaultModelSettings.fallbackModels
+          .map((model) => `\`${model}\``)
+          .join(', ');
+
         let section = '';
         section += `${startMarker}\n`;
         section += `# BMAD-METHOD Agents and Tasks (OpenCode)\n\n`;
@@ -577,7 +638,9 @@ class IdeSetup extends BaseIdeSetup {
         section += `- Run \`opencode\` in this project. OpenCode will read \`AGENTS.md\` and your OpenCode config (opencode.json[c]).\n`;
         section += `- Reference a role naturally, e.g., "As dev, implement ..." or use commands defined in your BMAD tasks.\n`;
         section += `- Commit \`.bmad-core\` and \`AGENTS.md\` if you want teammates to share the same configuration.\n`;
-        section += `- Refresh this section after BMAD updates: \`npx bmad-method install -f -i opencode\`.\n\n`;
+        section += `- Refresh this section after BMAD updates: \`npx bmad-method install -f -i opencode\`.\n`;
+        section += `- Default models: primary \`${defaultModelSettings.model}\` with fallbacks ${fallbackModelList}.\n`;
+        section += `- Toggle providers by editing \`model\`/\`fallbackModels\` in \`opencode.jsonc\` and rerunning the installer to merge other settings.\n\n`;
 
         section += `### Helpful Commands\n\n`;
         section += `- List agents: \`npx bmad-method list:agents\`\n`;
@@ -730,7 +793,7 @@ class IdeSetup extends BaseIdeSetup {
         // Summary output
         console.log(
           chalk.dim(
-            `  File: ${path.basename(targetPath)} | Agents +${summary.agentsAdded} ~${summary.agentsUpdated} ⨯${summary.agentsSkipped} | Commands +${summary.commandsAdded} ~${summary.commandsUpdated} ⨯${summary.commandsSkipped}`,
+            `  File: ${path.basename(targetPath)} | Agents +${summary.agentsAdded} ~${summary.agentsUpdated} ⨯${summary.agentsSkipped} | Commands +${summary.commandsAdded} ~${summary.commandsUpdated} ⨯${summary.commandsSkipped} | Model ${summary.modelAdded ? 'set' : 'kept'} | Fallbacks +${summary.fallbackAdded}`,
           ),
         );
         // Ensure AGENTS.md is created/updated for OpenCode as well
@@ -758,7 +821,7 @@ class IdeSetup extends BaseIdeSetup {
       );
       console.log(
         chalk.dim(
-          `  File: opencode.jsonc | Agents +${summary.agentsAdded} | Commands +${summary.commandsAdded}`,
+          `  File: opencode.jsonc | Agents +${summary.agentsAdded} | Commands +${summary.commandsAdded} | Model ${summary.modelAdded ? 'set' : 'kept'} | Fallbacks +${summary.fallbackAdded}`,
         ),
       );
       // Also create/update AGENTS.md for OpenCode on new-config path
