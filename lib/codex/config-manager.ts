@@ -18,16 +18,38 @@ const DEFAULT_MODEL = 'GPT-5-Codex';
 const DEFAULT_MANUAL_APPROVAL = false;
 const SERVER_NAME = 'bmad-mcp';
 
-const DEFAULT_SERVER = {
-  name: SERVER_NAME,
-  displayName: 'BMAD Invisible MCP',
-  description: 'BMAD Invisible MCP server for orchestrating BMAD agents.',
-  transport: 'stdio',
-  command: 'npx',
-  args: ['bmad-invisible', 'mcp'],
-  autoStart: true,
-  autoApprove: true,
-};
+const DEFAULT_SERVERS: ReadonlyArray<TomlTable> = [
+  {
+    name: SERVER_NAME,
+    displayName: 'BMAD Invisible MCP',
+    description: 'BMAD Invisible MCP server for orchestrating BMAD agents.',
+    transport: 'stdio',
+    command: 'npx',
+    args: ['bmad-invisible', 'mcp'],
+    autoStart: true,
+    autoApprove: true,
+  },
+  {
+    name: 'chrome-devtools',
+    displayName: 'Chrome DevTools MCP',
+    description: 'Chrome DevTools automation server for inspecting web apps.',
+    transport: 'stdio',
+    command: 'npx',
+    args: ['-y', '@modelcontextprotocol/server-chrome-devtools'],
+    autoStart: false,
+    autoApprove: true,
+  },
+  {
+    name: 'shadcn',
+    displayName: 'shadcn/ui MCP',
+    description: 'shadcn/ui component scaffolding and documentation helper.',
+    transport: 'stdio',
+    command: 'npx',
+    args: ['-y', '@modelcontextprotocol/server-shadcn'],
+    autoStart: false,
+    autoApprove: true,
+  },
+];
 
 /**
  * Strips inline comments from a TOML line while preserving # characters inside strings.
@@ -213,6 +235,19 @@ function isPlainObject(value: unknown): value is Record<string, any> {
 
 function hasOwn(target: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(target, key);
+}
+
+function getServerLookupKey(server: TomlTable | undefined): string {
+  if (!server) {
+    return '';
+  }
+  const raw =
+    typeof server.name === 'string'
+      ? server.name
+      : typeof server.id === 'string'
+        ? server.id
+        : '';
+  return raw.toLowerCase();
 }
 
 function ensureObjectPath(root: TomlTable, pathSegments: string[]): TomlTable {
@@ -438,22 +473,27 @@ function mergeServers(existingServers: any): { servers: TomlTable[]; changed: bo
   const materialised: TomlTable[] = servers.filter((server): server is TomlTable =>
     isPlainObject(server),
   );
-  const index = materialised.findIndex((server) => {
-    const name = server?.name ?? server?.id ?? '';
-    return typeof name === 'string' && name.toLowerCase() === SERVER_NAME.toLowerCase();
-  });
 
-  const canonical = { ...DEFAULT_SERVER };
+  let changed = false;
 
-  if (index === -1) {
-    materialised.push(canonical);
-    return { servers: materialised, changed: true };
+  for (const defaultServer of DEFAULT_SERVERS) {
+    const canonical = { ...defaultServer };
+    const lookupKey = getServerLookupKey(canonical);
+    const index = materialised.findIndex((server) => getServerLookupKey(server) === lookupKey);
+
+    if (index === -1) {
+      materialised.push({ ...canonical });
+      changed = true;
+      continue;
+    }
+
+    const existing = materialised[index] ?? {};
+    const merged = { ...canonical, ...existing };
+    if (JSON.stringify(existing) !== JSON.stringify(merged)) {
+      materialised[index] = merged;
+      changed = true;
+    }
   }
-
-  const existing = materialised[index] ?? {};
-  const merged = { ...canonical, ...existing };
-  const changed = JSON.stringify(existing) !== JSON.stringify(merged);
-  materialised[index] = merged;
 
   return { servers: materialised, changed };
 }

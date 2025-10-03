@@ -6,13 +6,11 @@
     },
     "chrome-devtools": {
       "command": "npx",
-      "args": ["@modelcontextprotocol/server-chrome-devtools@latest"],
-      "disabled": true
+      "args": ["-y", "@modelcontextprotocol/server-chrome-devtools"]
     },
     "shadcn": {
       "command": "npx",
-      "args": ["@shadcn/ui-cli@latest", "mcp"],
-      "disabled": true
+      "args": ["-y", "@modelcontextprotocol/server-shadcn"]
     }
   }
 }
