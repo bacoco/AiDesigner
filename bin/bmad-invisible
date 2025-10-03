@@ -437,10 +437,13 @@ const buildSpawnEnv = () => {
     env.LLM_PROVIDER = runtimeOptions.llmProvider;
 
     if (runtimeOptions.llmProvider === 'glm') {
+      env.BMAD_ASSISTANT_PROVIDER = 'glm';
       const existingKey = env.ZHIPUAI_API_KEY || env.GLM_API_KEY;
       if (existingKey && !env.ZHIPUAI_API_KEY) {
         env.ZHIPUAI_API_KEY = existingKey;
       }
+    } else if (env.BMAD_ASSISTANT_PROVIDER === 'glm') {
+      delete env.BMAD_ASSISTANT_PROVIDER;
     }
   }
 
@@ -1007,6 +1010,7 @@ const commands = {
       codex: 'bmad-invisible codex',
       'bmad:codex': 'bmad-invisible codex',
       'bmad:claude': 'bmad-invisible chat',
+      'bmad:opencode': 'bmad-invisible opencode',
       'bmad:build': 'bmad-invisible build',
     };
 
@@ -1024,12 +1028,16 @@ const commands = {
     }
 
     // Add bmad-invisible as a dependency
-    const needsInstall = !packageJson.dependencies || !packageJson.dependencies['bmad-invisible'];
-    if (needsInstall) {
+    const desiredDependencyVersion = `^${currentVersion}`;
+    const existingDependencyVersion =
+      packageJson.dependencies && packageJson.dependencies['bmad-invisible'];
+    const needsDependencyUpdate = existingDependencyVersion !== desiredDependencyVersion;
+
+    if (needsDependencyUpdate) {
       packageJson.dependencies = packageJson.dependencies || {};
-      packageJson.dependencies['bmad-invisible'] = '^1.0.0';
+      packageJson.dependencies['bmad-invisible'] = desiredDependencyVersion;
       fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
-      console.log('✅ Added bmad-invisible to dependencies');
+      console.log(`✅ Ensured bmad-invisible@${desiredDependencyVersion} is listed in dependencies`);
     }
 
     // Only create components.json if shadcn MCP server is enabled

@@ -1,5 +1,35 @@
 const { getAssistantProvider, buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
 
+const runCommandWithGlm = async (command) => {
+  jest.resetModules();
+
+  const spawnMock = jest.fn(() => {
+    const child = {
+      on: jest.fn().mockImplementation((event, handler) => {
+        if (event === 'exit') {
+          handler(0);
+        }
+        return child;
+      }),
+    };
+    return child;
+  });
+
+  jest.doMock('child_process', () => ({ spawn: spawnMock }));
+
+  const cli = require('../bin/bmad-invisible');
+  cli.setRuntimeContext(command, ['--glm']);
+
+  delete process.env.BMAD_ASSISTANT_PROVIDER;
+  delete process.env.LLM_PROVIDER;
+  process.env.GLM_API_KEY = 'test-key';
+
+  await cli.commands[command]();
+
+  const options = spawnMock.mock.calls[0][2];
+  return { env: options.env, spawnMock };
+};
+
 describe('assistant-env', () => {
   let originalEnv;
   let exitSpy;
@@ -207,6 +237,27 @@ describe('assistant-env', () => {
       const result = buildAssistantSpawnEnv();
 
       expect(result.env.ANTHROPIC_BASE_URL).toBe('https://glm.example.com');
+    });
+  });
+
+  describe('bmad-invisible CLI GLM flags', () => {
+    afterEach(() => {
+      jest.dontMock('child_process');
+      jest.resetModules();
+    });
+
+    test('chat command propagates GLM provider env via --glm flag', async () => {
+      const { env } = await runCommandWithGlm('chat');
+
+      expect(env.BMAD_ASSISTANT_PROVIDER).toBe('glm');
+      expect(env.LLM_PROVIDER).toBe('glm');
+    });
+
+    test('codex command propagates GLM provider env via --glm flag', async () => {
+      const { env } = await runCommandWithGlm('codex');
+
+      expect(env.BMAD_ASSISTANT_PROVIDER).toBe('glm');
+      expect(env.LLM_PROVIDER).toBe('glm');
     });
   });
 });
