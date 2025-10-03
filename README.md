@@ -1,24 +1,45 @@
 # BMAD-Invisible
 
-**Zero-Knowledge Onboarding for BMAD-METHOD™**
-
-An invisible orchestrator layer that allows users to benefit from BMAD's proven agile methodology through natural conversation, without learning any framework terminology.
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.10.0-brightgreen)](https://nodejs.org)
 
-## 🎯 What is BMAD-Invisible?
+## The Problem
 
-BMAD-Invisible wraps BMAD-METHOD™'s powerful agile AI framework in a conversational interface. Users chat naturally about their project, and the system automatically:
+**Building software with AI should be simple. Instead, it's overwhelming.**
 
-- Gathers requirements (Analyst phase)
-- Creates development plans (PM phase)
-- Designs architecture (Architect phase)
-- Breaks work into stories (Scrum Master phase)
-- Guides implementation (Developer phase)
-- Ensures quality (QA phase)
+You have an idea. You open Claude, ChatGPT, or Codex. Then what?
 
-**All while keeping the methodology completely invisible.**
+- Do you write a Product Requirements Document first?
+- Should you create user stories?
+- What about technical architecture?
+- How do you break work into manageable pieces?
+- Where do you even start?
+
+**Most developers waste hours figuring out _how_ to ask AI for help** instead of actually building their project.
+
+Meanwhile, professional teams use structured agile methodologies (analyst → PM → architect → developer → QA) that produce better results. But learning these frameworks takes weeks and adds friction you don't need.
+
+## The Solution
+
+**BMAD-Invisible gives you professional agile workflows through natural conversation.**
+
+Just talk about your project. The system:
+
+✅ **Understands** what you're trying to build (no framework jargon needed)
+✅ **Generates** professional deliverables automatically (PRD, architecture, user stories)
+✅ **Guides** you through proven development phases (analyst → PM → architect → dev → QA)
+✅ **Adapts** to complexity (quick templates for simple tasks, full workflows for complex features)
+
+**You focus on your ideas. BMAD-Invisible handles the methodology.**
+
+## Why It Works
+
+- **Zero learning curve** - Chat naturally, no methodology training required
+- **Proven framework** - Built on BMAD-METHOD™, a battle-tested agile AI development process
+- **Intelligent routing** - Automatically picks the right approach for each task
+- **Professional output** - Generates documentation that matches industry standards
+- **Local-first** - Works with Claude CLI, Codex CLI, or OpenCode - your choice
+- **No API costs** - Runs through your existing CLI tooling
 
 ### 🚀 NEW: Dual-Lane Orchestration (v1.2+)
 
