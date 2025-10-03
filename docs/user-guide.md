@@ -93,6 +93,15 @@ QA Assessments   → docs/qa/assessments/
 QA Gates         → docs/qa/gates/
 ```
 
+#### Targeted Epic Specs (Next-Incomplete Focus)
+
+- Run the Architect command `cmd tech-spec` whenever you're ready to advance an epic.
+- The deliverable generator captures only the next incomplete epic and stores:
+  - Structured JSON at `docs/epics/epic-<n>-<slug>.spec.json`
+  - A readable summary at `docs/epics/epic-<n>-<slug>.spec.md`
+- When you trigger `cmd auto-stories`, the Scrum Master lane reads the JSON spec and injects an **Epic Spec Context** section into the new story draft.
+- Re-run the tech spec before starting a different epic to keep the context precise and avoid stale backlog assumptions.
+
 ### The Core Development Cycle (IDE)
 
 Once planning is complete and documents are sharded, BMad follows a structured development workflow:
@@ -253,18 +262,18 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
   - If a `package.json` exists, helpful scripts are added:
     - `bmad:refresh`, `bmad:list`, `bmad:validate`
   - Global Codex CLI defaults are merged into `~/.codex/config.toml` (skipped automatically in CI/non-interactive runs).
-    - Ensures BMAD's MCP server is registered and tool approvals remain manual by default.
+    - Ensures BMAD's MCP server is registered and Codex approvals run in fully automated mode by default.
     - Resulting snippet:
 
       ```toml
       [cli]
-      auto_approve_tools = false
-      default_model = "anthropic.claude-3.7-sonnet"
-      require_manual_approval = true
+      auto_approve_tools = true
+      default_model = "GPT-5-Codex"
+      require_manual_approval = false
 
       [mcp]
-      auto_approve = false
-      require_manual_approval = true
+      auto_approve = true
+      require_manual_approval = false
 
       [[mcp.servers]]
       args = ["bmad-invisible", "mcp"]

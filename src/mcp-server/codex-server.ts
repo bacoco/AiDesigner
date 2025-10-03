@@ -83,6 +83,13 @@ class ModelRouter {
       this.routes.set("full", complexRoute);
       this.routes.set("orchestrator", complexRoute);
     }
+
+    const reviewRoute = this.routes.get("review");
+    if (reviewRoute) {
+      this.routes.set("reviewer", reviewRoute);
+      this.routes.set("audit", reviewRoute);
+      this.routes.set("governance", reviewRoute);
+    }
   }
 
   resolve(lane?: LaneKey): ModelRoute {
@@ -107,6 +114,13 @@ class ModelRouter {
       const complex = this.routes.get("complex");
       if (complex) {
         return complex;
+      }
+    }
+
+    if (key.includes("review") || key.includes("audit") || key.includes("governance")) {
+      const review = this.routes.get("review");
+      if (review) {
+        return review;
       }
     }
 
@@ -166,6 +180,11 @@ class CodexClient {
         provider: process.env.CODEX_COMPLEX_PROVIDER || undefined,
         model: process.env.CODEX_COMPLEX_MODEL || undefined,
         maxTokens: parseNumber(process.env.CODEX_COMPLEX_MAX_TOKENS),
+      },
+      review: {
+        provider: process.env.CODEX_REVIEW_PROVIDER || undefined,
+        model: process.env.CODEX_REVIEW_MODEL || undefined,
+        maxTokens: parseNumber(process.env.CODEX_REVIEW_MAX_TOKENS),
       },
     };
 

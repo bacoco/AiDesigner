@@ -160,6 +160,47 @@ interface LaneDecisionRecord {
   trigger?: string;
 }
 
+interface ReviewCheckpointConfig {
+  title: string;
+  sourcePhase: string;
+  agent: string;
+  lane?: LaneKey;
+  deliverableKeys?: string[];
+  instructions: string;
+}
+
+const REVIEW_CHECKPOINTS: Record<string, ReviewCheckpointConfig> = {
+  pm_plan_review: {
+    title: "Plan Quality Gate",
+    sourcePhase: "pm",
+    agent: "po",
+    lane: "review",
+    deliverableKeys: ["prd", "project_plan", "timeline"],
+    instructions:
+      "You are acting as an independent reviewer validating the product plan. Review the provided planning deliverables, identify risks or gaps, and respond with JSON {\"status\": \"approve\"|\"revise\"|\"block\", \"summary\": string, \"risks\": string[], \"follow_up\": string[]}.",
+  },
+  architecture_design_review: {
+    title: "Architecture Design Review",
+    sourcePhase: "architect",
+    agent: "architect",
+    lane: "review",
+    deliverableKeys: ["architecture", "system_design", "tech_stack"],
+    instructions:
+      "You are a principal architect performing a design review. Inspect the architecture deliverables for feasibility, scalability, and alignment with requirements. Respond with JSON {\"status\": \"approve\"|\"revise\"|\"block\", \"summary\": string, \"risks\": string[], \"follow_up\": string[]}.",
+  },
+  story_scope_review: {
+    title: "Story Scope Review",
+    sourcePhase: "sm",
+    agent: "qa",
+    lane: "review",
+    deliverableKeys: ["user_stories", "epics", "sprint_plan"],
+    instructions:
+      "You are a senior QA reviewer validating story readiness. Evaluate the backlog deliverables for clarity, testability, and risk. Respond with JSON {\"status\": \"approve\"|\"revise\"|\"block\", \"summary\": string, \"risks\": string[], \"follow_up\": string[]}.",
+  },
+};
+
+const REVIEW_CHECKPOINT_NAMES = Object.freeze(Object.keys(REVIEW_CHECKPOINTS));
+
 async function getDefaultLLMClientCtor(): Promise<any> {
   const mod = await import("../../lib/llm-client.js");
   return mod.LLMClient;
@@ -526,6 +567,26 @@ export async function runOrchestratorServer(
         },
       },
       {
+        name: "run_review_checkpoint",
+        description:
+          "Run an independent reviewer model against a validation checkpoint and capture the outcome",
+        inputSchema: {
+          type: "object",
+          properties: {
+            checkpoint: {
+              type: "string",
+              enum: REVIEW_CHECKPOINT_NAMES,
+              description: "Review checkpoint identifier",
+            },
+            notes: {
+              type: "string",
+              description: "Additional context or concerns for the reviewer",
+            },
+          },
+          required: ["checkpoint"],
+        },
+      },
+      {
         name: "scan_codebase",
         description:
           "Scan existing codebase structure, tech stack, and architecture (for brownfield projects)",
@@ -826,6 +887,105 @@ export async function runOrchestratorServer(
               {
                 type: "text",
                 text: JSON.stringify(result, null, 2),
+              },
+            ],
+          };
+        }
+
+        case "run_review_checkpoint": {
+          const params = args as { checkpoint: string; notes?: string };
+          const config = REVIEW_CHECKPOINTS[params.checkpoint];
+
+          if (!config) {
+            throw new Error(`Unknown review checkpoint: ${params.checkpoint}`);
+          }
+
+          await ensureOperationAllowed("run_review_checkpoint", {
+            checkpoint: params.checkpoint,
+            phase: config.sourcePhase,
+          });
+
+          const lane = config.lane ?? "review";
+          log(
+            `[MCP] Running review checkpoint ${params.checkpoint} using ${config.agent} on lane ${lane}`
+          );
+
+          const reviewLLM = await createLLMClient(lane);
+          const reviewBridge = new BMADBridge({ llmClient: reviewLLM });
+          await reviewBridge.initialize();
+
+          const projectSnapshot = projectState.exportForLLM();
+          const phaseDeliverables = projectState.getPhaseDeliverables(config.sourcePhase);
+
+          const deliverables =
+            config.deliverableKeys && config.deliverableKeys.length > 0
+              ? Object.fromEntries(
+                  config.deliverableKeys
+                    .map((key) => [key, phaseDeliverables?.[key]])
+                    .filter(([, value]) => value != null)
+                )
+              : phaseDeliverables;
+
+          const reviewContext = {
+            task: config.instructions,
+            checkpoint: params.checkpoint,
+            reviewerTitle: config.title,
+            project: projectSnapshot,
+            phaseDeliverables: deliverables,
+            additionalNotes: params.notes ?? "",
+          };
+
+          const reviewResult = await reviewBridge.runAgent(config.agent, reviewContext);
+          let parsedOutcome: any = reviewResult?.response;
+
+          if (typeof parsedOutcome === "string") {
+            try {
+              parsedOutcome = JSON.parse(parsedOutcome);
+            } catch (error) {
+              parsedOutcome = {
+                status: "revise",
+                summary: "Reviewer response was not valid JSON.",
+                raw: reviewResult?.response,
+              };
+            }
+          }
+
+          if (parsedOutcome == null || typeof parsedOutcome !== "object") {
+            parsedOutcome = {
+              status: "revise",
+              summary: "Reviewer response unavailable.",
+              raw: reviewResult?.response,
+            };
+          }
+
+          if (!parsedOutcome.status) {
+            parsedOutcome.status = "revise";
+          }
+
+          const record = await projectState.recordReviewOutcome(params.checkpoint, {
+            phase: config.sourcePhase,
+            reviewer: config.agent,
+            lane,
+            status: parsedOutcome.status,
+            summary: parsedOutcome.summary ?? parsedOutcome.notes ?? "",
+            risks: parsedOutcome.risks ?? [],
+            followUp: parsedOutcome.follow_up ?? parsedOutcome.actions ?? [],
+            additionalNotes: params.notes ?? undefined,
+            outcome: parsedOutcome,
+          });
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    checkpoint: params.checkpoint,
+                    record,
+                  },
+                  null,
+                  2
+                ),
               },
             ],
           };

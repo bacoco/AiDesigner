@@ -150,8 +150,9 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 ### Prerequisites Before Migration
 
 - [ ] V6 stability confirmed (beta/stable release)
-
 - [ ] Migration path tested for custom features
+- [x] Codex CLI compatibility verified
+- [ ] Dual-lane orchestration adaptable to v6 workflows
 - [x] Invisible orchestrator compatible with v6 module system (prototype documented in `docs/v6-module-bridge.md`)
 - [x] MCP server integration maintained
 
@@ -161,11 +162,10 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 ### Features Worth Cherry-Picking (Without Full Migration)
 
 - [x] JIT context injection concept (adapt to invisible orchestrator)
-- [ ] Fresh context validation pattern (different models for dev/review)
+- [x] Fresh context validation pattern (different models for dev/review) — documented in docs/review-checkpoints.md and wired into MCP review lanes
 - [x] Hash file checking (prevent customization overwrites)
 - [x] Scale-adaptive workflow logic (integrate into phase detector)
-- [x] Hash file checking (prevent customization overwrites)
-- [ ] Tech-spec per epic approach (vs all-at-once)
+- [x] Tech-spec per epic approach (vs all-at-once)
 
 ---
 
