@@ -2,8 +2,6 @@ const fs = require('fs-extra');
 const os = require('node:os');
 const path = require('node:path');
 
-const { V6ModuleLoader } = require('../lib/v6-module-loader.js');
-globalThis.V6ModuleLoader = V6ModuleLoader;
 const { BMADBridge } = require('../lib/bmad-bridge.js');
 
 async function createV6Workspace() {
