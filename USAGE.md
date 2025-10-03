@@ -28,10 +28,14 @@ npx bmad-invisible@latest init
 npm install
 
 # Start chatting (pick your assistant)
-# Codex: npm run codex
-# Claude: npm run bmad:chat
-# OpenCode: npx bmad-invisible opencode
-npm run bmad:chat
+# Default orchestrator launcher
+npm run bmad
+# Codex front-end
+npm run bmad:codex
+# Claude CLI front-end
+npm run bmad:claude
+# OpenCode front-end
+npm run bmad:opencode
 # Add -- --glm to any npm script invocation to switch providers
 ```
 
@@ -50,7 +54,7 @@ npm install
 
 # Build and run
 npm run build:mcp
-npm run chat
+npm run bmad
 ```
 
 ### Selecting Your LLM Provider
@@ -304,7 +308,7 @@ Check that you're confirming at checkpoints. The system needs your `y` to procee
 ### New Project from Scratch
 
 ```
-1. npm run chat
+1. npm run bmad
 2. "Help me build [your idea]"
 3. Answer discovery questions
 4. Review and confirm each phase
@@ -315,7 +319,7 @@ Check that you're confirming at checkpoints. The system needs your `y` to procee
 
 ```
 1. cd your-project
-2. npm run chat
+2. npm run bmad
 3. "I need to add [feature]"
 4. System detects context, suggests approach
 5. Get stories and implementation guidance
