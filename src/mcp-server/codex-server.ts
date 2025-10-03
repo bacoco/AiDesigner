@@ -5,6 +5,11 @@ import {
   OrchestratorServerOptions,
   runOrchestratorServer,
 } from "./runtime.js";
+import {
+  MetricsSink,
+  StructuredLogger,
+  createStructuredLogger,
+} from "./observability.js";
 
 interface ModelRoute {
   provider: string;
@@ -127,14 +132,13 @@ class ModelRouter {
     return this.defaultRoute;
   }
 
-  describe(): string {
-    const entries = Array.from(this.routes.entries())
-      .map(([key, route]) => `- ${key}: ${route.provider}/${route.model}${
-        route.maxTokens ? ` (maxTokens=${route.maxTokens})` : ""
-      }`)
-      .join("\n");
-
-    return entries;
+  snapshot(): Array<ModelRoute & { key: string }> {
+    return Array.from(this.routes.entries()).map(([key, route]) => ({
+      key,
+      provider: route.provider,
+      model: route.model,
+      maxTokens: route.maxTokens,
+    }));
   }
 }
 
@@ -144,12 +148,20 @@ class CodexClient {
   private readonly autoApprove: boolean;
   private readonly approvedOperations: Set<string>;
   private readonly llmCache: Map<string, LLMClient> = new Map();
+  private readonly logger: StructuredLogger;
 
-  constructor(router: ModelRouter, approvalMode: boolean, autoApprove: boolean, approvedOps: Set<string>) {
+  constructor(
+    router: ModelRouter,
+    approvalMode: boolean,
+    autoApprove: boolean,
+    approvedOps: Set<string>,
+    logger: StructuredLogger
+  ) {
     this.router = router;
     this.approvalMode = approvalMode;
     this.autoApprove = autoApprove;
     this.approvedOperations = approvedOps;
+    this.logger = logger;
   }
 
   static fromEnvironment(): CodexClient {
@@ -198,26 +210,116 @@ class CodexClient {
         .filter((token) => token.length > 0)
     );
 
-    return new CodexClient(router, approvalMode, autoApprove, approvedOps);
+    let logContext: Record<string, unknown> = {};
+    let logContextInvalid = false;
+    if (process.env.CODEX_LOG_CONTEXT) {
+      try {
+        logContext = JSON.parse(process.env.CODEX_LOG_CONTEXT);
+      } catch (error) {
+        console.error(
+          "[Codex] Failed to parse CODEX_LOG_CONTEXT:",
+          error instanceof Error ? error.message : error
+        );
+        logContextInvalid = true;
+      }
+    }
+
+    const metricSinks: MetricsSink[] = [];
+    if (parseBoolean(process.env.CODEX_METRICS_STDOUT, false)) {
+      metricSinks.push((event) => {
+        process.stdout.write(
+          `${JSON.stringify({ ts: new Date().toISOString(), type: "metric", ...event })}\n`
+        );
+      });
+    }
+
+    const logger = createStructuredLogger({
+      name: "bmad-codex",
+      base: {
+        component: "codex",
+        ...logContext,
+      },
+      metrics: metricSinks,
+    });
+
+    if (logContextInvalid) {
+      logger.warn("log_context_invalid", {
+        context: process.env.CODEX_LOG_CONTEXT,
+      });
+    }
+
+    return new CodexClient(router, approvalMode, autoApprove, approvedOps, logger);
   }
 
   createLLMClient(lane?: LaneKey): LLMClient {
     const key = (lane || "default").toLowerCase();
 
     if (!this.llmCache.has(key)) {
+      const stopTimer = this.logger.startTimer();
       const route = this.router.resolve(lane);
       this.llmCache.set(key, new LLMClient({ provider: route.provider, model: route.model }));
+
+      const durationMs = stopTimer();
+      this.logger.info("llm_client_initialized", {
+        operation: "create_llm_client",
+        lane: key,
+        provider: route.provider,
+        model: route.model,
+        durationMs,
+      });
+      this.logger.recordTiming("codex.llm_client.init_ms", durationMs, {
+        operation: "create_llm_client",
+        lane: key,
+      });
+    } else {
+      this.logger.debug("llm_client_cache_hit", {
+        operation: "create_llm_client",
+        lane: key,
+      });
     }
 
     return this.llmCache.get(key)!;
   }
 
   async ensureOperationAllowed(operation: string, metadata?: Record<string, unknown>): Promise<void> {
+    const stopTimer = this.logger.startTimer();
+    const lane =
+      (metadata as { lane?: string } | undefined)?.lane ??
+      (metadata as { decision?: { lane?: string } } | undefined)?.decision?.lane ??
+      "default";
+    const mode = this.approvalMode ? (this.autoApprove ? "auto" : "manual") : "disabled";
+
     if (!this.approvalMode) {
+      const durationMs = stopTimer();
+      this.logger.debug("approval_bypassed", {
+        operation,
+        lane,
+        mode,
+        durationMs,
+      });
+      this.logger.recordTiming("codex.approval.duration_ms", durationMs, {
+        operation,
+        lane,
+        mode,
+        status: "bypassed",
+      });
       return;
     }
 
     if (this.autoApprove) {
+      const durationMs = stopTimer();
+      this.logger.info("approval_auto_granted", {
+        operation,
+        lane,
+        mode,
+        durationMs,
+      });
+      this.logger.recordTiming("codex.approval.duration_ms", durationMs, {
+        operation,
+        lane,
+        mode,
+        status: "auto",
+      });
       return;
     }
 
@@ -225,8 +327,37 @@ class CodexClient {
     const hasApproval = keys.some((key) => this.approvedOperations.has(key));
 
     if (hasApproval) {
+      const durationMs = stopTimer();
+      this.logger.info("approval_granted", {
+        operation,
+        lane,
+        mode,
+        durationMs,
+        keys,
+      });
+      this.logger.recordTiming("codex.approval.duration_ms", durationMs, {
+        operation,
+        lane,
+        mode,
+        status: "granted",
+      });
       return;
     }
+
+    const durationMs = stopTimer();
+    this.logger.error("approval_blocked", {
+      operation,
+      lane,
+      mode,
+      durationMs,
+      keys,
+    });
+    this.logger.recordTiming("codex.approval.duration_ms", durationMs, {
+      operation,
+      lane,
+      mode,
+      status: "blocked",
+    });
 
     throw new Error(
       `Operation "${operation}" blocked by Codex approval mode. ` +
@@ -235,26 +366,30 @@ class CodexClient {
   }
 
   logStartup(): void {
-    if (this.approvalMode) {
-      if (this.autoApprove) {
-        console.error("[Codex] Approval mode enabled with auto-approval");
-      } else {
-        console.error(
-          "[Codex] Approval mode enabled. Blocked operations must be explicitly allowed via CODEX_APPROVED_OPERATIONS"
-        );
-      }
-    } else {
-      console.error("[Codex] Approval mode disabled");
-    }
+    const approvalMode = this.approvalMode
+      ? this.autoApprove
+        ? "auto"
+        : "manual"
+      : "disabled";
 
-    console.error("[Codex] Model routing:");
-    console.error(this.router.describe());
+    this.logger.info("codex_startup", {
+      approvalMode,
+      approvedOperations: Array.from(this.approvedOperations),
+      routes: this.router.snapshot(),
+    });
+  }
+
+  getLogger(): StructuredLogger {
+    return this.logger;
   }
 }
 
 async function main(): Promise<void> {
   const codexClient = CodexClient.fromEnvironment();
   codexClient.logStartup();
+
+  const baseLogger = codexClient.getLogger();
+  const orchestratorLogger = baseLogger.child({ component: "mcp-orchestrator" });
 
   const options: OrchestratorServerOptions = {
     serverInfo: {
@@ -264,11 +399,15 @@ async function main(): Promise<void> {
     createLLMClient: (lane) => codexClient.createLLMClient(lane),
     ensureOperationAllowed: (operation, metadata) =>
       codexClient.ensureOperationAllowed(operation, metadata),
+    logger: orchestratorLogger,
     log: (message) => {
-      console.error(message.startsWith("[MCP]") ? message : `[MCP] ${message}`);
+      orchestratorLogger.info("legacy_log", { message });
     },
     onServerReady: () => {
-      console.error("[Codex] BMAD Codex MCP bridge ready on stdio");
+      orchestratorLogger.info("server_ready", {
+        event: "server_ready",
+        transport: "stdio",
+      });
     },
   };
 
@@ -276,6 +415,12 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  console.error("[Codex] Server error:", error);
+  const logger = createStructuredLogger({
+    name: "bmad-codex",
+    base: { component: "codex" },
+  });
+  logger.error("server_error", {
+    error: error instanceof Error ? error.message : String(error),
+  });
   process.exit(1);
 });
