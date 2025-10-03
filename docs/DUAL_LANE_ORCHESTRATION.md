@@ -80,6 +80,23 @@ The lane selector (`lib/lane-selector.js`) analyzes:
    - Existing PRD exists (+3 complex)
    - High project complexity (+3 complex)
 
+### V6 Scale Level Translation
+
+BMAD V6 introduces scale-adaptive levels (0-4). The invisible lane selector mirrors that logic by
+deriving a **scale score** for every request:
+
+| Level | Description                              | Typical Signals                                                                 | Lane Bias      |
+| ----- | ---------------------------------------- | ------------------------------------------------------------------------------- | -------------- |
+| 0     | Micro fixes / localized edits            | Quick-fix keywords, single-file scope, short requests                           | Strong Quick   |
+| 1     | Small enhancements                       | Default baseline when no strong signals exist                                   | Mild Quick     |
+| 2     | Medium features / integrations           | Integration keywords, cross-service work, moderate complex indicators           | Lean Complex   |
+| 3     | Platform work / multi-component programs | Architecture or platform overhaul language, multi-file scope, long requirements | Strong Complex |
+| 4     | Enterprise-wide transformations          | Enterprise/multi-region/compliance terminology, enterprise context flags        | Force Complex  |
+
+The scale score is included in the decision output (`result.scale`) along with rationale signals.
+Each level provides an additive bonus to either the quick or complex lane scores, ensuring routing
+aligns with V6 expectations while preserving invisible orchestration.
+
 ### Decision Examples
 
 | User Request                     | Lane    | Confidence | Rationale                          |

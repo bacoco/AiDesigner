@@ -246,3 +246,10 @@ The Test Architect helps achieve:
 - **Documented risk acceptance** for technical debt
 - **Consistent test quality** across the team
 - **Shift-left testing** with early risk identification
+
+## V6 Web Bundle Evaluation (2025-02-05)
+
+- Attempted to follow the upstream guidance for the V6 web bundle, but the repository snapshot does not include any V6-specific builder docs, scripts, or configuration. A full-text search for `v6`, `V6`, and related bundle commands across the workspace returned only the migration tracker in `later-todo.md`, leaving no actionable instructions to execute.【30f373†L1-L24】
+- Built the current production web bundles (`npm run build`) to confirm the baseline pipeline still succeeds in our Node.js 20 environment. This generated the standard agent, team, and expansion-pack artifacts but did not surface any hidden V6 assets to package.【d7accd†L1-L94】
+- Recompiled the MCP server (`npm run build:mcp`) to verify the IDE-independent workflow remains healthy; the TypeScript build completes without errors, matching our deployment targets that rely on CLI + MCP instead of IDE plugins.【271da4†L1-L6】
+- Because upstream V6 assets and deployment notes are missing, the V6 bundle cannot be assembled or deployed in a parity environment. Dual-lane orchestration and MCP integration continue to operate on the existing (v1.x) bundles, but V6 readiness cannot be validated. Leave migration readiness items in `later-todo.md` unchecked until upstream provides the required build path and artifacts.

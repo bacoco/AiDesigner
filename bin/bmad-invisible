@@ -12,8 +12,12 @@
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { runIntegrityPreflight } = require('../common/utils/integrity');
 
 const [, , command, ...args] = process.argv;
+const packageRoot = path.join(__dirname, '..');
+
+runIntegrityPreflight(packageRoot, { silentOnMatch: true });
 
 // Get current package version
 const packageJsonPath = path.join(__dirname, '..', 'package.json');
