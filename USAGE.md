@@ -145,7 +145,7 @@ Assistant: Absolutely! Let me update the architecture...
 
 BMAD-Invisible now records SHA-256 hashes for critical, user-modifiable resources.
 When you launch any CLI entry point (`bmad-invisible`, `bmad-invisible-codex`, or
-`bmad-chat`), a quick pre-flight check compares the current files against the
+`bmad-claude`), a quick pre-flight check compares the current files against the
 baseline stored in `.bmad-invisible/critical-hashes.json`.
 
 - ✅ Matching hashes: the CLI proceeds silently.
@@ -216,7 +216,7 @@ This step is skipped automatically in non-interactive environments. See [`codex-
 
 ### Automatic CLI Provisioning
 
-The `bin/bmad-codex` and `bin/bmad-chat` launchers now validate that the Codex and Claude CLIs are installed **before** spawning the orchestrator session. If a binary is missing, the script will:
+The `bin/bmad-codex` and `bin/bmad-claude` launchers now validate that the Codex and Claude CLIs are installed **before** spawning the orchestrator session. If a binary is missing, the script will:
 
 - Offer an interactive menu with installation helpers (for example `npm exec --yes @openai/codex-cli@latest -- codex --help`, Homebrew taps, and the official download docs).
 - Fall back to printing the same guidance when running in non-interactive contexts (CI, redirected stdin/stdout) so automation jobs fail fast but still surface the remediation steps.
@@ -250,10 +250,10 @@ npm run build:mcp
 ls -la dist/mcp/mcp/
 ```
 
-### Permission denied on bin/bmad-chat
+### Permission denied on bin/bmad-claude
 
 ```bash
-chmod +x bin/bmad-chat
+chmod +x bin/bmad-claude
 ```
 
 ### No deliverables generated

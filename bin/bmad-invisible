@@ -145,6 +145,7 @@ const determineAssistant = async (flagValue) => {
     console.error('⚠️ Unsupported assistant flag value:', flagValue);
     console.error('Valid options:', ASSISTANT_CHOICES.join(', '));
     process.exit(1);
+    return; // For testing when exit is mocked
   }
 
   if (!process.stdout.isTTY) {
@@ -152,6 +153,7 @@ const determineAssistant = async (flagValue) => {
       '⚠️ Non-interactive mode requires --assistant flag. Use: --assistant=claude|codex|opencode',
     );
     process.exit(1);
+    return; // For testing when exit is mocked
   }
 
   return promptForAssistant();
@@ -166,6 +168,11 @@ const commands = {
     const { assistant: assistantFlag, sanitized } = parseAssistantFromArgs(args);
     args.splice(0, args.length, ...sanitized);
     const assistant = await determineAssistant(assistantFlag);
+
+    // If assistant is undefined, exit was called (possibly mocked in tests)
+    if (!assistant) {
+      return;
+    }
 
     // Run init
     await commands.init();
@@ -347,8 +354,8 @@ For detailed documentation, visit:
     // Check if bmad-invisible is installed locally first
     const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
     const chatScript = fs.existsSync(localInstall)
-      ? path.join(localInstall, 'bin', 'bmad-chat')
-      : path.join(__dirname, 'bmad-chat');
+      ? path.join(localInstall, 'bin', 'bmad-claude')
+      : path.join(__dirname, 'bmad-claude');
 
     if (!fs.existsSync(chatScript)) {
       console.error('❌ BMAD-invisible not found. Please run "npm install" first.');

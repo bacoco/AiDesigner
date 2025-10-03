@@ -60,7 +60,7 @@ Successfully implemented a **fully functional MCP-based invisible orchestrator**
    - Natural conversation examples
    - Strict "invisibility" rules
 
-8. **CLI Wrapper** (`bin/bmad-chat`) - **44 lines**
+8. **CLI Wrapper** (`bin/bmad-claude`) - **44 lines**
    - Launches Claude CLI with MCP config
    - Loads orchestrator agent
    - User-friendly startup messages

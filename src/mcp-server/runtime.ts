@@ -516,7 +516,7 @@ export async function runOrchestratorServer(
           error: new Error("Unsupported response type"),
           context,
         });
-        log(
+        logger.error(
           `[MCP] Failed to parse response from agent ${agentId}: Unsupported response type (${typeof rawResponse})`
         );
         return structuredError;

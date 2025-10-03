@@ -6,6 +6,8 @@ import {
   runOrchestratorServer,
 } from "./runtime.js";
 import { OperationPolicyEnforcer } from "./operation-policy.js";
+import { loadModelRoutingConfig } from "./codex-config.js";
+import { StructuredLogger, createStructuredLogger } from "./observability.js";
 
 interface ModelRoute {
   provider: string;
@@ -127,6 +129,13 @@ class ModelRouter {
       maxTokens: route.maxTokens,
     }));
   }
+
+  describe(): string {
+    const routes = this.snapshot();
+    return routes
+      .map((route) => `  ${route.key}: ${route.provider}/${route.model}${route.maxTokens ? ` (max: ${route.maxTokens})` : ""}`)
+      .join("\n");
+  }
 }
 
 export class CodexClient {
@@ -136,19 +145,22 @@ export class CodexClient {
   private readonly approvedOperations: Set<string>;
   private readonly llmCache: Map<string, LLMClient> = new Map();
   private readonly policyEnforcer?: OperationPolicyEnforcer;
+  private readonly logger: StructuredLogger;
 
   constructor(
     router: ModelRouter,
     approvalMode: boolean,
     autoApprove: boolean,
     approvedOps: Set<string>,
-    policyEnforcer?: OperationPolicyEnforcer
+    policyEnforcer?: OperationPolicyEnforcer,
+    logger?: StructuredLogger
   ) {
     this.router = router;
     this.approvalMode = approvalMode;
     this.autoApprove = autoApprove;
     this.approvedOperations = approvedOps;
     this.policyEnforcer = policyEnforcer;
+    this.logger = logger || createStructuredLogger({ name: "codex-client" });
   }
 
   static fromEnvironment(): CodexClient {
@@ -253,25 +265,19 @@ export class CodexClient {
       return;
     }
 
-    const durationMs = stopTimer();
     this.logger.error("approval_blocked", {
       operation,
-      lane,
-      mode,
-      durationMs,
       keys,
-    });
-    this.logger.recordTiming("codex.approval.duration_ms", durationMs, {
-      operation,
-      lane,
-      mode,
-      status: "blocked",
     });
 
     throw new Error(
       `Operation "${operation}" blocked by Codex approval mode. ` +
         `Add it to CODEX_APPROVED_OPERATIONS or set CODEX_AUTO_APPROVE=1 to proceed.`
     );
+  }
+
+  getLogger(): StructuredLogger {
+    return this.logger;
   }
 
   logStartup(): void {
