@@ -1003,9 +1003,10 @@ const commands = {
     packageJson.scripts = packageJson.scripts || {};
 
     const scriptsToAdd = {
+      bmad: 'bmad-invisible start',
       codex: 'bmad-invisible codex',
       'bmad:codex': 'bmad-invisible codex',
-      'bmad:chat': 'bmad-invisible chat',
+      'bmad:claude': 'bmad-invisible chat',
       'bmad:build': 'bmad-invisible build',
     };
 

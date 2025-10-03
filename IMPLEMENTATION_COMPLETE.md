@@ -127,7 +127,7 @@ npm install
 npm run build:mcp
 
 # Start conversational interface
-npm run chat
+npm run bmad
 
 # Talk naturally
 "Help me build a task management app for my family"
@@ -219,7 +219,7 @@ npm test
 ## Success Criteria
 
 ✅ **Works without API keys** - Uses Claude Pro subscription
-✅ **Integrates with existing BMAD CLI** - npm run chat
+✅ **Integrates with existing BMAD CLI** - npm run bmad (with `npm run bmad:claude` / `npm run bmad:codex` for specific front-ends)
 ✅ **Generates real deliverables** - docs/ folder populated
 ✅ **Maintains invisible UX** - No methodology jargon
 ✅ **Persists state** - .bmad-invisible/ folder
@@ -238,7 +238,10 @@ npm test
 ## Usage Command
 
 ```bash
-npm run chat
+npm run bmad
+# Or pick a specific front-end:
+# npm run bmad:claude
+# npm run bmad:codex
 ```
 
 That's literally it. Just run one command and start talking about your project!
