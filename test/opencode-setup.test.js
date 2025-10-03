@@ -5,8 +5,8 @@ const cjson = require('comment-json');
 const ideSetup = require('../tools/installer/lib/ide-setup');
 
 // These default values must match tools/installer/lib/ide-setup.js defaultModelSettings
-const DEFAULT_MODEL = 'codex/gpt-4.1';
-const DEFAULT_FALLBACKS = ['anthropic/claude-3.5-sonnet', 'openai/gpt-4o-mini'];
+const DEFAULT_MODEL = 'openai/gpt-4.1';
+const DEFAULT_FALLBACKS = ['openai/gpt-4.1-mini', 'anthropic/claude-3.5-sonnet'];
 
 const preconfiguredSettings = {
   opencode: { useAgentPrefix: false, useCommandPrefix: false },
@@ -86,11 +86,11 @@ describe('setupOpenCode model defaults', () => {
 
       // Should preserve the original entries including empty strings (not filtered from original array)
       // Should not duplicate 'anthropic/claude-3.5-sonnet' due to case-insensitive matching
-      // Should add 'openai/gpt-4o-mini' which wasn't present
+      // Should add 'openai/gpt-4.1-mini' which wasn't present
       expect(parsed.fallbackModels).toContain('Anthropic/CLAUDE-3.5-sonnet');
       expect(parsed.fallbackModels).toContain('custom/model');
-      expect(parsed.fallbackModels).toContain('openai/gpt-4o-mini');
-      expect(parsed.fallbackModels).toHaveLength(5); // '', 'Anthropic/CLAUDE...', 'custom/model', '   ', 'openai/gpt-4o-mini'
+      expect(parsed.fallbackModels).toContain('openai/gpt-4.1-mini');
+      expect(parsed.fallbackModels).toHaveLength(5); // '', 'Anthropic/CLAUDE...', 'custom/model', '   ', 'openai/gpt-4.1-mini'
     } finally {
       await fs.remove(projectDir);
     }

@@ -139,8 +139,8 @@ class IdeSetup extends BaseIdeSetup {
     // - If none exists: create minimal opencode.jsonc with $schema and instructions array including that file
 
     const defaultModelSettings = {
-      model: 'codex/gpt-4.1',
-      fallbackModels: ['anthropic/claude-3.5-sonnet', 'openai/gpt-4o-mini'],
+      model: 'openai/gpt-4.1',
+      fallbackModels: ['openai/gpt-4.1-mini', 'anthropic/claude-3.5-sonnet'],
     };
 
     const jsonPath = path.join(installDir, 'opencode.json');
