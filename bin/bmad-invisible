@@ -60,6 +60,12 @@ const parseEnvFile = (filePath) => {
       value = value.slice(1, -1);
     }
 
+    // Validate that value doesn't contain newlines (would break .env format)
+    if (value.includes('\n') || value.includes('\r')) {
+      console.warn(`⚠️ Skipping invalid .env value for ${key}: contains newline characters`);
+      continue;
+    }
+
     parsed[key] = value;
   }
 
@@ -84,21 +90,17 @@ const readProjectEnv = (projectRoot) => {
 
 const isInteractiveTerminal = () => Boolean(process.stdin.isTTY && process.stdout.isTTY);
 
+/**
+ * Parses provider from CLI arguments.
+ * Precedence: CLI args > process env vars > .env file > interactive prompts
+ */
 const parseProviderFromArgs = (cliArgs = []) => {
   for (let index = 0; index < cliArgs.length; index += 1) {
     const arg = cliArgs[index];
 
-    if (arg === '--provider') {
-      const next = cliArgs[index + 1];
-      if (typeof next === 'string' && next.trim()) {
-        return next.trim().toLowerCase();
-      }
-      continue;
-    }
-
-    if (arg && typeof arg === 'string' && arg.startsWith('--provider=')) {
-      const [, value] = arg.split('=');
-      if (value && value.trim()) {
+    if (arg === '--provider' || arg.startsWith('--provider=')) {
+      const value = arg === '--provider' ? cliArgs[index + 1] : arg.split('=')[1];
+      if (value && typeof value === 'string' && value.trim()) {
         return value.trim().toLowerCase();
       }
     }
@@ -141,12 +143,20 @@ const promptForInput = (question) =>
       }
     };
 
+    // Timeout after 5 minutes to prevent hanging
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Input prompt timed out after 5 minutes'));
+    }, 300000);
+
     rl.on('error', (error) => {
+      clearTimeout(timeout);
       cleanup();
       reject(error);
     });
 
     rl.question(question, (answer) => {
+      clearTimeout(timeout);
       cleanup();
       resolve(answer);
     });
@@ -198,6 +208,11 @@ const promptToPersistGlmEnv = async () => {
 const persistEnvValues = (envPath, updates) => {
   const normalizedUpdates = Object.entries(updates).reduce((acc, [key, value]) => {
     if (typeof value === 'string' && value) {
+      // Validate no newlines in values
+      if (value.includes('\n') || value.includes('\r')) {
+        console.warn(`⚠️ Skipping ${key}: value contains newline characters`);
+        return acc;
+      }
       acc[key] = value;
     }
     return acc;
@@ -235,16 +250,10 @@ const persistEnvValues = (envPath, updates) => {
     }
   }
 
-  let finalContent = updatedLines.join('\n');
-  if (finalContent && !finalContent.endsWith('\n')) {
-    finalContent += '\n';
-  }
-
-  if (!finalContent) {
-    finalContent = `${updateKeys.map((key) => `${key}=${normalizedUpdates[key]}`).join('\n')}\n`;
-  }
+  const finalContent = updatedLines.join('\n') + '\n';
 
   fs.writeFileSync(envPath, finalContent);
+  console.log('⚠️  WARNING: Keep this file secure and never commit it to version control.');
 };
 
 const ensureClaudeEnvironment = async ({ projectRoot, userArgs = [] }) => {
@@ -285,7 +294,6 @@ const ensureClaudeEnvironment = async ({ projectRoot, userArgs = [] }) => {
       '   Provide GLM_API_KEY (and optional GLM_BASE_URL) via environment variables or a project .env file before running in non-interactive mode.',
     );
     process.exit(1);
-    return;
   }
 
   let credentials;
@@ -294,7 +302,6 @@ const ensureClaudeEnvironment = async ({ projectRoot, userArgs = [] }) => {
   } catch (error) {
     console.error('❌ Failed to read GLM credentials:', error.message || error);
     process.exit(1);
-    return;
   }
 
   process.env.GLM_API_KEY = credentials.apiKey;
@@ -477,7 +484,6 @@ const determineAssistant = async (flagValue) => {
     console.error('⚠️ Unsupported assistant flag value:', flagValue);
     console.error('Valid options:', ASSISTANT_CHOICES.join(', '));
     process.exit(1);
-    return; // For testing when exit is mocked
   }
 
   if (!process.stdout.isTTY) {
@@ -485,7 +491,6 @@ const determineAssistant = async (flagValue) => {
       '⚠️ Non-interactive mode requires --assistant flag. Use: --assistant=claude|codex|opencode',
     );
     process.exit(1);
-    return; // For testing when exit is mocked
   }
 
   return promptForAssistant();
