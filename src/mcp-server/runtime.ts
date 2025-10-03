@@ -287,6 +287,8 @@ function createDeveloperContextInjector(projectState: any) {
 
 export type LaneKey = "default" | "quick" | "complex" | string;
 
+const QUICK_LANE_FALLBACK_REASON = "Quick lane unavailable or not initialized";
+
 export interface OrchestratorServerOptions {
   serverInfo?: {
     name?: string;
@@ -519,12 +521,14 @@ export async function runOrchestratorServer(
     if (quickLaneEnabled && !quickLane) {
       try {
         const quickLaneLLM = await createLLMClient("quick");
+        // Guard against race condition where quickLaneEnabled was flipped to false
+        // during the async createLLMClient call (e.g., if it failed and called disableQuickLane)
         if (!quickLaneEnabled) {
-          return;
+          // Quick lane already disabled, skip initialization but continue with complex lane setup
+        } else {
+          quickLane = new QuickLane(projectPath, { llmClient: quickLaneLLM });
+          await quickLane.initialize();
         }
-
-        quickLane = new QuickLane(projectPath, { llmClient: quickLaneLLM });
-        await quickLane.initialize();
       } catch (error) {
         disableQuickLane("initialize_quick_lane", error);
       }
@@ -1841,8 +1845,7 @@ export async function runOrchestratorServer(
               logger.info("quick_lane_execution_skipped", {
                 operation: "execute_workflow",
                 fallbackLane: "complex",
-                reason:
-                  quickLaneDisabledReason ?? "Quick lane unavailable or not initialized",
+                reason: quickLaneDisabledReason ?? QUICK_LANE_FALLBACK_REASON,
               });
             }
 
