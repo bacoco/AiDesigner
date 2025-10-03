@@ -116,4 +116,52 @@ describe('LLMClient', () => {
       expect.any(Function),
     );
   });
+
+  it('routes GLM requests to open.bigmodel.cn not Anthropic', async () => {
+    process.env.GLM_API_KEY = 'glm-test-key';
+
+    const responseListeners = {};
+    const mockResponse = {
+      statusCode: 200,
+      on: jest.fn((event, handler) => {
+        responseListeners[event] = handler;
+      }),
+    };
+
+    https.request.mockImplementation((options, callback) => {
+      callback(mockResponse);
+
+      if (responseListeners.data) {
+        responseListeners.data(
+          JSON.stringify({
+            choices: [{ message: { content: 'GLM response' } }],
+          }),
+        );
+      }
+      if (responseListeners.end) {
+        responseListeners.end();
+      }
+
+      return {
+        on: jest.fn(),
+        write: jest.fn(),
+        end: jest.fn(),
+      };
+    });
+
+    const client = new LLMClient({ provider: 'glm' });
+    const result = await client.chat([{ role: 'user', content: 'Hello' }], {
+      temperature: 0.5,
+      maxTokens: 100,
+    });
+
+    expect(result).toBe('GLM response');
+    expect(https.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hostname: 'open.bigmodel.cn',
+        path: '/api/paas/v4/chat/completions',
+      }),
+      expect.any(Function),
+    );
+  });
 });
