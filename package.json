@@ -32,7 +32,7 @@
     "bmad:opencode": "npx bmad-invisible opencode",
     "build": "node tools/cli.js build",
     "build:agents": "node tools/cli.js build --agents-only",
-    "build:mcp": "tsc -p mcp/tsconfig.json && tsc -p tsconfig.codex.json",
+    "build:mcp": "tsc -p mcp/tsconfig.json && tsc -p tsconfig.codex.json && cp -r lib dist/mcp/ && cp -r hooks dist/mcp/",
     "build:teams": "node tools/cli.js build --teams-only",
     "codex": "node bin/bmad-codex",
     "fix": "npm run format && npm run lint:fix",
