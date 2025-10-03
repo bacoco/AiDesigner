@@ -6,7 +6,12 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import * as path from "node:path";
 import { performance } from "node:perf_hooks";
-import { executeAutoCommand } from "../../lib/auto-commands.js";
+const repositoryRoot = path.resolve(__dirname, "../../../..");
+const libDirectory = path.join(repositoryRoot, "lib");
+const hooksDirectory = path.join(repositoryRoot, "hooks");
+const { executeAutoCommand } = require(
+  path.join(libDirectory, "auto-commands.js")
+) as typeof import("../../lib/auto-commands.js");
 import { createStructuredLogger, StructuredLogger } from "./observability.js";
 
 type TargetedSection = {
@@ -402,35 +407,32 @@ export async function runOrchestratorServer(
   };
 
   async function loadDependencies() {
-    const libPath = path.join(__dirname, "..", "..", "lib");
-    const hooksPath = path.join(__dirname, "..", "..", "hooks");
-
     if (!ProjectState) {
-      ({ ProjectState } = await import(path.join(libPath, "project-state.js")));
+      ({ ProjectState } = await import(path.join(libDirectory, "project-state.js")));
     }
     if (!BMADBridge) {
-      ({ BMADBridge } = await import(path.join(libPath, "bmad-bridge.js")));
+      ({ BMADBridge } = await import(path.join(libDirectory, "bmad-bridge.js")));
     }
     if (!DeliverableGenerator) {
-      ({ DeliverableGenerator } = await import(path.join(libPath, "deliverable-generator.js")));
+      ({ DeliverableGenerator } = await import(path.join(libDirectory, "deliverable-generator.js")));
     }
     if (!BrownfieldAnalyzer) {
-      ({ BrownfieldAnalyzer } = await import(path.join(libPath, "brownfield-analyzer.js")));
+      ({ BrownfieldAnalyzer } = await import(path.join(libDirectory, "brownfield-analyzer.js")));
     }
     if (!QuickLane) {
-      ({ QuickLane } = await import(path.join(libPath, "quick-lane.js")));
+      ({ QuickLane } = await import(path.join(libDirectory, "quick-lane.js")));
     }
     if (!LaneSelector) {
-      LaneSelector = await import(path.join(libPath, "lane-selector.js"));
+      LaneSelector = await import(path.join(libDirectory, "lane-selector.js"));
     }
     if (!phaseTransitionHooks) {
-      phaseTransitionHooks = await import(path.join(hooksPath, "phase-transition.js"));
+      phaseTransitionHooks = await import(path.join(hooksDirectory, "phase-transition.js"));
     }
     if (!contextPreservation) {
-      contextPreservation = await import(path.join(hooksPath, "context-preservation.js"));
+      contextPreservation = await import(path.join(hooksDirectory, "context-preservation.js"));
     }
     if (!storyContextValidator) {
-      const module = await import(path.join(libPath, "story-context-validator.js"));
+      const module = await import(path.join(libDirectory, "story-context-validator.js"));
       storyContextValidator = module?.default ?? module;
     }
   }
