@@ -1299,10 +1299,17 @@ For detailed documentation, visit:
     const rootDir = fs.existsSync(localInstall) ? localInstall : path.join(__dirname, '..');
 
     // The MCP server is already pre-built in dist/, but we'll check TypeScript is available
-    const distMcp = path.join(rootDir, 'dist', 'mcp', 'server.js');
-    if (fs.existsSync(distMcp)) {
+    const packagedEntryCandidates = [
+      path.join(rootDir, 'dist', 'mcp', 'mcp', 'server.js'),
+      path.join(rootDir, 'dist', 'mcp', 'server.js'),
+    ];
+    const resolvedPackagedEntry = packagedEntryCandidates.find((candidate) =>
+      fs.existsSync(candidate),
+    );
+
+    if (resolvedPackagedEntry) {
       console.log('✅ MCP server already built and ready!');
-      console.log(`   Location: ${distMcp}`);
+      console.log(`   Entry point: ${resolvedPackagedEntry}`);
       return;
     }
 
@@ -1315,7 +1322,13 @@ For detailed documentation, visit:
 
     child.on('exit', (code) => {
       if (code === 0) {
+        const builtEntry = packagedEntryCandidates.find((candidate) =>
+          fs.existsSync(candidate),
+        );
         console.log('\n✅ MCP server built successfully!');
+        if (builtEntry) {
+          console.log(`   Entry point: ${builtEntry}`);
+        }
       }
       process.exit(code || 0);
     });
