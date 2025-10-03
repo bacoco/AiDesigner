@@ -3,7 +3,16 @@
  * Verify correct classification of tasks between complex and quick lanes
  */
 
-const { selectLane, QUICK_FIX_KEYWORDS, COMPLEX_KEYWORDS } = require('../lib/lane-selector');
+const fs = require('fs-extra');
+const os = require('node:os');
+const path = require('node:path');
+
+const {
+  selectLane,
+  QUICK_FIX_KEYWORDS,
+  COMPLEX_KEYWORDS,
+  logDecision,
+} = require('../lib/lane-selector');
 
 describe('Lane Selector', () => {
   describe('Quick Fix Keywords', () => {
@@ -18,6 +27,9 @@ describe('Lane Selector', () => {
       expect(result.scale.signals.deductions).toEqual(
         expect.arrayContaining([expect.objectContaining({ description: 'Quick fix keywords' })]),
       );
+      expect(result.level).toBe(result.scale.level);
+      expect(result.levelRationale).toContain('Result: level');
+      expect(result.levelRationale).toContain('Quick fix keywords');
     });
 
     test('should select quick lane for flag addition', () => {
@@ -64,6 +76,8 @@ describe('Lane Selector', () => {
           expect.objectContaining({ description: 'Complex keyword signals' }),
         ]),
       );
+      expect(result.level).toBe(result.scale.level);
+      expect(result.levelRationale).toContain('Positive signals');
     });
 
     test('should select complex lane for API integration', () => {
@@ -344,6 +358,44 @@ describe('Lane Selector', () => {
 
       expect(result.confidence).toBeLessThanOrEqual(0.95);
     });
+  });
+});
+
+describe('Lane decision logging', () => {
+  test('logDecision persists level details with rationale fallback', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'lane-log-'));
+
+    try {
+      const decision = {
+        lane: 'quick',
+        confidence: 0.58,
+        rationale: 'test rationale',
+        factors: {},
+        scores: { quick: 3, complex: 1 },
+        scale: {
+          level: 2,
+          score: 5,
+          signals: {
+            contributions: [{ description: 'Complex keyword signals', value: 2 }],
+            deductions: [{ description: 'Quick fix keywords', value: 2 }],
+          },
+        },
+      };
+
+      await logDecision(tempDir, decision, 'Test message');
+
+      const logPath = path.join(tempDir, '.bmad-invisible', 'decisions.jsonl');
+      const content = await fs.readFile(logPath, 'utf8');
+      const lines = content.trim().split('\n');
+      const entry = JSON.parse(lines.at(-1));
+
+      expect(entry.level).toBe(2);
+      expect(entry.levelRationale).toContain('Result: level 2');
+      expect(entry.levelRationale).toContain('Positive signals');
+      expect(entry.levelRationale).toContain('Negative signals');
+    } finally {
+      await fs.remove(tempDir);
+    }
   });
 });
 

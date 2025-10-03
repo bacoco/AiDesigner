@@ -311,6 +311,7 @@ interface LaneDecisionRecord {
   level?: number;
   levelScore?: number;
   levelSignals?: unknown;
+  levelRationale?: string;
 }
 
 interface ReviewCheckpointConfig {
@@ -1530,9 +1531,10 @@ export async function runOrchestratorServer(
           );
 
           const selectionDurationMs = selectionTimer();
-          const scaleLevel = decision.scale?.level;
+          const scaleLevel = decision.level ?? decision.scale?.level;
           const scaleScore = decision.scale?.score;
           const scaleSignals = decision.scale?.signals;
+          const levelRationale = decision.levelRationale;
           logger.info("lane_selection_completed", {
             operation: "select_development_lane",
             lane: decision.lane,
@@ -1540,6 +1542,7 @@ export async function runOrchestratorServer(
             level: scaleLevel,
             levelScore: scaleScore,
             levelSignals: scaleSignals,
+            levelRationale,
             durationMs: selectionDurationMs,
           });
           logger.recordTiming("mcp.lane.selection.duration_ms", selectionDurationMs, {
@@ -1556,6 +1559,7 @@ export async function runOrchestratorServer(
               level: scaleLevel,
               levelScore: scaleScore,
               levelSignals: scaleSignals,
+              levelRationale,
             }
           );
 
@@ -1567,6 +1571,7 @@ export async function runOrchestratorServer(
             level: scaleLevel,
             levelScore: scaleScore,
             levelSignals: scaleSignals,
+            levelRationale,
           });
 
           outcomeFields.lane = decision.lane;
@@ -1580,6 +1585,9 @@ export async function runOrchestratorServer(
           }
           if (scaleSignals !== undefined) {
             outcomeFields.levelSignals = scaleSignals;
+          }
+          if (levelRationale) {
+            outcomeFields.levelRationale = levelRationale;
           }
 
           response = {
@@ -1609,9 +1617,10 @@ export async function runOrchestratorServer(
           );
 
           const selectionDurationMs = selectionTimer();
-          const scaleLevel = decision.scale?.level;
+          const scaleLevel = decision.level ?? decision.scale?.level;
           const scaleScore = decision.scale?.score;
           const scaleSignals = decision.scale?.signals;
+          const levelRationale = decision.levelRationale;
           logger.info("lane_selection_completed", {
             operation: "execute_workflow",
             lane: decision.lane,
@@ -1619,6 +1628,7 @@ export async function runOrchestratorServer(
             level: scaleLevel,
             levelScore: scaleScore,
             levelSignals: scaleSignals,
+            levelRationale,
             durationMs: selectionDurationMs,
           });
           logger.recordTiming("mcp.lane.selection.duration_ms", selectionDurationMs, {
@@ -1635,6 +1645,7 @@ export async function runOrchestratorServer(
               level: scaleLevel,
               levelScore: scaleScore,
               levelSignals: scaleSignals,
+              levelRationale,
             }
           );
 
@@ -1646,6 +1657,7 @@ export async function runOrchestratorServer(
             level: scaleLevel,
             levelScore: scaleScore,
             levelSignals: scaleSignals,
+            levelRationale,
           });
 
           let result: any;
@@ -1661,6 +1673,9 @@ export async function runOrchestratorServer(
           }
           if (scaleSignals !== undefined) {
             outcomeFields.levelSignals = scaleSignals;
+          }
+          if (levelRationale) {
+            outcomeFields.levelRationale = levelRationale;
           }
 
           if (decision.lane === "quick") {
