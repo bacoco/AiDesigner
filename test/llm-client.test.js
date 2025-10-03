@@ -87,6 +87,8 @@ describe('LLMClient', () => {
       }),
     };
 
+    const writeMock = jest.fn();
+
     https.request.mockImplementation((options, callback) => {
       callback(mockResponse);
 
@@ -99,7 +101,7 @@ describe('LLMClient', () => {
 
       return {
         on: jest.fn(),
-        write: jest.fn(),
+        write: writeMock,
         end: jest.fn(),
       };
     });
@@ -115,6 +117,93 @@ describe('LLMClient', () => {
       expect.objectContaining({ hostname: 'example.com', port: expectedPort }),
       expect.any(Function),
     );
+
+    const sentPayload = JSON.parse(writeMock.mock.calls[0][0]);
+    expect(sentPayload).toEqual(
+      expect.objectContaining({
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Hello',
+              },
+            ],
+          },
+        ],
+      }),
+    );
+  });
+
+  it('sends correctly formatted messages through chat() method with claude provider', async () => {
+    process.env.ANTHROPIC_API_KEY = 'test-key';
+
+    const responseListeners = {};
+    const mockResponse = {
+      statusCode: 200,
+      on: jest.fn((event, handler) => {
+        responseListeners[event] = handler;
+      }),
+    };
+
+    const writeMock = jest.fn();
+
+    https.request.mockImplementation((options, callback) => {
+      callback(mockResponse);
+
+      if (responseListeners.data) {
+        responseListeners.data(JSON.stringify({ content: [{ text: 'end-to-end response' }] }));
+      }
+      if (responseListeners.end) {
+        responseListeners.end();
+      }
+
+      return {
+        on: jest.fn(),
+        write: writeMock,
+        end: jest.fn(),
+      };
+    });
+
+    const client = new LLMClient({ provider: 'claude' });
+    const result = await client.chat(
+      [
+        { role: 'user', content: 'What is 2+2?' },
+        { role: 'assistant', content: '4' },
+        { role: 'user', content: 'What is 3+3?' },
+      ],
+      {
+        systemPrompt: 'You are a helpful math assistant.',
+        temperature: 0.7,
+        maxTokens: 200,
+      },
+    );
+
+    expect(result).toBe('end-to-end response');
+
+    // Verify the full payload structure sent to Anthropic API
+    const sentPayload = JSON.parse(writeMock.mock.calls[0][0]);
+    expect(sentPayload).toEqual({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 200,
+      temperature: 0.7,
+      system: 'You are a helpful math assistant.',
+      messages: [
+        {
+          role: 'user',
+          content: [{ type: 'text', text: 'What is 2+2?' }],
+        },
+        {
+          role: 'assistant',
+          content: [{ type: 'text', text: '4' }],
+        },
+        {
+          role: 'user',
+          content: [{ type: 'text', text: 'What is 3+3?' }],
+        },
+      ],
+    });
   });
 
   it('routes GLM requests to open.bigmodel.cn not Anthropic', async () => {
