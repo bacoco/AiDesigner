@@ -38,7 +38,10 @@ The orchestrator automatically selects the appropriate lane based on task comple
 - Node.js ≥ 20.0.0
 - npm ≥ 9.0.0
 
-- **OpenAI Codex CLI** (connects BMAD orchestrator to your local Codex workspace)
+- At least one chat CLI installed locally:
+  - **OpenAI Codex CLI**
+  - **Claude CLI**
+  - **OpenCode CLI**
 
 ### Installation
 
@@ -49,11 +52,14 @@ The orchestrator automatically selects the appropriate lane based on task comple
 npx bmad-invisible@latest start
 ```
 
+> Prefer a specific CLI? Append `--assistant=claude` or `--assistant=opencode` to skip the prompt.
+
 That's it! This command will:
 
 - Create project structure
 - Install all dependencies
-- Launch the Codex-powered chat interface
+- Prompt you to choose Codex, Claude, or OpenCode (defaults to Codex)
+- Launch the selected chat interface
 
 > **💡 Tip**: Always use `@latest` to ensure you get the newest version!
 
@@ -67,7 +73,8 @@ npx bmad-invisible@latest init
 npm install
 
 
-# Start chatting through Codex
+# Start chatting through your preferred CLI
+# (or use --assistant=claude / --assistant=opencode with `start`)
 npm run codex
 
 ```

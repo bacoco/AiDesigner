@@ -10,6 +10,8 @@ npx bmad-invisible@latest start
 ```
 
 This does everything: creates structure, installs dependencies, and launches chat!
+You'll be prompted to pick Codex, Claude, or OpenCode (defaults to Codex). Use
+`--assistant=<choice>` to skip the prompt.
 
 > **💡 Tip**: Always use `@latest` to get the newest version!
 
@@ -22,7 +24,7 @@ npx bmad-invisible@latest init
 # Install dependencies
 npm install
 
-# Start chatting
+# Start chatting (codex, chat, or opencode as desired)
 npm run bmad:chat
 ```
 

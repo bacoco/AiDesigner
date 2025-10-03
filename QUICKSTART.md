@@ -15,20 +15,20 @@ BMAD-Invisible provides a **natural conversational interface** that guides you t
 mkdir my-project && cd my-project
 ```
 
-Pick the assistant CLI you want and run the matching command:
+Pick your preferred assistant CLI when prompted (Codex is the default), or pass
+`--assistant=claude` / `--assistant=opencode` to skip the choice.
 
+```bash
 # Run this ONE command - it does everything!
-
 npx bmad-invisible@latest start
+```
 
-````
-
-Done! Either command automatically:
+Done! The command automatically:
 
 - Creates `package.json` if needed
 - Sets up project structure
 - Installs all dependencies
-- Launches the Codex-powered chat interface
+- Launches the selected chat interface
 
 > **💡 Tip**: Always use `@latest` to avoid npx cache issues on either flow!
 
@@ -45,10 +45,11 @@ npx bmad-invisible@latest init
 npm install
 
 
-# Start chatting through Codex
+# Start chatting through your preferred CLI
+# (codex, chat, or opencode)
 npm run codex
 
-````
+```
 
 ### Option 2: Global Installation
 
@@ -86,7 +87,7 @@ npm run codex
 
 ## Prerequisites
 
-You need **OpenAI Codex CLI** installed:
+You need at least one local chat CLI installed:
 
 ```bash
 # Check if installed
@@ -96,14 +97,9 @@ codex --version
 # https://platform.openai.com/docs/guides/codex
 ```
 
-### Codex CLI
-
-```bash
-# Check if installed
-codex --version
-
-# If not installed, follow the setup instructions in your Codex workspace
-```
+- OpenAI Codex CLI (`codex`)
+- Claude CLI (`claude`) – legacy support
+- OpenCode CLI (`opencode`)
 
 ## Usage
 
