@@ -12,12 +12,12 @@
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 const { runIntegrityPreflight } = require('../common/utils/integrity');
 
-const [, , command, ...args] = process.argv;
+let command;
+let args = [];
 const packageRoot = path.join(__dirname, '..');
-
-runIntegrityPreflight(packageRoot, { silentOnMatch: true });
 
 // Get current package version
 const packageJsonPath = path.join(__dirname, '..', 'package.json');
@@ -32,10 +32,11 @@ Usage:
 
 Commands:
 
-  start                🚀 ONE-COMMAND SETUP: init + install + codex (recommended!)
+  start                🚀 ONE-COMMAND SETUP: init + install + launch chat (Codex default)
   init                 Initialize BMAD-invisible in current project
   codex                Start conversational interface (requires Codex CLI)
   chat                 Start conversational interface with Claude CLI (legacy)
+  opencode             Start conversational interface with OpenCode CLI
 
   install              Install BMAD-invisible globally
   build                Build MCP server
@@ -46,6 +47,8 @@ Commands:
 Examples:
 
   npx bmad-invisible@latest start      # 🚀 Do everything in one command!
+  npx bmad-invisible@latest start --assistant=opencode
+                                      # Skip the prompt and launch OpenCode
   npx bmad-invisible@latest init       # Setup in current project
   npm run codex                        # Start conversation (after install)
 
@@ -57,16 +60,114 @@ For more information: https://github.com/bacoco/BMAD-invisible
 `);
 };
 
-// Show help if no command provided
-if (!command || command === '--help' || command === '-h') {
-  printHelp();
-  process.exit(0);
-}
+const ASSISTANT_CHOICES = ['codex', 'claude', 'opencode'];
+const DEFAULT_ASSISTANT = 'codex';
+
+const formatAssistantName = (value) =>
+  value.charAt(0).toUpperCase() + value.slice(1);
+
+const parseAssistantFromArgs = (currentArgs) => {
+  let assistant;
+  const sanitized = [];
+
+  for (let index = 0; index < currentArgs.length; index += 1) {
+    const arg = currentArgs[index];
+
+    if (arg === '--assistant') {
+      assistant = currentArgs[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith('--assistant=')) {
+      assistant = arg.split('=')[1];
+      continue;
+    }
+
+    sanitized.push(arg);
+  }
+
+  return {
+    assistant: assistant ? assistant.toLowerCase() : undefined,
+    sanitized,
+  };
+};
+
+const promptForAssistant = () =>
+  new Promise((resolve, reject) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    // Ensure readline is cleaned up on error
+    const cleanup = () => {
+      try {
+        rl.close();
+      } catch {
+        // Ignore cleanup errors
+      }
+    };
+
+    rl.on('error', (error) => {
+      cleanup();
+      reject(error);
+    });
+
+    const options = ASSISTANT_CHOICES.map((choice) => {
+      if (choice === DEFAULT_ASSISTANT) {
+        return `${formatAssistantName(choice)} (default)`;
+      }
+      return formatAssistantName(choice);
+    }).join(' / ');
+
+    rl.question(
+      `Which assistant should we launch? (${options}): `,
+      (answer) => {
+        cleanup();
+        const normalized = (answer || '').trim().toLowerCase();
+        if (!normalized) {
+          resolve(DEFAULT_ASSISTANT);
+          return;
+        }
+
+        if (ASSISTANT_CHOICES.includes(normalized)) {
+          resolve(normalized);
+          return;
+        }
+
+        console.log('⚠️ Unrecognized selection. Defaulting to Codex.');
+        resolve(DEFAULT_ASSISTANT);
+      },
+    );
+  });
+
+const determineAssistant = async (flagValue) => {
+  if (flagValue) {
+    if (ASSISTANT_CHOICES.includes(flagValue)) {
+      return flagValue;
+    }
+
+    console.log('⚠️ Unsupported assistant flag value. Defaulting to Codex.');
+    return DEFAULT_ASSISTANT;
+  }
+
+  if (!process.stdout.isTTY) {
+    return DEFAULT_ASSISTANT;
+  }
+
+  return promptForAssistant();
+};
 
 // Command handlers
 const commands = {
   start: async () => {
     console.log('🚀 Starting BMAD-invisible setup...\n');
+
+    // Determine assistant preference before installation begins
+    const { assistant: assistantFlag, sanitized } = parseAssistantFromArgs(args);
+    args.splice(0, args.length, ...sanitized);
+    const assistant = await determineAssistant(assistantFlag);
 
     // Run init
     await commands.init();
@@ -89,10 +190,20 @@ const commands = {
       });
     });
 
-    // Start Codex session
-    console.log('\n🎯 Starting BMAD Invisible Orchestrator with Codex...\n');
-    await commands.codex();
+    const assistantName = formatAssistantName(assistant);
+    console.log(`\n🎯 Starting BMAD Invisible Orchestrator with ${assistantName}...\n`);
 
+    if (assistant === 'claude') {
+      await commands.chat();
+      return;
+    }
+
+    if (assistant === 'opencode') {
+      await commands.opencode();
+      return;
+    }
+
+    await commands.codex();
   },
 
   init: async () => {
@@ -224,6 +335,11 @@ For detailed documentation, visit:
       cwd: process.cwd(),
     });
 
+    child.on('error', (error) => {
+      console.error('❌ Failed to launch Codex CLI:', error.message);
+      process.exit(1);
+    });
+
     child.on('exit', (code) => {
       process.exit(code || 0);
     });
@@ -245,6 +361,30 @@ For detailed documentation, visit:
     const child = spawn('node', [chatScript, ...args], {
       stdio: 'inherit',
       cwd: process.cwd(),
+    });
+
+    child.on('error', (error) => {
+      console.error('❌ Failed to launch Claude CLI:', error.message);
+      process.exit(1);
+    });
+
+    child.on('exit', (code) => {
+      process.exit(code || 0);
+    });
+  },
+
+  opencode: async () => {
+    const child = spawn('opencode', args, {
+      stdio: 'inherit',
+      cwd: process.cwd(),
+      shell: false,
+    });
+
+    child.on('error', (error) => {
+      console.error('❌ Failed to launch OpenCode CLI:', error.message);
+      console.error('   Make sure OpenCode is installed and in your PATH.');
+      console.error('   Visit: https://github.com/openchatai/opencode for installation instructions');
+      process.exit(1);
     });
 
     child.on('exit', (code) => {
@@ -331,19 +471,61 @@ For detailed documentation, visit:
   },
 };
 
-// Execute command
-const handler = commands[command];
-if (!handler) {
-  console.error(`❌ Unknown command: ${command}`);
-  console.log('Run "npx bmad-invisible help" for usage information.');
-  process.exit(1);
-}
+const setRuntimeContext = (nextCommand, nextArgs = []) => {
+  command = nextCommand;
+  args = Array.isArray(nextArgs) ? [...nextArgs] : [];
+};
 
-// Handle both sync and async commands
-const result = handler();
-if (result && typeof result.catch === 'function') {
-  result.catch((error) => {
+const run = (argv = process.argv) => {
+  [, , command, ...args] = argv;
+
+  if (!command || command === '--help' || command === '-h') {
+    printHelp();
+    return Promise.resolve();
+  }
+
+  const handler = commands[command];
+  if (!handler) {
+    console.error(`❌ Unknown command: ${command}`);
+    console.log('Run "npx bmad-invisible help" for usage information.');
+    process.exit(1);
+  }
+
+  try {
+    const result = handler();
+    if (result && typeof result.then === 'function') {
+      return result.catch((error) => {
+        console.error('❌ Error:', error.message);
+        process.exit(1);
+      });
+    }
+
+    return Promise.resolve(result);
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+    process.exit(1);
+    return Promise.resolve();
+  }
+};
+
+// Run integrity check only when executed directly (not when imported for testing)
+// This ensures the CLI validates package integrity at runtime while allowing
+// tests to import and mock functions without triggering validation
+if (require.main === module) {
+  runIntegrityPreflight(packageRoot, { silentOnMatch: true });
+
+  run().catch((error) => {
     console.error('❌ Error:', error.message);
     process.exit(1);
   });
 }
+
+module.exports = {
+  commands,
+  determineAssistant,
+  parseAssistantFromArgs,
+  printHelp,
+  run,
+  runIntegrityPreflight,
+  setRuntimeContext,
+};
