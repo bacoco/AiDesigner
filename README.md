@@ -129,6 +129,8 @@ npm run bmad
 # OR: npm run bmad:claude / bmad:codex / bmad:opencode
 ```
 
+> **MCP assets are prebuilt**: The published package already includes `dist/mcp`, so installs without dev dependencies (for example on Windows or production hosts) can skip rebuilding during `npm install`. The optional postinstall step only re-runs the TypeScript build when `typescript` is available.
+
 > **Note**: This uses the Model Context Protocol (MCP) so you can work locally without managing API keys.
 
 #### Choosing Your LLM Provider (GLM vs Anthropic)
