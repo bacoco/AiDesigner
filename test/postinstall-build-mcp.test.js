@@ -17,10 +17,26 @@ describe('postinstall-build-mcp script', () => {
   };
 
   describe('early exit behavior', () => {
-    test('exits early when dist/mcp exists without --force', () => {
-      // Ensure dist/mcp exists
-      if (!fs.existsSync(distMcpDir)) {
-        fs.mkdirSync(distMcpDir, { recursive: true });
+    test('exits early when dist/mcp exists and is complete without --force', () => {
+      // Ensure dist/mcp exists with complete build structure
+      const mcpServerDir = path.join(distMcpDir, 'mcp');
+      const libDir = path.join(distMcpDir, 'lib');
+      const hooksDir = path.join(distMcpDir, 'hooks');
+
+      if (!fs.existsSync(mcpServerDir)) {
+        fs.mkdirSync(mcpServerDir, { recursive: true });
+      }
+      if (!fs.existsSync(libDir)) {
+        fs.mkdirSync(libDir, { recursive: true });
+      }
+      if (!fs.existsSync(hooksDir)) {
+        fs.mkdirSync(hooksDir, { recursive: true });
+      }
+
+      // Create the key server.js file
+      const serverJsPath = path.join(mcpServerDir, 'server.js');
+      if (!fs.existsSync(serverJsPath)) {
+        fs.writeFileSync(serverJsPath, '// Placeholder server.js for testing');
       }
 
       const result = runPostinstall();
@@ -28,6 +44,36 @@ describe('postinstall-build-mcp script', () => {
       expect(result.status).toBe(0);
       expect(result.stdout).toContain('MCP assets already exist');
       expect(result.stdout).toContain('Use --force to rebuild');
+    });
+
+    test('rebuilds when dist/mcp exists but is incomplete', () => {
+      // Create incomplete build (missing server.js)
+      const libDir = path.join(distMcpDir, 'lib');
+      const hooksDir = path.join(distMcpDir, 'hooks');
+
+      if (!fs.existsSync(libDir)) {
+        fs.mkdirSync(libDir, { recursive: true });
+      }
+      if (!fs.existsSync(hooksDir)) {
+        fs.mkdirSync(hooksDir, { recursive: true });
+      }
+
+      // Explicitly remove server.js if it exists to simulate incomplete build
+      const mcpServerDir = path.join(distMcpDir, 'mcp');
+      const serverJsPath = path.join(mcpServerDir, 'server.js');
+      if (fs.existsSync(serverJsPath)) {
+        fs.unlinkSync(serverJsPath);
+      }
+
+      const result = runPostinstall();
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Incomplete MCP build detected');
+      // Should see TypeScript compilation output or warning
+      expect(
+        result.stdout.includes('Running TypeScript compiler') ||
+          result.stdout.includes('TypeScript is not installed'),
+      ).toBe(true);
     });
 
     test('rebuilds when --force flag is provided', () => {
@@ -100,12 +146,37 @@ describe('postinstall-build-mcp script', () => {
   });
 
   describe('directory copying', () => {
-    test('copies lib and hooks directories to dist/mcp', () => {
-      // Ensure the script runs successfully
-      if (!fs.existsSync(distMcpDir)) {
-        const result = runPostinstall(['--force']);
-        expect(result.status).toBe(0);
+    let originalDistMcpState;
+    let distMcpBackup;
+
+    beforeAll(() => {
+      // Save the original state
+      originalDistMcpState = fs.existsSync(distMcpDir);
+      distMcpBackup = distMcpDir + '.test-backup';
+
+      // Back up existing dist/mcp if it exists
+      if (originalDistMcpState && fs.existsSync(distMcpDir)) {
+        if (fs.existsSync(distMcpBackup)) {
+          fs.rmSync(distMcpBackup, { recursive: true, force: true });
+        }
+        fs.renameSync(distMcpDir, distMcpBackup);
       }
+    });
+
+    afterAll(() => {
+      // Restore original state
+      if (fs.existsSync(distMcpDir)) {
+        fs.rmSync(distMcpDir, { recursive: true, force: true });
+      }
+      if (originalDistMcpState && fs.existsSync(distMcpBackup)) {
+        fs.renameSync(distMcpBackup, distMcpDir);
+      }
+    });
+
+    test('copies lib and hooks directories to dist/mcp', () => {
+      // Run the script to build
+      const result = runPostinstall(['--force']);
+      expect(result.status).toBe(0);
 
       // Verify directories were copied
       const libDir = path.join(distMcpDir, 'lib');
