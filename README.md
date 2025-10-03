@@ -5,7 +5,7 @@
 An invisible orchestrator layer that allows users to benefit from BMAD's proven agile methodology through natural conversation, without learning any framework terminology.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.10.0-brightgreen)](https://nodejs.org)
 
 ## 🎯 What is BMAD-Invisible?
 
@@ -35,7 +35,7 @@ The orchestrator automatically selects the appropriate lane based on task comple
 
 ### Prerequisites
 
-- Node.js ≥ 20.0.0
+- Node.js ≥ 20.10.0
 - npm ≥ 9.0.0
 
 - At least one chat CLI installed locally:
