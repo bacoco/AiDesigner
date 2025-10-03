@@ -20,7 +20,8 @@ Pick the assistant CLI you want and run the matching command:
 # Run this ONE command - it does everything!
 
 npx bmad-invisible@latest start
-```
+
+````
 
 Done! Either command automatically:
 
@@ -47,7 +48,7 @@ npm install
 # Start chatting through Codex
 npm run codex
 
-```
+````
 
 ### Option 2: Global Installation
 
@@ -86,7 +87,6 @@ npm run codex
 ## Prerequisites
 
 You need **OpenAI Codex CLI** installed:
-
 
 ```bash
 # Check if installed

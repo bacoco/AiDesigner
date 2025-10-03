@@ -40,7 +40,6 @@ The orchestrator automatically selects the appropriate lane based on task comple
 
 - **OpenAI Codex CLI** (connects BMAD orchestrator to your local Codex workspace)
 
-
 ### Installation
 
 #### Option 1: NPX One-Command Setup (Easiest!)
@@ -108,7 +107,6 @@ npm run codex
 ```
 
 > **Note**: This uses the Model Context Protocol (MCP) with OpenAI Codex CLI so you can work locally without managing API keys.
-
 
 #### Codex CLI Integration
 

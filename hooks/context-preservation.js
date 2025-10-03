@@ -6,7 +6,7 @@ function consolidateRequirements(context = {}) {
     userNeeds: context?.analyst?.userNeeds || [],
     businessRequirements: context?.pm?.businessRequirements || [],
     technicalRequirements: context?.architect?.technicalRequirements || [],
-    functionalRequirements: context?.sm?.functionalRequirements || []
+    functionalRequirements: context?.sm?.functionalRequirements || [],
   };
 }
 
@@ -15,7 +15,7 @@ function consolidateDecisions(context = {}) {
     marketingDecisions: context?.analyst?.decisions || [],
     planningDecisions: context?.pm?.decisions || [],
     architecturalDecisions: context?.architect?.decisions || [],
-    implementationDecisions: context?.dev?.decisions || []
+    implementationDecisions: context?.dev?.decisions || [],
   };
 }
 
@@ -25,13 +25,12 @@ async function preserveContext(fromPhase, toPhase, projectContext, getPhaseDeliv
     ...projectContext,
     phaseHistory: [
       ...(projectContext?.phaseHistory || []),
-      { phase: fromPhase, completedAt: new Date().toISOString(), deliverables: delivered }
+      { phase: fromPhase, completedAt: new Date().toISOString(), deliverables: delivered },
     ],
     currentPhase: toPhase,
     allRequirements: consolidateRequirements(projectContext),
-    allDecisions: consolidateDecisions(projectContext)
+    allDecisions: consolidateDecisions(projectContext),
   };
 }
 
 module.exports = { consolidateRequirements, consolidateDecisions, preserveContext };
-
