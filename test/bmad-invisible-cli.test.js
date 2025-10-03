@@ -8,6 +8,7 @@ jest.mock('child_process', () => ({
 }));
 
 const cli = require('../bin/bmad-invisible');
+const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
 
 const fs = require('node:fs');
 
@@ -38,6 +39,8 @@ describe('bmad-invisible start assistant selection', () => {
     delete process.env.LLM_MODEL;
     delete process.env.ZHIPUAI_API_KEY;
     delete process.env.GLM_API_KEY;
+    delete process.env.GLM_BASE_URL;
+    delete process.env.BMAD_ASSISTANT_PROVIDER;
   });
 
   afterEach(() => {
@@ -140,6 +143,20 @@ describe('bmad-invisible start assistant selection', () => {
     expect(lastCall[2].env.ZHIPUAI_API_KEY).toBe('glm-test-key');
     expect(process.env.LLM_PROVIDER).toBeUndefined();
     expect(process.env.ZHIPUAI_API_KEY).toBeUndefined();
+  });
+
+  test('start with --glm maps GLM credentials into Anthropic-compatible environment', async () => {
+    process.env.GLM_API_KEY = 'glm-test-key';
+    process.env.GLM_BASE_URL = 'https://glm.example.com';
+    cli.setRuntimeContext('start', ['--assistant=claude', '--glm']);
+
+    await cli.commands.start();
+
+    const lastCall = mockSpawn.mock.calls.at(-1);
+    const spawnedEnv = lastCall[2].env;
+    expect(spawnedEnv.ANTHROPIC_API_KEY).toBe('glm-test-key');
+    expect(spawnedEnv.ANTHROPIC_BASE_URL).toBe('https://glm.example.com');
+    expect(spawnedEnv.LLM_PROVIDER).toBe('glm');
   });
 
   test('direct codex command respects --llm-provider flag', async () => {

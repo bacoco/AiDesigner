@@ -581,6 +581,7 @@ const formatAssistantName = (value) =>
 const parseAssistantFromArgs = (currentArgs) => {
   let assistant;
   let provider;
+  let providerExplicit = false;
   const sanitized = [];
 
   for (let index = 0; index < currentArgs.length; index += 1) {
@@ -600,11 +601,13 @@ const parseAssistantFromArgs = (currentArgs) => {
     if (arg === '--provider') {
       provider = currentArgs[index + 1];
       index += 1;
+      providerExplicit = true;
       continue;
     }
 
     if (arg.startsWith('--provider=')) {
       provider = arg.split('=')[1];
+      providerExplicit = true;
       continue;
     }
 
@@ -617,12 +620,14 @@ const parseAssistantFromArgs = (currentArgs) => {
     assistant = parsedAssistant;
     if (!provider && combinedProvider) {
       provider = combinedProvider;
+      providerExplicit = true;
     }
   }
 
   return {
     assistant: assistant ? assistant.toLowerCase() : undefined,
     provider: provider ? provider.toLowerCase() : undefined,
+    providerExplicit,
     sanitized,
   };
 };
@@ -679,6 +684,7 @@ const promptForAssistant = async () => {
       }
 
       let provider = embeddedProvider;
+      let providerExplicit = Boolean(embeddedProvider);
 
       if (provider && !choice.providers.includes(provider)) {
         console.log('⚠️ Unsupported provider for that assistant. Please try again.');
@@ -708,10 +714,11 @@ const promptForAssistant = async () => {
           }
 
           provider = providerAnswer;
+          providerExplicit = true;
         }
       }
 
-      return { assistant: choice.id, provider };
+      return { assistant: choice.id, provider, providerExplicit };
     }
   } finally {
     try {
@@ -727,11 +734,13 @@ const determineAssistant = async (input = {}) => {
     return determineAssistant({ assistant: input });
   }
 
-  const { assistant: assistantFlag, provider: providerFlag } = input;
+  const { assistant: assistantFlag, provider: providerFlag, providerExplicit: providerExplicitFromInput } = input;
   if (assistantFlag) {
     const { assistant: normalizedAssistant, provider: combinedProvider } =
       splitAssistantAndProvider(assistantFlag);
     let provider = providerFlag || combinedProvider;
+    let providerExplicit =
+      Boolean(providerFlag) || (combinedProvider ? providerExplicitFromInput !== false : false);
     const choice = findAssistantChoice(normalizedAssistant);
 
     if (!choice) {
@@ -754,9 +763,10 @@ const determineAssistant = async (input = {}) => {
 
     if (!provider) {
       [provider] = choice.providers;
+      providerExplicit = false;
     }
 
-    return { assistant: choice.id, provider };
+    return { assistant: choice.id, provider, providerExplicit };
   }
 
   if (!process.stdout.isTTY) {
@@ -781,12 +791,14 @@ const commands = {
     const {
       assistant: assistantFlag,
       provider: providerFlag,
+      providerExplicit,
       sanitized,
     } = parseAssistantFromArgs(args);
     args.splice(0, args.length, ...sanitized);
     const selection = await determineAssistant({
       assistant: assistantFlag,
       provider: providerFlag,
+      providerExplicit,
     });
 
     // If selection is undefined, exit was called (possibly mocked in tests)
@@ -794,8 +806,22 @@ const commands = {
       return;
     }
 
-    const { assistant, provider } = selection;
-    process.env.BMAD_ASSISTANT_PROVIDER = provider;
+    const { assistant, provider, providerExplicit } = selection;
+    const choice = findAssistantChoice(assistant);
+    let resolvedProvider = provider;
+
+    // Override provider to GLM when --glm flag is used, the assistant supports GLM,
+    // and the user didn't explicitly select a different provider via --provider flag
+    if (
+      runtimeOptions.llmProvider === 'glm' &&
+      choice?.providers.includes('glm') &&
+      resolvedProvider !== 'glm' &&
+      !providerExplicit
+    ) {
+      resolvedProvider = 'glm';
+    }
+
+    process.env.BMAD_ASSISTANT_PROVIDER = resolvedProvider;
 
     if (process.stdout.isTTY) {
       console.log(
@@ -825,7 +851,7 @@ const commands = {
     });
 
     const assistantName = formatAssistantName(assistant);
-    const providerLabel = provider ? ` (${provider})` : '';
+    const providerLabel = resolvedProvider ? ` (${resolvedProvider})` : '';
     console.log(
       `\n🎯 Starting BMAD Invisible Orchestrator with ${assistantName}${providerLabel}...\n`,
     );
@@ -1241,10 +1267,15 @@ For detailed documentation, visit:
 
     await ensureClaudeEnvironment({ projectRoot: process.cwd(), userArgs: args });
 
+    // Merge runtime LLM flags with Anthropic-compatible GLM env when active
+    const baseEnv = buildSpawnEnv();
+    const { env: glmCompatEnv, isGlm } = buildAssistantSpawnEnv();
+    const chatEnv = isGlm ? { ...baseEnv, ...glmCompatEnv } : baseEnv;
+
     const child = spawn('node', [chatScript, ...args], {
       stdio: 'inherit',
       cwd: process.cwd(),
-      env: buildSpawnEnv(),
+      env: chatEnv,
     });
 
     child.on('error', (error) => {

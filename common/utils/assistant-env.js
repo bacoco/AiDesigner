@@ -7,7 +7,34 @@
  * Get the configured assistant provider from environment
  * @returns {string} Provider name (normalized to lowercase)
  */
-const getAssistantProvider = () => (process.env.BMAD_ASSISTANT_PROVIDER || '').trim().toLowerCase();
+const normalizeProvider = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
+
+/**
+ * Determines the active assistant provider with fallback logic.
+ *
+ * Precedence:
+ * 1. BMAD_ASSISTANT_PROVIDER (if not 'anthropic')
+ * 2. LLM_PROVIDER (fallback when BMAD_ASSISTANT_PROVIDER is unset or 'anthropic')
+ * 3. BMAD_ASSISTANT_PROVIDER value (if it was 'anthropic')
+ *
+ * This allows GLM credentials to propagate via LLM_PROVIDER when the assistant
+ * provider is explicitly set to 'anthropic' or left unset, enabling --glm flag
+ * to override the default Anthropic provider.
+ */
+const getAssistantProvider = () => {
+  const directProvider = normalizeProvider(process.env.BMAD_ASSISTANT_PROVIDER);
+
+  if (directProvider && directProvider !== 'anthropic') {
+    return directProvider;
+  }
+
+  const fallbackProvider = normalizeProvider(process.env.LLM_PROVIDER);
+  if (fallbackProvider) {
+    return fallbackProvider;
+  }
+
+  return directProvider;
+};
 
 /**
  * Build spawn environment for assistant CLI with GLM support

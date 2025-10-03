@@ -50,6 +50,7 @@ describe('assistant-env', () => {
   describe('getAssistantProvider', () => {
     test('returns empty string when BMAD_ASSISTANT_PROVIDER is not set', () => {
       delete process.env.BMAD_ASSISTANT_PROVIDER;
+      delete process.env.LLM_PROVIDER;
       expect(getAssistantProvider()).toBe('');
     });
 
@@ -60,6 +61,20 @@ describe('assistant-env', () => {
 
     test('converts to lowercase', () => {
       process.env.BMAD_ASSISTANT_PROVIDER = 'GLM';
+      expect(getAssistantProvider()).toBe('glm');
+    });
+
+    test('falls back to LLM_PROVIDER when BMAD provider is unset', () => {
+      delete process.env.BMAD_ASSISTANT_PROVIDER;
+      process.env.LLM_PROVIDER = 'GLM';
+
+      expect(getAssistantProvider()).toBe('glm');
+    });
+
+    test('prefers LLM_PROVIDER when BMAD provider is anthropic', () => {
+      process.env.BMAD_ASSISTANT_PROVIDER = 'anthropic';
+      process.env.LLM_PROVIDER = 'glm';
+
       expect(getAssistantProvider()).toBe('glm');
     });
   });
@@ -79,6 +94,17 @@ describe('assistant-env', () => {
 
       expect(result.isGlm).toBe(false);
       expect(result.env).toBe(process.env);
+    });
+
+    test('falls back to LLM_PROVIDER when BMAD provider is anthropic', () => {
+      process.env.BMAD_ASSISTANT_PROVIDER = 'anthropic';
+      process.env.LLM_PROVIDER = 'glm';
+      process.env.GLM_API_KEY = 'glm-key';
+
+      const result = buildAssistantSpawnEnv();
+
+      expect(result.isGlm).toBe(true);
+      expect(result.env.ANTHROPIC_API_KEY).toBe('glm-key');
     });
 
     test('builds GLM environment with BMAD_GLM_BASE_URL', () => {
