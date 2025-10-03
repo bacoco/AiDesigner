@@ -3,6 +3,16 @@
     "bmad-invisible": {
       "command": "node",
       "args": ["dist/mcp/mcp/server.js"]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-chrome-devtools@latest"],
+      "disabled": true
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": ["@shadcn/ui-cli@latest", "mcp"],
+      "disabled": true
     }
   }
 }

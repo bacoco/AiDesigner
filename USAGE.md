@@ -31,6 +31,11 @@ npm install
 npm run bmad:chat
 ```
 
+> **UI Toolkit Opt-in**: When you include the optional shadcn UI helpers, the
+> installer generates a `components.json` at the project root following the
+> shadcn schema so the `shadcn` CLI can locate your Tailwind and alias settings
+> during component installs.
+
 ### For Local Development
 
 ```bash
@@ -204,15 +209,25 @@ The MCP config at `.claude/mcp-config.json` works with:
 - Claude Code (CLI and Desktop)
 - Any MCP-compatible IDE
 
+> Claude uses a JSON object keyed by MCP server names. Optional entries for
+> `chrome-devtools` and `shadcn` are shipped disabled so you can flip them on by
+> changing `"disabled": false` after installing the corresponding servers.
+
 ### Codex CLI Defaults
 
 When you include Codex CLI during installation, the wizard now also prepares your global configuration:
 
 - Creates `~/.codex/config.toml` if it is missing.
-- Adds the `bmad_invisible` MCP server pointing to `npx bmad-invisible mcp`.
+- Adds the `bmad_invisible` MCP server pointing to `npx bmad-invisible mcp` and
+  stubs for optional `chrome-devtools` and `shadcn` integrations (with
+  `auto_start = false`).
 - Sets default Codex preferences (`GPT-5-Codex`, medium reasoning, automatic approvals) without overwriting existing overrides.
 
 This step is skipped automatically in non-interactive environments. See [`codex-config.toml.example`](./codex-config.toml.example) for the full TOML structure you can tailor afterwards.
+
+> Codex stores the MCP list in TOML tables (`[mcp_servers.<name>]`). Toggle the
+> optional helpers by switching `auto_start` to `true` once the external server
+> binaries are available locally.
 
 ### Automatic CLI Provisioning
 

@@ -16,3 +16,23 @@ description = "BMAD Invisible MCP server for orchestrating BMAD agents."
 displayName = "BMAD Invisible MCP"
 name = "bmad-mcp"
 transport = "stdio"
+
+[[mcp.servers]]
+args = ["@modelcontextprotocol/server-chrome-devtools@latest"]
+autoApprove = false
+autoStart = false
+command = "npx"
+description = "Optional Chrome DevTools recorder MCP server."
+displayName = "Chrome DevTools MCP"
+name = "chrome-devtools"
+transport = "stdio"
+
+[[mcp.servers]]
+args = ["@shadcn/ui-cli@latest", "mcp"]
+autoApprove = false
+autoStart = false
+command = "npx"
+description = "Optional shadcn UI MCP helper (works with generated components.json)."
+displayName = "shadcn UI MCP"
+name = "shadcn"
+transport = "stdio"

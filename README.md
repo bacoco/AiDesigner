@@ -61,6 +61,13 @@ That's it! This command will:
 - Prompt you to choose between Claude, Codex, or OpenCode
 - Launch the selected chat interface
 
+> **UI Tooling Opt-in**: If you enable the optional shadcn UI helpers during the
+> wizard, the installer also writes a `components.json` in your project root.
+> This file follows the [shadcn/ui schema](https://ui.shadcn.com/docs/installation)
+> (`style`, `tailwind`, `aliases`, etc.) so downstream tooling like
+> `npx shadcn@latest add button` can pick up your preferences without extra
+> prompts.
+
 > **💡 Tip**: Always use `@latest` to ensure you get the newest version!
 
 #### Option 1b: NPX Step-by-Step
@@ -124,10 +131,22 @@ npm run bmad
 Interactive installs now auto-provision Codex CLI so you can run `codex` immediately after setup:
 
 - Generates/updates `AGENTS.md` with BMAD agent context for Codex memory.
-- Ensures `~/.codex/config.toml` exists with the `bmad_invisible` MCP server entry.
+- Ensures `~/.codex/config.toml` exists with the `bmad_invisible` MCP server
+  entry plus optional helpers for `chrome-devtools` and `shadcn` (disabled by
+  default until you install them).
 - Applies sensible defaults (`GPT-5-Codex` model, medium reasoning, automatic approvals) unless you have overrides.
 
 Non-interactive environments (like CI) skip the global config step, but you can review and customize the defaults via [`codex-config.toml.example`](./codex-config.toml.example).
+
+> **MCP Config Formats at a Glance**
+>
+> - **Claude / Claude Code** reads `.claude/mcp-config.json`. Entries are JSON
+>   objects keyed by server name, and optional servers such as
+>   `chrome-devtools` and `shadcn` simply set `disabled: true` until you toggle
+>   them on.
+> - **Codex CLI** reads `~/.codex/config.toml`. Each MCP server is declared in a
+>   TOML table (`[mcp_servers.bmad_invisible]`, `[mcp_servers.chrome_devtools]`,
+>   etc.) with `auto_start` flags mirroring the JSON `disabled` switches.
 
 ## 📖 How It Works
 
