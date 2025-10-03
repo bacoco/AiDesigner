@@ -164,7 +164,7 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 - [x] Fresh context validation pattern (different models for dev/review) — documented in docs/review-checkpoints.md and wired into MCP review lanes
 - [x] Hash file checking (prevent customization overwrites)
 - [x] Scale-adaptive workflow logic (integrate into phase detector)
-- [ ] Tech-spec per epic approach (vs all-at-once)
+- [x] Tech-spec per epic approach (vs all-at-once)
 
 ---
 
