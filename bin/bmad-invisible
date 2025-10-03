@@ -578,7 +578,7 @@ const formatAssistantName = (value) =>
 const parseAssistantFromArgs = (currentArgs) => {
   let assistant;
   let provider;
-  let providerWasExplicit = false;
+  let providerExplicit = false;
   const sanitized = [];
 
   for (let index = 0; index < currentArgs.length; index += 1) {
@@ -598,13 +598,13 @@ const parseAssistantFromArgs = (currentArgs) => {
     if (arg === '--provider') {
       provider = currentArgs[index + 1];
       index += 1;
-      providerWasExplicit = true;
+      providerExplicit = true;
       continue;
     }
 
     if (arg.startsWith('--provider=')) {
       provider = arg.split('=')[1];
-      providerWasExplicit = true;
+      providerExplicit = true;
       continue;
     }
 
@@ -617,14 +617,14 @@ const parseAssistantFromArgs = (currentArgs) => {
     assistant = parsedAssistant;
     if (!provider && combinedProvider) {
       provider = combinedProvider;
-      providerWasExplicit = true;
+      providerExplicit = true;
     }
   }
 
   return {
     assistant: assistant ? assistant.toLowerCase() : undefined,
     provider: provider ? provider.toLowerCase() : undefined,
-    providerWasExplicit,
+    providerExplicit,
     sanitized,
   };
 };
@@ -731,13 +731,13 @@ const determineAssistant = async (input = {}) => {
     return determineAssistant({ assistant: input });
   }
 
-  const { assistant: assistantFlag, provider: providerFlag, providerWasExplicit } = input;
+  const { assistant: assistantFlag, provider: providerFlag, providerExplicit: providerExplicitFromInput } = input;
   if (assistantFlag) {
     const { assistant: normalizedAssistant, provider: combinedProvider } =
       splitAssistantAndProvider(assistantFlag);
     let provider = providerFlag || combinedProvider;
     let providerExplicit =
-      Boolean(providerFlag) || (combinedProvider ? providerWasExplicit !== false : false);
+      Boolean(providerFlag) || (combinedProvider ? providerExplicitFromInput !== false : false);
     const choice = findAssistantChoice(normalizedAssistant);
 
     if (!choice) {
@@ -788,14 +788,14 @@ const commands = {
     const {
       assistant: assistantFlag,
       provider: providerFlag,
-      providerWasExplicit,
+      providerExplicit,
       sanitized,
     } = parseAssistantFromArgs(args);
     args.splice(0, args.length, ...sanitized);
     const selection = await determineAssistant({
       assistant: assistantFlag,
       provider: providerFlag,
-      providerWasExplicit,
+      providerExplicit,
     });
 
     // If selection is undefined, exit was called (possibly mocked in tests)
@@ -807,6 +807,8 @@ const commands = {
     const choice = findAssistantChoice(assistant);
     let resolvedProvider = provider;
 
+    // Override provider to GLM when --glm flag is used, the assistant supports GLM,
+    // and the user didn't explicitly select a different provider via --provider flag
     if (
       runtimeOptions.llmProvider === 'glm' &&
       choice?.providers.includes('glm') &&

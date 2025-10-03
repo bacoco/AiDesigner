@@ -151,11 +151,11 @@ describe('bmad-invisible start assistant selection', () => {
 
     await cli.commands.start();
 
-    const { env: assistantEnv, isGlm } = buildAssistantSpawnEnv();
-    expect(isGlm).toBe(true);
-    expect(assistantEnv.ANTHROPIC_API_KEY).toBe('glm-test-key');
-    expect(assistantEnv.ANTHROPIC_BASE_URL).toBe('https://glm.example.com');
-    expect(assistantEnv.LLM_PROVIDER).toBe('glm');
+    const lastCall = mockSpawn.mock.calls.at(-1);
+    const spawnedEnv = lastCall[2].env;
+    expect(spawnedEnv.ANTHROPIC_API_KEY).toBe('glm-test-key');
+    expect(spawnedEnv.ANTHROPIC_BASE_URL).toBe('https://glm.example.com');
+    expect(spawnedEnv.LLM_PROVIDER).toBe('glm');
   });
 
   test('direct codex command respects --llm-provider flag', async () => {
