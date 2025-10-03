@@ -438,14 +438,106 @@ const commands = {
     const shadcnEnabled = mcpConfig.mcpServers.shadcn && !mcpConfig.mcpServers.shadcn.disabled;
     if (shadcnEnabled) {
       const componentsPath = path.join(projectRoot, 'components.json');
+
+      // Auto-detect project configuration for smart defaults
+      const detectProjectConfig = () => {
+        const config = {
+          cssPath: 'app/globals.css',
+          tailwindConfig: 'tailwind.config.ts',
+          useTsx: true,
+          useRsc: true,
+        };
+
+        // Detect CSS location (common Next.js paths)
+        const cssCandidates = [
+          'app/globals.css',
+          'src/app/globals.css',
+          'styles/globals.css',
+          'src/styles/globals.css',
+        ];
+        for (const candidate of cssCandidates) {
+          if (fs.existsSync(path.join(projectRoot, candidate))) {
+            config.cssPath = candidate;
+            break;
+          }
+        }
+
+        // Detect Tailwind config variant (.ts vs .js)
+        if (fs.existsSync(path.join(projectRoot, 'tailwind.config.js'))) {
+          config.tailwindConfig = 'tailwind.config.js';
+        } else if (fs.existsSync(path.join(projectRoot, 'tailwind.config.mjs'))) {
+          config.tailwindConfig = 'tailwind.config.mjs';
+        }
+        // Default to .ts if nothing found (assume TypeScript project)
+
+        // Detect TypeScript usage
+        const hasTsConfig = fs.existsSync(path.join(projectRoot, 'tsconfig.json'));
+        const hasTypeScriptDep = fs.existsSync(packagePath) &&
+          (() => {
+            try {
+              const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+              return (pkg.dependencies && pkg.dependencies.typescript) ||
+                     (pkg.devDependencies && pkg.devDependencies.typescript);
+            } catch {
+              return false;
+            }
+          })();
+        config.useTsx = hasTsConfig || hasTypeScriptDep;
+
+        // Detect Next.js App Router vs Pages Router for RSC
+        const hasAppDir = fs.existsSync(path.join(projectRoot, 'app')) ||
+                         fs.existsSync(path.join(projectRoot, 'src/app'));
+        const hasPagesDir = fs.existsSync(path.join(projectRoot, 'pages')) ||
+                           fs.existsSync(path.join(projectRoot, 'src/pages'));
+        config.useRsc = hasAppDir || !hasPagesDir; // Default to RSC unless Pages Router is clearly used
+
+        return config;
+      };
+
+      // Validate shadcn prerequisites
+      const validateShadcnPrerequisites = () => {
+        const warnings = [];
+
+        try {
+          const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+          const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+
+          // Check for Next.js (shadcn primarily targets Next.js)
+          if (!allDeps.next && !allDeps.react) {
+            warnings.push('Neither Next.js nor React detected. shadcn components require React.');
+          }
+
+          // Check for Tailwind CSS
+          if (!allDeps.tailwindcss) {
+            warnings.push('Tailwind CSS not detected. shadcn components require Tailwind CSS.');
+          }
+        } catch {
+          // If we can't read package.json, skip validation (it was just created)
+        }
+
+        return warnings;
+      };
+
+      const detectedConfig = detectProjectConfig();
+      const validationWarnings = validateShadcnPrerequisites();
+
+      // Show validation warnings if any
+      if (validationWarnings.length > 0) {
+        console.warn('\n⚠️ shadcn prerequisites check:');
+        for (const warning of validationWarnings) {
+          console.warn(`   • ${warning}`);
+        }
+        console.warn('   You may need to install these dependencies for shadcn to work properly.\n');
+      }
+
       const shadcnConfig = {
         $schema: 'https://ui.shadcn.com/schema.json',
         style: 'new-york',
-        rsc: true,
-        tsx: true,
+        rsc: detectedConfig.useRsc,
+        tsx: detectedConfig.useTsx,
         tailwind: {
-          config: 'tailwind.config.ts',
-          css: 'app/globals.css',
+          config: detectedConfig.tailwindConfig,
+          css: detectedConfig.cssPath,
           baseColor: 'zinc',
           cssVariables: true,
         },
@@ -463,6 +555,10 @@ const commands = {
       if (!fs.existsSync(componentsPath)) {
         fs.writeFileSync(componentsPath, JSON.stringify(shadcnConfig, null, 2) + '\n');
         console.log('✅ Created shadcn components.json (New York preset)');
+        if (detectedConfig.cssPath !== 'app/globals.css' ||
+            detectedConfig.tailwindConfig !== 'tailwind.config.ts') {
+          console.log(`   📍 Detected paths: ${detectedConfig.cssPath}, ${detectedConfig.tailwindConfig}`);
+        }
       } else {
         console.warn('⚠️ components.json already exists. Leaving the current shadcn configuration untouched.');
       }
