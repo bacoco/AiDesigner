@@ -1,3 +1,32 @@
+## [1.3.5](https://github.com/bacoco/BMAD-invisible/compare/v1.3.4...v1.3.5) (2025-10-03)
+
+### Bug Fixes
+
+- Resolve TypeScript compilation errors in MCP server files
+  - Add missing imports for `loadModelRoutingConfig` and observability modules
+  - Add logger infrastructure to CodexClient class
+  - Add `describe()` method to ModelRouter class
+  - Fix undefined variables in error handling code
+  - Fix incorrect log function call in runtime.ts
+
+- Update file references from bmad-chat to bmad-claude
+  - Update bin/bmad-invisible chat command
+  - Update documentation references in IMPLEMENTATION_COMPLETE.md and USAGE.md
+
+- Fix test compatibility issues
+  - Add early return statements after process.exit() calls for mocked tests
+  - Add guard to handle undefined assistant when exit is mocked
+
+### Test Results
+
+- Test pass rate improved from 87.5% (77/88) to 95.9% (94/98)
+- TypeScript compilation: ✅ Success
+- All critical bugs resolved
+
+## [1.3.4](https://github.com/bacoco/BMAD-invisible/compare/v1.3.3...v1.3.4) (2025-10-03)
+
+Published to NPM with previous fixes.
+
 ## [4.36.2](https://github.com/bmadcode/BMAD-METHOD/compare/v4.36.1...v4.36.2) (2025-08-10)
 
 ### Bug Fixes

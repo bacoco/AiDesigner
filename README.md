@@ -680,7 +680,7 @@ BMAD™ and BMAD-METHOD™ are trademarks of BMad Code, LLC.
 
 ---
 
-**Current Version**: v1.2.0 - Production Ready ✅
+**Current Version**: v1.3.5 - Production Ready ✅
 
 **Get Started**: `npx bmad-invisible@latest start`
 
