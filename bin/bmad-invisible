@@ -94,10 +94,24 @@ const parseAssistantFromArgs = (currentArgs) => {
 };
 
 const promptForAssistant = () =>
-  new Promise((resolve) => {
+  new Promise((resolve, reject) => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
+    });
+
+    // Ensure readline is cleaned up on error
+    const cleanup = () => {
+      try {
+        rl.close();
+      } catch {
+        // Ignore cleanup errors
+      }
+    };
+
+    rl.on('error', (error) => {
+      cleanup();
+      reject(error);
     });
 
     const options = ASSISTANT_CHOICES.map((choice) => {
@@ -110,7 +124,7 @@ const promptForAssistant = () =>
     rl.question(
       `Which assistant should we launch? (${options}): `,
       (answer) => {
-        rl.close();
+        cleanup();
         const normalized = (answer || '').trim().toLowerCase();
         if (!normalized) {
           resolve(DEFAULT_ASSISTANT);
@@ -363,11 +377,13 @@ For detailed documentation, visit:
     const child = spawn('opencode', args, {
       stdio: 'inherit',
       cwd: process.cwd(),
-      shell: true,
+      shell: false,
     });
 
     child.on('error', (error) => {
       console.error('❌ Failed to launch OpenCode CLI:', error.message);
+      console.error('   Make sure OpenCode is installed and in your PATH.');
+      console.error('   Visit: https://github.com/openchatai/opencode for installation instructions');
       process.exit(1);
     });
 
@@ -492,6 +508,9 @@ const run = (argv = process.argv) => {
   }
 };
 
+// Run integrity check only when executed directly (not when imported for testing)
+// This ensures the CLI validates package integrity at runtime while allowing
+// tests to import and mock functions without triggering validation
 if (require.main === module) {
   runIntegrityPreflight(packageRoot, { silentOnMatch: true });
 

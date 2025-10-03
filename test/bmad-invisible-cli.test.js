@@ -72,6 +72,69 @@ describe('bmad-invisible start assistant selection', () => {
     const lastCall = mockSpawn.mock.calls.at(-1);
     expect(lastCall[0]).toBe('opencode');
     expect(lastCall[1]).toEqual([]);
-    expect(lastCall[2].shell).toBe(true);
+    expect(lastCall[2].shell).toBe(false);
+  });
+
+  test('handles invalid assistant flag by defaulting to Codex', async () => {
+    process.stdout.isTTY = false;
+    cli.setRuntimeContext('start', ['--assistant=invalid']);
+
+    await cli.commands.start();
+
+    const lastCall = mockSpawn.mock.calls.at(-1);
+    expect(lastCall[0]).toBe('node');
+    expect(lastCall[1][0]).toContain(path.join('bin', 'bmad-codex'));
+  });
+
+  test('handles spawn error for Codex', async () => {
+    const mockErrorSpawn = jest.fn(() => {
+      const emitter = {
+        on: jest.fn((event, handler) => {
+          if (event === 'error') {
+            handler(new Error('spawn ENOENT'));
+          }
+          return emitter;
+        }),
+      };
+      return emitter;
+    });
+
+    jest.isolateModules(() => {
+      jest.doMock('child_process', () => ({
+        spawn: mockErrorSpawn,
+      }));
+
+      const cliWithError = require('../bin/bmad-invisible');
+      cli.setRuntimeContext('codex', []);
+
+      expect(() => cliWithError.commands.codex()).not.toThrow();
+      expect(exitSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  test('handles spawn error for OpenCode', async () => {
+    const mockErrorSpawn = jest.fn(() => {
+      const emitter = {
+        on: jest.fn((event, handler) => {
+          if (event === 'error') {
+            handler(new Error('spawn ENOENT'));
+          }
+          return emitter;
+        }),
+      };
+      return emitter;
+    });
+
+    jest.isolateModules(() => {
+      jest.doMock('child_process', () => ({
+        spawn: mockErrorSpawn,
+      }));
+
+      const cliWithError = require('../bin/bmad-invisible');
+      cli.setRuntimeContext('opencode', []);
+
+      expect(() => cliWithError.commands.opencode()).not.toThrow();
+      expect(exitSpy).toHaveBeenCalledWith(1);
+    });
   });
 });
