@@ -1,4 +1,20 @@
 ---
+module:
+  package: bmm
+  kind: orchestrator
+  entry: orchestrators/invisible
+  exports:
+    - type: agent
+      id: invisible-orchestrator
+      format: markdown
+  compatibility:
+    v6:
+      status: prototype
+      loader: modules
+      notes: |
+        Uses the dynamic module discovery bridge to locate BMAD v6 agents and shared
+        resources under `bmad/src/modules/*`. The orchestrator keeps its invisible
+        persona but advertises a module manifest so the v6 installer can register it.
 agent:
   name: Invisible BMAD Orchestrator
   id: invisible-orchestrator
