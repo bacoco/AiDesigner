@@ -1,13 +1,39 @@
 /* eslint-disable unicorn/prefer-module */
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 const { spawnSync, spawn } = require('node:child_process');
 const readline = require('node:readline');
 
 function ensureStateDir(rootDir) {
   const stateDir = path.join(rootDir, '.bmad-invisible');
+
+  // Try creating in rootDir first
   if (!fs.existsSync(stateDir)) {
-    fs.mkdirSync(stateDir, { recursive: true });
+    try {
+      fs.mkdirSync(stateDir, { recursive: true });
+      return stateDir;
+    } catch (error) {
+      // If rootDir is read-only (e.g., global npm install, CI artifact), fall back to user home
+      if (error.code === 'EACCES' || error.code === 'EROFS' || error.code === 'EPERM') {
+        const fallbackDir = path.join(os.homedir(), '.bmad-invisible');
+        if (!fs.existsSync(fallbackDir)) {
+          try {
+            fs.mkdirSync(fallbackDir, { recursive: true });
+            console.warn(`Note: Using ${fallbackDir} for cache (installation directory is read-only)`);
+            return fallbackDir;
+          } catch (fallbackError) {
+            console.warn('Warning: unable to create state directory:', fallbackError.message);
+            return fallbackDir; // Return path anyway, saveState will handle write failures gracefully
+          }
+        }
+        console.warn(`Note: Using ${fallbackDir} for cache (installation directory is read-only)`);
+        return fallbackDir;
+      }
+      // For other errors, log and return the path anyway (saveState handles write failures)
+      console.warn('Warning: unable to create state directory:', error.message);
+      return stateDir;
+    }
   }
   return stateDir;
 }
