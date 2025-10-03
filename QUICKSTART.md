@@ -15,8 +15,8 @@ BMAD-Invisible provides a **natural conversational interface** that guides you t
 mkdir my-project && cd my-project
 ```
 
-Pick your preferred assistant CLI when prompted (Codex is the default), or pass
-`--assistant=claude` / `--assistant=opencode` to skip the choice.
+You'll be prompted to choose between Claude, Codex, or OpenCode. Or pass
+`--assistant=claude`, `--assistant=codex`, or `--assistant=opencode` to skip the prompt.
 
 ```bash
 # Run this ONE command - it does everything!
@@ -45,11 +45,12 @@ npx bmad-invisible@latest init
 npm install
 
 
-# Start chatting through your preferred CLI
-# Codex: npm run codex
-# Claude: npm run bmad:chat
-# OpenCode: npx bmad-invisible opencode
-npm run codex
+# Start chatting (prompts for your choice)
+npm run bmad
+# OR use explicit commands:
+# npm run bmad:claude
+# npm run bmad:codex
+# npm run bmad:opencode
 
 ```
 
@@ -64,7 +65,7 @@ cd your-project
 bmad-invisible init
 bmad-invisible build
 
-bmad-invisible codex
+bmad-invisible start
 
 ```
 
@@ -82,9 +83,8 @@ npm install
 npm run build:mcp
 
 
-# Start conversation
-
-npm run codex
+# Start conversation (prompts for choice)
+npm run bmad
 ```
 
 ## Prerequisites
@@ -108,10 +108,13 @@ codex --version
 ### Quick Commands
 
 ```bash
-npx bmad-invisible@latest start # 🚀 One-command setup and launch!
+npx bmad-invisible@latest start # 🚀 One-command setup and launch (prompts for choice)
 npx bmad-invisible init         # Initialize in project
 npx bmad-invisible build        # Build MCP server
-npm run codex                   # Start conversation after install
+npm run bmad                    # Start conversation (prompts for assistant choice)
+npm run bmad:claude             # Start Claude directly
+npm run bmad:codex              # Start Codex directly
+npm run bmad:opencode           # Start OpenCode directly
 
 npx bmad-invisible test         # Run tests
 npx bmad-invisible validate     # Validate config
@@ -120,7 +123,7 @@ npx bmad-invisible help         # Show all commands
 
 ### Example Session
 
-Start the CLI you prefer (`npm run chat` for Claude, `npm run codex` for Codex) and you'll see an experience like this:
+Run `npm run bmad` and choose your assistant, or use direct commands (`npm run bmad:claude`, `npm run bmad:codex`, `npm run bmad:opencode`). You'll see an experience like this:
 
 ```
 🎯 Starting BMAD Invisible Orchestrator...

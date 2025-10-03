@@ -52,13 +52,13 @@ The orchestrator automatically selects the appropriate lane based on task comple
 npx bmad-invisible@latest start
 ```
 
-> Prefer a specific CLI? Append `--assistant=claude` or `--assistant=opencode` to skip the prompt.
+> Prefer a specific CLI? Append `--assistant=claude`, `--assistant=codex`, or `--assistant=opencode` to skip the prompt.
 
 That's it! This command will:
 
 - Create project structure
 - Install all dependencies
-- Prompt you to choose Codex, Claude, or OpenCode (defaults to Codex)
+- Prompt you to choose between Claude, Codex, or OpenCode
 - Launch the selected chat interface
 
 > **💡 Tip**: Always use `@latest` to ensure you get the newest version!
@@ -74,10 +74,11 @@ npm install
 
 
 # Start chatting through your preferred CLI
-# Codex: npm run codex
-# Claude: npm run bmad:chat
-# OpenCode: npx bmad-invisible opencode
-npm run codex
+npm run bmad              # Prompts you to choose
+# OR use explicit commands:
+# npm run bmad:claude     # Claude
+# npm run bmad:codex      # Codex
+# npm run bmad:opencode   # OpenCode
 
 ```
 
@@ -90,10 +91,11 @@ npm install -g bmad-invisible
 # Initialize in any project
 bmad-invisible init
 
-# Build and chat
+# Build
 bmad-invisible build
 
-bmad-invisible codex
+# Start chat (will prompt for assistant choice)
+bmad-invisible start
 
 ```
 
@@ -110,12 +112,12 @@ npm install
 # Build the MCP server
 npm run build:mcp
 
-
-# Start conversational interface
-npm run codex
+# Start conversational interface (prompts for choice)
+npm run bmad
+# OR: npm run bmad:claude / bmad:codex / bmad:opencode
 ```
 
-> **Note**: This uses the Model Context Protocol (MCP) with OpenAI Codex CLI so you can work locally without managing API keys.
+> **Note**: This uses the Model Context Protocol (MCP) so you can work locally without managing API keys.
 
 #### Codex CLI Integration
 
@@ -157,12 +159,13 @@ Assistant: "Here's the technical approach..."
 
 ## 💡 Usage Examples
 
-Run whichever CLI you prefer (`npm run chat` for Claude, `npm run codex` for Codex). The experience looks like this:
+Run `npm run bmad` to be prompted for your choice, or use explicit commands (`npm run bmad:claude`, `npm run bmad:codex`, `npm run bmad:opencode`). The experience looks like this:
 
 ### Example 1: Simple App Project
 
 ````bash
-$ npm run codex
+$ npm run bmad
+Which assistant should we launch? (Claude / Codex / Opencode): claude
 
 🎯 Starting BMAD Invisible Orchestrator...
 📡 MCP Server: bmad-invisible-orchestrator
@@ -581,8 +584,8 @@ Example log line:
 ### How to Use
 
 ```bash
-# Start conversation
-npm run codex
+# Start conversation (prompts for assistant choice)
+npm run bmad
 
 # Natural conversation
 > I want to add user authentication

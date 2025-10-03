@@ -40,17 +40,14 @@ describe('bmad-invisible start assistant selection', () => {
     process.stdout.isTTY = originalIsTTY;
   });
 
-  test('defaults to Claude when no assistant flag is provided', async () => {
+  test('errors in non-TTY mode when no assistant flag is provided', async () => {
     process.stdout.isTTY = false;
     cli.setRuntimeContext('start', []);
 
     await cli.commands.start();
 
-    expect(mockSpawn).toHaveBeenCalled();
-    const lastCall = mockSpawn.mock.calls.at(-1);
-    expect(lastCall[0]).toBe('node');
-    expect(lastCall[1][0]).toContain(path.join('bin', 'bmad-chat'));
-    expect(lastCall[1].some((arg) => arg.includes('--assistant'))).toBe(false);
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(mockSpawn).not.toHaveBeenCalled();
   });
 
   test('launches Claude chat when requested via flag', async () => {
@@ -60,7 +57,7 @@ describe('bmad-invisible start assistant selection', () => {
 
     const lastCall = mockSpawn.mock.calls.at(-1);
     expect(lastCall[0]).toBe('node');
-    expect(lastCall[1][0]).toContain(path.join('bin', 'bmad-chat'));
+    expect(lastCall[1][0]).toContain(path.join('bin', 'bmad-claude'));
     expect(lastCall[1].some((arg) => arg.includes('--assistant'))).toBe(false);
   });
 
@@ -75,15 +72,14 @@ describe('bmad-invisible start assistant selection', () => {
     expect(lastCall[2].shell).toBe(false);
   });
 
-  test('handles invalid assistant flag by defaulting to Claude', async () => {
+  test('handles invalid assistant flag by exiting with error', async () => {
     process.stdout.isTTY = false;
     cli.setRuntimeContext('start', ['--assistant=invalid']);
 
     await cli.commands.start();
 
-    const lastCall = mockSpawn.mock.calls.at(-1);
-    expect(lastCall[0]).toBe('node');
-    expect(lastCall[1][0]).toContain(path.join('bin', 'bmad-chat'));
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(mockSpawn).not.toHaveBeenCalled();
   });
 
   test('handles spawn error for Codex', async () => {

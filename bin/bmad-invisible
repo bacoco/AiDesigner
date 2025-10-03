@@ -32,10 +32,10 @@ Usage:
 
 Commands:
 
-  start                🚀 ONE-COMMAND SETUP: init + install + launch chat (Claude default)
+  start                🚀 ONE-COMMAND SETUP: init + install + prompt for assistant choice
   init                 Initialize BMAD-invisible in current project
-  codex                Start conversational interface (requires Codex CLI)
-  chat                 Start conversational interface with Claude CLI (legacy)
+  chat                 Start conversational interface with Claude CLI
+  codex                Start conversational interface with Codex CLI
   opencode             Start conversational interface with OpenCode CLI
 
   install              Install BMAD-invisible globally
@@ -60,8 +60,7 @@ For more information: https://github.com/bacoco/BMAD-invisible
 `);
 };
 
-const ASSISTANT_CHOICES = ['codex', 'claude', 'opencode'];
-const DEFAULT_ASSISTANT = 'claude';
+const ASSISTANT_CHOICES = ['claude', 'codex', 'opencode'];
 
 const formatAssistantName = (value) =>
   value.charAt(0).toUpperCase() + value.slice(1);
@@ -114,12 +113,7 @@ const promptForAssistant = () =>
       reject(error);
     });
 
-    const options = ASSISTANT_CHOICES.map((choice) => {
-      if (choice === DEFAULT_ASSISTANT) {
-        return `${formatAssistantName(choice)} (default)`;
-      }
-      return formatAssistantName(choice);
-    }).join(' / ');
+    const options = ASSISTANT_CHOICES.map(formatAssistantName).join(' / ');
 
     rl.question(
       `Which assistant should we launch? (${options}): `,
@@ -127,8 +121,8 @@ const promptForAssistant = () =>
         cleanup();
         const normalized = (answer || '').trim().toLowerCase();
         if (!normalized) {
-          resolve(DEFAULT_ASSISTANT);
-          return;
+          console.log('⚠️ No assistant selected. Please choose one.');
+          return promptForAssistant().then(resolve).catch(reject);
         }
 
         if (ASSISTANT_CHOICES.includes(normalized)) {
@@ -136,8 +130,8 @@ const promptForAssistant = () =>
           return;
         }
 
-        console.log('⚠️ Unrecognized selection. Defaulting to Claude.');
-        resolve(DEFAULT_ASSISTANT);
+        console.log('⚠️ Unrecognized selection. Please try again.');
+        return promptForAssistant().then(resolve).catch(reject);
       },
     );
   });
@@ -148,12 +142,16 @@ const determineAssistant = async (flagValue) => {
       return flagValue;
     }
 
-    console.log('⚠️ Unsupported assistant flag value. Defaulting to Claude.');
-    return DEFAULT_ASSISTANT;
+    console.error('⚠️ Unsupported assistant flag value:', flagValue);
+    console.error('Valid options:', ASSISTANT_CHOICES.join(', '));
+    process.exit(1);
   }
 
   if (!process.stdout.isTTY) {
-    return DEFAULT_ASSISTANT;
+    console.error(
+      '⚠️ Non-interactive mode requires --assistant flag. Use: --assistant=claude|codex|opencode',
+    );
+    process.exit(1);
   }
 
   return promptForAssistant();
