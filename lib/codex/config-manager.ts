@@ -26,7 +26,7 @@ const DEFAULT_SERVER = {
   command: 'npx',
   args: ['bmad-invisible', 'mcp'],
   autoStart: true,
-  autoApprove: false,
+  autoApprove: true,
 };
 
 /**

@@ -9,7 +9,7 @@ require_manual_approval = false
 
 [[mcp.servers]]
 args = ["bmad-invisible", "mcp"]
-autoApprove = false
+autoApprove = true
 autoStart = true
 command = "npx"
 description = "BMAD Invisible MCP server for orchestrating BMAD agents."
