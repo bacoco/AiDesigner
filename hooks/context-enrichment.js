@@ -30,7 +30,7 @@ function extractSection(content, heading) {
   }
 
   // Escape special regex characters in heading to prevent injection
-  const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedHeading = heading.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
   const pattern = new RegExp(`^## ${escapedHeading}\\n([\\s\\S]*?)(?=^## |$)`, 'm');
   const match = content.match(pattern);
   if (!match) {
@@ -58,6 +58,28 @@ function collapseWhitespace(value) {
   return value.replaceAll(/\s+/g, ' ').trim();
 }
 
+function extractStructuredStory(story) {
+  if (!story || typeof story !== 'object') {
+    return null;
+  }
+
+  const candidates = [
+    story.structured,
+    story.structuredStory,
+    story.story,
+    story.fields,
+    story.metadata?.structuredStory,
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate && typeof candidate === 'object') {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
 async function defaultStoryContextEnricher({ context }) {
   const storyInput = context?.story;
   if (!storyInput) {
@@ -66,7 +88,11 @@ async function defaultStoryContextEnricher({ context }) {
 
   const story = { ...storyInput };
 
-  if (!story.content && story.path) {
+  const structuredStory = extractStructuredStory(story);
+
+  const shouldLoadMarkdown = !structuredStory && !story.content && story.path;
+
+  if (shouldLoadMarkdown) {
     const projectPath = context.projectPath || process.cwd();
     const storyPath = path.isAbsolute(story.path) ? story.path : path.join(projectPath, story.path);
 
@@ -77,29 +103,66 @@ async function defaultStoryContextEnricher({ context }) {
     }
   }
 
+  const resolvedStory = { ...story };
+
+  if (structuredStory) {
+    const preferredFields = [
+      'id',
+      'title',
+      'persona',
+      'userRole',
+      'action',
+      'benefit',
+      'summary',
+      'description',
+      'acceptanceCriteria',
+      'definitionOfDone',
+      'technicalDetails',
+      'implementationNotes',
+      'testingStrategy',
+      'dependencies',
+      'epicNumber',
+      'storyNumber',
+    ];
+
+    for (const field of preferredFields) {
+      if (structuredStory[field] != null) {
+        resolvedStory[field] = structuredStory[field];
+      }
+    }
+
+    if (!resolvedStory.storyId && structuredStory.storyId) {
+      resolvedStory.storyId = structuredStory.storyId;
+    }
+  }
+
+  const markdownContent = story.content;
+
   const personaFragments = [];
 
-  if (story.persona) {
-    if (typeof story.persona === 'string') {
-      personaFragments.push(story.persona.trim());
-    } else if (Array.isArray(story.persona)) {
+  if (resolvedStory.persona) {
+    if (typeof resolvedStory.persona === 'string') {
+      personaFragments.push(resolvedStory.persona.trim());
+    } else if (Array.isArray(resolvedStory.persona)) {
       personaFragments.push(
-        ...story.persona.map((item) => collapseWhitespace(item)).filter(Boolean),
+        ...resolvedStory.persona.map((item) => collapseWhitespace(item)).filter(Boolean),
       );
-    } else if (typeof story.persona === 'object') {
-      const personaLines = Object.entries(story.persona)
+    } else if (typeof resolvedStory.persona === 'object') {
+      const personaLines = Object.entries(resolvedStory.persona)
         .filter(([, value]) => value != null && value !== '')
         .map(([key, value]) => `${key}: ${collapseWhitespace(String(value))}`);
       if (personaLines.length > 0) {
         personaFragments.push(personaLines.join('\n'));
       }
     }
-  } else if (story.userRole) {
-    personaFragments.push(`Primary user role: ${collapseWhitespace(String(story.userRole))}`);
+  } else if (resolvedStory.userRole) {
+    personaFragments.push(
+      `Primary user role: ${collapseWhitespace(String(resolvedStory.userRole))}`,
+    );
   }
 
-  if (personaFragments.length === 0 && story.content) {
-    const personaSection = extractSection(story.content, 'Persona');
+  if (personaFragments.length === 0 && markdownContent) {
+    const personaSection = extractSection(markdownContent, 'Persona');
     if (personaSection) {
       personaFragments.push(collapseWhitespace(personaSection));
     }
@@ -108,22 +171,22 @@ async function defaultStoryContextEnricher({ context }) {
   const sections = [];
 
   const overviewParts = [];
-  if (story.title) {
-    overviewParts.push(`Story: ${story.title}`);
+  if (resolvedStory.title) {
+    overviewParts.push(`Story: ${resolvedStory.title}`);
   }
-  if (story.epicNumber != null && story.storyNumber != null) {
-    overviewParts.push(`Sequence: ${story.epicNumber}.${story.storyNumber}`);
+  if (resolvedStory.epicNumber != null && resolvedStory.storyNumber != null) {
+    overviewParts.push(`Sequence: ${resolvedStory.epicNumber}.${resolvedStory.storyNumber}`);
   }
-  if (story.summary) {
-    overviewParts.push(story.summary);
-  } else if (story.description) {
-    overviewParts.push(story.description);
-  } else if (story.content) {
-    const contextSection = extractSection(story.content, 'Context');
+  if (resolvedStory.summary) {
+    overviewParts.push(resolvedStory.summary);
+  } else if (resolvedStory.description) {
+    overviewParts.push(resolvedStory.description);
+  } else if (markdownContent) {
+    const contextSection = extractSection(markdownContent, 'Context');
     if (contextSection) {
       overviewParts.push(contextSection);
     } else {
-      const firstParagraph = story.content
+      const firstParagraph = markdownContent
         .split(/\n{2,}/)
         .map((p) => p.trim())
         .find(Boolean);
@@ -140,9 +203,11 @@ async function defaultStoryContextEnricher({ context }) {
     });
   }
 
-  const acceptanceList = Array.isArray(story.acceptanceCriteria)
-    ? story.acceptanceCriteria
-    : parseChecklist(extractSection(story.content, 'Acceptance Criteria'));
+  const acceptanceList = Array.isArray(resolvedStory.acceptanceCriteria)
+    ? resolvedStory.acceptanceCriteria
+    : parseChecklist(
+        markdownContent ? extractSection(markdownContent, 'Acceptance Criteria') : null,
+      );
   if (acceptanceList.length > 0) {
     sections.push({
       title: 'Acceptance Criteria',
@@ -150,9 +215,11 @@ async function defaultStoryContextEnricher({ context }) {
     });
   }
 
-  const definitionOfDone = Array.isArray(story.definitionOfDone)
-    ? story.definitionOfDone
-    : parseChecklist(extractSection(story.content, 'Definition of Done'));
+  const definitionOfDone = Array.isArray(resolvedStory.definitionOfDone)
+    ? resolvedStory.definitionOfDone
+    : parseChecklist(
+        markdownContent ? extractSection(markdownContent, 'Definition of Done') : null,
+      );
   if (definitionOfDone.length > 0) {
     sections.push({
       title: 'Definition of Done',
@@ -161,7 +228,11 @@ async function defaultStoryContextEnricher({ context }) {
   }
 
   const rawTechnicalDetails =
-    story.technicalDetails || extractSection(story.content, 'Technical Details');
+    resolvedStory.technicalDetails == null
+      ? markdownContent
+        ? extractSection(markdownContent, 'Technical Details')
+        : null
+      : resolvedStory.technicalDetails;
   if (rawTechnicalDetails != null) {
     const techBody = Array.isArray(rawTechnicalDetails)
       ? rawTechnicalDetails
@@ -177,7 +248,12 @@ async function defaultStoryContextEnricher({ context }) {
     }
   }
 
-  const dependencies = story.dependencies || extractSection(story.content, 'Dependencies');
+  const dependencies =
+    resolvedStory.dependencies == null
+      ? markdownContent
+        ? extractSection(markdownContent, 'Dependencies')
+        : null
+      : resolvedStory.dependencies;
   if (dependencies) {
     sections.push({
       title: 'Dependencies & Links',
@@ -188,7 +264,11 @@ async function defaultStoryContextEnricher({ context }) {
   }
 
   const rawTestingStrategy =
-    story.testingStrategy || extractSection(story.content, 'Testing Strategy');
+    resolvedStory.testingStrategy == null
+      ? markdownContent
+        ? extractSection(markdownContent, 'Testing Strategy')
+        : null
+      : resolvedStory.testingStrategy;
   if (rawTestingStrategy != null) {
     const testingBody = Array.isArray(rawTestingStrategy)
       ? rawTestingStrategy
@@ -206,7 +286,9 @@ async function defaultStoryContextEnricher({ context }) {
 
   return {
     contextUpdates: {
-      story,
+      story: structuredStory
+        ? { ...story, ...structuredStory, content: markdownContent }
+        : { ...story, content: markdownContent },
     },
     persona: personaFragments,
     sections,

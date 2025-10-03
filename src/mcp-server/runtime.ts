@@ -54,7 +54,49 @@ function buildDeveloperContextSections(projectState: any): TargetedSection[] {
       ? projectState.getDeliverable("sm", "story")
       : null;
 
-  if (story?.content) {
+  const structuredStory =
+    typeof projectState.getStory === "function"
+      ? projectState.getStory(story?.storyId)
+      : story?.structured || story?.structuredStory || null;
+
+  if (structuredStory) {
+    const overviewBody: string[] = [];
+
+    if (structuredStory.title) {
+      overviewBody.push(`Story: ${structuredStory.title}`);
+    }
+
+    if (
+      structuredStory.epicNumber != null &&
+      structuredStory.storyNumber != null
+    ) {
+      overviewBody.push(`Sequence: ${structuredStory.epicNumber}.${structuredStory.storyNumber}`);
+    }
+
+    if (structuredStory.summary) {
+      overviewBody.push(structuredStory.summary);
+    } else if (structuredStory.description) {
+      overviewBody.push(structuredStory.description);
+    }
+
+    const acceptanceCriteria: unknown[] = Array.isArray(structuredStory.acceptanceCriteria)
+      ? structuredStory.acceptanceCriteria
+      : [];
+
+    if (acceptanceCriteria.length > 0) {
+      overviewBody.push(
+        "",
+        "Acceptance Criteria:",
+        ...acceptanceCriteria.map((item: unknown) => `- ${String(item)}`)
+      );
+    }
+
+    sections.push({
+      title: "Current Story Overview",
+      body: overviewBody.filter(Boolean).join("\n"),
+      priority: "high",
+    });
+  } else if (story?.content) {
     sections.push({
       title: "Current Story Overview",
       body: typeof story.content === "string" ? story.content : stringifyValue(story.content),
@@ -982,7 +1024,57 @@ export async function runOrchestratorServer(
               throw new Error(`Unknown deliverable type: ${params.type}`);
           }
 
-          await projectState.storeDeliverable(params.type, result.content);
+          const metadata: Record<string, unknown> = {};
+
+          if (result?.path) {
+            metadata.path = result.path;
+          }
+
+          if (params.type === "story") {
+            if (result?.storyId) {
+              metadata.storyId = result.storyId;
+            }
+
+            if (result?.epicNumber != null) {
+              metadata.epicNumber = result.epicNumber;
+            }
+
+            if (result?.storyNumber != null) {
+              metadata.storyNumber = result.storyNumber;
+            }
+
+            if (result?.structured) {
+              metadata.structuredStory = result.structured;
+
+              const structuredStory = result.structured as Record<string, any>;
+
+              if (structuredStory?.title) {
+                metadata.title = structuredStory.title;
+              }
+
+              if (structuredStory?.persona) {
+                metadata.persona = structuredStory.persona;
+              }
+
+              if (structuredStory?.acceptanceCriteria) {
+                metadata.acceptanceCriteria = structuredStory.acceptanceCriteria;
+              }
+
+              if (structuredStory?.definitionOfDone) {
+                metadata.definitionOfDone = structuredStory.definitionOfDone;
+              }
+
+              if (structuredStory?.testingStrategy) {
+                metadata.testingStrategy = structuredStory.testingStrategy;
+              }
+
+              if (structuredStory?.technicalDetails) {
+                metadata.technicalDetails = structuredStory.technicalDetails;
+              }
+            }
+          }
+
+          await projectState.storeDeliverable(params.type, result.content, metadata);
 
           return {
             content: [
