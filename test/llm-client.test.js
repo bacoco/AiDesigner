@@ -21,6 +21,10 @@ describe('LLMClient', () => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   afterAll(() => {
     process.env = originalEnv;
   });
@@ -64,9 +68,6 @@ describe('LLMClient', () => {
     expect(result).toBe('glm-response');
     expect(glmSpy).toHaveBeenCalledTimes(1);
     expect(anthropicSpy).not.toHaveBeenCalled();
-
-    glmSpy.mockRestore();
-    anthropicSpy.mockRestore();
   });
 
   it('passes the port from ANTHROPIC_BASE_URL to https.request', async () => {
