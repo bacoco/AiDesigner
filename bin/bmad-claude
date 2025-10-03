@@ -11,6 +11,53 @@ const fs = require('fs');
 const { runIntegrityPreflight } = require('../common/utils/integrity');
 const { ensureCliBinary } = require('../common/utils/cli-provisioning');
 
+const getAssistantProvider = () =>
+  (process.env.BMAD_ASSISTANT_PROVIDER || '').trim().toLowerCase();
+
+const buildClaudeSpawnEnv = () => {
+  const provider = getAssistantProvider();
+  if (provider !== 'glm') {
+    return { env: process.env, isGlm: false };
+  }
+
+  const preferEnvValue = (...keys) => {
+    for (const key of keys) {
+      const value = process.env[key];
+      if (typeof value === 'string' && value.length > 0) {
+        return value;
+      }
+    }
+    return undefined;
+  };
+
+  const env = { ...process.env };
+  const baseUrl = preferEnvValue('BMAD_GLM_BASE_URL', 'GLM_BASE_URL', 'ANTHROPIC_BASE_URL');
+  const authToken = preferEnvValue('BMAD_GLM_AUTH_TOKEN', 'GLM_AUTH_TOKEN', 'ANTHROPIC_AUTH_TOKEN');
+  const apiKey = preferEnvValue('BMAD_GLM_API_KEY', 'GLM_API_KEY', 'ANTHROPIC_API_KEY');
+
+  if (baseUrl !== undefined) {
+    env.ANTHROPIC_BASE_URL = baseUrl;
+  } else {
+    delete env.ANTHROPIC_BASE_URL;
+  }
+
+  if (authToken !== undefined) {
+    env.ANTHROPIC_AUTH_TOKEN = authToken;
+  } else {
+    delete env.ANTHROPIC_AUTH_TOKEN;
+  }
+
+  if (apiKey !== undefined) {
+    env.ANTHROPIC_API_KEY = apiKey;
+  } else {
+    delete env.ANTHROPIC_API_KEY;
+  }
+
+  env.LLM_PROVIDER = 'glm';
+
+  return { env, isGlm: true };
+};
+
 // Get paths
 const rootDir = path.join(__dirname, '..');
 runIntegrityPreflight(rootDir, { silentOnMatch: true });
@@ -77,11 +124,17 @@ async function main() {
   console.log('💬 Type your project idea to begin!\n');
 
   const claudeBinary = claudeCheck.binaryPath || 'claude';
+  const { env: claudeEnv, isGlm } = buildClaudeSpawnEnv();
+
+  if (isGlm) {
+    console.log('🌐 GLM mode active: routing Claude CLI through configured GLM endpoint.');
+  }
 
   // Launch Claude CLI
   const claude = spawn(claudeBinary, claudeArgs, {
     stdio: 'inherit',
     shell: false, // Don't use shell to avoid parsing issues with multi-line content
+    env: claudeEnv,
   });
 
   claude.on('error', (error) => {
