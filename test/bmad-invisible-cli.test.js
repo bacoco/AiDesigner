@@ -40,7 +40,7 @@ describe('bmad-invisible start assistant selection', () => {
     process.stdout.isTTY = originalIsTTY;
   });
 
-  test('defaults to Codex when no assistant flag is provided', async () => {
+  test('defaults to Claude when no assistant flag is provided', async () => {
     process.stdout.isTTY = false;
     cli.setRuntimeContext('start', []);
 
@@ -49,7 +49,7 @@ describe('bmad-invisible start assistant selection', () => {
     expect(mockSpawn).toHaveBeenCalled();
     const lastCall = mockSpawn.mock.calls.at(-1);
     expect(lastCall[0]).toBe('node');
-    expect(lastCall[1][0]).toContain(path.join('bin', 'bmad-codex'));
+    expect(lastCall[1][0]).toContain(path.join('bin', 'bmad-chat'));
     expect(lastCall[1].some((arg) => arg.includes('--assistant'))).toBe(false);
   });
 
@@ -75,7 +75,7 @@ describe('bmad-invisible start assistant selection', () => {
     expect(lastCall[2].shell).toBe(false);
   });
 
-  test('handles invalid assistant flag by defaulting to Codex', async () => {
+  test('handles invalid assistant flag by defaulting to Claude', async () => {
     process.stdout.isTTY = false;
     cli.setRuntimeContext('start', ['--assistant=invalid']);
 
@@ -83,7 +83,7 @@ describe('bmad-invisible start assistant selection', () => {
 
     const lastCall = mockSpawn.mock.calls.at(-1);
     expect(lastCall[0]).toBe('node');
-    expect(lastCall[1][0]).toContain(path.join('bin', 'bmad-codex'));
+    expect(lastCall[1][0]).toContain(path.join('bin', 'bmad-chat'));
   });
 
   test('handles spawn error for Codex', async () => {
