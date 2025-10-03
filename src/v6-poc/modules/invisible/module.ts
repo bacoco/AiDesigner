@@ -5,7 +5,7 @@ import fs from "node:fs";
 export interface V6ModuleContext {
   /** Root of the V6 workspace that mirrors `src/` in upstream alpha */
   workspaceRoot: string;
-  /** Directory where legacy BMAD-Invisible assets currently live */
+  /** Directory where legacy Agilai assets currently live */
   legacyRoot: string;
 }
 
@@ -16,7 +16,7 @@ export interface CompatibilityResult {
 }
 
 /**
- * Proof-of-concept adapter that tries to mount the invisible orchestrator inside
+ * Proof-of-concept adapter that tries to mount the Agilai orchestrator inside
  * the emerging V6 module registry. The goal is to probe where the current
  * implementation breaks when forced into the new directory conventions.
  */
@@ -75,7 +75,7 @@ export async function probeInvisibleModule(context: V6ModuleContext): Promise<Co
   // 4. Check persona asset availability under the new layout.
   const personaPath = path.join(context.legacyRoot, "agents", "invisible-orchestrator.md");
   if (!fs.existsSync(personaPath)) {
-    blockers.push(`Invisible orchestrator persona missing at ${personaPath}.`);
+    blockers.push(`Agilai orchestrator persona missing at ${personaPath}.`);
   } else {
     const newPersonaPath = path.join(context.workspaceRoot, "src", "modules", "invisible", "agents", "orchestrator.md");
     if (!fs.existsSync(path.dirname(newPersonaPath))) {

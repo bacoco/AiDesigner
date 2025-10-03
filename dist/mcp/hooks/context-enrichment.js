@@ -1,5 +1,5 @@
 // hooks/context-enrichment.js
-// Assemble lightweight just-in-time story context for BMAD-Invisible.
+// Assemble lightweight just-in-time story context for Agilai.
 
 const fs = require('fs-extra');
 const path = require('node:path');

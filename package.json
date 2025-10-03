@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "bmad-invisible",
+  "name": "agilai",
   "version": "1.3.9",
   "description": "Invisible orchestrator layer for BMAD-METHOD™",
   "keywords": [
@@ -16,20 +16,20 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bacoco/BMAD-invisible.git"
+    "url": "git+https://github.com/bacoco/Agilai.git"
   },
   "license": "MIT",
   "author": "Loic Bacoco",
   "main": "tools/cli.js",
   "bin": {
-    "bmad-invisible": "bin/bmad-invisible",
-    "bmad-invisible-codex": "bin/bmad-codex"
+    "agilai": "bin/bmad-invisible",
+    "agilai-codex": "bin/bmad-codex"
   },
   "scripts": {
     "bmad": "node bin/bmad-invisible start",
     "bmad:claude": "node bin/bmad-claude",
     "bmad:codex": "node bin/bmad-codex",
-    "bmad:opencode": "npx bmad-invisible opencode",
+    "bmad:opencode": "npx agilai opencode",
     "build": "node tools/cli.js build",
     "build:agents": "node tools/cli.js build --agents-only",
     "build:mcp": "tsc -p mcp/tsconfig.json && tsc -p tsconfig.codex.json && cp -r lib dist/mcp/ && cp -r hooks dist/mcp/",

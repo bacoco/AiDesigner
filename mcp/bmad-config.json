@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "bmad-invisible": {
+    "agilai": {
       "command": "node",
       "args": ["dist/mcp/mcp/server.js"]
     },

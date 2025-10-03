@@ -4,7 +4,7 @@ This note documents how the Codex CLI behaves inside the V6 sandbox baseline and
 
 ## 1. Sandbox Preparation
 
-1. Provision a fresh V6 developer sandbox (Node.js ≥ 20) and clone `BMAD-invisible`.
+1. Provision a fresh V6 developer sandbox (Node.js ≥ 2agilai) and clone `BMAD-invisible`.
 2. Install project dependencies and rebuild the MCP bundles:
 
    ```bash

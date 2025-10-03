@@ -1,4 +1,4 @@
-# BMAD-Invisible FAQ
+# Agilai FAQ
 
 ## How It Works
 
@@ -128,7 +128,7 @@ No - validation is a **safety checkpoint**. The orchestrator will not proceed to
 
 ## Working with Existing Projects
 
-### Will it work for projects NOT started with BMAD-invisible?
+### Will it work for projects NOT started with Agilai?
 
 **YES!** The orchestrator handles both:
 
@@ -141,7 +141,7 @@ No - validation is a **safety checkpoint**. The orchestrator will not proceed to
 
 ```bash
 cd your-existing-project
-npx bmad-invisible@latest init
+npx agilai@latest init
 npm install
 ```
 
@@ -177,10 +177,10 @@ Orchestrator: "Great! Let me understand your current setup.
 The orchestrator will:
 
 - ✅ **Scan existing codebase** automatically
-- ✅ **Detect existing BMAD docs** if present and resume from there
+- ✅ **Detect existing docs** if present and resume from there
 - ✅ **Preserve existing architecture** and build on it
 - ✅ **Generate incremental docs** that complement existing work
-- ✅ **Resume from any phase** if you have prior BMAD state
+- ✅ **Resume from any phase** if you have prior state
 
 ### What about existing documentation?
 
@@ -193,10 +193,10 @@ The orchestrator intelligently handles existing docs:
 - Creates new sections rather than overwriting
 - Asks: `"I see you have docs/architecture.md. Should I update it or create a new section?"`
 
-**If you have BMAD docs from previous sessions:**
+**If you have docs from previous sessions:**
 
 - Detects them automatically
-- Loads prior state from `.bmad-invisible/state.json`
+- Loads prior state from `.agilai/state.json`
 - Asks: `"I see we left off at the Architecture phase. Want to continue from there?"`
 
 ### Can I resume after stopping?
@@ -204,7 +204,7 @@ The orchestrator intelligently handles existing docs:
 **YES!** Project state persists:
 
 ```
-.bmad-invisible/
+.agilai/
 ├── state.json              # Current phase, context, decisions
 ├── conversation.json       # Full conversation history
 └── deliverables.json       # Generated files tracking
@@ -376,7 +376,7 @@ The orchestrator maintains complete project state in `.bmad-invisible/`:
 
 ```bash
 # View current state
-cat .bmad-invisible/state.json
+cat .agilai/state.json
 
 # Edit (use carefully!)
 # The orchestrator will detect changes on next run
@@ -408,9 +408,9 @@ The orchestrator uses **Claude Sonnet 4.5** via Claude Code CLI:
 
 1. **Orchestrator prompt** (`agents/invisible-orchestrator.md`) - Instructions on how to behave
 2. **Your responses** - Adapts to what you say
-3. **Project state** - Loads context from `.bmad-invisible/`
-4. **Phase context** - Internally loads appropriate BMAD agent expertise
-5. **BMAD methodology** - Follows proven workflow behind the scenes
+3. **Project state** - Loads context from `.agilai/`
+4. **Phase context** - Internally loads appropriate agent expertise
+5. **Proven methodology** - Follows proven workflow behind the scenes
 
 Each response is uniquely generated - not pre-written templates.
 
@@ -439,7 +439,7 @@ This happens automatically when you mention "existing project" or "current codeb
 You can still:
 
 - ✅ Access all generated docs in `docs/`
-- ✅ View project state in `.bmad-invisible/`
+- ✅ View project state in `.agilai/`
 - ✅ Continue development using existing docs
 - ❌ Can't start new conversations until service is back
 
@@ -449,7 +449,7 @@ You can still:
 
 ### How is this different from regular BMAD?
 
-| Feature               | Traditional BMAD                         | BMAD-Invisible                          |
+| Feature               | Traditional BMAD                         | Agilai                                  |
 | --------------------- | ---------------------------------------- | --------------------------------------- |
 | **User Experience**   | Must learn agent names, phases, commands | Natural conversation, no learning curve |
 | **Agent Interaction** | Explicitly invoke agents                 | Agents loaded invisibly behind scenes   |
@@ -462,15 +462,15 @@ You can still:
 
 ### Can I still use traditional BMAD?
 
-**YES!** BMAD-Invisible is a wrapper, not a replacement:
+**YES!** Agilai is a wrapper, not a replacement:
 
 ```bash
 # Traditional BMAD (IDE-based)
 npx bmad-method install
 # Use agents directly in VS Code/Cursor/Claude Code
 
-# BMAD-Invisible (conversational)
-npx bmad-invisible@latest start
+# Agilai (conversational)
+npx agilai@latest start
 # Chat naturally, get same deliverables
 ```
 
@@ -515,11 +515,11 @@ Check that you confirmed at validation checkpoints:
 
 ### "Can't resume previous session"
 
-Check if `.bmad-invisible/state.json` exists:
+Check if `.agilai/state.json` exists:
 
 ```bash
 # View state
-cat .bmad-invisible/state.json
+cat .agilai/state.json
 
 # If missing, state was cleared
 # Start new session - orchestrator will ask context questions
@@ -529,7 +529,7 @@ cat .bmad-invisible/state.json
 
 ## Best Practices
 
-### Getting the Most from BMAD-Invisible
+### Getting the Most from Agilai
 
 #### 1. Be Specific During Discovery
 
@@ -563,8 +563,8 @@ Don't assume it's only for greenfield - brownfield works great!
 #### 6. Commit State Files
 
 ```bash
-git add .bmad-invisible/ docs/
-git commit -m "Add BMAD project state and docs"
+git add .agilai/ docs/
+git commit -m "Add project state and docs"
 ```
 
 This lets your team resume from the same point.
@@ -590,7 +590,7 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for how to help!
 
 ## Support
 
-- **Issues**: https://github.com/bacoco/BMAD-invisible/issues
+- **Issues**: https://github.com/bacoco/agilai/issues
 - **Docs**: See [README.md](../README.md) and [USAGE.md](../USAGE.md)
 - **Base BMAD**: https://github.com/bacoco/BMAD-METHOD
 

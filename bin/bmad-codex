@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * BMAD Invisible Orchestrator - Codex Interface
+ * Agilai Orchestrator - Codex Interface
  * Launches Codex CLI with MCP server and orchestrator agent
  */
 
@@ -76,10 +76,10 @@ async function main() {
     ...userArgs,
   ];
 
-  console.log('🎯 Starting BMAD Invisible Orchestrator with Codex...');
+  console.log('🎯 Starting Agilai Orchestrator with Codex...');
 
   console.log('📡 MCP Server: bmad-invisible-orchestrator');
-  console.log('🤖 Agent: Invisible BMAD Orchestrator');
+  console.log('🤖 Agent: Agilai Orchestrator');
   console.log('💬 Type your project idea to begin!\n');
 
   const codexBinary = codexCheck.binaryPath || 'codex';

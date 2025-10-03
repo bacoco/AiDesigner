@@ -1,5 +1,5 @@
 /**
- * Lane Selector
+ * Lane Selector for Agilai
  * Intelligently routes tasks between complex (multi-agent) and quick (template-based) lanes
  */
 

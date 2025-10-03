@@ -1,4 +1,4 @@
-# BMAD-Invisible Usage Guide
+# Agilai Usage Guide
 
 ## Quick Start
 
@@ -132,7 +132,7 @@ The invisible orchestrator uses these MCP tools:
 7. **add_conversation_message** - Track conversation
 8. **get_project_summary** - Project overview
 9. **list_bmad_agents** - Available agents
-10. **execute_bmad_workflow** - Run phase workflows
+   1agilai. **execute_bmad_workflow** - Run phase workflows
 
 ## Validation Checkpoints
 

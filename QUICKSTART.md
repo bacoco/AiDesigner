@@ -1,8 +1,8 @@
-# BMAD-Invisible Quick Start Guide
+# Agilai Quick Start Guide
 
 ## What You Get
 
-BMAD-Invisible provides a **natural conversational interface** that guides you through project development using the proven BMAD methodology - without you needing to learn any methodology jargon.
+Agilai provides a **natural conversational interface** that guides you through project development using the proven BMAD methodology - without you needing to learn any methodology jargon.
 
 **You talk naturally. It generates professional deliverables.**
 
@@ -22,7 +22,7 @@ or `GLM_API_KEY`). Use `--anthropic` when you want to switch back to Claude.
 
 ```bash
 # Run this ONE command - it does everything!
-npx bmad-invisible@latest start
+npx agilai@latest start
 ```
 
 Done! The command automatically:
@@ -45,8 +45,8 @@ configuration.
 # Navigate to your project directory
 cd your-project
 
-# Initialize BMAD-invisible
-npx bmad-invisible@latest init
+# Initialize Agilai
+npx agilai@latest init
 
 # Install dependencies
 npm install
@@ -67,15 +67,15 @@ npm run bmad
 
 ```bash
 # Install globally once
-npm install -g bmad-invisible
+npm install -g agilai
 
 # Use anywhere
 cd your-project
-bmad-invisible init
-bmad-invisible build
+agilai init
+agilai build
 
 # Add --glm / --llm-provider=glm to default to GLM
-bmad-invisible start
+agilai start
 
 ```
 
@@ -83,8 +83,8 @@ bmad-invisible start
 
 ```bash
 # Clone the repository
-git clone https://github.com/bacoco/BMAD-invisible.git
-cd BMAD-invisible
+git clone https://github.com/bacoco/Agilai.git
+cd Agilai
 
 # Install dependencies
 npm install
@@ -163,9 +163,9 @@ npx bmad-invisible help         # Show all commands
 Run `npm run bmad` and choose your assistant, or use direct commands (`npm run bmad:claude`, `npm run bmad:codex`, `npm run bmad:opencode`). You'll see an experience like this:
 
 ```
-🎯 Starting BMAD Invisible Orchestrator...
-📡 MCP Server: bmad-invisible-orchestrator
-🤖 Agent: Invisible BMAD Orchestrator
+🎯 Starting Agilai Orchestrator...
+📡 MCP Server: agilai-orchestrator
+🤖 Agent: Agilai Orchestrator
 💬 Type your project idea to begin!
 
 You: Help me build a family chore management app

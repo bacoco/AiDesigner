@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * BMAD Invisible - Main CLI entry point for npx deployment
+ * Agilai - Main CLI entry point for npx deployment
  *
  * This executable provides easy installation and setup via:
- *   npx bmad-invisible init
- *   npx bmad-invisible chat
- *   npx bmad-invisible install
+ *   npx agilai init
+ *   npx agilai chat
+ *   npx agilai install
  */
 
 const { spawn } = require('child_process');
@@ -460,10 +460,10 @@ const currentVersion = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).vers
 
 const printHelp = () => {
   console.log(`
-BMAD Invisible - Zero-knowledge AI orchestration (v${currentVersion})
+Agilai - Zero-knowledge AI orchestration (v${currentVersion})
 
 Usage:
-  npx bmad-invisible@latest <command> [options]
+  npx agilai@latest <command> [options]
 
 Options:
   --assistant=<assistant>    Launch specified CLI front-end (claude, codex, opencode)
@@ -475,12 +475,12 @@ Options:
 Commands:
 
   start                🚀 ONE-COMMAND SETUP: init + install + prompt for assistant choice
-  init                 Initialize BMAD-invisible in current project
+  init                 Initialize Agilai in current project
   chat                 Start conversational interface with Claude CLI (Anthropic/GLM)
   codex                Start conversational interface with Codex CLI
   opencode             Start conversational interface with OpenCode CLI
 
-  install              Install BMAD-invisible globally
+  install              Install Agilai globally
   build                Build MCP server
   test                 Run test suite
   validate             Validate configuration
@@ -488,16 +488,16 @@ Commands:
 
 Examples:
 
-  npx bmad-invisible@latest start      # 🚀 Do everything in one command!
-  npx bmad-invisible@latest start --assistant=claude --provider=glm
+  npx agilai@latest start      # 🚀 Do everything in one command!
+  npx agilai@latest start --assistant=claude --provider=glm
                                       # Skip prompts & launch Claude with GLM
-  npx bmad-invisible@latest start --assistant=claude-glm
+  npx agilai@latest start --assistant=claude-glm
                                       # Combined flag also supported
-  npx bmad-invisible@latest start --assistant=opencode
+  npx agilai@latest start --assistant=opencode
                                       # Skip the prompt and launch OpenCode
-  npx bmad-invisible@latest start --glm
+  npx agilai@latest start --glm
                                       # Use GLM with ZHIPUAI_API_KEY / GLM_API_KEY
-  npx bmad-invisible@latest init       # Setup in current project
+  npx agilai@latest init       # Setup in current project
   npm run codex                        # Start conversation (after install)
 
 
@@ -507,13 +507,13 @@ Flags:
 
 
 💡 Tip: Always use @latest to get the newest version:
-   npx bmad-invisible@latest start
+   npx agilai@latest start
 
 Environment:
   Set ZHIPUAI_API_KEY (or GLM_API_KEY) and optionally LLM_MODEL when using --glm.
   Use --anthropic or LLM_PROVIDER=claude to switch back to Anthropic defaults.
 
-For more information: https://github.com/bacoco/BMAD-invisible
+For more information: https://github.com/bacoco/Agilai
 `);
 };
 
@@ -783,7 +783,7 @@ const determineAssistant = async (input = {}) => {
 // Command handlers
 const commands = {
   start: async () => {
-    console.log('🚀 Starting BMAD-invisible setup...\n');
+    console.log('🚀 Starting Agilai setup...\n');
 
     consumeLlmOptionsFromArgs();
 
@@ -853,7 +853,7 @@ const commands = {
     const assistantName = formatAssistantName(assistant);
     const providerLabel = resolvedProvider ? ` (${resolvedProvider})` : '';
     console.log(
-      `\n🎯 Starting BMAD Invisible Orchestrator with ${assistantName}${providerLabel}...\n`,
+      `\n🎯 Starting Agilai Orchestrator with ${assistantName}${providerLabel}...\n`,
     );
 
     if (assistant === 'claude') {
@@ -870,7 +870,7 @@ const commands = {
   },
 
   init: async () => {
-    console.log('🚀 Initializing BMAD-invisible...\n');
+    console.log('🚀 Initializing Agilai...\n');
 
     const projectRoot = process.cwd();
     const packagePath = path.join(projectRoot, 'package.json');
@@ -881,7 +881,7 @@ const commands = {
       const defaultPackage = {
         name: path.basename(projectRoot),
         version: '1.0.0',
-        description: 'Project powered by BMAD-invisible',
+        description: 'Project powered by Agilai',
         scripts: {},
         keywords: [],
         author: '',
@@ -932,7 +932,7 @@ const commands = {
 
     if (!mcpConfig.mcpServers[orchestratorKey]) {
       mcpConfig.mcpServers[orchestratorKey] = orchestratorConfig;
-      console.log('✅ Added BMAD-invisible orchestrator MCP server');
+      console.log('✅ Added Agilai orchestrator MCP server');
     } else {
       // Ensure orchestrator is enabled during re-init (user may have disabled it)
       mcpConfig.mcpServers[orchestratorKey].disabled = false;
@@ -1201,7 +1201,7 @@ const commands = {
     }
 
     console.log(`
-✨ BMAD-invisible initialized successfully!
+✨ Agilai initialized successfully!
 
 Next steps:
   1. Install dependencies:
@@ -1216,7 +1216,7 @@ Next steps:
 
 
 For detailed documentation, visit:
-  https://github.com/bacoco/BMAD-invisible
+  https://github.com/bacoco/Agilai
 `);
   },
 
@@ -1229,8 +1229,8 @@ For detailed documentation, visit:
       : path.join(__dirname, 'bmad-codex');
 
     if (!fs.existsSync(codexScript)) {
-      console.error('❌ BMAD-invisible not found. Please run "npm install" first.');
-      console.error('   Or initialize with: npx bmad-invisible init && npm install');
+      console.error('❌ Agilai not found. Please run "npm install" first.');
+      console.error('   Or initialize with: npx agilai init && npm install');
       process.exit(1);
     }
 
@@ -1260,8 +1260,8 @@ For detailed documentation, visit:
       : path.join(__dirname, 'bmad-claude');
 
     if (!fs.existsSync(chatScript)) {
-      console.error('❌ BMAD-invisible not found. Please run "npm install" first.');
-      console.error('   Or initialize with: npx bmad-invisible init && npm install');
+      console.error('❌ Agilai not found. Please run "npm install" first.');
+      console.error('   Or initialize with: npx agilai init && npm install');
       process.exit(1);
     }
 
@@ -1315,7 +1315,7 @@ For detailed documentation, visit:
   },
 
   install: async () => {
-    console.log('📦 Installing BMAD-invisible globally...\n');
+    console.log('📦 Installing Agilai globally...\n');
 
     const child = spawn('npm', ['install', '-g', 'bmad-invisible'], {
       stdio: 'inherit',
@@ -1324,8 +1324,8 @@ For detailed documentation, visit:
 
     child.on('exit', (code) => {
       if (code === 0) {
-        console.log('\n✅ BMAD-invisible installed globally!');
-        console.log('You can now use: bmad-invisible <command>');
+        console.log('\n✅ Agilai installed globally!');
+        console.log('You can now use: agilai <command>');
       }
       process.exit(code || 0);
     });
@@ -1424,7 +1424,7 @@ const run = (argv = process.argv) => {
   const handler = commands[command];
   if (!handler) {
     console.error(`❌ Unknown command: ${command}`);
-    console.log('Run "npx bmad-invisible help" for usage information.');
+    console.log('Run "npx agilai help" for usage information.');
     process.exit(1);
   }
 

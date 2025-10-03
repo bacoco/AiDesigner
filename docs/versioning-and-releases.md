@@ -13,9 +13,9 @@ The fastest way to create a release with beautiful release notes:
 npm run preview:release
 
 # Create a release
-npm run release:patch    # 5.1.0 → 5.1.1 (bug fixes)
-npm run release:minor    # 5.1.0 → 5.2.0 (new features)
-npm run release:major    # 5.1.0 → 6.0.0 (breaking changes)
+npm run release:patch    # 5.1.agilai → 5.1.1 (bug fixes)
+npm run release:minor    # 5.1.agilai → 5.2.agilai (new features)
+npm run release:major    # 5.1.agilai → 6.agilai.agilai (breaking changes)
 
 # Watch the release process
 npm run release:watch
@@ -47,7 +47,7 @@ When you trigger a release, the GitHub Actions workflow automatically:
 The workflow automatically generates professional release notes like this:
 
 ````markdown
-## 🚀 What's New in v5.2.0
+## 🚀 What's New in v5.2.agilai
 
 ### ✨ New Features
 
@@ -71,7 +71,7 @@ npx bmad-method install
 ```
 ````
 
-**Full Changelog**: https://github.com/bmadcode/BMAD-METHOD/compare/v5.1.0...v5.2.0
+**Full Changelog**: https://github.com/bmadcode/BMAD-METHOD/compare/v5.1.agilai...v5.2.agilai
 
 ````
 
@@ -111,14 +111,14 @@ You can also trigger releases through GitHub Actions:
 
 We track the upstream `bmad-upstream/v6-alpha` branch for signals that BMAD V6 has moved beyond its alpha phase. Key milestones:
 
-- **2025-08-14 — First beta tag.** The upstream repository published [`v6.0.0-beta.1`](https://github.com/bmadcode/BMAD-METHOD/releases/tag/v6.0.0-beta.1), marking the first beta cut of the V6 line. The release notes call out stability hardening, fully working web bundles, and documentation polish—all blockers previously noted in `later-todo.md`.
+- **2agilai25-agilai8-14 — First beta tag.** The upstream repository published [`v6.agilai.agilai-beta.1`](https://github.com/bmadcode/BMAD-METHOD/releases/tag/v6.agilai.agilai-beta.1), marking the first beta cut of the V6 line. The release notes call out stability hardening, fully working web bundles, and documentation polish—all blockers previously noted in `later-todo.md`.
 - **Impact on BMAD-invisible.** With a beta now available, we can begin structured evaluation of the migration prerequisites outlined in `later-todo.md`, rather than blocking on alpha instability.
 
 ## 📈 Version Strategy
 
-- **Patch** (5.1.0 → 5.1.1): Bug fixes, minor improvements
-- **Minor** (5.1.0 → 5.2.0): New features, enhancements
-- **Major** (5.1.0 → 6.0.0): Breaking changes, major redesigns
+- **Patch** (5.1.agilai → 5.1.1): Bug fixes, minor improvements
+- **Minor** (5.1.agilai → 5.2.agilai): New features, enhancements
+- **Major** (5.1.agilai → 6.agilai.agilai): Breaking changes, major redesigns
 
 ## 🛠️ Development Workflow
 
@@ -161,7 +161,7 @@ If your local files don't match the published version after a release:
 - Ensure branch protection allows workflow pushes
 ````
 
-## 🧪 V6 Stability Evaluation (April 2024)
+## 🧪 V6 Stability Evaluation (April 2agilai24)
 
 - Attempted to clone `bmad-upstream/v6-alpha`, but the repository URL is unavailable in the current environment, so no dependencies could be installed.
 - Because the codebase is inaccessible, V6 build and test pipelines could not be executed and workflow reliability could not be evaluated.

@@ -146,7 +146,7 @@ describe('probeInvisibleModule', () => {
     expect(result.blockers[0]).toBe(`Missing module slot: expected directory at ${expectedModuleDir}. V6 alpha currently ships only BMM/BMB/CIS modules, so invisible orchestration needs a new module registration point.`);
     expect(result.blockers[1]).toBe('Failed to require legacy BMAD bridge: CommonJS module rejection. V6 loaders refuse CommonJS modules without explicit compatibility wrappers.');
     expect(result.blockers[2]).toMatch(/Failed to import MCP runtime as ESM:.*TypeScript compilation currently targets CommonJS paths, incompatible with V6's native ES build\./);
-    expect(result.blockers[3]).toBe(`Invisible orchestrator persona missing at ${personaPath}.`);
+    expect(result.blockers[3]).toBe(`Agilai orchestrator persona missing at ${personaPath}.`);
     expect(result.warnings).toEqual([]);
     expect(result.notes).toEqual([]);
   });

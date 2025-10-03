@@ -4,7 +4,7 @@ const https = require('node:https');
 const chalk = require('chalk');
 
 /**
- * MCP Registry - Fetches and manages MCP server registry
+ * MCP Registry - Fetches and manages MCP server registry for Agilai
  */
 class McpRegistry {
   constructor() {
@@ -195,7 +195,7 @@ class McpRegistry {
         path: '/modelcontextprotocol/servers/main/README.md',
         method: 'GET',
         headers: {
-          'User-Agent': 'BMAD-Invisible-MCP-Manager',
+          'User-Agent': 'Agilai-MCP-Manager',
         },
       };
 

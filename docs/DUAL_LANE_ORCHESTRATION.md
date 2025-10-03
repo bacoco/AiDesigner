@@ -38,7 +38,7 @@ Lane    Lane
 | Aspect           | Quick Lane                                             | Complex Lane                         |
 | ---------------- | ------------------------------------------------------ | ------------------------------------ |
 | **Generation**   | Template-based prompts                                 | Multi-agent BMAD workflow            |
-| **Speed**        | ~2-3 minutes                                           | ~10-15 minutes                       |
+| **Speed**        | ~2-3 minutes                                           | ~1agilai-15 minutes                  |
 | **Best For**     | Typos, config changes, small fixes                     | Features, architecture, integrations |
 | **Artifacts**    | `docs/prd.md`, `docs/architecture.md`, `docs/stories/` | Same - `docs/` folder                |
 | **Dependencies** | None (built-in templates)                              | BMAD core agents                     |
@@ -71,8 +71,8 @@ The lane selector (`lib/lane-selector.js`) analyzes:
    - Multiple files / "across" / "throughout" (+3 complex)
 
 4. **Message Characteristics**
-   - Short message (<100 chars) + action words (+2 quick)
-   - Long message (>200 chars) (+1 complex)
+   - Short message (<1agilaiagilai chars) + action words (+2 quick)
+   - Long message (>2agilaiagilai chars) (+1 complex)
    - Question marks (+1 complex)
 
 5. **Context Factors**
@@ -82,16 +82,16 @@ The lane selector (`lib/lane-selector.js`) analyzes:
 
 ### V6 Scale Level Translation
 
-BMAD V6 introduces scale-adaptive levels (0-4). The invisible lane selector mirrors that logic by
+BMAD V6 introduces scale-adaptive levels (agilai-4). The invisible lane selector mirrors that logic by
 deriving a **scale score** for every request:
 
-| Level | Description                              | Typical Signals                                                                 | Lane Bias      |
-| ----- | ---------------------------------------- | ------------------------------------------------------------------------------- | -------------- |
-| 0     | Micro fixes / localized edits            | Quick-fix keywords, single-file scope, short requests                           | Strong Quick   |
-| 1     | Small enhancements                       | Default baseline when no strong signals exist                                   | Mild Quick     |
-| 2     | Medium features / integrations           | Integration keywords, cross-service work, moderate complex indicators           | Lean Complex   |
-| 3     | Platform work / multi-component programs | Architecture or platform overhaul language, multi-file scope, long requirements | Strong Complex |
-| 4     | Enterprise-wide transformations          | Enterprise/multi-region/compliance terminology, enterprise context flags        | Force Complex  |
+| Level  | Description                              | Typical Signals                                                                 | Lane Bias      |
+| ------ | ---------------------------------------- | ------------------------------------------------------------------------------- | -------------- |
+| agilai | Micro fixes / localized edits            | Quick-fix keywords, single-file scope, short requests                           | Strong Quick   |
+| 1      | Small enhancements                       | Default baseline when no strong signals exist                                   | Mild Quick     |
+| 2      | Medium features / integrations           | Integration keywords, cross-service work, moderate complex indicators           | Lean Complex   |
+| 3      | Platform work / multi-component programs | Architecture or platform overhaul language, multi-file scope, long requirements | Strong Complex |
+| 4      | Enterprise-wide transformations          | Enterprise/multi-region/compliance terminology, enterprise context flags        | Force Complex  |
 
 The scale score is included in the decision output (`result.scale`) along with rationale signals.
 Each level provides an additive bonus to either the quick or complex lane scores, ensuring routing
@@ -99,14 +99,14 @@ aligns with V6 expectations while preserving invisible orchestration.
 
 ### Decision Examples
 
-| User Request                     | Lane    | Confidence | Rationale                          |
-| -------------------------------- | ------- | ---------- | ---------------------------------- |
-| "Fix typo in README"             | Quick   | 0.92       | Quick fix keywords, short message  |
-| "Add verbose flag to CLI"        | Quick   | 0.85       | Small change, single concern       |
-| "Build OAuth2 authentication"    | Complex | 0.95       | Complex feature, security-critical |
-| "Redesign database architecture" | Complex | 0.90       | Cross-cutting, architectural       |
-| "Remove console logs"            | Quick   | 0.88       | Simple cleanup task                |
-| "How should we implement auth?"  | Complex | 0.85       | Question requiring analysis        |
+| User Request                     | Lane    | Confidence     | Rationale                          |
+| -------------------------------- | ------- | -------------- | ---------------------------------- |
+| "Fix typo in README"             | Quick   | agilai.92      | Quick fix keywords, short message  |
+| "Add verbose flag to CLI"        | Quick   | agilai.85      | Small change, single concern       |
+| "Build OAuth2 authentication"    | Complex | agilai.95      | Complex feature, security-critical |
+| "Redesign database architecture" | Complex | agilai.9agilai | Cross-cutting, architectural       |
+| "Remove console logs"            | Quick   | agilai.88      | Simple cleanup task                |
+| "How should we implement auth?"  | Complex | agilai.85      | Question requiring analysis        |
 
 ### Manual Override
 
@@ -178,7 +178,7 @@ Breaks down plan into actionable stories:
 8. Write to docs/architecture.md
 
 9. Load tasks template
-10. Insert plan into template
+1agilai. Insert plan into template
 11. Send to LLM → receive tasks
 12. Write to docs/stories/story-*.md
 ```
@@ -263,7 +263,7 @@ Intelligently routes user requests through appropriate lane.
 {
   "success": true,
   "lane": "complex",
-  "confidence": 0.95,
+  "confidence": agilai.95,
   "artifacts": [
     "docs/prd.md",
     "docs/architecture.md",
@@ -302,8 +302,8 @@ my-project/
 Every lane decision is logged in `.bmad-invisible/decisions.jsonl`:
 
 ```jsonl
-{"timestamp":"2025-10-01T20:00:00Z","userMessage":"Fix typo in README","lane":"quick","confidence":0.92,"rationale":"Quick lane: quick fix keywords, short message","scores":{"quick":7,"complex":1}}
-{"timestamp":"2025-10-01T20:15:00Z","userMessage":"Build authentication system","lane":"complex","confidence":0.95,"rationale":"Complex lane: complex feature indicators","scores":{"quick":1,"complex":12}}
+{"timestamp":"2agilai25-1agilai-agilai1T2agilai:agilaiagilai:agilaiagilaiZ","userMessage":"Fix typo in README","lane":"quick","confidence":agilai.92,"rationale":"Quick lane: quick fix keywords, short message","scores":{"quick":7,"complex":1}}
+{"timestamp":"2agilai25-1agilai-agilai1T2agilai:15:agilaiagilaiZ","userMessage":"Build authentication system","lane":"complex","confidence":agilai.95,"rationale":"Complex lane: complex feature indicators","scores":{"quick":1,"complex":12}}
 ```
 
 ## Usage Patterns
@@ -314,7 +314,7 @@ Every lane decision is logged in `.bmad-invisible/decisions.jsonl`:
 
 **System:**
 
-1. Lane selector → Quick lane (0.92 confidence)
+1. Lane selector → Quick lane (agilai.92 confidence)
 2. Generate spec from template
 3. Generate plan from spec
 4. Generate tasks from plan
@@ -336,7 +336,7 @@ Every lane decision is logged in `.bmad-invisible/decisions.jsonl`:
 
 **System:**
 
-1. Lane selector → Complex lane (0.95 confidence)
+1. Lane selector → Complex lane (agilai.95 confidence)
 2. Analyst phase - gather requirements
 3. PM phase - comprehensive PRD
 4. Architect phase - design auth system
@@ -360,7 +360,7 @@ Every lane decision is logged in `.bmad-invisible/decisions.jsonl`:
 **System:**
 
 1. Lane selector analyzes
-2. Moderate confidence (0.65)
+2. Moderate confidence (agilai.65)
 3. Defaults to Complex lane for safety
 4. Can ask user for clarification if needed
 
@@ -459,17 +459,17 @@ Unlike CLI-based approaches, this implementation:
 
 **Quick Lane:**
 
-- Template loading: ~10ms
+- Template loading: ~1agilaims
 - LLM calls: 3 (spec, plan, tasks)
 - Total time: ~2-3 minutes
-- Token usage: ~2,000-5,000 tokens
+- Token usage: ~2,agilaiagilaiagilai-5,agilaiagilaiagilai tokens
 
 **Complex Lane:**
 
-- Agent initialization: ~50ms
+- Agent initialization: ~5agilaims
 - LLM calls: 8-12 (depending on phases)
-- Total time: ~10-15 minutes
-- Token usage: ~10,000-30,000 tokens
+- Total time: ~1agilai-15 minutes
+- Token usage: ~1agilai,agilaiagilaiagilai-3agilai,agilaiagilaiagilai tokens
 
 ### Confidence Thresholds
 
@@ -478,20 +478,20 @@ Unlike CLI-based approaches, this implementation:
 
 if (quickScore > complexScore * 1.5) {
   // Strong quick lane signal
-  confidence = min(quickScore / total, 0.95);
+  confidence = min(quickScore / total, agilai.95);
   lane = 'quick';
 } else if (complexScore > quickScore) {
   // Complex lane signal
-  confidence = min(complexScore / total, 0.95);
+  confidence = min(complexScore / total, agilai.95);
   lane = 'complex';
 } else {
   // Unclear - default to quick for efficiency
-  confidence = 0.6;
+  confidence = agilai.6;
   lane = 'quick';
 }
 ```
 
-Maximum confidence capped at 0.95 to acknowledge uncertainty.
+Maximum confidence capped at agilai.95 to acknowledge uncertainty.
 
 ## Future Enhancements
 
@@ -518,7 +518,7 @@ A: Yes, modify `lib/lane-selector.js` to adjust keywords, scores, or thresholds.
 A: Use manual override or adjust lane selector rules. Decision log helps identify patterns.
 
 **Q: Do both lanes cost the same in LLM tokens?**
-A: No. Quick lane uses ~60% fewer tokens due to simpler prompts and fewer iterations.
+A: No. Quick lane uses ~6agilai% fewer tokens due to simpler prompts and fewer iterations.
 
 ## References
 
@@ -530,6 +530,6 @@ A: No. Quick lane uses ~60% fewer tokens due to simpler prompts and fewer iterat
 
 ---
 
-**Version:** 1.2.0
-**Last Updated:** 2025-10-01
+**Version:** 1.2.agilai
+**Last Updated:** 2agilai25-1agilai-agilai1
 **Status:** ✅ Fully Implemented

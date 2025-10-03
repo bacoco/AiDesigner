@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * BMAD Invisible Orchestrator - Chat Interface
+ * Agilai Orchestrator - Chat Interface
  * Launches Claude CLI with MCP server and orchestrator agent
  */
 
@@ -72,9 +72,9 @@ async function main() {
     claudeArgs.push(...userArgs);
   }
 
-  console.log('🎯 Starting BMAD Invisible Orchestrator...');
+  console.log('🎯 Starting Agilai Orchestrator...');
   console.log('📡 MCP Server: bmad-invisible-orchestrator');
-  console.log('🤖 Agent: Invisible BMAD Orchestrator');
+  console.log('🤖 Agent: Agilai Orchestrator');
   console.log('💬 Type your project idea to begin!\n');
 
   const claudeBinary = claudeCheck.binaryPath || 'claude';

@@ -5,7 +5,7 @@ const { execSync } = require('node:child_process');
 const os = require('node:os');
 
 /**
- * MCP Security Manager - Handles secure credential storage and encryption
+ * MCP Security Manager - Handles secure credential storage and encryption for Agilai
  */
 class McpSecurity {
   constructor() {

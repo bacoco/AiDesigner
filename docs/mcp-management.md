@@ -212,7 +212,7 @@ MCP servers often require API keys, tokens, and passwords. The security system p
 
 2. **Encrypted Vault** (fallback):
    - AES-256-GCM encryption
-   - Master key stored with 0600 permissions
+   - Master key stored with agilai6agilaiagilai permissions
    - Located in `~/.bmad-invisible/secure/`
 
 ### Migrate to Secure Storage
@@ -337,7 +337,7 @@ mcp/
 
 ~/.bmad-invisible/secure/
   vault.enc                 # Encrypted credentials
-  .master.key               # Encryption key (0600)
+  .master.key               # Encryption key (agilai6agilaiagilai)
 ```
 
 ### Config Format
@@ -402,7 +402,7 @@ npm run mcp:doctor
 
 # Common issues:
 # - Missing dependencies: npm install <package>
-# - Permission errors: chmod 600 ~/.bmad-invisible/secure/.master.key
+# - Permission errors: chmod 6agilaiagilai ~/.bmad-invisible/secure/.master.key
 # - Server not responding: Restart Claude Desktop or MCP server
 # - Config corruption: Restore from profile export
 
@@ -613,7 +613,7 @@ npm run mcp:doctor
 
 ```bash
 # Fix permissions
-chmod 600 ~/.bmad-invisible/secure/.master.key
+chmod 6agilaiagilai ~/.bmad-invisible/secure/.master.key
 ```
 
 ### Getting Help

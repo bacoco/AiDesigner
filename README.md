@@ -1,4 +1,4 @@
-# BMAD-Invisible
+# Agilai
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.10.0-brightgreen)](https://nodejs.org)
@@ -21,7 +21,7 @@ Meanwhile, professional teams use structured agile methodologies (analyst → PM
 
 ## The Solution
 
-**BMAD-Invisible gives you professional agile workflows through natural conversation.**
+**Agilai gives you professional agile workflows through natural conversation.**
 
 Just talk about your project. The system:
 
@@ -30,7 +30,7 @@ Just talk about your project. The system:
 ✅ **Guides** you through proven development phases (analyst → PM → architect → dev → QA)
 ✅ **Adapts** to complexity (quick templates for simple tasks, full workflows for complex features)
 
-**You focus on your ideas. BMAD-Invisible handles the methodology.**
+**You focus on your ideas. Agilai handles the methodology.**
 
 ## Why It Works
 
@@ -43,7 +43,7 @@ Just talk about your project. The system:
 
 ### 🚀 NEW: Dual-Lane Orchestration (v1.2+)
 
-BMAD-Invisible intelligently routes tasks between two development approaches:
+Agilai intelligently routes tasks between two development approaches:
 
 - **Complex Lane**: Full multi-agent BMAD workflow for substantial features
 - **Quick Lane**: Template-based rapid development for small, focused tasks
@@ -70,7 +70,7 @@ The orchestrator automatically selects the appropriate lane based on task comple
 
 ```bash
 # Just run this - it does everything!
-npx bmad-invisible@latest start
+npx agilai@latest start
 ```
 
 > Prefer a specific CLI? Append `--assistant=claude`, `--assistant=codex`, or `--assistant=opencode` to skip the prompt. Add `--glm`
@@ -97,7 +97,7 @@ That's it! This command will:
 
 ```bash
 # Initialize in your project directory
-npx bmad-invisible@latest init
+npx agilai@latest init
 
 # Install dependencies
 npm install
@@ -118,17 +118,17 @@ npm run bmad              # Prompts you to choose assistant
 
 ```bash
 # Install globally
-npm install -g bmad-invisible
+npm install -g agilai
 
 # Initialize in any project
-bmad-invisible init
+agilai init
 
 # Build
-bmad-invisible build
+agilai build
 
 # Start chat (will prompt for assistant choice)
 # Add --glm / --llm-provider=glm to default to ZhipuAI GLM
-bmad-invisible start
+agilai start
 
 ```
 
@@ -136,8 +136,8 @@ bmad-invisible start
 
 ```bash
 # Clone the repository
-git clone https://github.com/bacoco/BMAD-invisible.git
-cd BMAD-invisible
+git clone https://github.com/bacoco/Agilai.git
+cd Agilai
 
 # Install dependencies
 npm install
@@ -176,7 +176,7 @@ npm run bmad
 Interactive installs now auto-provision Codex CLI so you can run `codex` immediately after setup:
 
 - Generates/updates `AGENTS.md` with BMAD agent context for Codex memory.
-- Ensures `~/.codex/config.toml` exists with the `bmad_invisible` MCP server
+- Ensures `~/.codex/config.toml` exists with the `agilai` MCP server
   entry plus optional helpers for `chrome-devtools` and `shadcn` (disabled by
   default until you install them).
 - Applies sensible defaults (`GPT-5-Codex` model, medium reasoning, automatic approvals) unless you have overrides.
@@ -231,9 +231,9 @@ Run `npm run bmad` to be prompted for your choice, or use explicit commands (`np
 $ npm run bmad
 Which assistant should we launch? (Claude / Codex / Opencode): claude
 
-🎯 Starting BMAD Invisible Orchestrator...
-📡 MCP Server: bmad-invisible-orchestrator
-🤖 Agent: Invisible BMAD Orchestrator
+🎯 Starting Agilai Orchestrator...
+📡 MCP Server: agilai-orchestrator
+🤖 Agent: Agilai Orchestrator
 💬 Type your project idea to begin!
 
 Welcome! I'm here to help you build your project.
@@ -399,7 +399,7 @@ Type 'done' when ready for review, or 'help' if you get stuck.
 ### Example 2: Adding a Feature to Existing Project
 
 ```bash
-$ npx bmad-invisible chat --project ./my-app
+$ npx agilai chat --project ./my-app
 
 I see you have an existing project. What would you like to add?
 
@@ -472,7 +472,7 @@ Once you're done, I'll help you test it thoroughly!
 
 ### GLM Provider Support
 
-BMAD-Invisible supports routing requests through GLM (or other Anthropic-compatible) endpoints. This allows you to use alternative LLM providers while maintaining compatibility with Claude, Codex, and OpenCode CLIs.
+Agilai supports routing requests through GLM (or other Anthropic-compatible) endpoints. This allows you to use alternative LLM providers while maintaining compatibility with Claude, Codex, and OpenCode CLIs.
 
 #### Environment Variables
 
@@ -521,7 +521,7 @@ GLM routing works with all three assistant CLIs:
 
 **FULLY IMPLEMENTED AND PRODUCTION-READY** ✅
 
-BMAD-invisible v1.2 is a complete, working system that combines:
+Agilai v1.2 is a complete, working system that combines:
 
 - Full BMAD methodology integration (Complex lane)
 - Template-based rapid development (Quick lane)
@@ -547,7 +547,7 @@ BMAD-invisible v1.2 is a complete, working system that combines:
 ### Components
 
 ```
-bmad-invisible/
+agilai/
 ├── agents/                    # Agent definitions
 │   ├── invisible-orchestrator.md  # Main conversational interface
 │   └── phase-detector.md          # Phase classification engine
@@ -626,13 +626,13 @@ npm run mcp
 
 ### Codex CLI MCP bridge
 
-Register the Codex-aware MCP server with `npx bmad-invisible-codex` in your `~/.codex/config.toml`:
+Register the Codex-aware MCP server with `npx agilai-codex` in your `~/.codex/config.toml`:
 
 ```toml
 [[mcp]]
-id = "bmad-invisible-codex"
+id = "agilai-codex"
 command = "npx"
-args = ["bmad-invisible-codex"]
+args = ["agilai-codex"]
 autostart = true
 
   [mcp.env]
@@ -674,7 +674,7 @@ Example log line:
 
 ## 🔌 MCP Management System
 
-BMAD-invisible includes a comprehensive **Model Context Protocol (MCP) management system** for seamless AI tool integration.
+Agilai includes a comprehensive **Model Context Protocol (MCP) management system** for seamless AI tool integration.
 
 ### Key Features
 
@@ -781,7 +781,7 @@ my-project/
 │   └── stories/
 │       ├── story-1-1-login.md # From SM phase
 │       └── story-1-2-signup.md
-└── .bmad-invisible/
+└── .agilai/
     ├── state.json             # Current phase, context
     └── conversation.log       # Full conversation history
 ```
@@ -825,7 +825,7 @@ While fully functional, potential improvements include:
 
 ## 🤝 Contributing
 
-We welcome contributions! BMAD-invisible is production-ready but can always be enhanced.
+We welcome contributions! Agilai is production-ready but can always be enhanced.
 
 Key areas for contribution:
 
@@ -856,7 +856,7 @@ BMAD™ and BMAD-METHOD™ are trademarks of BMad Code, LLC.
 
 **Current Version**: v1.3.5 - Production Ready ✅
 
-**Get Started**: `npx bmad-invisible@latest start`
+**Get Started**: `npx agilai@latest start`
 
 **Questions?** Open an issue or check the main [BMAD repository](https://github.com/bmadcode/bmad-method).
 

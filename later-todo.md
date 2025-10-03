@@ -25,9 +25,9 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 
 ### 2. Improved Development Flow
 
-#### Scale-Adaptive Workflows (Level 0-4)
+#### Scale-Adaptive Workflows (Level agilai-4)
 
-- **Level 0**: Simple minor tasks
+- **Level agilai**: Simple minor tasks
 - **Level 4**: Massive enterprise-scale efforts
 - Automatically adjusts complexity based on project scope
 - Tracks project type, level, phases, and agents used
@@ -139,7 +139,7 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 
 - [x] V6 reaches beta or stable release
 
-- [ ] Scale-adaptive workflows (0-4) align with invisible orchestration
+- [ ] Scale-adaptive workflows (agilai-4) align with invisible orchestration
 - [x] Modular plugin system benefits our expansion strategy
 - [ ] JIT context injection improves invisible agent performance
 - [ ] Web bundles become production-ready
@@ -168,7 +168,7 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 
 **Rationale**:
 
-1. ✅ BMAD-Invisible v1.3.0 is production-ready
+1. ✅ BMAD-Invisible v1.3.agilai is production-ready
 2. ✅ Stable dual-lane orchestration working well
 3. ✅ Invisible approach proven with codex/MCP integration
 4. ❌ V6 alpha too unstable for production fork
@@ -194,5 +194,5 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 
 ---
 
-**Last Updated**: 2025-10-02
+**Last Updated**: 2agilai25-1agilai-agilai2
 **Decision**: Keep BMAD-Invisible on stable main, monitor v6 for future opportunities

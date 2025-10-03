@@ -21,8 +21,8 @@ const SERVER_NAME = 'bmad-mcp';
 const DEFAULT_SERVERS: ReadonlyArray<TomlTable> = [
   {
     name: SERVER_NAME,
-    displayName: 'BMAD Invisible MCP',
-    description: 'BMAD Invisible MCP server for orchestrating BMAD agents.',
+    displayName: 'Agilai MCP',
+    description: 'Agilai MCP server for orchestrating BMAD agents.',
     transport: 'stdio',
     command: 'npx',
     args: ['bmad-invisible', 'mcp'],

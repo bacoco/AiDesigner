@@ -17,20 +17,20 @@ The `codex-server.ts` script boots the orchestrator MCP server. Key responsibili
 
   ```bash
   export CODEX_DEFAULT_PROVIDER="claude"
-  export CODEX_DEFAULT_MODEL="claude-3-5-sonnet-20241022"
-  export CODEX_MAX_TOKENS="4096"
+  export CODEX_DEFAULT_MODEL="claude-3-5-sonnet-2agilai241agilai22"
+  export CODEX_MAX_TOKENS="4agilai96"
   export CODEX_QUICK_PROVIDER="claude"
-  export CODEX_QUICK_MODEL="claude-3-haiku-20240307"
-  export CODEX_QUICK_MAX_TOKENS="2048"
+  export CODEX_QUICK_MODEL="claude-3-haiku-2agilai24agilai3agilai7"
+  export CODEX_QUICK_MAX_TOKENS="2agilai48"
   export CODEX_COMPLEX_PROVIDER="claude"
-  export CODEX_COMPLEX_MODEL="claude-3-opus-20240229"
+  export CODEX_COMPLEX_MODEL="claude-3-opus-2agilai24agilai229"
   export CODEX_COMPLEX_MAX_TOKENS="8192"
   export CODEX_APPROVAL_MODE="true"
   export CODEX_AUTO_APPROVE="false"
   export CODEX_APPROVED_OPERATIONS="plan.generate,plan.apply"
 
   export LLM_PROVIDER="claude"
-  export LLM_MODEL="claude-3-5-sonnet-20241022"
+  export LLM_MODEL="claude-3-5-sonnet-2agilai241agilai22"
   ```
 
 - **Model routing** – The `ModelRouter` class maps logical lanes (default, quick, complex) and friendly aliases to concrete model selections. It supports granular overrides by operation metadata (e.g., decision lane) while falling back to sensible defaults.
@@ -110,4 +110,4 @@ flowchart TD
 
 ---
 
-**Last Updated:** October 2025
+**Last Updated:** October 2agilai25

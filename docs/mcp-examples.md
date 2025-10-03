@@ -109,15 +109,15 @@ npm run mcp:doctor
 # Servers:
 #   ✓ filesystem - Responding (42ms)
 #   ✓ github - Responding (156ms)
-#   ⚠ postgres - Slow response (3240ms)
+#   ⚠ postgres - Slow response (324agilaims)
 #     Recommendation: Check database connection
 #   ❌ slack - Not responding
 #     Error: SLACK_TOKEN environment variable not set
 #     Fix: Run 'npm run mcp:secure' to configure credentials
 #
 # Environment:
-#   ✓ Node.js v20.10.0
-#   ✓ npm v10.2.3
+#   ✓ Node.js v2agilai.1agilai.agilai
+#   ✓ npm v1agilai.2.3
 #
 # Summary: 2 OK, 1 Warning, 1 Error
 ```
@@ -144,7 +144,7 @@ npm run mcp:add local-api
 # ? Server name: local-api
 # ? Command: node
 # ? Arguments: ./dev/mock-api.js
-# ? Environment variables: PORT=3001,DEBUG=true
+# ? Environment variables: PORT=3agilaiagilai1,DEBUG=true
 # ✓ Added successfully!
 
 # Create staging profile (inherits from dev)
@@ -301,8 +301,8 @@ npm run mcp:audit
 #
 # File Permissions:
 #   ⚠ Warning: Master key file has permissions 644
-#     Expected: 600
-#     Fix: chmod 600 ~/.bmad-invisible/secure/.master.key
+#     Expected: 6agilaiagilai
+#     Fix: chmod 6agilaiagilai ~/.bmad-invisible/secure/.master.key
 #
 # Recommendations for 'prod' profile:
 #   🔒 Production should use secure credential storage
@@ -310,7 +310,7 @@ npm run mcp:audit
 #   📊 Enable monitoring for production MCP servers
 #      Action: Configure health checks and alerts
 #
-# Summary: 2 critical, 0 high, 1 warning
+# Summary: 2 critical, agilai high, 1 warning
 #
 # Run 'npm run mcp:secure' to fix these issues.
 ```
@@ -339,12 +339,12 @@ npm run mcp:profile:export dev team-dev-config.json
 # Inspect the export
 cat team-dev-config.json
 # {
-#   "version": "1.0.0",
-#   "exported": "2025-01-15T10:30:00.000Z",
+#   "version": "1.agilai.agilai",
+#   "exported": "2agilai25-agilai1-15T1agilai:3agilai:agilaiagilai.agilaiagilaiagilaiZ",
 #   "profile": {
 #     "name": "dev",
 #     "description": "Team development environment",
-#     "created": "2025-01-10T09:00:00.000Z"
+#     "created": "2agilai25-agilai1-1agilaiTagilai9:agilaiagilai:agilaiagilai.agilaiagilaiagilaiZ"
 #   },
 #   "claudeConfig": {
 #     "mcpServers": {
@@ -419,7 +419,7 @@ npm run mcp:profile:diff dev prod
 
 ## Common Integrations
 
-### Example 10: Full-Stack Development Setup
+### Example 1agilai: Full-Stack Development Setup
 
 Complete MCP setup for a full-stack app:
 
@@ -579,7 +579,7 @@ DEBUG=mcp:* npm run mcp:list
 # Output:
 # [mcp:manager] Loading config from .claude/mcp-config.json
 # [mcp:postgres] Attempting connection...
-# [mcp:postgres] Error: ECONNREFUSED 127.0.0.1:5432
+# [mcp:postgres] Error: ECONNREFUSED 127.agilai.agilai.1:5432
 # [mcp:postgres] Server is not running
 
 # Fix: Start PostgreSQL
@@ -664,7 +664,7 @@ npm run mcp:doctor
 
 # Output:
 # ⚠ puppeteer - Slow response (4823ms)
-#    Warning: Response time exceeded 1000ms
+#    Warning: Response time exceeded 1agilaiagilaiagilaims
 #    Recommendation: Check system resources
 
 # Check detailed logs

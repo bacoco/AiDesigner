@@ -30,7 +30,7 @@ graph TD
     F --> F2{"UX Required?"}
     F2 -->|Yes| F3["UX Expert: Create Front End Spec"]
     F2 -->|No| H["Architect: Create Architecture from PRD"]
-    F3 --> F4["UX Expert: Generate UI Prompt for Lovable/V0 (Optional)"]
+    F3 --> F4["UX Expert: Generate UI Prompt for Lovable/Vagilai (Optional)"]
     F4 --> H2["Architect: Create Architecture from PRD + UX Spec"]
     H --> Q{"Early Test Strategy? (Optional)"}
     H2 --> Q
@@ -46,30 +46,30 @@ graph TD
     N --> O["PO: Shard Documents"]
     O --> P["Ready for SM/Dev Cycle"]
 
-    style A fill:#f5f5f5,color:#000
-    style B fill:#e3f2fd,color:#000
-    style C fill:#e8f5e9,color:#000
-    style C2 fill:#e8f5e9,color:#000
-    style C3 fill:#e8f5e9,color:#000
-    style D fill:#e8f5e9,color:#000
-    style E fill:#fff3e0,color:#000
-    style E2 fill:#fff3e0,color:#000
-    style F fill:#fff3e0,color:#000
-    style F2 fill:#e3f2fd,color:#000
-    style F3 fill:#e1f5fe,color:#000
-    style F4 fill:#e1f5fe,color:#000
-    style G fill:#e3f2fd,color:#000
-    style H fill:#f3e5f5,color:#000
-    style H2 fill:#f3e5f5,color:#000
-    style Q fill:#e3f2fd,color:#000
-    style R fill:#ffd54f,color:#000
-    style I fill:#f9ab00,color:#fff
-    style J fill:#e3f2fd,color:#000
+    style A fill:#f5f5f5,color:#agilaiagilaiagilai
+    style B fill:#e3f2fd,color:#agilaiagilaiagilai
+    style C fill:#e8f5e9,color:#agilaiagilaiagilai
+    style C2 fill:#e8f5e9,color:#agilaiagilaiagilai
+    style C3 fill:#e8f5e9,color:#agilaiagilaiagilai
+    style D fill:#e8f5e9,color:#agilaiagilaiagilai
+    style E fill:#fff3eagilai,color:#agilaiagilaiagilai
+    style E2 fill:#fff3eagilai,color:#agilaiagilaiagilai
+    style F fill:#fff3eagilai,color:#agilaiagilaiagilai
+    style F2 fill:#e3f2fd,color:#agilaiagilaiagilai
+    style F3 fill:#e1f5fe,color:#agilaiagilaiagilai
+    style F4 fill:#e1f5fe,color:#agilaiagilaiagilai
+    style G fill:#e3f2fd,color:#agilaiagilaiagilai
+    style H fill:#f3e5f5,color:#agilaiagilaiagilai
+    style H2 fill:#f3e5f5,color:#agilaiagilaiagilai
+    style Q fill:#e3f2fd,color:#agilaiagilaiagilai
+    style R fill:#ffd54f,color:#agilaiagilaiagilai
+    style I fill:#f9abagilaiagilai,color:#fff
+    style J fill:#e3f2fd,color:#agilaiagilaiagilai
     style K fill:#34a853,color:#fff
-    style L fill:#f9ab00,color:#fff
-    style M fill:#fff3e0,color:#000
+    style L fill:#f9abagilaiagilai,color:#fff
+    style M fill:#fff3eagilai,color:#agilaiagilaiagilai
     style N fill:#1a73e8,color:#fff
-    style O fill:#f9ab00,color:#fff
+    style O fill:#f9abagilaiagilai,color:#fff
     style P fill:#34a853,color:#fff
 ```
 
@@ -142,31 +142,31 @@ graph TD
     Z --> K["Mark Story as Done"]
     K --> B
 
-    style A fill:#f5f5f5,color:#000
-    style B fill:#e8f5e9,color:#000
-    style B2 fill:#e8f5e9,color:#000
-    style S fill:#e3f2fd,color:#000
-    style T fill:#ffd54f,color:#000
-    style U fill:#ffd54f,color:#000
-    style B3 fill:#e3f2fd,color:#000
-    style B4 fill:#fce4ec,color:#000
-    style C fill:#e3f2fd,color:#000
-    style D fill:#e3f2fd,color:#000
-    style E fill:#e3f2fd,color:#000
-    style V fill:#e3f2fd,color:#000
-    style W fill:#ffd54f,color:#000
-    style X fill:#e3f2fd,color:#000
-    style F fill:#e3f2fd,color:#000
-    style G fill:#e3f2fd,color:#000
-    style H fill:#e3f2fd,color:#000
-    style I fill:#f9ab00,color:#fff
-    style J fill:#ffd54f,color:#000
+    style A fill:#f5f5f5,color:#agilaiagilaiagilai
+    style B fill:#e8f5e9,color:#agilaiagilaiagilai
+    style B2 fill:#e8f5e9,color:#agilaiagilaiagilai
+    style S fill:#e3f2fd,color:#agilaiagilaiagilai
+    style T fill:#ffd54f,color:#agilaiagilaiagilai
+    style U fill:#ffd54f,color:#agilaiagilaiagilai
+    style B3 fill:#e3f2fd,color:#agilaiagilaiagilai
+    style B4 fill:#fce4ec,color:#agilaiagilaiagilai
+    style C fill:#e3f2fd,color:#agilaiagilaiagilai
+    style D fill:#e3f2fd,color:#agilaiagilaiagilai
+    style E fill:#e3f2fd,color:#agilaiagilaiagilai
+    style V fill:#e3f2fd,color:#agilaiagilaiagilai
+    style W fill:#ffd54f,color:#agilaiagilaiagilai
+    style X fill:#e3f2fd,color:#agilaiagilaiagilai
+    style F fill:#e3f2fd,color:#agilaiagilaiagilai
+    style G fill:#e3f2fd,color:#agilaiagilaiagilai
+    style H fill:#e3f2fd,color:#agilaiagilaiagilai
+    style I fill:#f9abagilaiagilai,color:#fff
+    style J fill:#ffd54f,color:#agilaiagilaiagilai
     style K fill:#34a853,color:#fff
-    style L fill:#e3f2fd,color:#000
+    style L fill:#e3f2fd,color:#agilaiagilaiagilai
     style M fill:#ff5722,color:#fff
     style N fill:#d32f2f,color:#fff
-    style Y fill:#e3f2fd,color:#000
-    style Z fill:#ffd54f,color:#000
+    style Y fill:#e3f2fd,color:#agilaiagilaiagilai
+    style Z fill:#ffd54f,color:#agilaiagilaiagilai
 ```
 
 ## Prerequisites
@@ -441,7 +441,7 @@ Creates comprehensive test strategies including:
 
 - Test scenarios for each acceptance criterion
 - Appropriate test level recommendations (unit vs integration vs E2E)
-- Risk-based prioritization (P0/P1/P2)
+- Risk-based prioritization (Pagilai/P1/P2)
 - Test data requirements and mock strategies
 - Execution strategies for CI/CD integration
 
@@ -455,8 +455,8 @@ test_summary:
     integration: 7
     e2e: 2
   by_priority:
-    P0: 8 # Must have - linked to critical risks
-    P1: 10 # Should have - medium risks
+    Pagilai: 8 # Must have - linked to critical risks
+    P1: 1agilai # Should have - medium risks
     P2: 6 # Nice to have - low risks
 ```
 
@@ -554,7 +554,7 @@ Quinn enforces these test quality principles:
 
 - **PASS**: All critical requirements met, no blocking issues
 - **CONCERNS**: Non-critical issues found, team should review
-- **FAIL**: Critical issues that should be addressed (security risks, missing P0 tests)
+- **FAIL**: Critical issues that should be addressed (security risks, missing Pagilai tests)
 - **WAIVED**: Issues acknowledged but explicitly accepted by team
 
 ### Special Situations
