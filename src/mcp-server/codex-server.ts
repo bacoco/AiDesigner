@@ -26,15 +26,6 @@ function parseBoolean(value: string | undefined, defaultValue = false): boolean 
     : defaultValue;
 }
 
-function parseNumber(value: string | undefined): number | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const parsed = Number.parseInt(value, 10);
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
-
 function normalizeOperation(operation: string, metadata?: Record<string, unknown>): string[] {
   const base = operation.toLowerCase();
   const keys = [base];
@@ -162,42 +153,16 @@ export class CodexClient {
   }
 
   static fromEnvironment(): CodexClient {
-    const defaultProvider =
-      process.env.CODEX_DEFAULT_PROVIDER ||
-      process.env.CODEX_PROVIDER ||
-      process.env.LLM_PROVIDER ||
-      "claude";
-    const defaultModel =
-      process.env.CODEX_DEFAULT_MODEL ||
-      process.env.CODEX_MODEL ||
-      process.env.LLM_MODEL ||
-      "claude-3-5-sonnet-20241022";
+    const { defaultRoute, overrides } = loadModelRoutingConfig(process.env);
 
-    const defaultRoute: ModelRoute = {
-      provider: defaultProvider,
-      model: defaultModel,
-      maxTokens: parseNumber(process.env.CODEX_MAX_TOKENS),
-    };
+    const normalizedOverrides: Record<string, Partial<ModelRoute>> = {};
+    for (const [key, value] of Object.entries(overrides)) {
+      if (value) {
+        normalizedOverrides[key] = value;
+      }
+    }
 
-    const overrides: Record<string, Partial<ModelRoute>> = {
-      quick: {
-        provider: process.env.CODEX_QUICK_PROVIDER || undefined,
-        model: process.env.CODEX_QUICK_MODEL || undefined,
-        maxTokens: parseNumber(process.env.CODEX_QUICK_MAX_TOKENS),
-      },
-      complex: {
-        provider: process.env.CODEX_COMPLEX_PROVIDER || undefined,
-        model: process.env.CODEX_COMPLEX_MODEL || undefined,
-        maxTokens: parseNumber(process.env.CODEX_COMPLEX_MAX_TOKENS),
-      },
-      review: {
-        provider: process.env.CODEX_REVIEW_PROVIDER || undefined,
-        model: process.env.CODEX_REVIEW_MODEL || undefined,
-        maxTokens: parseNumber(process.env.CODEX_REVIEW_MAX_TOKENS),
-      },
-    };
-
-    const router = new ModelRouter(defaultRoute, overrides);
+    const router = new ModelRouter(defaultRoute, normalizedOverrides);
     const approvalMode = parseBoolean(process.env.CODEX_APPROVAL_MODE, false);
     const autoApprove = parseBoolean(process.env.CODEX_AUTO_APPROVE, false);
     const approvedOps = new Set(
