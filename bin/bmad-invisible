@@ -401,6 +401,37 @@ const commands = {
       console.log('✅ Created docs directory');
     }
 
+    // Create shadcn/ui configuration if it doesn't exist
+    const componentsJsonPath = path.join(projectRoot, 'components.json');
+    const shadcnConfig = {
+      $schema: 'https://ui.shadcn.com/schema.json',
+      style: 'new-york',
+      rsc: true,
+      tsx: true,
+      tailwind: {
+        config: 'tailwind.config.ts',
+        css: 'app/globals.css',
+        baseColor: 'zinc',
+        cssVariables: true,
+      },
+      aliases: {
+        components: '@/components',
+        utils: '@/lib/utils',
+      },
+      registries: {
+        '@originui': 'https://originui.com/r/components.json',
+        '@aceternity': 'https://aceternity.com/r/components.json',
+        '@magicui': 'https://magicui.design/r/components.json',
+      },
+    };
+
+    if (fs.existsSync(componentsJsonPath)) {
+      console.log('⚠️ components.json already exists. Skipping creation to avoid overwriting.');
+    } else {
+      fs.writeFileSync(componentsJsonPath, JSON.stringify(shadcnConfig, null, 2) + '\n');
+      console.log('✅ Created shadcn UI config (components.json)');
+    }
+
     // Add to package.json scripts
     const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     packageJson.scripts = packageJson.scripts || {};
