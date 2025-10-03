@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-import { LLMClient } from "../../lib/llm-client.js";
 import { LaneKey } from "./runtime.js";
 import { OperationPolicyEnforcer } from "./operation-policy.js";
 import { StructuredLogger } from "./observability.js";
+type LLMClientModule = typeof import("../../lib/llm-client.js");
+type LLMClientCtor = LLMClientModule["LLMClient"];
+type LLMClientInstance = InstanceType<LLMClientCtor>;
 interface ModelRoute {
     provider: string;
     model: string;
@@ -28,7 +30,7 @@ export declare class CodexClient {
     private readonly logger;
     constructor(router: ModelRouter, approvalMode: boolean, autoApprove: boolean, approvedOps: Set<string>, policyEnforcer?: OperationPolicyEnforcer, logger?: StructuredLogger);
     static fromEnvironment(): CodexClient;
-    createLLMClient(lane?: LaneKey): LLMClient;
+    createLLMClient(lane?: LaneKey): LLMClientInstance;
     ensureOperationAllowed(operation: string, metadata?: Record<string, unknown>): Promise<void>;
     getLogger(): StructuredLogger;
     logStartup(): void;

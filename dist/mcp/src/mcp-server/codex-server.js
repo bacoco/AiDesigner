@@ -2,11 +2,12 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.CodexClient = void 0;
-const llm_client_js_1 = require('../../lib/llm-client.js');
 const runtime_js_1 = require('./runtime.js');
 const operation_policy_js_1 = require('./operation-policy.js');
 const codex_config_js_1 = require('./codex-config.js');
 const observability_js_1 = require('./observability.js');
+const lib_resolver_js_1 = require('./lib-resolver.js');
+const { LLMClient } = (0, lib_resolver_js_1.requireLibModule)('llm-client.js');
 function parseBoolean(value, defaultValue = false) {
   if (value == null) {
     return defaultValue;
@@ -155,10 +156,7 @@ class CodexClient {
     if (!this.llmCache.has(key)) {
       const stopTimer = this.logger.startTimer();
       const route = this.router.resolve(lane);
-      this.llmCache.set(
-        key,
-        new llm_client_js_1.LLMClient({ provider: route.provider, model: route.model }),
-      );
+      this.llmCache.set(key, new LLMClient({ provider: route.provider, model: route.model }));
       const durationMs = stopTimer();
       this.logger.info('llm_client_initialized', {
         operation: 'create_llm_client',
