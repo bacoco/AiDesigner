@@ -6,8 +6,10 @@ describe('LLMClient', () => {
   beforeEach(() => {
     process.env = { ...originalEnv };
     delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.ANTHROPIC_AUTH_TOKEN;
     delete process.env.OPENAI_API_KEY;
     delete process.env.GOOGLE_API_KEY;
+    delete process.env.GLM_API_KEY;
     delete process.env.LLM_PROVIDER;
     delete process.env.ZHIPUAI_API_KEY;
     delete process.env.GLM_API_KEY;
