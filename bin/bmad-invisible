@@ -343,6 +343,13 @@ BMAD Invisible - Zero-knowledge AI orchestration (v${currentVersion})
 Usage:
   npx bmad-invisible@latest <command> [options]
 
+Options:
+  --assistant=<assistant>    Launch specified CLI front-end (claude, codex, opencode)
+  --llm-provider=<provider>  Override orchestrator LLM (claude, glm, openai, gemini)
+  --llm-model=<model>        Force a specific model id for the orchestrator
+  --glm                      Shortcut for --llm-provider=glm (uses ZHIPUAI_API_KEY)
+  --anthropic                Shortcut for --llm-provider=claude
+
 Commands:
 
   start                🚀 ONE-COMMAND SETUP: init + install + prompt for assistant choice
@@ -366,6 +373,8 @@ Examples:
                                       # Combined flag also supported
   npx bmad-invisible@latest start --assistant=opencode
                                       # Skip the prompt and launch OpenCode
+  npx bmad-invisible@latest start --glm
+                                      # Use GLM with ZHIPUAI_API_KEY / GLM_API_KEY
   npx bmad-invisible@latest init       # Setup in current project
   npm run codex                        # Start conversation (after install)
 
@@ -377,6 +386,10 @@ Flags:
 
 💡 Tip: Always use @latest to get the newest version:
    npx bmad-invisible@latest start
+
+Environment:
+  Set ZHIPUAI_API_KEY (or GLM_API_KEY) and optionally LLM_MODEL when using --glm.
+  Use --anthropic or LLM_PROVIDER=claude to switch back to Anthropic defaults.
 
 For more information: https://github.com/bacoco/BMAD-invisible
 `);
@@ -625,6 +638,8 @@ const determineAssistant = async (input = {}) => {
 const commands = {
   start: async () => {
     console.log('🚀 Starting BMAD-invisible setup...\n');
+
+    consumeLlmOptionsFromArgs();
 
     // Determine assistant preference before installation begins
     const {
@@ -1038,6 +1053,8 @@ For detailed documentation, visit:
   },
 
   codex: async () => {
+    consumeLlmOptionsFromArgs();
+
     const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
     const codexScript = fs.existsSync(localInstall)
       ? path.join(localInstall, 'bin', 'bmad-codex')
@@ -1052,6 +1069,7 @@ For detailed documentation, visit:
     const child = spawn('node', [codexScript, ...args], {
       stdio: 'inherit',
       cwd: process.cwd(),
+      env: buildSpawnEnv(),
     });
 
     child.on('error', (error) => {
@@ -1065,6 +1083,8 @@ For detailed documentation, visit:
   },
 
   chat: async () => {
+    consumeLlmOptionsFromArgs();
+
     // Check if bmad-invisible is installed locally first
     const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
     const chatScript = fs.existsSync(localInstall)
@@ -1082,6 +1102,7 @@ For detailed documentation, visit:
     const child = spawn('node', [chatScript, ...args], {
       stdio: 'inherit',
       cwd: process.cwd(),
+      env: buildSpawnEnv(),
     });
 
     child.on('error', (error) => {
@@ -1095,10 +1116,13 @@ For detailed documentation, visit:
   },
 
   opencode: async () => {
+    consumeLlmOptionsFromArgs();
+
     const child = spawn('opencode', args, {
       stdio: 'inherit',
       cwd: process.cwd(),
       shell: false,
+      env: buildSpawnEnv(),
     });
 
     child.on('error', (error) => {
@@ -1192,12 +1216,14 @@ For detailed documentation, visit:
   },
 };
 
-const setRuntimeContext = (nextCommand, nextArgs = []) => {
+const setRuntimeContext = (nextCommand, nextArgs = [], options = {}) => {
   command = nextCommand;
   args = Array.isArray(nextArgs) ? [...nextArgs] : [];
+  runtimeOptions = { ...createDefaultRuntimeOptions(), ...(options.runtimeOptions || {}) };
 };
 
 const run = (argv = process.argv) => {
+  runtimeOptions = createDefaultRuntimeOptions();
   [, , command, ...args] = argv;
 
   if (!command || command === '--help' || command === '-h') {

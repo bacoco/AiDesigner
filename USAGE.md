@@ -11,7 +11,10 @@ npx bmad-invisible@latest start
 
 This does everything: creates structure, installs dependencies, and launches chat!
 You'll be prompted to pick Codex, Claude, or OpenCode (defaults to Codex). Use
-`--assistant=<choice>` to skip the prompt.
+`--assistant=<choice>` to skip the prompt. Add `--glm` / `--llm-provider=glm`
+to launch the orchestrator against ZhipuAI's GLM using the
+`ZHIPUAI_API_KEY`/`GLM_API_KEY` credentials, or `--anthropic` to force the
+legacy Claude defaults.
 
 > **💡 Tip**: Always use `@latest` to get the newest version!
 
@@ -29,6 +32,7 @@ npm install
 # Claude: npm run bmad:chat
 # OpenCode: npx bmad-invisible opencode
 npm run bmad:chat
+# Add -- --glm to any npm script invocation to switch providers
 ```
 
 > **UI Toolkit Opt-in**: When you include the optional shadcn UI helpers, the
@@ -48,6 +52,26 @@ npm install
 npm run build:mcp
 npm run chat
 ```
+
+### Selecting Your LLM Provider
+
+- Use `--glm` (alias for `--llm-provider=glm`) with any BMAD CLI command to run
+  the orchestrator on ZhipuAI's GLM. Provide credentials via `ZHIPUAI_API_KEY`
+  or the fallback `GLM_API_KEY`.
+- Override the model with `--llm-model=<model>` or by exporting `LLM_MODEL`.
+- Persist defaults in a `.env` file so every spawn inherits them:
+
+  ```bash
+  # .env
+  LLM_PROVIDER=glm
+  ZHIPUAI_API_KEY=sk-...
+  LLM_MODEL=glm-4-plus
+  ```
+
+- Switching back to Anthropic is as simple as passing `--anthropic` or
+  re-exporting `LLM_PROVIDER=claude`.
+- The launcher injects overrides only into the child process, so your shell
+  environment remains untouched.
 
 ## How It Works
 
@@ -311,12 +335,14 @@ docs/                  # Your deliverables
 
 Resume later - state persists!
 
-## No API Costs
+## Provider & API Costs
 
-✅ Uses your Claude Pro subscription
-✅ Works with Claude Code CLI
-✅ No Anthropic API key needed
-✅ No usage limits beyond your plan
+✅ Claude flows ride on your Claude Code subscription – no additional API key
+management required.
+✅ GLM flows require a `ZHIPUAI_API_KEY` (or `GLM_API_KEY`) but the launcher
+passes it through only to the spawned CLI.
+✅ Use `--anthropic` or `LLM_PROVIDER=claude` whenever you want to revert to the
+Anthropic defaults.
 
 ## Support
 
