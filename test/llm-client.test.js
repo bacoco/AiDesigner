@@ -63,6 +63,8 @@ describe('LLMClient', () => {
       }),
     };
 
+    const writeMock = jest.fn();
+
     https.request.mockImplementation((options, callback) => {
       callback(mockResponse);
 
@@ -75,7 +77,7 @@ describe('LLMClient', () => {
 
       return {
         on: jest.fn(),
-        write: jest.fn(),
+        write: writeMock,
         end: jest.fn(),
       };
     });
@@ -90,6 +92,23 @@ describe('LLMClient', () => {
     expect(https.request).toHaveBeenCalledWith(
       expect.objectContaining({ hostname: 'example.com', port: expectedPort }),
       expect.any(Function),
+    );
+
+    const sentPayload = JSON.parse(writeMock.mock.calls[0][0]);
+    expect(sentPayload).toEqual(
+      expect.objectContaining({
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Hello',
+              },
+            ],
+          },
+        ],
+      }),
     );
   });
 });
