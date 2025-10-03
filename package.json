@@ -32,7 +32,7 @@
     "bmad:opencode": "npx bmad-invisible opencode",
     "build": "node tools/cli.js build",
     "build:agents": "node tools/cli.js build --agents-only",
-    "build:mcp": "tsc -p mcp/tsconfig.json && tsc -p tsconfig.codex.json",
+    "build:mcp": "tsc -p mcp/tsconfig.json && tsc -p tsconfig.codex.json && cp -r lib dist/mcp/ && cp -r hooks dist/mcp/",
     "build:teams": "node tools/cli.js build --teams-only",
     "codex": "node bin/bmad-codex",
     "fix": "npm run format && npm run lint:fix",
@@ -84,6 +84,7 @@
   },
   "dependencies": {
     "@kayvan/markdown-tree-parser": "^1.6.1",
+    "@modelcontextprotocol/sdk": "^1.18.2",
     "chalk": "^4.1.2",
     "commander": "^14.0.0",
     "comment-json": "^4.2.5",
@@ -93,11 +94,11 @@
     "inquirer": "^8.2.6",
     "js-yaml": "^4.1.0",
     "ora": "^5.4.1",
-    "semver": "^7.7.2"
+    "semver": "^7.7.2",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
-    "@modelcontextprotocol/sdk": "^1.18.2",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@types/jest": "^29.5.12",
@@ -115,8 +116,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "yaml-eslint-parser": "^1.3.0",
-    "yaml-lint": "^1.7.0",
-    "zod": "^3.23.8"
+    "yaml-lint": "^1.7.0"
   },
   "engines": {
     "node": ">=20.10.0"
