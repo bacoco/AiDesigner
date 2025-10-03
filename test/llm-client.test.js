@@ -67,9 +67,7 @@ describe('LLMClient', () => {
       callback(mockResponse);
 
       if (responseListeners.data) {
-        responseListeners.data(
-          JSON.stringify({ content: [{ text: 'mocked response' }] }),
-        );
+        responseListeners.data(JSON.stringify({ content: [{ text: 'mocked response' }] }));
       }
       if (responseListeners.end) {
         responseListeners.end();
@@ -83,10 +81,10 @@ describe('LLMClient', () => {
     });
 
     const client = new LLMClient({ provider: 'claude' });
-    const result = await client.chatAnthropic(
-      [{ role: 'user', content: 'Hello' }],
-      { temperature: 0.5, maxTokens: 100 },
-    );
+    const result = await client.chatAnthropic([{ role: 'user', content: 'Hello' }], {
+      temperature: 0.5,
+      maxTokens: 100,
+    });
 
     expect(result).toBe('mocked response');
     expect(https.request).toHaveBeenCalledWith(

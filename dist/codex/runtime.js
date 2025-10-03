@@ -761,6 +761,91 @@ async function runOrchestratorServer(options = {}) {
           required: ['userRequest'],
         },
       },
+      {
+        name: 'search_mcp_servers',
+        description:
+          'Search for MCP servers in the registry by keyword. Returns matching servers with installation info.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: "Search query (e.g., 'database', 'browser', 'github')",
+            },
+            category: {
+              type: 'string',
+              description: 'Optional category filter',
+            },
+          },
+          required: ['query'],
+        },
+      },
+      {
+        name: 'suggest_mcp_servers',
+        description:
+          'Get intelligent MCP server suggestions based on project context (dependencies, tech stack, etc.)',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+      {
+        name: 'install_mcp_server',
+        description:
+          'Install and configure an MCP server from the registry. Handles environment variables interactively.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            serverId: {
+              type: 'string',
+              description: "Server ID or name (e.g., 'github', 'postgres', 'puppeteer')",
+            },
+            config: {
+              type: 'string',
+              enum: ['claude', 'bmad', 'both'],
+              description: 'Target configuration (default: claude)',
+              default: 'claude',
+            },
+            envVars: {
+              type: 'object',
+              description: 'Environment variables as key-value pairs',
+            },
+          },
+          required: ['serverId'],
+        },
+      },
+      {
+        name: 'list_mcp_servers',
+        description:
+          'List all currently configured MCP servers with their status and configuration source',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+      {
+        name: 'get_mcp_health',
+        description:
+          'Check health status of all configured MCP servers. Returns detailed diagnostics.',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+      {
+        name: 'browse_mcp_registry',
+        description: 'Browse all available MCP servers in the registry, organized by category',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            refresh: {
+              type: 'boolean',
+              description: 'Force refresh the registry cache',
+              default: false,
+            },
+          },
+        },
+      },
     ],
   }));
   server.setRequestHandler(types_js_1.CallToolRequestSchema, async (request) => {
@@ -1449,6 +1534,240 @@ async function runOrchestratorServer(options = {}) {
               {
                 type: 'text',
                 text: JSON.stringify(result, null, 2),
+              },
+            ],
+          };
+          break;
+        }
+        case 'search_mcp_servers': {
+          const params = args;
+          const McpRegistry = (0, lib_resolver_js_1.requireLibModule)('../tools/mcp-registry.js');
+          const registry = new McpRegistry();
+          const results = await registry.search(params.query, {
+            category: params.category,
+          });
+          response = {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    query: params.query,
+                    results: results.map((s) => ({
+                      id: s.id,
+                      name: s.name,
+                      category: s.category,
+                      description: s.description,
+                      envVars: s.envVars || [],
+                      installCommand: `install_mcp_server with serverId: ${s.id}`,
+                    })),
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+          break;
+        }
+        case 'suggest_mcp_servers': {
+          const McpRegistry = (0, lib_resolver_js_1.requireLibModule)('../tools/mcp-registry.js');
+          const registry = new McpRegistry();
+          const suggestions = await registry.suggestForProject(projectState.projectPath);
+          response = {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    suggestions: suggestions.map((s) => ({
+                      server: {
+                        id: s.server.id,
+                        name: s.server.name,
+                        category: s.server.category,
+                        description: s.server.description,
+                        envVars: s.server.envVars || [],
+                      },
+                      reason: s.reason,
+                      installCommand: `install_mcp_server with serverId: ${s.server.id}`,
+                    })),
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+          break;
+        }
+        case 'install_mcp_server': {
+          const params = args;
+          await ensureOperationAllowed('install_mcp_server', { serverId: params.serverId });
+          const McpRegistry = (0, lib_resolver_js_1.requireLibModule)('../tools/mcp-registry.js');
+          const McpManager = (0, lib_resolver_js_1.requireLibModule)('../tools/mcp-manager.js');
+          const registry = new McpRegistry();
+          const manager = new McpManager({ rootDir: projectState.projectPath });
+          const server = await registry.getServer(params.serverId);
+          if (!server) {
+            throw new Error(`MCP server "${params.serverId}" not found in registry`);
+          }
+          const serverConfig = {
+            command: server.installType === 'npx' ? 'npx' : server.command,
+            args: server.installType === 'npx' ? ['-y', server.name] : server.args || [],
+            disabled: false,
+          };
+          if (params.envVars && Object.keys(params.envVars).length > 0) {
+            serverConfig.env = params.envVars;
+          }
+          const targetConfig = params.config || 'claude';
+          if (targetConfig === 'claude' || targetConfig === 'both') {
+            const config = manager.loadClaudeConfig();
+            config.mcpServers = config.mcpServers || {};
+            config.mcpServers[params.serverId] = serverConfig;
+            manager.saveClaudeConfig(config);
+          }
+          if (targetConfig === 'bmad' || targetConfig === 'both') {
+            const config = manager.loadBmadConfig();
+            config.mcpServers = config.mcpServers || {};
+            config.mcpServers[params.serverId] = serverConfig;
+            manager.saveBmadConfig(config);
+          }
+          response = {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    success: true,
+                    serverId: params.serverId,
+                    serverName: server.name,
+                    targetConfig,
+                    message: `Successfully installed ${server.name} to ${targetConfig} configuration`,
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+          break;
+        }
+        case 'list_mcp_servers': {
+          const McpManager = (0, lib_resolver_js_1.requireLibModule)('../tools/mcp-manager.js');
+          const manager = new McpManager({ rootDir: projectState.projectPath });
+          const claudeConfig = manager.loadClaudeConfig();
+          const bmadConfig = manager.loadBmadConfig();
+          const allServers = new Map();
+          for (const [name, config] of Object.entries(claudeConfig.mcpServers || {})) {
+            allServers.set(name, { ...config, source: 'claude' });
+          }
+          for (const [name, config] of Object.entries(bmadConfig.mcpServers || {})) {
+            if (!allServers.has(name)) {
+              allServers.set(name, { ...config, source: 'bmad' });
+            } else {
+              allServers.get(name).source = 'both';
+            }
+          }
+          const serverList = Array.from(allServers.entries()).map(([name, config]) => ({
+            name,
+            command: config.command,
+            args: config.args || [],
+            disabled: config.disabled || false,
+            source: config.source,
+            hasEnv: config.env && Object.keys(config.env).length > 0,
+          }));
+          response = {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    servers: serverList,
+                    total: serverList.length,
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+          break;
+        }
+        case 'get_mcp_health': {
+          const McpManager = (0, lib_resolver_js_1.requireLibModule)('../tools/mcp-manager.js');
+          const manager = new McpManager({ rootDir: projectState.projectPath });
+          const claudeConfig = manager.loadClaudeConfig();
+          const bmadConfig = manager.loadBmadConfig();
+          const allServers = new Map();
+          for (const [name, config] of Object.entries(claudeConfig.mcpServers || {})) {
+            allServers.set(name, config);
+          }
+          for (const [name, config] of Object.entries(bmadConfig.mcpServers || {})) {
+            if (!allServers.has(name)) {
+              allServers.set(name, config);
+            }
+          }
+          const healthResults = [];
+          for (const [name, config] of allServers) {
+            if (config.disabled) {
+              healthResults.push({ name, status: 'disabled' });
+              continue;
+            }
+            try {
+              const result = await manager.testServer(name, config);
+              healthResults.push(result);
+            } catch (error) {
+              healthResults.push({
+                name,
+                status: 'error',
+                message: error instanceof Error ? error.message : String(error),
+              });
+            }
+          }
+          const healthy = healthResults.filter((r) => r.status === 'healthy').length;
+          const total = healthResults.length;
+          response = {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    summary: `${healthy}/${total} servers healthy`,
+                    healthy,
+                    total,
+                    servers: healthResults,
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+          break;
+        }
+        case 'browse_mcp_registry': {
+          const params = args;
+          const McpRegistry = (0, lib_resolver_js_1.requireLibModule)('../tools/mcp-registry.js');
+          const registry = new McpRegistry();
+          const servers = await registry.getServers(params.refresh || false);
+          const categories = await registry.getCategories();
+          const grouped = {};
+          for (const category of categories) {
+            grouped[category] = servers.filter((s) => s.category === category);
+          }
+          response = {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    total: servers.length,
+                    categories,
+                    servers: grouped,
+                  },
+                  null,
+                  2,
+                ),
               },
             ],
           };
