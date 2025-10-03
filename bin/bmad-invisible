@@ -62,6 +62,29 @@ For more information: https://github.com/bacoco/BMAD-invisible
 
 const ASSISTANT_CHOICES = ['claude', 'codex', 'opencode'];
 
+const OPTIONAL_MCP_SERVERS = [
+  {
+    id: 'chrome-devtools',
+    label: 'Chrome DevTools bridge',
+    description: 'Inspect and control active Chrome tabs via the DevTools protocol.',
+    config: {
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-chrome-devtools'],
+      disabled: false,
+    },
+  },
+  {
+    id: 'shadcn',
+    label: 'shadcn/ui component generator',
+    description: 'Generate UI components from the shadcn library.',
+    config: {
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-shadcn'],
+      disabled: false,
+    },
+  },
+];
+
 const formatAssistantName = (value) =>
   value.charAt(0).toUpperCase() + value.slice(1);
 
@@ -100,7 +123,10 @@ const promptForAssistant = () =>
     });
 
     // Ensure readline is cleaned up on error
+    let cleanedUp = false;
     const cleanup = () => {
+      if (cleanedUp) return;
+      cleanedUp = true;
       try {
         rl.close();
       } catch {
@@ -172,6 +198,12 @@ const commands = {
     // If assistant is undefined, exit was called (possibly mocked in tests)
     if (!assistant) {
       return;
+    }
+
+    if (process.stdout.isTTY) {
+      console.log(
+        '💡 We can optionally enable additional MCP servers (chrome-devtools, shadcn) during setup.',
+      );
     }
 
     // Run init
@@ -249,19 +281,118 @@ const commands = {
 
     // Create MCP config (inline template since we might be running from npx cache)
     const mcpConfigDest = path.join(claudeDir, 'mcp-config.json');
-    if (!fs.existsSync(mcpConfigDest)) {
-      const mcpConfig = {
-        mcpServers: {
-          'bmad-invisible-orchestrator': {
-            command: 'node',
-            args: ['${workspaceFolder}/node_modules/bmad-invisible/dist/mcp/mcp/server.js'],
-            disabled: false,
-          },
-        },
-      };
-      fs.writeFileSync(mcpConfigDest, JSON.stringify(mcpConfig, null, 2));
-      console.log('✅ Created MCP configuration');
+    let mcpConfig = { mcpServers: {} };
+    let hadExistingMcpConfig = false;
+    if (fs.existsSync(mcpConfigDest)) {
+      try {
+        const parsed = JSON.parse(fs.readFileSync(mcpConfigDest, 'utf8'));
+        if (parsed && typeof parsed === 'object' && parsed.mcpServers) {
+          // Preserve all top-level keys (logging, environment, etc.), not just mcpServers
+          mcpConfig = { ...parsed };
+          mcpConfig.mcpServers = { ...parsed.mcpServers };
+          hadExistingMcpConfig = true;
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to parse existing MCP configuration. Rebuilding from defaults.');
+      }
     }
+
+    const orchestratorKey = 'bmad-invisible-orchestrator';
+    const orchestratorConfig = {
+      command: 'node',
+      args: ['${workspaceFolder}/node_modules/bmad-invisible/dist/mcp/mcp/server.js'],
+      disabled: false,
+    };
+
+    if (!mcpConfig.mcpServers[orchestratorKey]) {
+      mcpConfig.mcpServers[orchestratorKey] = orchestratorConfig;
+      console.log('✅ Added BMAD-invisible orchestrator MCP server');
+    } else {
+      // Ensure orchestrator is enabled during re-init (user may have disabled it)
+      mcpConfig.mcpServers[orchestratorKey].disabled = false;
+    }
+
+    const promptYesNo = async (question) => {
+      if (!process.stdout.isTTY) {
+        return false;
+      }
+
+      return new Promise((resolve, reject) => {
+        const rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout,
+        });
+
+        let cleanedUp = false;
+        const cleanup = () => {
+          if (cleanedUp) return;
+          cleanedUp = true;
+          try {
+            rl.close();
+          } catch {
+            // ignore cleanup errors
+          }
+        };
+
+        rl.on('error', (error) => {
+          cleanup();
+          reject(error);
+        });
+
+        rl.question(`${question} (y/N): `, (answer) => {
+          cleanup();
+          const normalized = (answer || '').trim().toLowerCase();
+          resolve(normalized === 'y' || normalized === 'yes');
+        });
+      });
+    };
+
+    const optionalServerPromptsNeeded = OPTIONAL_MCP_SERVERS.filter(
+      ({ id }) => !mcpConfig.mcpServers[id],
+    );
+
+    if (optionalServerPromptsNeeded.length > 0) {
+      if (process.stdout.isTTY) {
+        console.log('\n✨ Optional MCP servers available:');
+        for (const server of optionalServerPromptsNeeded) {
+          console.log(`   • ${server.label} — ${server.description}`);
+        }
+        console.log('');
+      } else {
+        console.log(
+          'ℹ️ Optional MCP servers detected, but prompts are skipped in non-interactive mode.',
+        );
+      }
+    }
+
+    for (const optional of OPTIONAL_MCP_SERVERS) {
+      if (mcpConfig.mcpServers[optional.id]) {
+        continue;
+      }
+
+      let shouldAdd = false;
+      try {
+        shouldAdd = await promptYesNo(`Would you like to enable the ${optional.label}?`);
+      } catch (error) {
+        console.warn(
+          `⚠️ Skipping ${optional.label} prompt due to an input error: ${error.message || error}`,
+        );
+      }
+
+      if (shouldAdd) {
+        mcpConfig.mcpServers[optional.id] = { ...optional.config };
+        console.log(`✅ Added optional MCP server: ${optional.label}`);
+      } else {
+        console.log(`⏭️ Skipped optional MCP server: ${optional.label}`);
+      }
+    }
+
+    fs.writeFileSync(mcpConfigDest, JSON.stringify(mcpConfig, null, 2) + '\n');
+    console.log(
+      hadExistingMcpConfig
+        ? '✅ Updated MCP configuration with selected servers'
+        : '✅ Created MCP configuration',
+    );
 
     // Create docs directory
     const docsDir = path.join(projectRoot, 'docs');
@@ -301,6 +432,35 @@ const commands = {
       packageJson.dependencies['bmad-invisible'] = '^1.0.0';
       fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
       console.log('✅ Added bmad-invisible to dependencies');
+    }
+
+    // Only create components.json if shadcn MCP server is enabled
+    const shadcnEnabled = mcpConfig.mcpServers.shadcn && !mcpConfig.mcpServers.shadcn.disabled;
+    if (shadcnEnabled) {
+      const componentsPath = path.join(projectRoot, 'components.json');
+      const shadcnConfig = {
+        $schema: 'https://ui.shadcn.com/schema.json',
+        style: 'default',
+        rsc: false,
+        tsx: true,
+        tailwind: {
+          config: 'tailwind.config.js',
+          css: 'src/app/globals.css',
+          baseColor: 'slate',
+          cssVariables: true,
+        },
+        aliases: {
+          components: '@/components',
+          utils: '@/lib/utils',
+        },
+      };
+
+      if (!fs.existsSync(componentsPath)) {
+        fs.writeFileSync(componentsPath, JSON.stringify(shadcnConfig, null, 2) + '\n');
+        console.log('✅ Created default shadcn components.json');
+      } else {
+        console.warn('⚠️ components.json already exists. Leaving the current configuration untouched.');
+      }
     }
 
     console.log(`
