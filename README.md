@@ -62,22 +62,7 @@ That's it! This command:
 
 → **[Complete Installation Guide](docs/installation-methods.md)** - All installation options
 
-## Basic Usage
-
-```bash
-# Start chat (prompts for assistant choice)
-npm run bmad
-
-# Or use specific assistant
-npm run bmad:claude
-npm run bmad:codex
-npm run bmad:opencode
-
-# Use ZhipuAI GLM instead of Anthropic
-npm run bmad -- --glm
-```
-
-### Natural Conversation Example
+## Natural Conversation Example
 
 ```
 You: "I want to build an app for tracking family chores"
@@ -112,23 +97,31 @@ All organized in `docs/` folder, ready to use.
 
 → **[Complete Examples](docs/examples.md)** - Detailed walkthrough examples
 
-## Supercharge with MCP
+## Extend with Any Tool
 
-Extend Agilai with any tool through MCP (Model Context Protocol):
+Add powerful integrations through natural conversation:
 
-```bash
-# Add GitHub integration
-npm run mcp:install github
-# ✓ Your AI can now create issues, PRs, and review code!
+```
+You: "I need GitHub integration"
 
-# Add database access
-npm run mcp:install postgres
-# ✓ Your AI can now query and manage your database!
+AI: "I can help with that! I'll set up GitHub access.
+     What's your GitHub personal access token?"
 
-# Get smart suggestions
-npm run mcp:suggest
-# 🔍 Analyzing project...
-# 💡 Recommended: github, postgres, filesystem
+You: "ghp_****"
+
+AI: "✓ GitHub integration configured!
+     I can now create issues, manage PRs, and review code."
+```
+
+```
+You: "I need database access"
+
+AI: "Sure! What database are you using?"
+
+You: "PostgreSQL at localhost"
+
+AI: "✓ PostgreSQL access configured!
+     I can now query and manage your database."
 ```
 
 **Available integrations** (15+): GitHub, PostgreSQL, Filesystem, Puppeteer, Brave Search, Slack, AWS, and more.
@@ -168,16 +161,14 @@ Agilai intelligently routes tasks:
 
 ## LLM Provider Support
 
-Works with multiple providers:
+Choose your provider during installation:
 
 ```bash
 # Use ZhipuAI GLM
-npm run bmad -- --glm
-export ZHIPUAI_API_KEY=sk-...
+npx agilai@latest start --glm
 
 # Use Anthropic Claude (default)
-npm run bmad -- --anthropic
-export ANTHROPIC_API_KEY=sk-ant-...
+npx agilai@latest start --anthropic
 ```
 
 → **[Configuration Guide](docs/configuration.md)** - Complete configuration reference
