@@ -644,9 +644,67 @@ Example log line:
 }
 ```
 
+## 🔌 MCP Management System
+
+BMAD-invisible includes a comprehensive **Model Context Protocol (MCP) management system** for seamless AI tool integration.
+
+### Key Features
+
+- **🔍 Interactive CLI** - Manage MCP servers with simple commands
+- **📦 Registry Integration** - 15+ official MCP servers (filesystem, github, postgres, puppeteer, etc.)
+- **🌍 Environment Profiles** - Separate dev/staging/prod configurations
+- **🔒 Secure Storage** - Encrypted credentials with keychain integration
+- **💬 Conversational Setup** - Install tools through natural conversation
+- **🏥 Health Monitoring** - Diagnostics and automatic troubleshooting
+
+### Quick MCP Commands
+
+```bash
+# Browse available MCP servers
+npm run mcp:browse
+
+# Install a server (e.g., filesystem access)
+npm run mcp:install filesystem
+
+# List configured servers
+npm run mcp:list
+
+# Health check
+npm run mcp:doctor
+
+# Manage profiles
+npm run mcp:profile:list
+npm run mcp:profile:create dev
+
+# Security
+npm run mcp:secure     # Migrate to encrypted storage
+npm run mcp:audit      # Run security audit
+```
+
+### Conversational Installation
+
+The invisible orchestrator can install MCP tools naturally:
+
+```
+You: "I need database access"
+Assistant: I can help with that! Would you like PostgreSQL or SQLite?
+
+You: "PostgreSQL"
+Assistant: ✓ PostgreSQL MCP server configured and ready!
+```
+
+**📖 Complete Guide**: See **[docs/mcp-management.md](docs/mcp-management.md)** for:
+
+- Detailed command reference
+- Environment profiles guide
+- Security best practices
+- Troubleshooting
+- API documentation
+
 ## 📚 Documentation
 
 - **[QUICKSTART.md](QUICKSTART.md)** - ⭐ Start here! Quick installation and first use
+- **[docs/mcp-management.md](docs/mcp-management.md)** - 🆕 Complete MCP management guide
 - **[USAGE.md](USAGE.md)** - Complete usage guide with examples
 - **[DUAL_LANE_ORCHESTRATION.md](docs/DUAL_LANE_ORCHESTRATION.md)** - 🆕 Intelligent routing system
 - **[IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md)** - Complete feature list
