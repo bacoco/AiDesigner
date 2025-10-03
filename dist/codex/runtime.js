@@ -1,64 +1,12 @@
 'use strict';
-var __createBinding =
-  (this && this.__createBinding) ||
-  (Object.create
-    ? function (o, m, k, k2) {
-        if (k2 === undefined) k2 = k;
-        var desc = Object.getOwnPropertyDescriptor(m, k);
-        if (!desc || ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-          desc = {
-            enumerable: true,
-            get: function () {
-              return m[k];
-            },
-          };
-        }
-        Object.defineProperty(o, k2, desc);
-      }
-    : function (o, m, k, k2) {
-        if (k2 === undefined) k2 = k;
-        o[k2] = m[k];
-      });
-var __setModuleDefault =
-  (this && this.__setModuleDefault) ||
-  (Object.create
-    ? function (o, v) {
-        Object.defineProperty(o, 'default', { enumerable: true, value: v });
-      }
-    : function (o, v) {
-        o['default'] = v;
-      });
-var __importStar =
-  (this && this.__importStar) ||
-  (function () {
-    var ownKeys = function (o) {
-      ownKeys =
-        Object.getOwnPropertyNames ||
-        function (o) {
-          var ar = [];
-          for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-          return ar;
-        };
-      return ownKeys(o);
-    };
-    return function (mod) {
-      if (mod && mod.__esModule) return mod;
-      var result = {};
-      if (mod != null)
-        for (var k = ownKeys(mod), i = 0; i < k.length; i++)
-          if (k[i] !== 'default') __createBinding(result, mod, k[i]);
-      __setModuleDefault(result, mod);
-      return result;
-    };
-  })();
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.runOrchestratorServer = runOrchestratorServer;
 const index_js_1 = require('@modelcontextprotocol/sdk/server/index.js');
 const stdio_js_1 = require('@modelcontextprotocol/sdk/server/stdio.js');
 const types_js_1 = require('@modelcontextprotocol/sdk/types.js');
-const path = __importStar(require('node:path'));
-const auto_commands_js_1 = require('../../lib/auto-commands.js');
 const observability_js_1 = require('./observability.js');
+const lib_resolver_js_1 = require('./lib-resolver.js');
+const { executeAutoCommand } = (0, lib_resolver_js_1.requireLibModule)('auto-commands.js');
 /**
  * Builds a structured parse error for agent trigger failures.
  *
@@ -275,7 +223,7 @@ const REVIEW_CHECKPOINTS = {
 const STORY_CONTEXT_VALIDATION_CHECKPOINT = 'story_context_validation';
 const REVIEW_CHECKPOINT_NAMES = Object.freeze(Object.keys(REVIEW_CHECKPOINTS));
 async function getDefaultLLMClientCtor() {
-  const mod = await import('../../lib/llm-client.js');
+  const mod = await (0, lib_resolver_js_1.importLibModule)('llm-client.js');
   return mod.LLMClient;
 }
 async function runOrchestratorServer(options = {}) {
@@ -325,34 +273,42 @@ async function runOrchestratorServer(options = {}) {
     validationLane: 'review',
   };
   async function loadDependencies() {
-    const libPath = path.join(__dirname, '..', '..', 'lib');
-    const hooksPath = path.join(__dirname, '..', '..', 'hooks');
     if (!ProjectState) {
-      ({ ProjectState } = await import(path.join(libPath, 'project-state.js')));
+      ({ ProjectState } = await (0, lib_resolver_js_1.importLibModule)('project-state.js'));
     }
     if (!BMADBridge) {
-      ({ BMADBridge } = await import(path.join(libPath, 'bmad-bridge.js')));
+      ({ BMADBridge } = await (0, lib_resolver_js_1.importLibModule)('bmad-bridge.js'));
     }
     if (!DeliverableGenerator) {
-      ({ DeliverableGenerator } = await import(path.join(libPath, 'deliverable-generator.js')));
+      ({ DeliverableGenerator } = await (0, lib_resolver_js_1.importLibModule)(
+        'deliverable-generator.js',
+      ));
     }
     if (!BrownfieldAnalyzer) {
-      ({ BrownfieldAnalyzer } = await import(path.join(libPath, 'brownfield-analyzer.js')));
+      ({ BrownfieldAnalyzer } = await (0, lib_resolver_js_1.importLibModule)(
+        'brownfield-analyzer.js',
+      ));
     }
     if (!QuickLane) {
-      ({ QuickLane } = await import(path.join(libPath, 'quick-lane.js')));
+      ({ QuickLane } = await (0, lib_resolver_js_1.importLibModule)('quick-lane.js'));
     }
     if (!LaneSelector) {
-      LaneSelector = await import(path.join(libPath, 'lane-selector.js'));
+      LaneSelector = await (0, lib_resolver_js_1.importLibModule)('lane-selector.js');
     }
     if (!phaseTransitionHooks) {
-      phaseTransitionHooks = await import(path.join(hooksPath, 'phase-transition.js'));
+      phaseTransitionHooks = await (0, lib_resolver_js_1.importFromPackageRoot)(
+        'hooks',
+        'phase-transition.js',
+      );
     }
     if (!contextPreservation) {
-      contextPreservation = await import(path.join(hooksPath, 'context-preservation.js'));
+      contextPreservation = await (0, lib_resolver_js_1.importFromPackageRoot)(
+        'hooks',
+        'context-preservation.js',
+      );
     }
     if (!storyContextValidator) {
-      const module = await import(path.join(libPath, 'story-context-validator.js'));
+      const module = await (0, lib_resolver_js_1.importLibModule)('story-context-validator.js');
       storyContextValidator = module?.default ?? module;
     }
   }
@@ -435,7 +391,7 @@ async function runOrchestratorServer(options = {}) {
           operation: 'execute_auto_command',
           command,
         });
-        return (0, auto_commands_js_1.executeAutoCommand)(command, context, bmadBridge);
+        return executeAutoCommand(command, context, bmadBridge);
       },
       updateProjectState: async (updates) => {
         await projectState.updateState(updates);

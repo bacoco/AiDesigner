@@ -4,16 +4,26 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import * as path from "node:path";
 import { performance } from "node:perf_hooks";
-import { executeAutoCommand } from "../../lib/auto-commands.js";
 import { createStructuredLogger, StructuredLogger } from "./observability.js";
+import {
+  importFromPackageRoot,
+  importLibModule,
+  requireLibModule,
+} from "./lib-resolver.js";
+
+type AutoCommandsModule = typeof import("../../lib/auto-commands.js");
+const { executeAutoCommand } = requireLibModule<AutoCommandsModule>(
+  "auto-commands.js"
+);
 
 type TargetedSection = {
   title: string;
   body: string;
   priority?: string | number;
 };
+
+type LLMClientModule = typeof import("../../lib/llm-client.js");
 
 export interface AgentTriggerParseError {
   ok: false;
@@ -344,7 +354,7 @@ const STORY_CONTEXT_VALIDATION_CHECKPOINT = "story_context_validation";
 const REVIEW_CHECKPOINT_NAMES = Object.freeze(Object.keys(REVIEW_CHECKPOINTS));
 
 async function getDefaultLLMClientCtor(): Promise<any> {
-  const mod = await import("../../lib/llm-client.js");
+  const mod = await importLibModule<LLMClientModule>("llm-client.js");
   return mod.LLMClient;
 }
 
@@ -402,35 +412,35 @@ export async function runOrchestratorServer(
   };
 
   async function loadDependencies() {
-    const libPath = path.join(__dirname, "..", "..", "lib");
-    const hooksPath = path.join(__dirname, "..", "..", "hooks");
-
     if (!ProjectState) {
-      ({ ProjectState } = await import(path.join(libPath, "project-state.js")));
+      ({ ProjectState } = await importLibModule("project-state.js"));
     }
     if (!BMADBridge) {
-      ({ BMADBridge } = await import(path.join(libPath, "bmad-bridge.js")));
+      ({ BMADBridge } = await importLibModule("bmad-bridge.js"));
     }
     if (!DeliverableGenerator) {
-      ({ DeliverableGenerator } = await import(path.join(libPath, "deliverable-generator.js")));
+      ({ DeliverableGenerator } = await importLibModule("deliverable-generator.js"));
     }
     if (!BrownfieldAnalyzer) {
-      ({ BrownfieldAnalyzer } = await import(path.join(libPath, "brownfield-analyzer.js")));
+      ({ BrownfieldAnalyzer } = await importLibModule("brownfield-analyzer.js"));
     }
     if (!QuickLane) {
-      ({ QuickLane } = await import(path.join(libPath, "quick-lane.js")));
+      ({ QuickLane } = await importLibModule("quick-lane.js"));
     }
     if (!LaneSelector) {
-      LaneSelector = await import(path.join(libPath, "lane-selector.js"));
+      LaneSelector = await importLibModule("lane-selector.js");
     }
     if (!phaseTransitionHooks) {
-      phaseTransitionHooks = await import(path.join(hooksPath, "phase-transition.js"));
+      phaseTransitionHooks = await importFromPackageRoot("hooks", "phase-transition.js");
     }
     if (!contextPreservation) {
-      contextPreservation = await import(path.join(hooksPath, "context-preservation.js"));
+      contextPreservation = await importFromPackageRoot(
+        "hooks",
+        "context-preservation.js"
+      );
     }
     if (!storyContextValidator) {
-      const module = await import(path.join(libPath, "story-context-validator.js"));
+      const module: any = await importLibModule("story-context-validator.js");
       storyContextValidator = module?.default ?? module;
     }
   }
