@@ -29,7 +29,9 @@ function extractSection(content, heading) {
     return null;
   }
 
-  const pattern = new RegExp(`^## ${heading}\\n([\\s\\S]*?)(?=^## |$)`, 'm');
+  // Escape special regex characters in heading to prevent injection
+  const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`^## ${escapedHeading}\\n([\\s\\S]*?)(?=^## |$)`, 'm');
   const match = content.match(pattern);
   if (!match) {
     return null;
@@ -158,13 +160,21 @@ async function defaultStoryContextEnricher({ context }) {
     });
   }
 
-  const technicalDetails =
+  const rawTechnicalDetails =
     story.technicalDetails || extractSection(story.content, 'Technical Details');
-  if (technicalDetails) {
-    sections.push({
-      title: 'Technical Notes',
-      body: technicalDetails.trim(),
-    });
+  if (rawTechnicalDetails != null) {
+    const techBody = Array.isArray(rawTechnicalDetails)
+      ? rawTechnicalDetails
+          .map((item) => collapseWhitespace(String(item)))
+          .filter(Boolean)
+          .join('\n')
+      : collapseWhitespace(String(rawTechnicalDetails));
+    if (techBody) {
+      sections.push({
+        title: 'Technical Notes',
+        body: techBody,
+      });
+    }
   }
 
   const dependencies = story.dependencies || extractSection(story.content, 'Dependencies');
@@ -177,13 +187,21 @@ async function defaultStoryContextEnricher({ context }) {
     });
   }
 
-  const testingStrategy =
+  const rawTestingStrategy =
     story.testingStrategy || extractSection(story.content, 'Testing Strategy');
-  if (testingStrategy) {
-    sections.push({
-      title: 'Testing Strategy',
-      body: testingStrategy.trim(),
-    });
+  if (rawTestingStrategy != null) {
+    const testingBody = Array.isArray(rawTestingStrategy)
+      ? rawTestingStrategy
+          .map((item) => collapseWhitespace(String(item)))
+          .filter(Boolean)
+          .join('\n')
+      : collapseWhitespace(String(rawTestingStrategy));
+    if (testingBody) {
+      sections.push({
+        title: 'Testing Strategy',
+        body: testingBody,
+      });
+    }
   }
 
   return {
