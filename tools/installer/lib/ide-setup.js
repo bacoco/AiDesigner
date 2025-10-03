@@ -230,13 +230,13 @@ class IdeSetup extends BaseIdeSetup {
         fallbackArray = [];
       }
 
+      // Build a case-insensitive set of existing fallback models (string values only)
       const seen = new Set();
       for (const value of fallbackArray) {
-        if (typeof value === 'string') {
+        if (typeof value === 'string' && value.trim().length > 0) {
           seen.add(value.toLowerCase());
-        } else if (value !== null && value !== undefined) {
-          seen.add(String(value).toLowerCase());
         }
+        // Skip non-string or empty values - they won't be considered for duplicate detection
       }
 
       for (const fallbackModel of defaultModelSettings.fallbackModels) {
