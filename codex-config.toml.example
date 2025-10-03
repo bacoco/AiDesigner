@@ -24,3 +24,19 @@ description = "BMAD Invisible Orchestrator MCP server"
 # EXAMPLE: BMAD_LOG_LEVEL = "debug"
 # BMAD_LOG_LEVEL = "debug"
 
+[mcp_servers.chrome_devtools]
+# Optional Chrome DevTools recorder MCP server (install package separately).
+type = "command"
+command = "npx"
+args = ["@modelcontextprotocol/server-chrome-devtools@latest"]
+auto_start = false
+description = "Chrome DevTools MCP helper (disabled until installed)"
+
+[mcp_servers.shadcn]
+# Optional shadcn UI MCP helper exposed by the shadcn CLI.
+type = "command"
+command = "npx"
+args = ["@shadcn/ui-cli@latest", "mcp"]
+auto_start = false
+description = "shadcn UI MCP helper (pairs with generated components.json)"
+
