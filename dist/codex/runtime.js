@@ -1246,10 +1246,16 @@ async function runOrchestratorServer(options = {}) {
             projectState.projectPath,
           );
           const selectionDurationMs = selectionTimer();
+          const scaleLevel = decision.scale?.level;
+          const scaleScore = decision.scale?.score;
+          const scaleSignals = decision.scale?.signals;
           logger.info('lane_selection_completed', {
             operation: 'select_development_lane',
             lane: decision.lane,
             confidence: decision.confidence,
+            level: scaleLevel,
+            levelScore: scaleScore,
+            levelSignals: scaleSignals,
             durationMs: selectionDurationMs,
           });
           logger.recordTiming('mcp.lane.selection.duration_ms', selectionDurationMs, {
@@ -1261,16 +1267,33 @@ async function runOrchestratorServer(options = {}) {
             decision.rationale,
             decision.confidence,
             params.userMessage,
+            {
+              level: scaleLevel,
+              levelScore: scaleScore,
+              levelSignals: scaleSignals,
+            },
           );
           laneDecisions.push({
             lane: decision.lane,
             rationale: decision.rationale,
             confidence: decision.confidence,
             trigger: params.userMessage,
+            level: scaleLevel,
+            levelScore: scaleScore,
+            levelSignals: scaleSignals,
           });
           outcomeFields.lane = decision.lane;
           outcomeFields.confidence = decision.confidence;
           outcomeFields.trigger = params.userMessage;
+          if (scaleLevel !== undefined) {
+            outcomeFields.level = scaleLevel;
+          }
+          if (scaleScore !== undefined) {
+            outcomeFields.levelScore = scaleScore;
+          }
+          if (scaleSignals !== undefined) {
+            outcomeFields.levelSignals = scaleSignals;
+          }
           response = {
             content: [
               {
@@ -1295,10 +1318,16 @@ async function runOrchestratorServer(options = {}) {
             projectState.projectPath,
           );
           const selectionDurationMs = selectionTimer();
+          const scaleLevel = decision.scale?.level;
+          const scaleScore = decision.scale?.score;
+          const scaleSignals = decision.scale?.signals;
           logger.info('lane_selection_completed', {
             operation: 'execute_workflow',
             lane: decision.lane,
             confidence: decision.confidence,
+            level: scaleLevel,
+            levelScore: scaleScore,
+            levelSignals: scaleSignals,
             durationMs: selectionDurationMs,
           });
           logger.recordTiming('mcp.lane.selection.duration_ms', selectionDurationMs, {
@@ -1310,17 +1339,34 @@ async function runOrchestratorServer(options = {}) {
             decision.rationale,
             decision.confidence,
             params.userRequest,
+            {
+              level: scaleLevel,
+              levelScore: scaleScore,
+              levelSignals: scaleSignals,
+            },
           );
           laneDecisions.push({
             lane: decision.lane,
             rationale: decision.rationale,
             confidence: decision.confidence,
             trigger: params.userRequest,
+            level: scaleLevel,
+            levelScore: scaleScore,
+            levelSignals: scaleSignals,
           });
           let result;
           outcomeFields.lane = decision.lane;
           outcomeFields.confidence = decision.confidence;
           outcomeFields.request = params.userRequest;
+          if (scaleLevel !== undefined) {
+            outcomeFields.level = scaleLevel;
+          }
+          if (scaleScore !== undefined) {
+            outcomeFields.levelScore = scaleScore;
+          }
+          if (scaleSignals !== undefined) {
+            outcomeFields.levelSignals = scaleSignals;
+          }
           if (decision.lane === 'quick') {
             await ensureOperationAllowed('execute_quick_lane', {
               decision,

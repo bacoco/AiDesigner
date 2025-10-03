@@ -1,4 +1,3 @@
-/* eslint-disable n/no-unpublished-require */
 const path = require('node:path');
 const fs = require('node:fs');
 const vm = require('node:vm');
@@ -6,6 +5,21 @@ const { createRequire } = require('node:module');
 const { pathToFileURL } = require('node:url');
 
 const laneDecisionsQueue = [];
+
+const stopTimerStub = () => 0;
+
+jest.mock('../dist/codex/lib-resolver.js', () => {
+  const actual = jest.requireActual('../dist/codex/lib-resolver.js');
+
+  return {
+    ...actual,
+    importLibModule: async (moduleName) => actual.requireLibModule(moduleName),
+    importFromPackageRoot: async (...segments) => {
+      const modulePath = actual.resolveFromPackageRoot(...segments);
+      return require(modulePath);
+    },
+  };
+});
 
 jest.mock('@modelcontextprotocol/sdk/server/index.js', () => {
   const instances = [];
@@ -42,7 +56,12 @@ jest.mock('../lib/lane-selector.js', () => {
   const selectLaneWithLog = jest.fn(async () =>
     laneDecisionsQueue.length > 0
       ? laneDecisionsQueue.shift()
-      : { lane: 'quick', rationale: 'default', confidence: 0.75 },
+      : {
+          lane: 'quick',
+          rationale: 'default',
+          confidence: 0.75,
+          scale: { level: 1, score: 2, signals: {} },
+        },
   );
 
   return { selectLaneWithLog, __laneDecisionsQueue: laneDecisionsQueue };
@@ -180,11 +199,24 @@ jest.mock('../lib/project-state.js', () => {
       getPhaseDeliverables: jest.fn().mockResolvedValue([]),
       getDeliverable: jest.fn((type) => deliverables[type]),
       getDeliverablesByType: jest.fn((type) => (deliverables[type] ? [deliverables[type]] : [])),
-      recordLaneDecision: jest.fn(async (lane, rationale, confidence, trigger) => {
-        instance.state.currentLane = lane;
-        instance.state.laneHistory = instance.state.laneHistory || [];
-        instance.state.laneHistory.push({ lane, rationale, confidence, trigger });
-      }),
+      recordLaneDecision: jest.fn(
+        async (lane, rationale, confidence, userMessage, options = {}) => {
+          instance.state.currentLane = lane;
+          instance.state.laneHistory = instance.state.laneHistory || [];
+          const { level, levelScore, levelSignals } = options || {};
+          const record = { lane, rationale, confidence, userMessage };
+          if (level !== undefined) {
+            record.level = level;
+          }
+          if (levelScore !== undefined) {
+            record.levelScore = levelScore;
+          }
+          if (levelSignals !== undefined) {
+            record.levelSignals = levelSignals;
+          }
+          instance.state.laneHistory.push(record);
+        },
+      ),
       recordDecision: jest.fn().mockResolvedValue(),
       addMessage: jest.fn().mockResolvedValue(),
       getConversation: jest.fn(() => []),
@@ -269,6 +301,21 @@ const { runOrchestratorServer } = loadRuntimeForTests();
 
 const { CallToolRequestSchema } = require('@modelcontextprotocol/sdk/types.js');
 
+function createMockLogger() {
+  const childLogger = {
+    info: jest.fn(),
+    error: jest.fn(),
+  };
+
+  return {
+    info: jest.fn(),
+    error: jest.fn(),
+    recordTiming: jest.fn(),
+    startTimer: jest.fn(() => stopTimerStub),
+    child: jest.fn(() => childLogger),
+  };
+}
+
 async function setupServer(options = {}) {
   const transport = options.transport ?? { start: jest.fn().mockResolvedValue() };
   const ensureOperationAllowed = options.ensureOperationAllowed ?? jest.fn().mockResolvedValue();
@@ -279,6 +326,7 @@ async function setupServer(options = {}) {
     ensureOperationAllowed,
     createLLMClient,
     log: options.log ?? jest.fn(),
+    logger: options.logger,
   });
 
   const server = serverInstances.at(-1);
@@ -364,11 +412,21 @@ describe('runOrchestratorServer integration flows', () => {
       lane: 'quick',
       rationale: 'fast path',
       confidence: 0.82,
+      scale: {
+        level: 2,
+        score: 6,
+        signals: {
+          contributions: [{ description: 'Quick keyword', value: 2 }],
+          deductions: [],
+          keywordMatches: { level2: ['quick'] },
+        },
+      },
     });
 
     const ensureOperationAllowed = jest.fn().mockResolvedValue();
     const createLLMClient = jest.fn().mockResolvedValue({ client: true });
-    const { server } = await setupServer({ ensureOperationAllowed, createLLMClient });
+    const logger = createMockLogger();
+    const { server } = await setupServer({ ensureOperationAllowed, createLLMClient, logger });
 
     const callTool = server.handlers.get(CallToolRequestSchema);
     expect(typeof callTool).toBe('function');
@@ -388,6 +446,9 @@ describe('runOrchestratorServer integration flows', () => {
     const payload = JSON.parse(response.content[0].text);
     expect(payload.lane).toBe('quick');
     expect(payload.decision.lane).toBe('quick');
+    expect(payload.decision.scale).toEqual(
+      expect.objectContaining({ level: 2, score: 6, signals: expect.any(Object) }),
+    );
     expect(quickLaneModule.__quickLaneMocks.execute).toHaveBeenCalledWith(
       'Ship login',
       expect.objectContaining({ previousPhase: 'analyst' }),
@@ -400,6 +461,31 @@ describe('runOrchestratorServer integration flows', () => {
       }),
     );
     expect(createLLMClient).toHaveBeenCalledWith('quick');
+
+    const projectState = projectStateModule.__getLastInstance();
+    expect(projectState.state.laneHistory).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          lane: 'quick',
+          level: 2,
+          levelScore: 6,
+          levelSignals: expect.any(Object),
+          userMessage: 'Ship login',
+        }),
+      ]),
+    );
+
+    const laneSelectionLog = logger.info.mock.calls.find(
+      ([event]) => event === 'lane_selection_completed',
+    );
+    expect(laneSelectionLog?.[1]).toEqual(
+      expect.objectContaining({
+        lane: 'quick',
+        level: 2,
+        levelScore: 6,
+        levelSignals: expect.any(Object),
+      }),
+    );
   });
 
   it('executes the complex lane workflow, saving deliverables with approval hooks', async () => {
