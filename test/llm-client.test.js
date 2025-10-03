@@ -1,3 +1,8 @@
+jest.mock('node:https', () => ({
+  request: jest.fn(),
+}));
+
+const https = require('node:https');
 const { LLMClient } = require('../lib/llm-client');
 
 describe('LLMClient', () => {
@@ -13,6 +18,7 @@ describe('LLMClient', () => {
     delete process.env.LLM_PROVIDER;
     delete process.env.ZHIPUAI_API_KEY;
     delete process.env.GLM_API_KEY;
+    jest.clearAllMocks();
   });
 
   afterAll(() => {
@@ -42,5 +48,50 @@ describe('LLMClient', () => {
     process.env.ZHIPUAI_API_KEY = 'glm-key';
     const client = new LLMClient({ provider: 'glm' });
     expect(client.model).toBe('glm-4-plus');
+  });
+
+  it('passes the port from ANTHROPIC_BASE_URL to https.request', async () => {
+    const expectedPort = '8443';
+    process.env.ANTHROPIC_API_KEY = 'test-key';
+    process.env.ANTHROPIC_BASE_URL = `https://example.com:${expectedPort}`;
+
+    const responseListeners = {};
+    const mockResponse = {
+      statusCode: 200,
+      on: jest.fn((event, handler) => {
+        responseListeners[event] = handler;
+      }),
+    };
+
+    https.request.mockImplementation((options, callback) => {
+      callback(mockResponse);
+
+      if (responseListeners.data) {
+        responseListeners.data(
+          JSON.stringify({ content: [{ text: 'mocked response' }] }),
+        );
+      }
+      if (responseListeners.end) {
+        responseListeners.end();
+      }
+
+      return {
+        on: jest.fn(),
+        write: jest.fn(),
+        end: jest.fn(),
+      };
+    });
+
+    const client = new LLMClient({ provider: 'claude' });
+    const result = await client.chatAnthropic(
+      [{ role: 'user', content: 'Hello' }],
+      { temperature: 0.5, maxTokens: 100 },
+    );
+
+    expect(result).toBe('mocked response');
+    expect(https.request).toHaveBeenCalledWith(
+      expect.objectContaining({ hostname: 'example.com', port: expectedPort }),
+      expect.any(Function),
+    );
   });
 });
