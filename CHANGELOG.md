@@ -1,4 +1,33 @@
-## [1.3.8](https://github.com/bacoco/BMAD-invisible/compare/v1.3.7...v1.3.8) (2agilai25-1agilai-agilai3)
+## [1.3.10](https://github.com/bacoco/Agilai/compare/v1.3.9...v1.3.10) (2025-01-03)
+
+### Improvements
+
+**📦 Package Optimization** - 76% size reduction for faster npx execution
+
+- **Created .npmignore**: Exclude dev files (test/, src/, tools/, .github/, etc.)
+- **Package size**: Reduced from ~11MB to 2.6MB (76% smaller)
+- **File count**: Down from ~1000+ to 492 files in published package
+- **Root cleanup**: Moved documentation to docs/ subdirectories
+- **Better organization**: Only README.md and CHANGELOG.md remain in root
+- **Zero risk**: No code changes, all builds passing
+
+**⚡ Enhanced MCP Marketing** - Better visibility for MCP integration features
+
+- **Prominent showcase**: Added "Supercharge Your AI in 30 Seconds" section to README
+- **Concrete examples**: GitHub, PostgreSQL, Filesystem integration examples with before/after
+- **Popular integrations**: Listed 15+ available MCP servers by category
+- **QUICKSTART update**: Added MCP setup section with quick patterns
+- **Common workflows**: Full-stack, DevOps, and Data Science integration examples
+
+### Documentation
+
+- Moved QUICKSTART.md → docs/guides/QUICKSTART.md
+- Moved USAGE.md → docs/guides/USAGE.md
+- Moved CONTRIBUTING.md → docs/guides/CONTRIBUTING.md
+- Archived development TODOs and old PRs to docs/archive/
+- Updated all README links to new documentation paths
+
+## [1.3.8](https://github.com/bacoco/Agilai/compare/v1.3.7...v1.3.8) (2025-01-03)
 
 ### Features
 
