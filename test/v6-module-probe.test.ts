@@ -55,10 +55,10 @@ describe('probeInvisibleModule', () => {
     });
 
     // Mock the dynamic import for the runtime module
-    const originalImport = global.import;
+    const originalImport = globalThis.import;
     const importSpy = jest.fn();
-    // @ts-expect-error - Mocking global import
-    global.import = jest.fn((modulePath) => {
+    // @ts-expect-error - Mocking global import (not in Node.js types)
+    globalThis.import = jest.fn((modulePath) => {
       importSpy(modulePath);
       if (modulePath === runtimeModulePath) {
         return Promise.resolve({ runOrchestratorServer: jest.fn() });
@@ -69,8 +69,8 @@ describe('probeInvisibleModule', () => {
     const result = await probeInvisibleModule({ workspaceRoot, legacyRoot });
 
     // Restore original import
-    // @ts-expect-error - Restoring global import
-    global.import = originalImport;
+    // @ts-expect-error - Restoring global import (not in Node.js types)
+    globalThis.import = originalImport;
 
     expect(existsSpy).toHaveBeenCalled();
     expect(requireMock).toHaveBeenCalledWith(legacyBridgePath);
@@ -122,10 +122,10 @@ describe('probeInvisibleModule', () => {
     const { probeInvisibleModule } = require(moduleUnderTestPath);
 
     // Mock the dynamic import for the runtime module to fail
-    const originalImport = global.import;
+    const originalImport = globalThis.import;
     const importSpy = jest.fn();
-    // @ts-expect-error - Mocking global import
-    global.import = jest.fn((modulePath) => {
+    // @ts-expect-error - Mocking global import (not in Node.js types)
+    globalThis.import = jest.fn((modulePath) => {
       importSpy(modulePath);
       if (modulePath === runtimeModulePath) {
         return Promise.reject(new Error('Cannot import runtime'));
@@ -136,8 +136,8 @@ describe('probeInvisibleModule', () => {
     const result = await probeInvisibleModule({ workspaceRoot, legacyRoot });
 
     // Restore original import
-    // @ts-expect-error - Restoring global import
-    global.import = originalImport;
+    // @ts-expect-error - Restoring global import (not in Node.js types)
+    globalThis.import = originalImport;
 
     expect(requireMock).toHaveBeenCalledWith(legacyBridgePath);
     expect(requireMock).toHaveBeenCalledTimes(1);

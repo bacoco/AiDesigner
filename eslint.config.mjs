@@ -89,6 +89,11 @@ export default [
     files: ['test/**/*.js', 'test/**/*.ts'],
     languageOptions: {
       globals: {
+        require: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        module: 'readonly',
+        exports: 'writable',
         describe: 'readonly',
         it: 'readonly',
         test: 'readonly',
