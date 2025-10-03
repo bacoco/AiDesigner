@@ -13,6 +13,11 @@ describe('Lane Selector', () => {
       expect(result.lane).toBe('quick');
       expect(result.confidence).toBeGreaterThan(0.7);
       expect(result.factors.quickFixKeywords).toBeGreaterThan(0);
+      // Quick fixes should always be scale level 0 (trivial work)
+      expect(result.scale.level).toBe(0);
+      expect(result.scale.signals.deductions).toEqual(
+        expect.arrayContaining([expect.objectContaining({ description: 'Quick fix keywords' })]),
+      );
     });
 
     test('should select quick lane for flag addition', () => {
@@ -52,6 +57,13 @@ describe('Lane Selector', () => {
 
       expect(result.lane).toBe('complex');
       expect(result.confidence).toBeGreaterThan(0.8);
+      // Architecture redesigns require significant planning and coordination (level 3+)
+      expect(result.scale.level).toBeGreaterThanOrEqual(3);
+      expect(result.scale.signals.contributions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ description: 'Complex keyword signals' }),
+        ]),
+      );
     });
 
     test('should select complex lane for API integration', () => {
@@ -211,6 +223,7 @@ describe('Lane Selector', () => {
       const result = selectLane('Rename variable in helper function');
 
       expect(result.lane).toBe('quick');
+      expect(result.scale.level).toBe(0);
     });
 
     test('Example 4: Database migration', () => {
@@ -230,6 +243,7 @@ describe('Lane Selector', () => {
     test('should classify quick fixes as scale level 0', () => {
       const result = selectLane('Fix typo in README');
 
+      // Trivial fixes should be classified as level 0 (no planning needed)
       expect(result.factors.scaleLevel).toBe(0);
       expect(result.scale.level).toBe(0);
     });
@@ -241,14 +255,38 @@ describe('Lane Selector', () => {
       expect(result.lane).toBe('complex');
     });
 
+    test('should classify multi-component features as scale level 2', () => {
+      const result = selectLane('Build user notification system with email and SMS support');
+
+      // Integration-level work requiring coordination between multiple components (level 2)
+      expect(result.scale.level).toBeGreaterThanOrEqual(2);
+      expect(result.scale.level).toBeLessThan(4);
+      expect(result.lane).toBe('complex');
+      expect(result.scale.signals.contributions).toBeDefined();
+    });
+
     test('should mark enterprise overhauls as scale level 4', () => {
       const result = selectLane(
         'Lead enterprise multi-region platform overhaul for regulatory compliance',
       );
 
+      // Enterprise-scale work with specific level 4 keywords (multi-region, regulatory compliance)
       expect(result.factors.scaleLevel).toBe(4);
       expect(result.scale.level).toBe(4);
       expect(result.lane).toBe('complex');
+      expect(result.scale.signals.keywordMatches.level4).toEqual(
+        expect.arrayContaining(['multi-region', 'regulatory compliance']),
+      );
+    });
+
+    test('should keep mixed quick/complex phrasing within fallback scale band', () => {
+      const result = selectLane('Quick fix to add new authentication feature');
+
+      // Mixed signals: "quick fix" (deducts points) + "new authentication feature" (adds points)
+      // Should resolve to level 1 (fallback band: score 2-3) for modest changes with some ambiguity
+      expect(result.scale.level).toBe(1);
+      expect(result.scale.score).toBeGreaterThanOrEqual(2);
+      expect(result.scale.score).toBeLessThan(4);
     });
   });
 

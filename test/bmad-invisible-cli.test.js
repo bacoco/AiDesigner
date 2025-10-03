@@ -15,6 +15,7 @@ describe('bmad-invisible start assistant selection', () => {
   let exitSpy;
   let existsSpy;
   let originalIsTTY;
+  const originalEnv = process.env;
 
   beforeEach(() => {
     mockSpawn.mockReset();
@@ -31,6 +32,11 @@ describe('bmad-invisible start assistant selection', () => {
     existsSpy = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
     exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
     originalIsTTY = process.stdout.isTTY;
+    process.env = { ...originalEnv };
+    delete process.env.LLM_PROVIDER;
+    delete process.env.LLM_MODEL;
+    delete process.env.ZHIPUAI_API_KEY;
+    delete process.env.GLM_API_KEY;
   });
 
   afterEach(() => {
@@ -38,6 +44,7 @@ describe('bmad-invisible start assistant selection', () => {
     existsSpy.mockRestore();
     exitSpy.mockRestore();
     process.stdout.isTTY = originalIsTTY;
+    process.env = originalEnv;
   });
 
   test('errors in non-TTY mode when no assistant flag is provided', async () => {
@@ -84,7 +91,7 @@ describe('bmad-invisible start assistant selection', () => {
   });
 
   test('handles spawn error for Codex', async () => {
-    const mockErrorSpawn = jest.fn(() => {
+    mockSpawn.mockImplementationOnce(() => {
       const emitter = {
         on: jest.fn((event, handler) => {
           if (event === 'error') {
@@ -96,21 +103,14 @@ describe('bmad-invisible start assistant selection', () => {
       return emitter;
     });
 
-    jest.isolateModules(() => {
-      jest.doMock('child_process', () => ({
-        spawn: mockErrorSpawn,
-      }));
+    cli.setRuntimeContext('codex', []);
 
-      const cliWithError = require('../bin/bmad-invisible');
-      cli.setRuntimeContext('codex', []);
-
-      expect(() => cliWithError.commands.codex()).not.toThrow();
-      expect(exitSpy).toHaveBeenCalledWith(1);
-    });
+    expect(() => cli.commands.codex()).not.toThrow();
+    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
   test('handles spawn error for OpenCode', async () => {
-    const mockErrorSpawn = jest.fn(() => {
+    mockSpawn.mockImplementationOnce(() => {
       const emitter = {
         on: jest.fn((event, handler) => {
           if (event === 'error') {
@@ -122,16 +122,35 @@ describe('bmad-invisible start assistant selection', () => {
       return emitter;
     });
 
-    jest.isolateModules(() => {
-      jest.doMock('child_process', () => ({
-        spawn: mockErrorSpawn,
-      }));
+    cli.setRuntimeContext('opencode', []);
 
-      const cliWithError = require('../bin/bmad-invisible');
-      cli.setRuntimeContext('opencode', []);
+    expect(() => cli.commands.opencode()).not.toThrow();
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
 
-      expect(() => cliWithError.commands.opencode()).not.toThrow();
-      expect(exitSpy).toHaveBeenCalledWith(1);
-    });
+  test('plumbs GLM provider into spawned CLI environment without mutating parent env', async () => {
+    process.env.GLM_API_KEY = 'glm-test-key';
+    cli.setRuntimeContext('start', ['--assistant=codex', '--glm']);
+
+    await cli.commands.start();
+
+    const lastCall = mockSpawn.mock.calls.at(-1);
+    expect(lastCall[2].env.LLM_PROVIDER).toBe('glm');
+    expect(lastCall[2].env.ZHIPUAI_API_KEY).toBe('glm-test-key');
+    expect(process.env.LLM_PROVIDER).toBeUndefined();
+    expect(process.env.ZHIPUAI_API_KEY).toBeUndefined();
+  });
+
+  test('direct codex command respects --llm-provider flag', async () => {
+    cli.setRuntimeContext('codex', ['--llm-provider=glm']);
+    process.env.ZHIPUAI_API_KEY = 'direct-key';
+
+    await cli.commands.codex();
+
+    const lastCall = mockSpawn.mock.calls.at(-1);
+    expect(lastCall[0]).toBe('node');
+    expect(lastCall[2].env.LLM_PROVIDER).toBe('glm');
+    expect(lastCall[2].env.ZHIPUAI_API_KEY).toBe('direct-key');
+    expect(process.env.LLM_PROVIDER).toBeUndefined();
   });
 });

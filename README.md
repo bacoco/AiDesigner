@@ -52,7 +52,9 @@ The orchestrator automatically selects the appropriate lane based on task comple
 npx bmad-invisible@latest start
 ```
 
-> Prefer a specific CLI? Append `--assistant=claude`, `--assistant=codex`, or `--assistant=opencode` to skip the prompt.
+> Prefer a specific CLI? Append `--assistant=claude`, `--assistant=codex`, or `--assistant=opencode` to skip the prompt. Add `--glm`
+> (or the explicit `--llm-provider=glm`) to swap the orchestrator to ZhipuAI's GLM using the `ZHIPUAI_API_KEY`/`GLM_API_KEY`
+> credentials. Use `--anthropic` (or `--llm-provider=claude`) anytime you want to switch back to the Anthropic defaults.
 
 That's it! This command will:
 
@@ -81,11 +83,13 @@ npm install
 
 
 # Start chatting through your preferred CLI
-npm run bmad              # Prompts you to choose
+npm run bmad              # Prompts you to choose assistant
+# Force GLM for the orchestrator (requires ZHIPUAI_API_KEY or GLM_API_KEY)
+# npm run bmad -- --glm
 # OR use explicit commands:
-# npm run bmad:claude     # Claude
-# npm run bmad:codex      # Codex
-# npm run bmad:opencode   # OpenCode
+# npm run bmad:claude     # Claude front-end (respects --glm/--anthropic)
+# npm run bmad:codex      # Codex front-end (respects --glm/--anthropic)
+# npm run bmad:opencode   # OpenCode front-end (respects --glm/--anthropic)
 
 ```
 
@@ -102,6 +106,7 @@ bmad-invisible init
 bmad-invisible build
 
 # Start chat (will prompt for assistant choice)
+# Add --glm / --llm-provider=glm to default to ZhipuAI GLM
 bmad-invisible start
 
 ```
@@ -125,6 +130,23 @@ npm run bmad
 ```
 
 > **Note**: This uses the Model Context Protocol (MCP) so you can work locally without managing API keys.
+
+#### Choosing Your LLM Provider (GLM vs Anthropic)
+
+- Run any CLI command with `--glm` (or the explicit `--llm-provider=glm`) to switch the orchestrator to ZhipuAI's GLM stack.
+- Provide credentials via environment variables – `ZHIPUAI_API_KEY` is preferred, but `GLM_API_KEY` is also detected automatically.
+- Optional model overrides can be set with `--llm-model=<model>` or by exporting `LLM_MODEL`.
+- Persist defaults in a `.env` file at your project root:
+
+  ```bash
+  # .env
+  LLM_PROVIDER=glm
+  ZHIPUAI_API_KEY=sk-...
+  LLM_MODEL=glm-4-plus   # Optional custom model
+  ```
+
+- To switch back to Anthropic at any time, pass `--anthropic` on the CLI or set `LLM_PROVIDER=claude` in your environment.
+- The launcher never mutates your shell environment; overrides are injected only into the spawned CLI process.
 
 #### Codex CLI Integration
 
@@ -554,7 +576,8 @@ User → Codex CLI → MCP Server → BMAD Agents → Deliverables
 - **BMAD Bridge** (`lib/bmad-bridge.js`) - Integration with BMAD agents
 - **Deliverable Generator** (`lib/deliverable-generator.js`) - Creates docs automatically
 
-**No API Costs** - Runs entirely through your local Codex CLI session!
+**Low API Overhead** - Runs through your local CLI tooling. ZhipuAI's GLM only needs `ZHIPUAI_API_KEY`/`GLM_API_KEY`; Anthropic
+defaults continue to work via the Claude CLI with no direct API billing.
 
 ## 🔧 Development Setup
 
