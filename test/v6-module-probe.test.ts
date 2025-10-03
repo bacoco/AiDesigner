@@ -51,17 +51,32 @@ describe('probeInvisibleModule', () => {
         }
         return { BMADBridge: MockBridge };
       }
-      if (requestedPath === runtimeModulePath) {
-        return { runOrchestratorServer: jest.fn() };
-      }
       throw new Error(`Unexpected require path: ${requestedPath}`);
+    });
+
+    // Mock the dynamic import for the runtime module
+    const originalImport = global.import;
+    const importSpy = jest.fn();
+    // @ts-expect-error - Mocking global import
+    global.import = jest.fn((modulePath) => {
+      importSpy(modulePath);
+      if (modulePath === runtimeModulePath) {
+        return Promise.resolve({ runOrchestratorServer: jest.fn() });
+      }
+      return originalImport?.(modulePath);
     });
 
     const result = await probeInvisibleModule({ workspaceRoot, legacyRoot });
 
+    // Restore original import
+    // @ts-expect-error - Restoring global import
+    global.import = originalImport;
+
     expect(existsSpy).toHaveBeenCalled();
     expect(requireMock).toHaveBeenCalledWith(legacyBridgePath);
-    expect(requireMock).toHaveBeenCalledWith(runtimeModulePath);
+    expect(requireMock).toHaveBeenCalledTimes(1);
+    expect(importSpy).toHaveBeenCalledWith(runtimeModulePath);
+    expect(importSpy).toHaveBeenCalledTimes(1);
     expect(initializeMock).not.toHaveBeenCalled();
     expect(result.blockers).toEqual([]);
     expect(result.warnings).toEqual([
@@ -85,9 +100,6 @@ describe('probeInvisibleModule', () => {
     jest.resetModules();
 
     const requireMock = jest.fn((requestedPath) => {
-      if (requestedPath === runtimeModulePath) {
-        throw new Error('Cannot import runtime');
-      }
       if (requestedPath === legacyBridgePath) {
         throw new Error('CommonJS module rejection');
       }
@@ -109,10 +121,28 @@ describe('probeInvisibleModule', () => {
 
     const { probeInvisibleModule } = require(moduleUnderTestPath);
 
+    // Mock the dynamic import for the runtime module to fail
+    const originalImport = global.import;
+    const importSpy = jest.fn();
+    // @ts-expect-error - Mocking global import
+    global.import = jest.fn((modulePath) => {
+      importSpy(modulePath);
+      if (modulePath === runtimeModulePath) {
+        return Promise.reject(new Error('Cannot import runtime'));
+      }
+      return originalImport?.(modulePath);
+    });
+
     const result = await probeInvisibleModule({ workspaceRoot, legacyRoot });
 
+    // Restore original import
+    // @ts-expect-error - Restoring global import
+    global.import = originalImport;
+
     expect(requireMock).toHaveBeenCalledWith(legacyBridgePath);
-    expect(requireMock).toHaveBeenCalledWith(runtimeModulePath);
+    expect(requireMock).toHaveBeenCalledTimes(1);
+    expect(importSpy).toHaveBeenCalledWith(runtimeModulePath);
+    expect(importSpy).toHaveBeenCalledTimes(1);
     expect(result.blockers).toEqual([
       `Missing module slot: expected directory at ${expectedModuleDir}. V6 alpha currently ships only BMM/BMB/CIS modules, so invisible orchestration needs a new module registration point.`,
       'Failed to require legacy BMAD bridge: CommonJS module rejection. V6 loaders refuse CommonJS modules without explicit compatibility wrappers.',

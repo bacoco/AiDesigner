@@ -86,7 +86,7 @@ export default [
 
   // Jest test files
   {
-    files: ['test/**/*.js'],
+    files: ['test/**/*.js', 'test/**/*.ts'],
     languageOptions: {
       globals: {
         describe: 'readonly',
