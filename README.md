@@ -524,9 +524,35 @@ autostart = true
   # Optional: override LLM routing per lane
   CODEX_QUICK_MODEL = "gpt-4.1-mini"
   CODEX_COMPLEX_MODEL = "claude-3-5-sonnet-20241022"
+  # Observability knobs (JSON logs + optional metrics)
+  CODEX_LOG_CONTEXT = '{"environment":"local"}'
+  CODEX_METRICS_STDOUT = "true"
 ```
 
 Refer to [`codex-config.toml.example`](codex-config.toml.example) for a ready-to-copy snippet and additional options.
+
+#### Observability & metrics
+
+- **Structured JSON logs** — The MCP server and Codex bridge now emit newline-delimited JSON to `stderr`. Every entry contains the event `msg`, timestamp, and metadata such as `lane`, `confidence`, `operation`, and measured `durationMs` so you can trace lane selection, approvals, and tool execution.
+- **Context enrichment** — Provide a JSON blob via `CODEX_LOG_CONTEXT` to stamp shared fields (e.g., `environment`, `cluster`, `team`) onto every log entry without code changes.
+- **Lightweight metrics** — Set `CODEX_METRICS_STDOUT=1` to mirror timing metrics (lane selection, workflow durations, tool runtimes) to `stdout` as JSON events. The helper supports adding additional sinks if you need to forward metrics to a collector.
+
+Example log line:
+
+```json
+{
+  "ts": "2024-07-16T12:34:56.789Z",
+  "level": "info",
+  "msg": "lane_selection_completed",
+  "service": "bmad-codex",
+  "component": "mcp-orchestrator",
+  "operation": "execute_workflow",
+  "lane": "quick",
+  "confidence": 0.88,
+  "durationMs": 142.3,
+  "environment": "local"
+}
+```
 
 ## 📚 Documentation
 
