@@ -39,7 +39,7 @@
     "flatten": "node tools/flattener/main.js",
     "format": "prettier --write \"**/*.{js,cjs,mjs,json,md,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,cjs,mjs,json,md,yaml}\"",
-    "postinstall": "npm run build:mcp 2>/dev/null || true",
+    "postinstall": "node tools/postinstall-build-mcp.js",
     "install:bmad": "node tools/installer/bin/bmad.js install",
     "lint": "eslint . --ext .js,.cjs,.mjs,.yaml --max-warnings=0",
     "lint:fix": "eslint . --ext .js,.cjs,.mjs,.yaml --fix",
