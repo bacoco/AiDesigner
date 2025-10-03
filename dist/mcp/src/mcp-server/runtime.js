@@ -228,7 +228,7 @@ async function getDefaultLLMClientCtor() {
   return mod.LLMClient;
 }
 async function runOrchestratorServer(options = {}) {
-  const serverName = options.serverInfo?.name ?? 'bmad-invisible-orchestrator';
+  const serverName = options.serverInfo?.name ?? 'agilai-orchestrator';
   const serverVersion = options.serverInfo?.version ?? '1.0.0';
   const logger =
     options.logger ??

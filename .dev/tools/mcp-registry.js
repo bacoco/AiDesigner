@@ -8,7 +8,7 @@ const chalk = require('chalk');
  */
 class McpRegistry {
   constructor() {
-    this.cacheDir = path.join(require('node:os').homedir(), '.bmad-invisible', 'cache');
+    this.cacheDir = path.join(require('node:os').homedir(), '.agilai', 'cache');
     this.cacheFile = path.join(this.cacheDir, 'mcp-registry.json');
     this.cacheTTL = 24 * 60 * 60 * 1000; // 24 hours
 

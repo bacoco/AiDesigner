@@ -17,7 +17,8 @@ class McpManager {
 
     // Backward compatibility - will be deprecated
     this.claudeConfigPath = path.join(this.rootDir, '.claude', 'mcp-config.json');
-    this.bmadConfigPath = path.join(this.rootDir, 'mcp', 'bmad-config.json');
+    this.agilaiConfigPath = path.join(this.rootDir, 'mcp', 'agilai-config.json');
+    this.bmadConfigPath = path.join(this.rootDir, 'mcp', 'bmad-config.json'); // Legacy fallback
   }
 
   /**
@@ -36,11 +37,19 @@ class McpManager {
   }
 
   /**
-   * Load configuration from mcp/bmad-config.json (with profile support)
+   * Load configuration from mcp/agilai-config.json (with profile support)
+   */
+  loadAgilaiConfig(profileName = null) {
+    const profile = profileName || this.getCurrentProfile();
+    return this.profiles.loadConfig('agilai', profile);
+  }
+
+  /**
+   * Legacy method for backward compatibility
+   * @deprecated Use loadAgilaiConfig() instead
    */
   loadBmadConfig(profileName = null) {
-    const profile = profileName || this.getCurrentProfile();
-    return this.profiles.loadConfig('bmad', profile);
+    return this.loadAgilaiConfig(profileName);
   }
 
   /**
@@ -52,11 +61,19 @@ class McpManager {
   }
 
   /**
-   * Save configuration to mcp/bmad-config.json (with profile support)
+   * Save configuration to mcp/agilai-config.json (with profile support)
+   */
+  saveAgilaiConfig(config, profileName = null) {
+    const profile = profileName || this.getCurrentProfile();
+    this.profiles.saveConfig('agilai', config, profile);
+  }
+
+  /**
+   * Legacy method for backward compatibility
+   * @deprecated Use saveAgilaiConfig() instead
    */
   saveBmadConfig(config, profileName = null) {
-    const profile = profileName || this.getCurrentProfile();
-    this.profiles.saveConfig('bmad', config, profile);
+    return this.saveAgilaiConfig(config, profileName);
   }
 
   /**
@@ -74,7 +91,7 @@ class McpManager {
     console.log(chalk.bold('\n📡 MCP Servers Configuration\n'));
 
     const claudeConfig = this.loadClaudeConfig();
-    const bmadConfig = this.loadBmadConfig();
+    const agilaiConfig = this.loadAgilaiConfig();
 
     // Combine both configs for complete view
     const allServers = new Map();
@@ -84,18 +101,18 @@ class McpManager {
       allServers.set(name, { ...config, source: 'claude' });
     }
 
-    // Add BMAD config servers
-    for (const [name, config] of Object.entries(bmadConfig.mcpServers || {})) {
+    // Add Agilai config servers
+    for (const [name, config] of Object.entries(agilaiConfig.mcpServers || {})) {
       if (allServers.has(name)) {
         allServers.get(name).source = 'both';
       } else {
-        allServers.set(name, { ...config, source: 'bmad' });
+        allServers.set(name, { ...config, source: 'agilai' });
       }
     }
 
     if (allServers.size === 0) {
       console.log(chalk.yellow('No MCP servers configured.'));
-      console.log(chalk.dim('Run `bmad-invisible mcp add` to configure your first server.\n'));
+      console.log(chalk.dim('Run `agilai mcp add` to configure your first server.\n'));
       return;
     }
 
@@ -197,7 +214,7 @@ class McpManager {
     console.log(chalk.bold('\n🏥 MCP Health Check\n'));
 
     const claudeConfig = this.loadClaudeConfig();
-    const bmadConfig = this.loadBmadConfig();
+    const agilaiConfig = this.loadAgilaiConfig();
 
     // Check if config files exist
     console.log(chalk.bold('Configuration Files:'));
@@ -205,7 +222,7 @@ class McpManager {
       `  ${fs.existsSync(this.claudeConfigPath) ? chalk.green('✓') : chalk.red('✗')} ${this.claudeConfigPath}`,
     );
     console.log(
-      `  ${fs.existsSync(this.bmadConfigPath) ? chalk.green('✓') : chalk.red('✗')} ${this.bmadConfigPath}`,
+      `  ${fs.existsSync(this.agilaiConfigPath) ? chalk.green('✓') : chalk.red('✗')} ${this.agilaiConfigPath}`,
     );
     console.log('');
 
@@ -214,7 +231,7 @@ class McpManager {
     for (const [name, config] of Object.entries(claudeConfig.mcpServers || {})) {
       allServers.set(name, config);
     }
-    for (const [name, config] of Object.entries(bmadConfig.mcpServers || {})) {
+    for (const [name, config] of Object.entries(agilaiConfig.mcpServers || {})) {
       if (!allServers.has(name)) {
         allServers.set(name, config);
       }
@@ -394,7 +411,7 @@ class McpManager {
         message: 'Which configuration to update?',
         choices: [
           { name: 'Claude Code (.claude/mcp-config.json)', value: 'claude' },
-          { name: 'BMAD (mcp/bmad-config.json)', value: 'bmad' },
+          { name: 'Agilai (mcp/agilai-config.json)', value: 'agilai' },
           { name: 'Both', value: 'both' },
         ],
         default: 'claude',
@@ -421,15 +438,15 @@ class McpManager {
       console.log(chalk.green(`\n✓ Added ${answers.name} to .claude/mcp-config.json`));
     }
 
-    if (configAnswer.config === 'bmad' || configAnswer.config === 'both') {
-      const config = this.loadBmadConfig();
+    if (configAnswer.config === 'agilai' || configAnswer.config === 'both') {
+      const config = this.loadAgilaiConfig();
       config.mcpServers = config.mcpServers || {};
       config.mcpServers[answers.name] = serverConfig;
-      this.saveBmadConfig(config);
-      console.log(chalk.green(`✓ Added ${answers.name} to mcp/bmad-config.json`));
+      this.saveAgilaiConfig(config);
+      console.log(chalk.green(`✓ Added ${answers.name} to mcp/agilai-config.json`));
     }
 
-    console.log(chalk.dim('\nRun `bmad-invisible mcp doctor` to test the server.\n'));
+    console.log(chalk.dim('\nRun `agilai mcp doctor` to test the server.\n'));
   }
 
   /**
@@ -439,19 +456,19 @@ class McpManager {
     console.log(chalk.bold('\n➖ Remove MCP Server\n'));
 
     const claudeConfig = this.loadClaudeConfig();
-    const bmadConfig = this.loadBmadConfig();
+    const agilaiConfig = this.loadAgilaiConfig();
 
     const existsInClaude = claudeConfig.mcpServers?.[serverName];
-    const existsInBmad = bmadConfig.mcpServers?.[serverName];
+    const existsInAgilai = agilaiConfig.mcpServers?.[serverName];
 
-    if (!existsInClaude && !existsInBmad) {
+    if (!existsInClaude && !existsInAgilai) {
       console.log(chalk.red(`Server "${serverName}" not found in any configuration.`));
       return;
     }
 
     const locations = [];
     if (existsInClaude) locations.push('Claude Code');
-    if (existsInBmad) locations.push('BMAD');
+    if (existsInAgilai) locations.push('Agilai');
 
     const answer = await inquirer.prompt([
       {
@@ -473,10 +490,10 @@ class McpManager {
       console.log(chalk.green(`\n✓ Removed ${serverName} from .claude/mcp-config.json`));
     }
 
-    if (existsInBmad) {
-      delete bmadConfig.mcpServers[serverName];
-      this.saveBmadConfig(bmadConfig);
-      console.log(chalk.green(`✓ Removed ${serverName} from mcp/bmad-config.json`));
+    if (existsInAgilai) {
+      delete agilaiConfig.mcpServers[serverName];
+      this.saveAgilaiConfig(agilaiConfig);
+      console.log(chalk.green(`✓ Removed ${serverName} from mcp/agilai-config.json`));
     }
 
     console.log('');
@@ -508,7 +525,7 @@ class McpManager {
         console.log(`  ${chalk.yellow('⚠')}  Requires: ${server.envVars.join(', ')}`);
       }
 
-      console.log(`  ${chalk.dim('Install:')} bmad-invisible mcp install ${server.id}`);
+      console.log(`  ${chalk.dim('Install:')} agilai mcp install ${server.id}`);
       console.log('');
     }
   }
@@ -524,7 +541,7 @@ class McpManager {
 
     if (!server) {
       console.log(chalk.red(`Server "${serverIdOrName}" not found in registry.`));
-      console.log(chalk.dim('Search available servers with: bmad-invisible mcp search <query>\n'));
+      console.log(chalk.dim('Search available servers with: agilai mcp search <query>\n'));
       return;
     }
 
@@ -582,7 +599,7 @@ class McpManager {
         message: 'Which configuration to update?',
         choices: [
           { name: 'Claude Code (.claude/mcp-config.json)', value: 'claude' },
-          { name: 'BMAD (mcp/bmad-config.json)', value: 'bmad' },
+          { name: 'Agilai (mcp/agilai-config.json)', value: 'agilai' },
           { name: 'Both', value: 'both' },
         ],
         default: options.config || 'claude',
@@ -609,15 +626,15 @@ class McpManager {
       console.log(chalk.green(`\n✓ Added ${nameAnswer.name} to .claude/mcp-config.json`));
     }
 
-    if (configAnswer.config === 'bmad' || configAnswer.config === 'both') {
-      const config = this.loadBmadConfig();
+    if (configAnswer.config === 'agilai' || configAnswer.config === 'both') {
+      const config = this.loadAgilaiConfig();
       config.mcpServers = config.mcpServers || {};
       config.mcpServers[nameAnswer.name] = serverConfig;
-      this.saveBmadConfig(config);
-      console.log(chalk.green(`✓ Added ${nameAnswer.name} to mcp/bmad-config.json`));
+      this.saveAgilaiConfig(config);
+      console.log(chalk.green(`✓ Added ${nameAnswer.name} to mcp/agilai-config.json`));
     }
 
-    console.log(chalk.dim('\nRun `bmad-invisible mcp doctor` to test the server.\n'));
+    console.log(chalk.dim('\nRun `agilai mcp doctor` to test the server.\n'));
   }
 
   /**
@@ -631,7 +648,7 @@ class McpManager {
 
     if (suggestions.length === 0) {
       console.log(chalk.yellow('No specific suggestions based on your project.'));
-      console.log(chalk.dim('Browse available servers with: bmad-invisible mcp browse\n'));
+      console.log(chalk.dim('Browse available servers with: agilai mcp browse\n'));
       return;
     }
 
@@ -641,7 +658,7 @@ class McpManager {
       console.log(`${chalk.cyan('●')} ${chalk.bold(server.name)}`);
       console.log(`  ${chalk.dim('Reason:')} ${reason}`);
       console.log(`  ${server.description}`);
-      console.log(`  ${chalk.dim('Install:')} bmad-invisible mcp install ${server.id}`);
+      console.log(`  ${chalk.dim('Install:')} agilai mcp install ${server.id}`);
       console.log('');
     }
   }
@@ -676,7 +693,7 @@ class McpManager {
     }
 
     console.log(chalk.dim(`\n\nTotal: ${servers.length} server(s)`));
-    console.log(chalk.dim('Install with: bmad-invisible mcp install <server-id>\n'));
+    console.log(chalk.dim('Install with: agilai mcp install <server-id>\n'));
   }
 
   /**
@@ -689,13 +706,13 @@ class McpManager {
 
     const profile = this.getCurrentProfile();
     const claudeConfig = this.loadClaudeConfig();
-    const bmadConfig = this.loadBmadConfig();
+    const agilaiConfig = this.loadAgilaiConfig();
 
     // Audit first
     const auditClaude = this.security.auditConfig(claudeConfig);
-    const auditBmad = this.security.auditConfig(bmadConfig);
+    const auditAgilai = this.security.auditConfig(agilaiConfig);
 
-    const totalIssues = auditClaude.issues.length + auditBmad.issues.length;
+    const totalIssues = auditClaude.issues.length + auditAgilai.issues.length;
 
     if (totalIssues === 0) {
       console.log(chalk.green('✓ No security issues found. Configuration is already secure.\n'));
@@ -730,13 +747,13 @@ class McpManager {
       );
     }
 
-    // Migrate BMAD config
-    if (auditBmad.issues.length > 0) {
-      const migrated = await this.security.migrateToSecure(bmadConfig, profile);
-      this.saveBmadConfig(migrated.config);
+    // Migrate Agilai config
+    if (auditAgilai.issues.length > 0) {
+      const migrated = await this.security.migrateToSecure(agilaiConfig, profile);
+      this.saveAgilaiConfig(migrated.config);
       console.log(
         chalk.green(
-          `✓ Migrated ${migrated.count} credential(s) from BMAD config to secure storage`,
+          `✓ Migrated ${migrated.count} credential(s) from Agilai config to secure storage`,
         ),
       );
     }
@@ -752,10 +769,10 @@ class McpManager {
 
     const profile = this.getCurrentProfile();
     const claudeConfig = this.loadClaudeConfig();
-    const bmadConfig = this.loadBmadConfig();
+    const agilaiConfig = this.loadAgilaiConfig();
 
     const auditClaude = this.security.auditConfig(claudeConfig);
-    const auditBmad = this.security.auditConfig(bmadConfig);
+    const auditAgilai = this.security.auditConfig(agilaiConfig);
 
     console.log(chalk.bold('Claude Configuration:'));
     if (auditClaude.secure) {
@@ -768,12 +785,12 @@ class McpManager {
     }
 
     console.log('');
-    console.log(chalk.bold('BMAD Configuration:'));
-    if (auditBmad.secure) {
+    console.log(chalk.bold('Agilai Configuration:'));
+    if (auditAgilai.secure) {
       console.log(chalk.green('  ✓ Secure'));
     } else {
-      console.log(chalk.red(`  ✗ ${auditBmad.issues.length} issue(s) found`));
-      for (const issue of auditBmad.issues) {
+      console.log(chalk.red(`  ✗ ${auditAgilai.issues.length} issue(s) found`));
+      for (const issue of auditAgilai.issues) {
         console.log(`    - ${issue.message}`);
       }
     }
@@ -854,7 +871,7 @@ class McpManager {
 
       const status = [];
       if (profile.hasClaudeConfig) status.push('Claude');
-      if (profile.hasBmadConfig) status.push('BMAD');
+      if (profile.hasAgilaiConfig) status.push('Agilai');
 
       if (status.length > 0) {
         console.log(`  ${chalk.dim('Configs:')} ${status.join(', ')}`);

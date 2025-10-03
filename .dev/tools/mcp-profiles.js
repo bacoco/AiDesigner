@@ -9,7 +9,7 @@ class McpProfiles {
   constructor(options = {}) {
     this.rootDir = options.rootDir || process.cwd();
     this.claudeDir = path.join(this.rootDir, '.claude');
-    this.bmadDir = path.join(this.rootDir, 'mcp');
+    this.agilaiDir = path.join(this.rootDir, 'mcp');
     this.profilesMetaFile = path.join(this.claudeDir, '.mcp-profiles.json');
   }
 
@@ -17,8 +17,8 @@ class McpProfiles {
    * Get config file path for a profile
    */
   getConfigPath(type, profile = null) {
-    const baseDir = type === 'claude' ? this.claudeDir : this.bmadDir;
-    const baseName = type === 'claude' ? 'mcp-config' : 'bmad-config';
+    const baseDir = type === 'claude' ? this.claudeDir : this.agilaiDir;
+    const baseName = type === 'claude' ? 'mcp-config' : 'agilai-config';
 
     if (!profile || profile === 'default') {
       return path.join(baseDir, `${baseName}.json`);
@@ -149,18 +149,18 @@ class McpProfiles {
         fs.copyFileSync(claudeSource, claudeTarget);
       }
 
-      // Copy BMAD config
-      const bmadSource = this.getConfigPath('bmad', sourceProfile);
-      const bmadTarget = this.getConfigPath('bmad', name);
-      if (fs.existsSync(bmadSource)) {
-        fs.copyFileSync(bmadSource, bmadTarget);
+      // Copy Agilai config
+      const agilaiSource = this.getConfigPath('agilai', sourceProfile);
+      const agilaiTarget = this.getConfigPath('agilai', name);
+      if (fs.existsSync(agilaiSource)) {
+        fs.copyFileSync(agilaiSource, agilaiTarget);
       }
     } else {
       // Create empty configs
       const emptyConfig = { mcpServers: {} };
 
       fs.writeFileSync(this.getConfigPath('claude', name), JSON.stringify(emptyConfig, null, 2));
-      fs.writeFileSync(this.getConfigPath('bmad', name), JSON.stringify(emptyConfig, null, 2));
+      fs.writeFileSync(this.getConfigPath('agilai', name), JSON.stringify(emptyConfig, null, 2));
     }
 
     return meta.profiles[name];
@@ -182,13 +182,13 @@ class McpProfiles {
 
     // Delete config files
     const claudeConfig = this.getConfigPath('claude', name);
-    const bmadConfig = this.getConfigPath('bmad', name);
+    const agilaiConfig = this.getConfigPath('agilai', name);
 
     if (fs.existsSync(claudeConfig)) {
       fs.unlinkSync(claudeConfig);
     }
-    if (fs.existsSync(bmadConfig)) {
-      fs.unlinkSync(bmadConfig);
+    if (fs.existsSync(agilaiConfig)) {
+      fs.unlinkSync(agilaiConfig);
     }
 
     // Remove from metadata
@@ -213,7 +213,7 @@ class McpProfiles {
       ...profile,
       active: profile.name === activeProfile,
       hasClaudeConfig: fs.existsSync(this.getConfigPath('claude', profile.name)),
-      hasBmadConfig: fs.existsSync(this.getConfigPath('bmad', profile.name)),
+      hasAgilaiConfig: fs.existsSync(this.getConfigPath('agilai', profile.name)),
     }));
   }
 
@@ -354,7 +354,7 @@ class McpProfiles {
     const exportData = {
       profile,
       claudeConfig: this.loadConfig('claude', profileName),
-      bmadConfig: this.loadConfig('bmad', profileName),
+      agilaiConfig: this.loadConfig('agilai', profileName),
       exported: new Date().toISOString(),
       version: '1.0.0',
     };
@@ -380,7 +380,7 @@ class McpProfiles {
 
     // Save configs
     this.saveConfig('claude', exportData.claudeConfig, profileName);
-    this.saveConfig('bmad', exportData.bmadConfig, profileName);
+    this.saveConfig('agilai', exportData.agilaiConfig, profileName);
 
     return profileName;
   }

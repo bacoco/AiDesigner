@@ -31,13 +31,13 @@
   "author": "Loic Bacoco",
   "main": ".dev/tools/cli.js",
   "bin": {
-    "agilai": "bin/bmad-invisible",
-    "agilai-codex": "bin/bmad-codex"
+    "agilai": "bin/agilai",
+    "agilai-codex": "bin/agilai-codex"
   },
   "scripts": {
-    "bmad": "node bin/bmad-invisible start",
-    "bmad:claude": "node bin/bmad-claude",
-    "bmad:codex": "node bin/bmad-codex",
+    "bmad": "node bin/agilai start",
+    "bmad:claude": "node bin/agilai-claude",
+    "bmad:codex": "node bin/agilai-codex",
     "bmad:opencode": "npx agilai opencode",
     "build": "node .dev/tools/cli.js build",
     "build:agents": "node .dev/tools/cli.js build --agents-only",

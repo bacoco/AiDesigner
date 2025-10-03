@@ -11,7 +11,7 @@ class BrownfieldAnalyzer {
   constructor(projectPath = process.cwd()) {
     this.projectPath = projectPath;
     this.docsPath = path.join(projectPath, 'docs');
-    this.bmadStatePath = path.join(projectPath, '.bmad-invisible');
+    this.agilaiStatePath = path.join(projectPath, '.agilai');
   }
 
   /**
@@ -318,7 +318,7 @@ class BrownfieldAnalyzer {
    * Detect if Agilai state exists (previous session)
    */
   async detectPreviousState() {
-    const stateFile = path.join(this.bmadStatePath, 'state.json');
+    const stateFile = path.join(this.agilaiStatePath, 'state.json');
 
     if (await fs.pathExists(stateFile)) {
       const state = await fs.readJson(stateFile);

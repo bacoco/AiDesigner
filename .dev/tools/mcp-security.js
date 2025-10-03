@@ -12,7 +12,7 @@ class McpSecurity {
     this.platform = os.platform();
     this.algorithm = 'aes-256-gcm';
     this.keyLength = 32; // 256 bits
-    this.secureDir = path.join(os.homedir(), '.bmad-invisible', 'secure');
+    this.secureDir = path.join(os.homedir(), '.agilai', 'secure');
     this.vaultFile = path.join(this.secureDir, 'vault.enc');
     this.masterKeyFile = path.join(this.secureDir, '.master.key');
   }

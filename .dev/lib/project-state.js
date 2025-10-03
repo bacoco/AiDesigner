@@ -9,7 +9,7 @@ const path = require('node:path');
 class ProjectState {
   constructor(projectPath = process.cwd()) {
     this.projectPath = projectPath;
-    this.stateDir = path.join(projectPath, '.bmad-invisible');
+    this.stateDir = path.join(projectPath, '.agilai');
     this.stateFile = path.join(this.stateDir, 'state.json');
     this.conversationFile = path.join(this.stateDir, 'conversation.json');
     this.deliverablesFile = path.join(this.stateDir, 'deliverables.json');
