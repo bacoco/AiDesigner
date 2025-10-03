@@ -332,6 +332,124 @@ const ensureClaudeEnvironment = async ({ projectRoot, userArgs = [] }) => {
   }
 };
 
+const createDefaultRuntimeOptions = () => ({
+  llmProvider: undefined,
+  llmModel: undefined,
+});
+
+let runtimeOptions = createDefaultRuntimeOptions();
+
+const VALID_LLM_PROVIDERS = new Set(['claude', 'glm', 'openai', 'gpt', 'gemini', 'google']);
+
+const normalizeLlmProvider = (value) => {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.toLowerCase();
+
+  if (normalized === 'anthropic') {
+    return 'claude';
+  }
+
+  if (normalized === 'zhipu') {
+    return 'glm';
+  }
+
+  return normalized;
+};
+
+const parseLlmOptionsFromArgs = (currentArgs) => {
+  let provider;
+  let model;
+  const sanitized = [];
+
+  for (let index = 0; index < currentArgs.length; index += 1) {
+    const arg = currentArgs[index];
+
+    if (arg === '--glm') {
+      provider = 'glm';
+      continue;
+    }
+
+    if (arg === '--anthropic') {
+      provider = 'claude';
+      continue;
+    }
+
+    if (arg === '--llm-provider') {
+      provider = currentArgs[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith('--llm-provider=')) {
+      provider = arg.split('=')[1];
+      continue;
+    }
+
+    if (arg === '--llm-model') {
+      model = currentArgs[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith('--llm-model=')) {
+      model = arg.split('=')[1];
+      continue;
+    }
+
+    sanitized.push(arg);
+  }
+
+  return { provider: normalizeLlmProvider(provider), model, sanitized };
+};
+
+const consumeLlmOptionsFromArgs = () => {
+  if (!args.length) {
+    return;
+  }
+
+  const { provider, model, sanitized } = parseLlmOptionsFromArgs(args);
+  args.splice(0, args.length, ...sanitized);
+
+  if (provider) {
+    if (!VALID_LLM_PROVIDERS.has(provider)) {
+      console.error('⚠️ Unsupported LLM provider flag value:', provider);
+      console.error('Valid providers:', Array.from(VALID_LLM_PROVIDERS).join(', '));
+      process.exit(1);
+      return;
+    }
+
+    runtimeOptions.llmProvider = provider;
+  }
+
+  if (model) {
+    runtimeOptions.llmModel = model;
+  }
+};
+
+const buildSpawnEnv = () => {
+  const env = { ...process.env };
+
+  if (runtimeOptions.llmProvider) {
+    env.LLM_PROVIDER = runtimeOptions.llmProvider;
+
+    if (runtimeOptions.llmProvider === 'glm') {
+      const existingKey = env.ZHIPUAI_API_KEY || env.GLM_API_KEY;
+      if (existingKey && !env.ZHIPUAI_API_KEY) {
+        env.ZHIPUAI_API_KEY = existingKey;
+      }
+    }
+  }
+
+  if (runtimeOptions.llmModel) {
+    env.LLM_MODEL = runtimeOptions.llmModel;
+  }
+
+  return env;
+};
+
 // Get current package version
 const packageJsonPath = path.join(__dirname, '..', 'package.json');
 const currentVersion = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
@@ -619,9 +737,22 @@ const determineAssistant = async (input = {}) => {
       return; // For testing when exit is mocked
     }
 
-    console.error('⚠️ Unsupported assistant flag value:', flagValue);
-    console.error('Valid options:', ASSISTANT_CHOICES.join(', '));
-    process.exit(1);
+    if (provider && !choice.providers.includes(provider)) {
+      console.error(
+        `⚠️ Unsupported provider "${provider}" for assistant "${normalizedAssistant}".`,
+      );
+      console.error(
+        `Valid providers for ${normalizedAssistant}: ${choice.providers.join(', ')}`,
+      );
+      process.exit(1);
+      return; // For testing when exit is mocked
+    }
+
+    if (!provider) {
+      [provider] = choice.providers;
+    }
+
+    return { assistant: choice.id, provider };
   }
 
   if (!process.stdout.isTTY) {
@@ -629,6 +760,7 @@ const determineAssistant = async (input = {}) => {
       '⚠️ Non-interactive mode requires --assistant flag. Use: --assistant=claude, --assistant=claude-glm, or combine with --provider.',
     );
     process.exit(1);
+    return; // For testing when exit is mocked
   }
 
   return promptForAssistant();
