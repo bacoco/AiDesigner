@@ -311,6 +311,7 @@ interface LaneDecisionRecord {
   level?: number;
   levelScore?: number;
   levelSignals?: unknown;
+  levelRationale?: string;
 }
 
 interface ReviewCheckpointConfig {
