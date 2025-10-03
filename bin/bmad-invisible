@@ -123,7 +123,10 @@ const promptForAssistant = () =>
     });
 
     // Ensure readline is cleaned up on error
+    let cleanedUp = false;
     const cleanup = () => {
+      if (cleanedUp) return;
+      cleanedUp = true;
       try {
         rl.close();
       } catch {
@@ -284,6 +287,8 @@ const commands = {
       try {
         const parsed = JSON.parse(fs.readFileSync(mcpConfigDest, 'utf8'));
         if (parsed && typeof parsed === 'object' && parsed.mcpServers) {
+          // Preserve all top-level keys (logging, environment, etc.), not just mcpServers
+          mcpConfig = { ...parsed };
           mcpConfig.mcpServers = { ...parsed.mcpServers };
           hadExistingMcpConfig = true;
         }
@@ -302,6 +307,9 @@ const commands = {
     if (!mcpConfig.mcpServers[orchestratorKey]) {
       mcpConfig.mcpServers[orchestratorKey] = orchestratorConfig;
       console.log('✅ Added BMAD-invisible orchestrator MCP server');
+    } else {
+      // Ensure orchestrator is enabled during re-init (user may have disabled it)
+      mcpConfig.mcpServers[orchestratorKey].disabled = false;
     }
 
     const promptYesNo = async (question) => {
@@ -315,7 +323,10 @@ const commands = {
           output: process.stdout,
         });
 
+        let cleanedUp = false;
         const cleanup = () => {
+          if (cleanedUp) return;
+          cleanedUp = true;
           try {
             rl.close();
           } catch {
@@ -423,29 +434,33 @@ const commands = {
       console.log('✅ Added bmad-invisible to dependencies');
     }
 
-    const componentsPath = path.join(projectRoot, 'components.json');
-    const shadcnConfig = {
-      $schema: 'https://ui.shadcn.com/schema.json',
-      style: 'default',
-      rsc: false,
-      tsx: true,
-      tailwind: {
-        config: 'tailwind.config.js',
-        css: 'src/app/globals.css',
-        baseColor: 'slate',
-        cssVariables: true,
-      },
-      aliases: {
-        components: '@/components',
-        utils: '@/lib/utils',
-      },
-    };
+    // Only create components.json if shadcn MCP server is enabled
+    const shadcnEnabled = mcpConfig.mcpServers.shadcn && !mcpConfig.mcpServers.shadcn.disabled;
+    if (shadcnEnabled) {
+      const componentsPath = path.join(projectRoot, 'components.json');
+      const shadcnConfig = {
+        $schema: 'https://ui.shadcn.com/schema.json',
+        style: 'default',
+        rsc: false,
+        tsx: true,
+        tailwind: {
+          config: 'tailwind.config.js',
+          css: 'src/app/globals.css',
+          baseColor: 'slate',
+          cssVariables: true,
+        },
+        aliases: {
+          components: '@/components',
+          utils: '@/lib/utils',
+        },
+      };
 
-    if (!fs.existsSync(componentsPath)) {
-      fs.writeFileSync(componentsPath, JSON.stringify(shadcnConfig, null, 2) + '\n');
-      console.log('✅ Created default shadcn components.json');
-    } else {
-      console.warn('⚠️ components.json already exists. Leaving the current configuration untouched.');
+      if (!fs.existsSync(componentsPath)) {
+        fs.writeFileSync(componentsPath, JSON.stringify(shadcnConfig, null, 2) + '\n');
+        console.log('✅ Created default shadcn components.json');
+      } else {
+        console.warn('⚠️ components.json already exists. Leaving the current configuration untouched.');
+      }
     }
 
     console.log(`
