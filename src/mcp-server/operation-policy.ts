@@ -161,7 +161,9 @@ export class OperationPolicyEnforcer {
     }
 
     if (this.config.defaults) {
-      return { key: "defaults", policy: this.config.defaults };
+      // Use the base operation name as the key so each operation has its own quota bucket
+      const baseKey = searchKeys.length > 0 ? searchKeys[searchKeys.length - 1] : "defaults";
+      return { key: baseKey, policy: this.config.defaults };
     }
 
     return undefined;

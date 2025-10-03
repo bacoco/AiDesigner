@@ -81,6 +81,32 @@ describe('Codex operation policy enforcement', () => {
     await expect(client.ensureOperationAllowed('run_review_checkpoint')).resolves.toBeUndefined();
   });
 
+  test('default policy applies per-operation, not globally', async () => {
+    const enforcer = new OperationPolicyEnforcer({
+      defaults: { maxExecutionsPerHour: 2 },
+    });
+
+    const client = new CodexClient(routerStub, false, false, new Set(), enforcer);
+
+    // Operation foo should have its own quota
+    await expect(client.ensureOperationAllowed('foo')).resolves.toBeUndefined();
+    await expect(client.ensureOperationAllowed('foo')).resolves.toBeUndefined();
+
+    // Operation bar should have a separate quota, not affected by foo's usage
+    await expect(client.ensureOperationAllowed('bar')).resolves.toBeUndefined();
+    await expect(client.ensureOperationAllowed('bar')).resolves.toBeUndefined();
+
+    // Now foo should be blocked (exceeded its own limit)
+    await expect(client.ensureOperationAllowed('foo')).rejects.toThrow(
+      /limit of 2 executions per hour exceeded/i,
+    );
+
+    // But bar should also be blocked (exceeded its own limit, not because of foo)
+    await expect(client.ensureOperationAllowed('bar')).rejects.toThrow(
+      /limit of 2 executions per hour exceeded/i,
+    );
+  });
+
   let tempDir;
 
   afterEach(async () => {
