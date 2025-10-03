@@ -1,3 +1,14 @@
+## [1.3.11](https://github.com/bacoco/Agilai/compare/v1.3.10...v1.3.11) (2025-01-03)
+
+### Improvements
+
+**📊 Enhanced npm Discoverability**
+
+- **Better package description**: Highlights MCP integration and natural language approach
+- **Expanded keywords**: Added mcp, model-context-protocol, ai-agents, workflow, automation, claude, gemini, chatgpt
+- **README badges**: Added npm version and package size (2.6MB) badges
+- **Searchability**: Improved discovery on npm registry for MCP-related searches
+
 ## [1.3.10](https://github.com/bacoco/Agilai/compare/v1.3.9...v1.3.10) (2025-01-03)
 
 ### Improvements
