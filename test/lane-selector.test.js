@@ -13,6 +13,10 @@ describe('Lane Selector', () => {
       expect(result.lane).toBe('quick');
       expect(result.confidence).toBeGreaterThan(0.7);
       expect(result.factors.quickFixKeywords).toBeGreaterThan(0);
+      expect(result.scale.level).toBe(0);
+      expect(result.scale.signals.deductions).toEqual(
+        expect.arrayContaining([expect.objectContaining({ description: 'Quick fix keywords' })]),
+      );
     });
 
     test('should select quick lane for flag addition', () => {
@@ -52,6 +56,12 @@ describe('Lane Selector', () => {
 
       expect(result.lane).toBe('complex');
       expect(result.confidence).toBeGreaterThan(0.8);
+      expect(result.scale.level).toBeGreaterThanOrEqual(3);
+      expect(result.scale.signals.contributions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ description: 'Complex keyword signals' }),
+        ]),
+      );
     });
 
     test('should select complex lane for API integration', () => {
@@ -211,6 +221,7 @@ describe('Lane Selector', () => {
       const result = selectLane('Rename variable in helper function');
 
       expect(result.lane).toBe('quick');
+      expect(result.scale.level).toBe(0);
     });
 
     test('Example 4: Database migration', () => {
@@ -249,6 +260,17 @@ describe('Lane Selector', () => {
       expect(result.factors.scaleLevel).toBe(4);
       expect(result.scale.level).toBe(4);
       expect(result.lane).toBe('complex');
+      expect(result.scale.signals.keywordMatches.level4).toEqual(
+        expect.arrayContaining(['multi-region', 'regulatory compliance']),
+      );
+    });
+
+    test('should keep mixed quick/complex phrasing within fallback scale band', () => {
+      const result = selectLane('Quick fix to add new authentication feature');
+
+      expect(result.scale.level).toBe(1);
+      expect(result.scale.score).toBeGreaterThanOrEqual(2);
+      expect(result.scale.score).toBeLessThan(4);
     });
   });
 
