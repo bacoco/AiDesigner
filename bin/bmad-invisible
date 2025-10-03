@@ -347,7 +347,7 @@ Commands:
 
   start                🚀 ONE-COMMAND SETUP: init + install + prompt for assistant choice
   init                 Initialize BMAD-invisible in current project
-  chat                 Start conversational interface with Claude CLI
+  chat                 Start conversational interface with Claude CLI (Anthropic/GLM)
   codex                Start conversational interface with Codex CLI
   opencode             Start conversational interface with OpenCode CLI
 
@@ -360,10 +360,19 @@ Commands:
 Examples:
 
   npx bmad-invisible@latest start      # 🚀 Do everything in one command!
+  npx bmad-invisible@latest start --assistant=claude --provider=glm
+                                      # Skip prompts & launch Claude with GLM
+  npx bmad-invisible@latest start --assistant=claude-glm
+                                      # Combined flag also supported
   npx bmad-invisible@latest start --assistant=opencode
                                       # Skip the prompt and launch OpenCode
   npx bmad-invisible@latest init       # Setup in current project
   npm run codex                        # Start conversation (after install)
+
+
+Flags:
+  Use --assistant and optionally --provider to skip prompts. Combine values like
+  --assistant=claude-glm when preferred.
 
 
 💡 Tip: Always use @latest to get the newest version:
@@ -373,7 +382,40 @@ For more information: https://github.com/bacoco/BMAD-invisible
 `);
 };
 
-const ASSISTANT_CHOICES = ['claude', 'codex', 'opencode'];
+const ASSISTANT_CHOICES = [
+  {
+    id: 'claude',
+    providers: ['anthropic', 'glm'],
+  },
+  {
+    id: 'codex',
+    providers: ['anthropic'],
+  },
+  {
+    id: 'opencode',
+    providers: ['anthropic'],
+  },
+];
+
+const findAssistantChoice = (id) =>
+  ASSISTANT_CHOICES.find((choice) => choice.id === id);
+
+const listAssistantIds = () => ASSISTANT_CHOICES.map(({ id }) => id);
+
+const splitAssistantAndProvider = (value) => {
+  if (!value) {
+    return { assistant: undefined, provider: undefined };
+  }
+
+  const normalized = value.toLowerCase();
+  const [assistantPart, ...providerParts] = normalized.split('-');
+  const provider = providerParts.length > 0 ? providerParts.join('-') : undefined;
+
+  return {
+    assistant: assistantPart,
+    provider,
+  };
+};
 
 const OPTIONAL_MCP_SERVERS = [
   {
@@ -403,6 +445,7 @@ const formatAssistantName = (value) =>
 
 const parseAssistantFromArgs = (currentArgs) => {
   let assistant;
+  let provider;
   const sanitized = [];
 
   for (let index = 0; index < currentArgs.length; index += 1) {
@@ -419,66 +462,148 @@ const parseAssistantFromArgs = (currentArgs) => {
       continue;
     }
 
+    if (arg === '--provider') {
+      provider = currentArgs[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith('--provider=')) {
+      provider = arg.split('=')[1];
+      continue;
+    }
+
     sanitized.push(arg);
+  }
+
+  if (assistant) {
+    const { assistant: parsedAssistant, provider: combinedProvider } =
+      splitAssistantAndProvider(assistant);
+    assistant = parsedAssistant;
+    if (!provider && combinedProvider) {
+      provider = combinedProvider;
+    }
   }
 
   return {
     assistant: assistant ? assistant.toLowerCase() : undefined,
+    provider: provider ? provider.toLowerCase() : undefined,
     sanitized,
   };
 };
 
-const promptForAssistant = () =>
-  new Promise((resolve, reject) => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-
-    // Ensure readline is cleaned up on error
-    let cleanedUp = false;
-    const cleanup = () => {
-      if (cleanedUp) return;
-      cleanedUp = true;
-      try {
-        rl.close();
-      } catch {
-        // Ignore cleanup errors
-      }
-    };
-
-    rl.on('error', (error) => {
-      cleanup();
-      reject(error);
-    });
-
-    const options = ASSISTANT_CHOICES.map(formatAssistantName).join(' / ');
-
-    rl.question(
-      `Which assistant should we launch? (${options}): `,
-      (answer) => {
-        cleanup();
-        const normalized = (answer || '').trim().toLowerCase();
-        if (!normalized) {
-          console.log('⚠️ No assistant selected. Please choose one.');
-          return promptForAssistant().then(resolve).catch(reject);
-        }
-
-        if (ASSISTANT_CHOICES.includes(normalized)) {
-          resolve(normalized);
-          return;
-        }
-
-        console.log('⚠️ Unrecognized selection. Please try again.');
-        return promptForAssistant().then(resolve).catch(reject);
-      },
-    );
+const promptForAssistant = async () => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
   });
 
-const determineAssistant = async (flagValue) => {
-  if (flagValue) {
-    if (ASSISTANT_CHOICES.includes(flagValue)) {
-      return flagValue;
+  const askQuestion = (prompt) =>
+    new Promise((resolve, reject) => {
+      const handleError = (error) => {
+        rl.removeListener('error', handleError);
+        reject(error);
+      };
+
+      rl.once('error', handleError);
+      rl.question(prompt, (answer) => {
+        rl.removeListener('error', handleError);
+        resolve(answer);
+      });
+    });
+
+  try {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const options = ASSISTANT_CHOICES.map((choice) => {
+        const providersLabel =
+          choice.providers.length > 1
+            ? ` (${choice.providers.join('/')})`
+            : '';
+        return `${formatAssistantName(choice.id)}${providersLabel}`;
+      }).join(' / ');
+
+      const answer = (await askQuestion(
+        `Which assistant should we launch? (${options}): `,
+      ))
+        .trim()
+        .toLowerCase();
+
+      if (!answer) {
+        console.log('⚠️ No assistant selected. Please choose one.');
+        continue;
+      }
+
+      const { assistant: selectedAssistant, provider: embeddedProvider } =
+        splitAssistantAndProvider(answer);
+      const choice = findAssistantChoice(selectedAssistant);
+
+      if (!choice) {
+        console.log('⚠️ Unrecognized selection. Please try again.');
+        continue;
+      }
+
+      let provider = embeddedProvider;
+
+      if (provider && !choice.providers.includes(provider)) {
+        console.log('⚠️ Unsupported provider for that assistant. Please try again.');
+        continue;
+      }
+
+      if (!provider) {
+        if (choice.providers.length === 1) {
+          provider = choice.providers[0];
+        } else {
+          const providerAnswer = (await askQuestion(
+            `Which provider should power ${formatAssistantName(choice.id)}? (${choice.providers.join(
+              '/',
+            )}): `,
+          ))
+            .trim()
+            .toLowerCase();
+
+          if (!providerAnswer) {
+            console.log('⚠️ No provider selected. Please try again.');
+            continue;
+          }
+
+          if (!choice.providers.includes(providerAnswer)) {
+            console.log('⚠️ Unsupported provider. Please try again.');
+            continue;
+          }
+
+          provider = providerAnswer;
+        }
+      }
+
+      return { assistant: choice.id, provider };
+    }
+  } finally {
+    try {
+      rl.close();
+    } catch {
+      // Ignore cleanup errors
+    }
+  }
+};
+
+const determineAssistant = async (input = {}) => {
+  if (typeof input === 'string' || input === undefined) {
+    return determineAssistant({ assistant: input });
+  }
+
+  const { assistant: assistantFlag, provider: providerFlag } = input;
+  if (assistantFlag) {
+    const { assistant: normalizedAssistant, provider: combinedProvider } =
+      splitAssistantAndProvider(assistantFlag);
+    let provider = providerFlag || combinedProvider;
+    const choice = findAssistantChoice(normalizedAssistant);
+
+    if (!choice) {
+      console.error('⚠️ Unsupported assistant flag value:', assistantFlag);
+      console.error('Valid options:', listAssistantIds().join(', '));
+      process.exit(1);
+      return; // For testing when exit is mocked
     }
 
     console.error('⚠️ Unsupported assistant flag value:', flagValue);
@@ -488,7 +613,7 @@ const determineAssistant = async (flagValue) => {
 
   if (!process.stdout.isTTY) {
     console.error(
-      '⚠️ Non-interactive mode requires --assistant flag. Use: --assistant=claude|codex|opencode',
+      '⚠️ Non-interactive mode requires --assistant flag. Use: --assistant=claude, --assistant=claude-glm, or combine with --provider.',
     );
     process.exit(1);
   }
@@ -502,14 +627,24 @@ const commands = {
     console.log('🚀 Starting BMAD-invisible setup...\n');
 
     // Determine assistant preference before installation begins
-    const { assistant: assistantFlag, sanitized } = parseAssistantFromArgs(args);
+    const {
+      assistant: assistantFlag,
+      provider: providerFlag,
+      sanitized,
+    } = parseAssistantFromArgs(args);
     args.splice(0, args.length, ...sanitized);
-    const assistant = await determineAssistant(assistantFlag);
+    const selection = await determineAssistant({
+      assistant: assistantFlag,
+      provider: providerFlag,
+    });
 
-    // If assistant is undefined, exit was called (possibly mocked in tests)
-    if (!assistant) {
+    // If selection is undefined, exit was called (possibly mocked in tests)
+    if (!selection) {
       return;
     }
+
+    const { assistant, provider } = selection;
+    process.env.BMAD_ASSISTANT_PROVIDER = provider;
 
     if (process.stdout.isTTY) {
       console.log(
@@ -539,7 +674,10 @@ const commands = {
     });
 
     const assistantName = formatAssistantName(assistant);
-    console.log(`\n🎯 Starting BMAD Invisible Orchestrator with ${assistantName}...\n`);
+    const providerLabel = provider ? ` (${provider})` : '';
+    console.log(
+      `\n🎯 Starting BMAD Invisible Orchestrator with ${assistantName}${providerLabel}...\n`,
+    );
 
     if (assistant === 'claude') {
       await commands.chat();
