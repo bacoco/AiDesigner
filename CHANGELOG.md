@@ -1,3 +1,36 @@
+## [1.3.8](https://github.com/bacoco/BMAD-invisible/compare/v1.3.7...v1.3.8) (2025-10-03)
+
+### Features
+
+**🎨 Marketing-Focused README** - Rewritten introduction with problem-solution narrative
+
+- **Clear problem statement**: Articulates developer pain points with AI development complexity
+- **Solution-focused messaging**: Emphasizes natural conversation and zero learning curve
+- **Professional positioning**: Highlights proven methodology and professional output
+- **Evidence-based claims**: All messaging truthful and substantiated
+- **Better conversion**: More compelling value proposition without exaggeration
+
+**🛡️ Quick Lane Graceful Fallback** - Enhanced reliability and robustness
+
+- **Automatic failover**: Quick lane gracefully disables and defers to complex lane when unavailable
+- **Improved error handling**: Better detection and recovery from quick lane failures
+- **Enhanced testing**: New integration tests for orchestrator server runtime
+- **Assistant environment improvements**: Better GLM provider detection and configuration
+- **Runtime stability**: More robust error handling in orchestrator runtime
+
+### Improvements
+
+- **Documentation**: Problem-solution focused README introduction
+- **Reliability**: Quick lane fallback mechanism prevents workflow interruptions
+- **Testing**: Added `run-orchestrator-server.integration.test.js` for runtime validation
+- **Assistant support**: Enhanced assistant environment utilities with better provider detection
+
+### Bug Fixes
+
+- Fix quick lane failures by implementing graceful fallback to complex lane
+- Improve GLM provider environment variable handling
+- Enhanced error messaging in assistant environment utilities
+
 ## [1.3.7](https://github.com/bacoco/BMAD-invisible/compare/v1.3.5...v1.3.7) (2025-10-03)
 
 ### Features
