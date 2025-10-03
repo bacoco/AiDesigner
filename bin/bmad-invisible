@@ -19,6 +19,124 @@ let command;
 let args = [];
 const packageRoot = path.join(__dirname, '..');
 
+const createDefaultRuntimeOptions = () => ({
+  llmProvider: undefined,
+  llmModel: undefined,
+});
+
+let runtimeOptions = createDefaultRuntimeOptions();
+
+const VALID_LLM_PROVIDERS = new Set(['claude', 'glm', 'openai', 'gpt', 'gemini', 'google']);
+
+const normalizeLlmProvider = (value) => {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.toLowerCase();
+
+  if (normalized === 'anthropic') {
+    return 'claude';
+  }
+
+  if (normalized === 'zhipu') {
+    return 'glm';
+  }
+
+  return normalized;
+};
+
+const parseLlmOptionsFromArgs = (currentArgs) => {
+  let provider;
+  let model;
+  const sanitized = [];
+
+  for (let index = 0; index < currentArgs.length; index += 1) {
+    const arg = currentArgs[index];
+
+    if (arg === '--glm') {
+      provider = 'glm';
+      continue;
+    }
+
+    if (arg === '--anthropic') {
+      provider = 'claude';
+      continue;
+    }
+
+    if (arg === '--llm-provider') {
+      provider = currentArgs[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith('--llm-provider=')) {
+      provider = arg.split('=')[1];
+      continue;
+    }
+
+    if (arg === '--llm-model') {
+      model = currentArgs[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith('--llm-model=')) {
+      model = arg.split('=')[1];
+      continue;
+    }
+
+    sanitized.push(arg);
+  }
+
+  return { provider: normalizeLlmProvider(provider), model, sanitized };
+};
+
+const consumeLlmOptionsFromArgs = () => {
+  if (!args.length) {
+    return;
+  }
+
+  const { provider, model, sanitized } = parseLlmOptionsFromArgs(args);
+  args.splice(0, args.length, ...sanitized);
+
+  if (provider) {
+    if (!VALID_LLM_PROVIDERS.has(provider)) {
+      console.error('⚠️ Unsupported LLM provider flag value:', provider);
+      console.error('Valid providers:', Array.from(VALID_LLM_PROVIDERS).join(', '));
+      process.exit(1);
+      return;
+    }
+
+    runtimeOptions.llmProvider = provider;
+  }
+
+  if (model) {
+    runtimeOptions.llmModel = model;
+  }
+};
+
+const buildSpawnEnv = () => {
+  const env = { ...process.env };
+
+  if (runtimeOptions.llmProvider) {
+    env.LLM_PROVIDER = runtimeOptions.llmProvider;
+
+    if (runtimeOptions.llmProvider === 'glm') {
+      const existingKey = env.ZHIPUAI_API_KEY || env.GLM_API_KEY;
+      if (existingKey && !env.ZHIPUAI_API_KEY) {
+        env.ZHIPUAI_API_KEY = existingKey;
+      }
+    }
+  }
+
+  if (runtimeOptions.llmModel) {
+    env.LLM_MODEL = runtimeOptions.llmModel;
+  }
+
+  return env;
+};
+
 // Get current package version
 const packageJsonPath = path.join(__dirname, '..', 'package.json');
 const currentVersion = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
@@ -29,6 +147,13 @@ BMAD Invisible - Zero-knowledge AI orchestration (v${currentVersion})
 
 Usage:
   npx bmad-invisible@latest <command> [options]
+
+Options:
+  --assistant=<assistant>    Launch specified CLI front-end (claude, codex, opencode)
+  --llm-provider=<provider>  Override orchestrator LLM (claude, glm, openai, gemini)
+  --llm-model=<model>        Force a specific model id for the orchestrator
+  --glm                      Shortcut for --llm-provider=glm (uses ZHIPUAI_API_KEY)
+  --anthropic                Shortcut for --llm-provider=claude
 
 Commands:
 
@@ -49,12 +174,18 @@ Examples:
   npx bmad-invisible@latest start      # 🚀 Do everything in one command!
   npx bmad-invisible@latest start --assistant=opencode
                                       # Skip the prompt and launch OpenCode
+  npx bmad-invisible@latest start --glm
+                                      # Use GLM with ZHIPUAI_API_KEY / GLM_API_KEY
   npx bmad-invisible@latest init       # Setup in current project
   npm run codex                        # Start conversation (after install)
 
 
 💡 Tip: Always use @latest to get the newest version:
    npx bmad-invisible@latest start
+
+Environment:
+  Set ZHIPUAI_API_KEY (or GLM_API_KEY) and optionally LLM_MODEL when using --glm.
+  Use --anthropic or LLM_PROVIDER=claude to switch back to Anthropic defaults.
 
 For more information: https://github.com/bacoco/BMAD-invisible
 `);
@@ -189,6 +320,8 @@ const determineAssistant = async (flagValue) => {
 const commands = {
   start: async () => {
     console.log('🚀 Starting BMAD-invisible setup...\n');
+
+    consumeLlmOptionsFromArgs();
 
     // Determine assistant preference before installation begins
     const { assistant: assistantFlag, sanitized } = parseAssistantFromArgs(args);
@@ -589,6 +722,8 @@ For detailed documentation, visit:
   },
 
   codex: async () => {
+    consumeLlmOptionsFromArgs();
+
     const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
     const codexScript = fs.existsSync(localInstall)
       ? path.join(localInstall, 'bin', 'bmad-codex')
@@ -603,6 +738,7 @@ For detailed documentation, visit:
     const child = spawn('node', [codexScript, ...args], {
       stdio: 'inherit',
       cwd: process.cwd(),
+      env: buildSpawnEnv(),
     });
 
     child.on('error', (error) => {
@@ -616,6 +752,8 @@ For detailed documentation, visit:
   },
 
   chat: async () => {
+    consumeLlmOptionsFromArgs();
+
     // Check if bmad-invisible is installed locally first
     const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
     const chatScript = fs.existsSync(localInstall)
@@ -631,6 +769,7 @@ For detailed documentation, visit:
     const child = spawn('node', [chatScript, ...args], {
       stdio: 'inherit',
       cwd: process.cwd(),
+      env: buildSpawnEnv(),
     });
 
     child.on('error', (error) => {
@@ -644,10 +783,13 @@ For detailed documentation, visit:
   },
 
   opencode: async () => {
+    consumeLlmOptionsFromArgs();
+
     const child = spawn('opencode', args, {
       stdio: 'inherit',
       cwd: process.cwd(),
       shell: false,
+      env: buildSpawnEnv(),
     });
 
     child.on('error', (error) => {
@@ -741,12 +883,14 @@ For detailed documentation, visit:
   },
 };
 
-const setRuntimeContext = (nextCommand, nextArgs = []) => {
+const setRuntimeContext = (nextCommand, nextArgs = [], options = {}) => {
   command = nextCommand;
   args = Array.isArray(nextArgs) ? [...nextArgs] : [];
+  runtimeOptions = { ...createDefaultRuntimeOptions(), ...(options.runtimeOptions || {}) };
 };
 
 const run = (argv = process.argv) => {
+  runtimeOptions = createDefaultRuntimeOptions();
   [, , command, ...args] = argv;
 
   if (!command || command === '--help' || command === '-h') {

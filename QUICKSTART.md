@@ -17,6 +17,8 @@ mkdir my-project && cd my-project
 
 You'll be prompted to choose between Claude, Codex, or OpenCode. Or pass
 `--assistant=claude`, `--assistant=codex`, or `--assistant=opencode` to skip the prompt.
+Need ZhipuAI's GLM? Add `--glm` / `--llm-provider=glm` (requires `ZHIPUAI_API_KEY`
+or `GLM_API_KEY`). Use `--anthropic` when you want to switch back to Claude.
 
 ```bash
 # Run this ONE command - it does everything!
@@ -52,10 +54,12 @@ npm install
 
 # Start chatting (prompts for your choice)
 npm run bmad
+# Force GLM for the orchestrator (requires ZHIPUAI_API_KEY or GLM_API_KEY)
+# npm run bmad -- --glm
 # OR use explicit commands:
-# npm run bmad:claude
-# npm run bmad:codex
-# npm run bmad:opencode
+# npm run bmad:claude    # respects --glm/--anthropic flags
+# npm run bmad:codex     # respects --glm/--anthropic flags
+# npm run bmad:opencode  # respects --glm/--anthropic flags
 
 ```
 
@@ -70,6 +74,7 @@ cd your-project
 bmad-invisible init
 bmad-invisible build
 
+# Add --glm / --llm-provider=glm to default to GLM
 bmad-invisible start
 
 ```
@@ -91,6 +96,24 @@ npm run build:mcp
 # Start conversation (prompts for choice)
 npm run bmad
 ```
+
+#### Choosing Your LLM Provider (GLM vs Anthropic)
+
+- Pass `--glm` (alias `--llm-provider=glm`) with any command to run on ZhipuAI's
+  GLM. Provide `ZHIPUAI_API_KEY` or `GLM_API_KEY` in your environment.
+- Override the model via `--llm-model=<model>` or `LLM_MODEL`.
+- Persist defaults by committing a `.env` file alongside your project:
+
+  ```bash
+  # .env
+  LLM_PROVIDER=glm
+  ZHIPUAI_API_KEY=sk-...
+  LLM_MODEL=glm-4-plus
+  ```
+
+- Swap back to Anthropic with `--anthropic` or `LLM_PROVIDER=claude`.
+- The launcher injects these overrides only into the spawned CLI so your shell
+  environment stays untouched.
 
 > **MCP Config Formats**
 >
@@ -128,6 +151,7 @@ npm run bmad                    # Start conversation (prompts for assistant choi
 npm run bmad:claude             # Start Claude directly
 npm run bmad:codex              # Start Codex directly
 npm run bmad:opencode           # Start OpenCode directly
+# Append -- --glm (or -- --anthropic) to any npm script to swap providers
 
 npx bmad-invisible test         # Run tests
 npx bmad-invisible validate     # Validate config
