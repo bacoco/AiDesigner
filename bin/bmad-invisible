@@ -32,7 +32,7 @@ Usage:
 
 Commands:
 
-  start                🚀 ONE-COMMAND SETUP: init + install + launch chat (Codex default)
+  start                🚀 ONE-COMMAND SETUP: init + install + launch chat (Claude default)
   init                 Initialize BMAD-invisible in current project
   codex                Start conversational interface (requires Codex CLI)
   chat                 Start conversational interface with Claude CLI (legacy)
@@ -61,7 +61,7 @@ For more information: https://github.com/bacoco/BMAD-invisible
 };
 
 const ASSISTANT_CHOICES = ['codex', 'claude', 'opencode'];
-const DEFAULT_ASSISTANT = 'codex';
+const DEFAULT_ASSISTANT = 'claude';
 
 const formatAssistantName = (value) =>
   value.charAt(0).toUpperCase() + value.slice(1);
@@ -136,7 +136,7 @@ const promptForAssistant = () =>
           return;
         }
 
-        console.log('⚠️ Unrecognized selection. Defaulting to Codex.');
+        console.log('⚠️ Unrecognized selection. Defaulting to Claude.');
         resolve(DEFAULT_ASSISTANT);
       },
     );
@@ -148,7 +148,7 @@ const determineAssistant = async (flagValue) => {
       return flagValue;
     }
 
-    console.log('⚠️ Unsupported assistant flag value. Defaulting to Codex.');
+    console.log('⚠️ Unsupported assistant flag value. Defaulting to Claude.');
     return DEFAULT_ASSISTANT;
   }
 
