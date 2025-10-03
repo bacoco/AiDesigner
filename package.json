@@ -41,17 +41,17 @@
     "bmad:opencode": "npx agilai opencode",
     "build": "node tools/cli.js build",
     "build:agents": "node tools/cli.js build --agents-only",
-    "build:mcp": "tsc -p mcp/tsconfig.json && tsc -p tsconfig.codex.json && cp -r lib dist/mcp/ && cp -r hooks dist/mcp/",
+    "build:mcp": "tsc -p mcp/tsconfig.json && tsc -p config/tsconfig.codex.json && cp -r lib dist/mcp/ && cp -r hooks dist/mcp/",
     "build:teams": "node tools/cli.js build --teams-only",
     "codex": "node bin/bmad-codex",
     "fix": "npm run format && npm run lint:fix",
     "flatten": "node tools/flattener/main.js",
-    "format": "prettier --write \"**/*.{js,cjs,mjs,json,md,yaml}\"",
-    "format:check": "prettier --check \"**/*.{js,cjs,mjs,json,md,yaml}\"",
+    "format": "prettier --config config/prettier.config.mjs --write \"**/*.{js,cjs,mjs,json,md,yaml}\"",
+    "format:check": "prettier --config config/prettier.config.mjs --check \"**/*.{js,cjs,mjs,json,md,yaml}\"",
     "postinstall": "node tools/postinstall-build-mcp.js",
     "install:bmad": "node tools/installer/bin/bmad.js install",
-    "lint": "eslint . --ext .js,.cjs,.mjs,.yaml --max-warnings=0",
-    "lint:fix": "eslint . --ext .js,.cjs,.mjs,.yaml --fix",
+    "lint": "eslint --config config/eslint.config.mjs . --ext .js,.cjs,.mjs,.yaml --max-warnings=0",
+    "lint:fix": "eslint --config config/eslint.config.mjs . --ext .js,.cjs,.mjs,.yaml --fix",
     "list:agents": "node tools/cli.js list:agents",
     "mcp": "node dist/mcp/mcp/server.js",
     "mcp:add": "node tools/cli.js mcp add",
@@ -79,7 +79,7 @@
     "release:patch": "gh workflow run \"Manual Release\" -f version_bump=patch",
     "release:watch": "gh run watch",
     "setup:hooks": "chmod +x tools/setup-hooks.sh && ./tools/setup-hooks.sh",
-    "test": "jest --runInBand",
+    "test": "jest --config config/jest.config.cjs --runInBand",
     "validate": "node tools/cli.js validate",
     "version:all": "node tools/bump-all-versions.js",
     "version:all:major": "node tools/bump-all-versions.js major",
@@ -97,15 +97,15 @@
   },
   "lint-staged": {
     "**/*.{js,cjs,mjs}": [
-      "eslint --fix --max-warnings=0 --no-warn-ignored",
-      "prettier --write"
+      "eslint --config config/eslint.config.mjs --fix --max-warnings=0 --no-warn-ignored",
+      "prettier --config config/prettier.config.mjs --write"
     ],
     "**/*.yaml": [
-      "eslint --fix",
-      "prettier --write"
+      "eslint --config config/eslint.config.mjs --fix",
+      "prettier --config config/prettier.config.mjs --write"
     ],
     "**/*.{json,md}": [
-      "prettier --write"
+      "prettier --config config/prettier.config.mjs --write"
     ]
   },
   "dependencies": {

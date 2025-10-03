@@ -12,7 +12,7 @@ describe('postinstall-build-mcp script', () => {
     return spawnSync(process.execPath, [postinstallScript, ...args], {
       cwd: rootDir,
       env: { ...process.env },
-      encoding: 'utf-8',
+      encoding: 'utf8',
     });
   };
 
@@ -104,18 +104,14 @@ describe('postinstall-build-mcp script', () => {
 
       try {
         // Run with modified NODE_PATH to hide TypeScript
-        const result = spawnSync(
-          process.execPath,
-          [postinstallScript],
-          {
-            cwd: rootDir,
-            env: {
-              ...process.env,
-              NODE_PATH: '/nonexistent', // Force TypeScript lookup to fail
-            },
-            encoding: 'utf-8',
+        const result = spawnSync(process.execPath, [postinstallScript], {
+          cwd: rootDir,
+          env: {
+            ...process.env,
+            NODE_PATH: '/nonexistent', // Force TypeScript lookup to fail
           },
-        );
+          encoding: 'utf8',
+        });
 
         expect(result.status).toBe(0);
         expect(result.stdout).toContain('TypeScript is not installed');
@@ -136,7 +132,7 @@ describe('postinstall-build-mcp script', () => {
       // In practice, TypeScript should compile successfully, but we verify
       // that the script is designed to handle failures gracefully
 
-      const scriptContent = fs.readFileSync(postinstallScript, 'utf-8');
+      const scriptContent = fs.readFileSync(postinstallScript, 'utf8');
 
       // Verify the script has warning messages instead of throwing errors
       expect(scriptContent).toContain('console.warn');
@@ -187,7 +183,7 @@ describe('postinstall-build-mcp script', () => {
     });
 
     test('handles missing source directories gracefully', () => {
-      const scriptContent = fs.readFileSync(postinstallScript, 'utf-8');
+      const scriptContent = fs.readFileSync(postinstallScript, 'utf8');
 
       // Verify the script checks for directory existence
       expect(scriptContent).toContain('existsSync(source)');
@@ -197,7 +193,7 @@ describe('postinstall-build-mcp script', () => {
 
   describe('force flag', () => {
     test('recognizes --force flag in process arguments', () => {
-      const scriptContent = fs.readFileSync(postinstallScript, 'utf-8');
+      const scriptContent = fs.readFileSync(postinstallScript, 'utf8');
 
       // Verify --force flag is checked
       expect(scriptContent).toContain('--force');

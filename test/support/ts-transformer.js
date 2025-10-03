@@ -1,5 +1,5 @@
 const crypto = require('node:crypto');
-// eslint-disable-next-line n/no-unpublished-require -- transformer runs in tests and depends on dev tooling
+
 const ts = require('typescript');
 
 const compilerOptions = {

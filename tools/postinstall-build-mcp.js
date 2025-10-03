@@ -44,9 +44,10 @@ const tscBin = findTscBinary();
 let hadCompilationErrors = false;
 
 if (tscBin) {
-  hadCompilationErrors = !runTsc(tscBin, path.join(rootDir, 'mcp', 'tsconfig.json')) || hadCompilationErrors;
   hadCompilationErrors =
-    !runTsc(tscBin, path.join(rootDir, 'tsconfig.codex.json')) || hadCompilationErrors;
+    !runTsc(tscBin, path.join(rootDir, 'mcp', 'tsconfig.json')) || hadCompilationErrors;
+  hadCompilationErrors =
+    !runTsc(tscBin, path.join(rootDir, 'config', 'tsconfig.codex.json')) || hadCompilationErrors;
 
   if (hadCompilationErrors) {
     console.warn('\n⚠️  Some TypeScript compilation issues occurred during postinstall.');

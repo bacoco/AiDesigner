@@ -7,6 +7,8 @@ test/
 
 # Source files (TypeScript - we publish compiled dist/)
 src/
+lib/
+mcp/
 
 # Development tooling
 .github/
@@ -14,6 +16,7 @@ src/
 .vscode/
 .bmad-invisible/
 .claude/
+config/
 
 # Build tools (not needed at runtime)
 tools/
@@ -23,13 +26,9 @@ docs/development/
 docs/archive/
 docs/v6-migration/
 
-# Configuration files (dev only)
+# Configuration files (dev only - moved to config/)
 .prettierrc
 .prettierignore
-prettier.config.mjs
-eslint.config.mjs
-jest.config.cjs
-tsconfig.*.json
 .eslintrc*
 
 # Shell scripts
