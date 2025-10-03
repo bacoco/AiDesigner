@@ -911,13 +911,14 @@ npm run mcp:install git github aws-kb-retrieval slack
 
 ## 📚 Documentation
 
-- **[QUICKSTART.md](QUICKSTART.md)** - ⭐ Start here! Quick installation and first use
+- **[docs/guides/QUICKSTART.md](docs/guides/QUICKSTART.md)** - ⭐ Start here! Quick installation and first use
 - **[docs/mcp-management.md](docs/mcp-management.md)** - ⚡ Complete MCP integration guide
 - **[docs/mcp-examples.md](docs/mcp-examples.md)** - 🎯 Real-world MCP integration examples
-- **[USAGE.md](USAGE.md)** - Complete usage guide with examples
-- **[DUAL_LANE_ORCHESTRATION.md](docs/DUAL_LANE_ORCHESTRATION.md)** - 🆕 Intelligent routing system
-- **[IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md)** - Complete feature list
-- **[CLAUDE.md](CLAUDE.md)** - Guide for Claude Code development
+- **[docs/guides/USAGE.md](docs/guides/USAGE.md)** - Complete usage guide with examples
+- **[docs/DUAL_LANE_ORCHESTRATION.md](docs/DUAL_LANE_ORCHESTRATION.md)** - 🆕 Intelligent routing system
+- **[docs/IMPLEMENTATION_COMPLETE.md](docs/IMPLEMENTATION_COMPLETE.md)** - Complete feature list
+- **[docs/CLAUDE.md](docs/CLAUDE.md)** - Guide for Claude Code development
+- **[docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md)** - Contributing guidelines
 - **[BMAD-METHOD™](https://github.com/bmadcode/bmad-method)** - Core framework
 
 ## ✅ Current Status
@@ -1016,7 +1017,7 @@ Key areas for contribution:
 - Performance optimizations
 - Documentation improvements
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md) for guidelines.
 
 ## 🔗 Related Projects
 

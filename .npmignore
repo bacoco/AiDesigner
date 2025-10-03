@@ -1,0 +1,63 @@
+# Development files - exclude from npm package to reduce size
+
+# Tests
+test/
+*.test.js
+*.spec.js
+
+# Source files (TypeScript - we publish compiled dist/)
+src/
+
+# Development tooling
+.github/
+.husky/
+.vscode/
+.bmad-invisible/
+.claude/
+
+# Build tools (not needed at runtime)
+tools/
+
+# Development documentation
+docs/development/
+docs/archive/
+docs/v6-migration/
+
+# Configuration files (dev only)
+.prettierrc
+.prettierignore
+prettier.config.mjs
+eslint.config.mjs
+jest.config.cjs
+tsconfig.*.json
+.eslintrc*
+
+# Shell scripts
+*.sh
+import_bmad.sh
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Editor files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.*
+
+# Cache
+.cache/
+*.cache
+
+# Development configs
+codex-config.toml.example
