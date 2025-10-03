@@ -156,22 +156,16 @@ describe('bmad-invisible start assistant selection', () => {
   });
 });
 
-describe('bmad-invisible init dependency management', () => {
+describe('bmad-invisible init npm scripts', () => {
   let tempDir;
   let originalCwd;
   let originalIsTTY;
-  const packageVersion = require('../package.json').version;
-
-  const createPackageJson = (content) => {
-    const packagePath = path.join(tempDir, 'package.json');
-    fs.writeFileSync(packagePath, JSON.stringify(content, null, 2) + '\n');
-    return packagePath;
-  };
 
   beforeEach(() => {
     originalCwd = process.cwd();
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bmad-init-test-'));
     process.chdir(tempDir);
+
     originalIsTTY = process.stdout.isTTY;
     process.stdout.isTTY = false;
   });
@@ -182,43 +176,30 @@ describe('bmad-invisible init dependency management', () => {
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
-  test('adds the current package version as dependency when missing', async () => {
-    createPackageJson({
-      name: 'sample-app',
-      version: '0.0.0',
-      dependencies: {},
-      scripts: {},
-    });
+  const readPackageJson = () => {
+    const file = fs.readFileSync(path.join(tempDir, 'package.json'), 'utf8');
+    return JSON.parse(file);
+  };
 
+  test('seeds bmad:opencode script in new projects', async () => {
     await cli.commands.init();
 
-    const packagePath = path.join(tempDir, 'package.json');
-    const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-    expect(pkg.dependencies['bmad-invisible']).toBe(`^${packageVersion}`);
+    const packageJson = readPackageJson();
+    expect(packageJson.scripts['bmad:opencode']).toBe('bmad-invisible opencode');
   });
 
-  test('does not rewrite package.json when dependency already matches current version', async () => {
-    const desiredVersion = `^${packageVersion}`;
-    const packagePath = createPackageJson({
-      name: 'sample-app',
-      version: '0.0.0',
+  test('does not overwrite an existing bmad:opencode script', async () => {
+    const preexisting = {
+      name: 'fixture',
       scripts: {
-        bmad: 'bmad-invisible start',
-        codex: 'bmad-invisible codex',
-        'bmad:codex': 'bmad-invisible codex',
-        'bmad:claude': 'bmad-invisible chat',
-        'bmad:build': 'bmad-invisible build',
+        'bmad:opencode': 'custom-opencode',
       },
-      dependencies: {
-        'bmad-invisible': desiredVersion,
-      },
-    });
-
-    const originalContent = fs.readFileSync(packagePath, 'utf8');
+    };
+    fs.writeFileSync(path.join(tempDir, 'package.json'), JSON.stringify(preexisting, null, 2));
 
     await cli.commands.init();
 
-    const postInitContent = fs.readFileSync(packagePath, 'utf8');
-    expect(postInitContent).toBe(originalContent);
+    const packageJson = readPackageJson();
+    expect(packageJson.scripts['bmad:opencode']).toBe('custom-opencode');
   });
 });
