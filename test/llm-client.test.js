@@ -70,60 +70,56 @@ describe('LLMClient', () => {
     expect(anthropicSpy).not.toHaveBeenCalled();
   });
 
-  it('uses a configured GLM base URL when making requests', async () => {
+  it('uses the default GLM base URL when none is configured', async () => {
     process.env.ZHIPUAI_API_KEY = 'glm-key';
-    process.env.BMAD_GLM_BASE_URL = 'https://custom.example.com:9443/custom/api/';
+    const client = new LLMClient({ provider: 'glm' });
 
-    const responseListeners = {};
-    const mockResponse = {
-      statusCode: 200,
-      on: jest.fn((event, handler) => {
-        responseListeners[event] = handler;
-      }),
-    };
+    const makeRequestSpy = jest
+      .spyOn(client, 'makeRequest')
+      .mockResolvedValue({ choices: [{ message: { content: 'hello world' } }] });
 
-    https.request.mockImplementation((options, callback) => {
-      callback(mockResponse);
-
-      if (responseListeners.data) {
-        responseListeners.data(
-          JSON.stringify({
-            choices: [
-              {
-                message: {
-                  content: 'glm custom response',
-                },
-              },
-            ],
-          }),
-        );
-      }
-
-      if (responseListeners.end) {
-        responseListeners.end();
-      }
-
-      return {
-        on: jest.fn(),
-        write: jest.fn(),
-        end: jest.fn(),
-      };
+    const result = await client.chatGLM([{ role: 'user', content: 'Ping?' }], {
+      temperature: 0.2,
+      maxTokens: 32,
     });
+
+    expect(result).toBe('hello world');
+    expect(makeRequestSpy).toHaveBeenCalledWith(
+      'open.bigmodel.cn',
+      '/api/paas/v4/chat/completions',
+      'POST',
+      expect.objectContaining({ model: 'glm-4-plus' }),
+      expect.objectContaining({
+        Authorization: 'Bearer glm-key',
+        Accept: 'application/json',
+      }),
+      undefined,
+    );
+  });
+
+  it('honors configured GLM base URLs including custom paths and ports', async () => {
+    process.env.ZHIPUAI_API_KEY = 'glm-key';
+    process.env.BMAD_GLM_BASE_URL = 'https://example.com:7443/custom/base';
 
     const client = new LLMClient({ provider: 'glm' });
-    const result = await client.chatGLM([{ role: 'user', content: 'Hello GLM' }], {
-      temperature: 0.7,
-      maxTokens: 120,
+
+    const makeRequestSpy = jest
+      .spyOn(client, 'makeRequest')
+      .mockResolvedValue({ choices: [{ message: { content: 'custom base' } }] });
+
+    const result = await client.chatGLM([{ role: 'user', content: 'Ping?' }], {
+      temperature: 0.2,
+      maxTokens: 32,
     });
 
-    expect(result).toBe('glm custom response');
-    expect(https.request).toHaveBeenCalledWith(
-      expect.objectContaining({
-        hostname: 'custom.example.com',
-        port: '9443',
-        path: '/custom/api/chat/completions',
-      }),
-      expect.any(Function),
+    expect(result).toBe('custom base');
+    expect(makeRequestSpy).toHaveBeenCalledWith(
+      'example.com',
+      '/custom/base/api/paas/v4/chat/completions',
+      'POST',
+      expect.any(Object),
+      expect.objectContaining({ Authorization: 'Bearer glm-key' }),
+      7443,
     );
   });
 
@@ -305,5 +301,44 @@ describe('LLMClient', () => {
       }),
       expect.any(Function),
     );
+  });
+
+  it('automatically adds https:// scheme to GLM base URL without scheme', async () => {
+    process.env.ZHIPUAI_API_KEY = 'glm-key';
+    process.env.GLM_BASE_URL = 'example.com';
+
+    const client = new LLMClient({ provider: 'glm' });
+
+    const makeRequestSpy = jest
+      .spyOn(client, 'makeRequest')
+      .mockResolvedValue({ choices: [{ message: { content: 'response' } }] });
+
+    await client.chatGLM([{ role: 'user', content: 'Ping?' }], {
+      temperature: 0.2,
+      maxTokens: 32,
+    });
+
+    expect(makeRequestSpy).toHaveBeenCalledWith(
+      'example.com',
+      '/api/paas/v4/chat/completions',
+      'POST',
+      expect.any(Object),
+      expect.any(Object),
+      undefined,
+    );
+  });
+
+  it('throws descriptive error for invalid GLM base URL', async () => {
+    process.env.ZHIPUAI_API_KEY = 'glm-key';
+    process.env.BMAD_GLM_BASE_URL = 'ht!tp://invalid url with spaces';
+
+    const client = new LLMClient({ provider: 'glm' });
+
+    await expect(
+      client.chatGLM([{ role: 'user', content: 'Test' }], {
+        temperature: 0.2,
+        maxTokens: 32,
+      }),
+    ).rejects.toThrow(/Invalid GLM base URL/);
   });
 });
