@@ -8,6 +8,29 @@ const laneDecisionsQueue = [];
 
 const stopTimerStub = () => 0;
 
+function summarizeScaleSignals(scale = {}) {
+  const contributions = Array.isArray(scale.signals?.contributions)
+    ? scale.signals.contributions
+    : [];
+  const deductions = Array.isArray(scale.signals?.deductions) ? scale.signals.deductions : [];
+  const parts = [];
+
+  if (contributions.length > 0) {
+    parts.push(`Positive signals: ${contributions.map((entry) => entry.description).join(', ')}.`);
+  }
+
+  if (deductions.length > 0) {
+    parts.push(`Negative signals: ${deductions.map((entry) => entry.description).join(', ')}.`);
+  }
+
+  if (parts.length === 0) {
+    parts.push('Scale assessment derived without detailed signal breakdown.');
+  }
+
+  parts.push(`Result: level ${scale.level ?? 'unknown'} (score ${scale.score ?? 'n/a'}).`);
+  return parts.join(' ');
+}
+
 jest.mock('../dist/codex/lib-resolver.js', () => {
   const actual = jest.requireActual('../dist/codex/lib-resolver.js');
 
@@ -53,16 +76,29 @@ jest.mock('@modelcontextprotocol/sdk/server/index.js', () => {
 });
 
 jest.mock('../lib/lane-selector.js', () => {
-  const selectLaneWithLog = jest.fn(async () =>
-    laneDecisionsQueue.length > 0
-      ? laneDecisionsQueue.shift()
-      : {
-          lane: 'quick',
-          rationale: 'default',
-          confidence: 0.75,
-          scale: { level: 1, score: 2, signals: {} },
-        },
-  );
+  const selectLaneWithLog = jest.fn(async () => {
+    const baseDecision =
+      laneDecisionsQueue.length > 0
+        ? laneDecisionsQueue.shift()
+        : {
+            lane: 'quick',
+            rationale: 'default',
+            confidence: 0.75,
+            scale: { level: 1, score: 2, signals: {} },
+          };
+
+    const decision = { ...baseDecision };
+
+    if (decision.scale && decision.level === undefined) {
+      decision.level = decision.scale.level;
+    }
+
+    if (decision.scale && !decision.levelRationale) {
+      decision.levelRationale = summarizeScaleSignals(decision.scale);
+    }
+
+    return decision;
+  });
 
   return { selectLaneWithLog, __laneDecisionsQueue: laneDecisionsQueue };
 });
@@ -203,7 +239,7 @@ jest.mock('../lib/project-state.js', () => {
         async (lane, rationale, confidence, userMessage, options = {}) => {
           instance.state.currentLane = lane;
           instance.state.laneHistory = instance.state.laneHistory || [];
-          const { level, levelScore, levelSignals } = options || {};
+          const { level, levelScore, levelSignals, levelRationale } = options || {};
           const record = { lane, rationale, confidence, userMessage };
           if (level !== undefined) {
             record.level = level;
@@ -213,6 +249,9 @@ jest.mock('../lib/project-state.js', () => {
           }
           if (levelSignals !== undefined) {
             record.levelSignals = levelSignals;
+          }
+          if (levelRationale !== undefined) {
+            record.levelRationale = levelRationale;
           }
           instance.state.laneHistory.push(record);
         },
@@ -449,6 +488,8 @@ describe('runOrchestratorServer integration flows', () => {
     expect(payload.decision.scale).toEqual(
       expect.objectContaining({ level: 2, score: 6, signals: expect.any(Object) }),
     );
+    expect(payload.decision.level).toBe(2);
+    expect(payload.decision.levelRationale).toContain('Result: level 2');
     expect(quickLaneModule.__quickLaneMocks.execute).toHaveBeenCalledWith(
       'Ship login',
       expect.objectContaining({ previousPhase: 'analyst' }),
@@ -470,6 +511,7 @@ describe('runOrchestratorServer integration flows', () => {
           level: 2,
           levelScore: 6,
           levelSignals: expect.any(Object),
+          levelRationale: expect.stringContaining('Result: level 2'),
           userMessage: 'Ship login',
         }),
       ]),
@@ -484,6 +526,7 @@ describe('runOrchestratorServer integration flows', () => {
         level: 2,
         levelScore: 6,
         levelSignals: expect.any(Object),
+        levelRationale: expect.stringContaining('Result: level 2'),
       }),
     );
   });
