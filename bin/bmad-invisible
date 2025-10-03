@@ -19,6 +19,319 @@ let command;
 let args = [];
 const packageRoot = path.join(__dirname, '..');
 
+const CLAUDE_PROVIDER_ENV_KEYS = [
+  'CLAUDE_CLI_PROVIDER',
+  'CLAUDE_CLI_DEFAULT_PROVIDER',
+  'CLAUDE_DEFAULT_PROVIDER',
+  'CLAUDE_PROVIDER',
+  'CLAUDE_CODE_PROVIDER',
+];
+
+const parseEnvFile = (filePath) => {
+  const parsed = {};
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const lines = raw.split(/\r?\n/);
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue;
+    }
+
+    const equalsIndex = trimmed.indexOf('=');
+    if (equalsIndex === -1) {
+      continue;
+    }
+
+    let key = trimmed.slice(0, equalsIndex).trim();
+    if (key.startsWith('export ')) {
+      key = key.slice('export '.length).trim();
+    }
+
+    if (!key) {
+      continue;
+    }
+
+    let value = trimmed.slice(equalsIndex + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    // Validate that value doesn't contain newlines (would break .env format)
+    if (value.includes('\n') || value.includes('\r')) {
+      console.warn(`⚠️ Skipping invalid .env value for ${key}: contains newline characters`);
+      continue;
+    }
+
+    parsed[key] = value;
+  }
+
+  return parsed;
+};
+
+const readProjectEnv = (projectRoot) => {
+  const envPath = path.join(projectRoot, '.env');
+  if (!fs.existsSync(envPath)) {
+    return { values: {}, path: envPath };
+  }
+
+  try {
+    return { values: parseEnvFile(envPath), path: envPath };
+  } catch (error) {
+    console.warn(
+      `⚠️ Unable to parse ${envPath}: ${error.message || error}. Continuing without it.`,
+    );
+    return { values: {}, path: envPath };
+  }
+};
+
+const isInteractiveTerminal = () => Boolean(process.stdin.isTTY && process.stdout.isTTY);
+
+/**
+ * Parses provider from CLI arguments.
+ * Precedence: CLI args > process env vars > .env file > interactive prompts
+ */
+const parseProviderFromArgs = (cliArgs = []) => {
+  for (let index = 0; index < cliArgs.length; index += 1) {
+    const arg = cliArgs[index];
+
+    if (arg === '--provider' || arg.startsWith('--provider=')) {
+      const value = arg === '--provider' ? cliArgs[index + 1] : arg.split('=')[1];
+      if (value && typeof value === 'string' && value.trim()) {
+        return value.trim().toLowerCase();
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const determineClaudeProvider = (cliArgs = [], envFromFile = {}) => {
+  const fromArgs = parseProviderFromArgs(cliArgs);
+  if (fromArgs) {
+    return fromArgs;
+  }
+
+  for (const key of CLAUDE_PROVIDER_ENV_KEYS) {
+    const value = process.env[key] || envFromFile[key];
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim().toLowerCase();
+    }
+  }
+
+  return undefined;
+};
+
+const promptForInput = (question) =>
+  new Promise((resolve, reject) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    let cleanedUp = false;
+    const cleanup = () => {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      try {
+        rl.close();
+      } catch {
+        // Ignore cleanup errors
+      }
+    };
+
+    // Timeout after 5 minutes to prevent hanging
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Input prompt timed out after 5 minutes'));
+    }, 300000);
+
+    rl.on('error', (error) => {
+      clearTimeout(timeout);
+      cleanup();
+      reject(error);
+    });
+
+    rl.question(question, (answer) => {
+      clearTimeout(timeout);
+      cleanup();
+      resolve(answer);
+    });
+  });
+
+const promptForGlmCredentials = async ({ existingBaseUrl } = {}) => {
+  console.log('🔐 GLM provider selected. A Z.AI API token is required.');
+
+  let apiKey;
+  while (!apiKey) {
+    // eslint-disable-next-line no-await-in-loop
+    const input = await promptForInput('Enter your Z.AI GLM API token: ');
+    const trimmed = (input || '').trim();
+    if (trimmed) {
+      apiKey = trimmed;
+    } else {
+      console.log('⚠️ Token cannot be empty. Please provide a valid value.');
+    }
+  }
+
+  const baseUrlPrompt = existingBaseUrl
+    ? `Enter a custom GLM base URL (leave blank to keep ${existingBaseUrl}): `
+    : 'Enter a custom GLM base URL (leave blank for the CLI default): ';
+  const baseUrlInput = await promptForInput(baseUrlPrompt);
+  const baseUrl = (baseUrlInput || '').trim();
+
+  return { apiKey, baseUrl: baseUrl || undefined };
+};
+
+const promptToPersistGlmEnv = async () => {
+  if (!isInteractiveTerminal()) {
+    return false;
+  }
+
+  try {
+    const answer = await promptForInput(
+      'Would you like to save these GLM credentials to .env for future runs? (y/N): ',
+    );
+    const normalized = (answer || '').trim().toLowerCase();
+    return normalized === 'y' || normalized === 'yes';
+  } catch (error) {
+    console.warn(
+      `⚠️ Skipping persistence prompt due to an input error: ${error.message || error}`,
+    );
+    return false;
+  }
+};
+
+const persistEnvValues = (envPath, updates) => {
+  const normalizedUpdates = Object.entries(updates).reduce((acc, [key, value]) => {
+    if (typeof value === 'string' && value) {
+      // Validate no newlines in values
+      if (value.includes('\n') || value.includes('\r')) {
+        console.warn(`⚠️ Skipping ${key}: value contains newline characters`);
+        return acc;
+      }
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
+
+  const updateKeys = Object.keys(normalizedUpdates);
+  if (updateKeys.length === 0) {
+    return;
+  }
+
+  let lines = [];
+  if (fs.existsSync(envPath)) {
+    lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+  }
+
+  const seenKeys = new Set();
+  const updatedLines = lines.map((line) => {
+    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/);
+    if (!match) {
+      return line;
+    }
+
+    const key = match[1];
+    if (Object.prototype.hasOwnProperty.call(normalizedUpdates, key)) {
+      seenKeys.add(key);
+      return `${key}=${normalizedUpdates[key]}`;
+    }
+
+    return line;
+  });
+
+  for (const key of updateKeys) {
+    if (!seenKeys.has(key)) {
+      updatedLines.push(`${key}=${normalizedUpdates[key]}`);
+    }
+  }
+
+  const finalContent = updatedLines.join('\n') + '\n';
+
+  fs.writeFileSync(envPath, finalContent);
+  console.log('⚠️  WARNING: Keep this file secure and never commit it to version control.');
+};
+
+const ensureClaudeEnvironment = async ({ projectRoot, userArgs = [] }) => {
+  const { values: fileEnv, path: envPath } = readProjectEnv(projectRoot);
+
+  const anthropicToken = process.env.ANTHROPIC_AUTH_TOKEN || fileEnv.ANTHROPIC_AUTH_TOKEN;
+  if (anthropicToken && !process.env.ANTHROPIC_AUTH_TOKEN) {
+    process.env.ANTHROPIC_AUTH_TOKEN = anthropicToken;
+  }
+
+  const glmKeyFromProcess = process.env.GLM_API_KEY;
+  const glmKeyFromFile = fileEnv.GLM_API_KEY;
+  const glmBaseFromProcess = process.env.GLM_BASE_URL;
+  const glmBaseFromFile = fileEnv.GLM_BASE_URL;
+
+  if (!glmKeyFromProcess && glmKeyFromFile) {
+    process.env.GLM_API_KEY = glmKeyFromFile;
+  }
+
+  if (!glmBaseFromProcess && glmBaseFromFile) {
+    process.env.GLM_BASE_URL = glmBaseFromFile;
+  }
+
+  const provider = determineClaudeProvider(userArgs, fileEnv);
+  if (provider !== 'glm') {
+    return;
+  }
+
+  const effectiveBaseUrl = process.env.GLM_BASE_URL || glmBaseFromFile;
+
+  if (process.env.GLM_API_KEY) {
+    return;
+  }
+
+  if (!isInteractiveTerminal()) {
+    console.error('❌ GLM provider selected but GLM_API_KEY is not set.');
+    console.error(
+      '   Provide GLM_API_KEY (and optional GLM_BASE_URL) via environment variables or a project .env file before running in non-interactive mode.',
+    );
+    process.exit(1);
+  }
+
+  let credentials;
+  try {
+    credentials = await promptForGlmCredentials({ existingBaseUrl: effectiveBaseUrl });
+  } catch (error) {
+    console.error('❌ Failed to read GLM credentials:', error.message || error);
+    process.exit(1);
+  }
+
+  process.env.GLM_API_KEY = credentials.apiKey;
+  if (credentials.baseUrl) {
+    process.env.GLM_BASE_URL = credentials.baseUrl;
+  } else if (effectiveBaseUrl) {
+    process.env.GLM_BASE_URL = effectiveBaseUrl;
+  }
+
+  const shouldPersist = await promptToPersistGlmEnv();
+  if (!shouldPersist) {
+    console.log('ℹ️ Skipped saving GLM credentials to .env.');
+    return;
+  }
+
+  const updates = { GLM_API_KEY: credentials.apiKey };
+  const baseToPersist = credentials.baseUrl || effectiveBaseUrl;
+  if (baseToPersist) {
+    updates.GLM_BASE_URL = baseToPersist;
+  }
+
+  try {
+    persistEnvValues(envPath, updates);
+    const relativeEnvPath = path.relative(process.cwd(), envPath) || '.env';
+    console.log(`💾 Saved GLM credentials to ${relativeEnvPath}`);
+  } catch (error) {
+    console.warn(`⚠️ Unable to persist GLM credentials: ${error.message || error}`);
+  }
+};
+
 const createDefaultRuntimeOptions = () => ({
   llmProvider: undefined,
   llmModel: undefined,
@@ -915,6 +1228,8 @@ For detailed documentation, visit:
       console.error('   Or initialize with: npx bmad-invisible init && npm install');
       process.exit(1);
     }
+
+    await ensureClaudeEnvironment({ projectRoot: process.cwd(), userArgs: args });
 
     const child = spawn('node', [chatScript, ...args], {
       stdio: 'inherit',
