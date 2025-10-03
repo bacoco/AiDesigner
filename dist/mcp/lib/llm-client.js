@@ -102,8 +102,7 @@ class LLMClient {
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
       try {
         switch (this.provider) {
-          case 'claude':
-          case 'glm': {
+          case 'claude': {
             return await this.chatAnthropic(messages, {
               systemPrompt,
               temperature,
@@ -148,6 +147,14 @@ class LLMClient {
     throw new Error(`Failed after ${this.maxRetries} attempts: ${lastError.message}`);
   }
 
+  /**
+   * Send messages to Anthropic's Claude API
+   * Messages are formatted with content blocks according to the Claude Messages API specification
+   * @see https://docs.anthropic.com/en/api/messages
+   * @param {Array} messages - Array of {role: 'user'|'assistant', content: string}
+   * @param {Object} options - Configuration options (systemPrompt, temperature, maxTokens)
+   * @returns {Promise<string>} - Response text from Claude
+   */
   async chatAnthropic(messages, options) {
     const payload = {
       model: this.model,
@@ -155,7 +162,12 @@ class LLMClient {
       temperature: options.temperature,
       messages: messages.map((msg) => ({
         role: msg.role,
-        content: msg.content,
+        content: [
+          {
+            type: 'text',
+            text: msg.content,
+          },
+        ],
       })),
     };
 
@@ -278,15 +290,29 @@ class LLMClient {
       max_tokens: options.maxTokens,
     };
 
+    const baseUrl =
+      process.env.BMAD_GLM_BASE_URL ||
+      process.env.GLM_BASE_URL ||
+      process.env.ANTHROPIC_BASE_URL ||
+      'https://open.bigmodel.cn';
+
+    const normalizedBaseUrl = /^https?:\/\//i.test(baseUrl) ? baseUrl : `https://${baseUrl}`;
+
+    const endpointUrl = new URL(
+      'api/paas/v4/chat/completions',
+      normalizedBaseUrl.endsWith('/') ? normalizedBaseUrl : `${normalizedBaseUrl}/`,
+    );
+
     const response = await this.makeRequest(
-      'open.bigmodel.cn',
-      '/api/paas/v4/chat/completions',
+      endpointUrl.hostname,
+      `${endpointUrl.pathname}${endpointUrl.search}`,
       'POST',
       payload,
       {
         Authorization: `Bearer ${this.apiKey}`,
         Accept: 'application/json',
       },
+      endpointUrl.port || undefined,
     );
 
     const choice = response?.choices?.[0];
@@ -363,14 +389,6 @@ class LLMClient {
   }
 
   getAnthropicHeaders() {
-    if (this.provider === 'glm') {
-      const authToken = process.env.ANTHROPIC_AUTH_TOKEN || process.env.GLM_API_KEY || this.apiKey;
-      return {
-        Authorization: `Bearer ${authToken}`,
-        'anthropic-version': '2023-06-01',
-      };
-    }
-
     return {
       'x-api-key': this.apiKey,
       'anthropic-version': '2023-06-01',

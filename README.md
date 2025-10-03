@@ -473,6 +473,10 @@ Set `BMAD_ASSISTANT_PROVIDER=glm` to enable GLM routing. The system will automat
 
 **Note:** At least one of `*_BASE_URL` or `*_API_KEY` must be set when using GLM mode.
 
+When no GLM base URL variables are provided, requests default to `https://open.bigmodel.cn/api/paas/v4/chat/completions`. Custom
+base URLs may include schemes, ports, and nested paths (e.g., `https://example.com:7443/custom/base`), and the client will append
+the `/api/paas/v4/chat/completions` endpoint automatically.
+
 #### Usage Example
 
 ```bash
