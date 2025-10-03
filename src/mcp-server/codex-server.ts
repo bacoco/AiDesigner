@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { LLMClient } from "../../lib/llm-client.js";
 import {
   LaneKey,
   OrchestratorServerOptions,
@@ -8,6 +7,13 @@ import {
 import { OperationPolicyEnforcer } from "./operation-policy.js";
 import { loadModelRoutingConfig } from "./codex-config.js";
 import { StructuredLogger, createStructuredLogger } from "./observability.js";
+import { requireLibModule } from "./lib-resolver.js";
+
+type LLMClientModule = typeof import("../../lib/llm-client.js");
+type LLMClientCtor = LLMClientModule["LLMClient"];
+type LLMClientInstance = InstanceType<LLMClientCtor>;
+
+const { LLMClient } = requireLibModule<LLMClientModule>("llm-client.js");
 
 interface ModelRoute {
   provider: string;
@@ -143,7 +149,7 @@ export class CodexClient {
   private readonly approvalMode: boolean;
   private readonly autoApprove: boolean;
   private readonly approvedOperations: Set<string>;
-  private readonly llmCache: Map<string, LLMClient> = new Map();
+  private readonly llmCache: Map<string, LLMClientInstance> = new Map();
   private readonly policyEnforcer?: OperationPolicyEnforcer;
   private readonly logger: StructuredLogger;
 
@@ -198,7 +204,7 @@ export class CodexClient {
     return new CodexClient(router, approvalMode, autoApprove, approvedOps, policyEnforcer);
   }
 
-  createLLMClient(lane?: LaneKey): LLMClient {
+  createLLMClient(lane?: LaneKey): LLMClientInstance {
     const key = (lane || "default").toLowerCase();
 
     if (!this.llmCache.has(key)) {

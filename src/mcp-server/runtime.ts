@@ -4,7 +4,6 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import * as path from "node:path";
 import { performance } from "node:perf_hooks";
 const repositoryRoot = path.resolve(__dirname, "../../../..");
 const libDirectory = path.join(repositoryRoot, "lib");
@@ -13,12 +12,24 @@ const { executeAutoCommand } = require(
   path.join(libDirectory, "auto-commands.js")
 ) as typeof import("../../lib/auto-commands.js");
 import { createStructuredLogger, StructuredLogger } from "./observability.js";
+import {
+  importFromPackageRoot,
+  importLibModule,
+  requireLibModule,
+} from "./lib-resolver.js";
+
+type AutoCommandsModule = typeof import("../../lib/auto-commands.js");
+const { executeAutoCommand } = requireLibModule<AutoCommandsModule>(
+  "auto-commands.js"
+);
 
 type TargetedSection = {
   title: string;
   body: string;
   priority?: string | number;
 };
+
+type LLMClientModule = typeof import("../../lib/llm-client.js");
 
 export interface AgentTriggerParseError {
   ok: false;
@@ -349,7 +360,7 @@ const STORY_CONTEXT_VALIDATION_CHECKPOINT = "story_context_validation";
 const REVIEW_CHECKPOINT_NAMES = Object.freeze(Object.keys(REVIEW_CHECKPOINTS));
 
 async function getDefaultLLMClientCtor(): Promise<any> {
-  const mod = await import("../../lib/llm-client.js");
+  const mod = await importLibModule<LLMClientModule>("llm-client.js");
   return mod.LLMClient;
 }
 
