@@ -150,8 +150,9 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 ### Prerequisites Before Migration
 
 - [ ] V6 stability confirmed (beta/stable release)
-
 - [ ] Migration path tested for custom features
+- [x] Codex CLI compatibility verified
+- [ ] Dual-lane orchestration adaptable to v6 workflows
 - [x] Invisible orchestrator compatible with v6 module system (prototype documented in `docs/v6-module-bridge.md`)
 - [x] MCP server integration maintained
 

@@ -14,8 +14,8 @@ export interface EnsureConfigResult {
 
 type TomlTable = Record<string, any>;
 
-const DEFAULT_MODEL = 'anthropic.claude-3.7-sonnet';
-const DEFAULT_MANUAL_APPROVAL = true;
+const DEFAULT_MODEL = 'GPT-5-Codex';
+const DEFAULT_MANUAL_APPROVAL = false;
 const SERVER_NAME = 'bmad-mcp';
 
 const DEFAULT_SERVER = {
@@ -26,7 +26,7 @@ const DEFAULT_SERVER = {
   command: 'npx',
   args: ['bmad-invisible', 'mcp'],
   autoStart: true,
-  autoApprove: false,
+  autoApprove: true,
 };
 
 /**
