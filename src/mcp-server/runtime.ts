@@ -199,6 +199,8 @@ const REVIEW_CHECKPOINTS: Record<string, ReviewCheckpointConfig> = {
   },
 };
 
+const STORY_CONTEXT_VALIDATION_CHECKPOINT = "story_context_validation";
+
 const REVIEW_CHECKPOINT_NAMES = Object.freeze(Object.keys(REVIEW_CHECKPOINTS));
 
 async function getDefaultLLMClientCtor(): Promise<any> {
@@ -239,6 +241,7 @@ export async function runOrchestratorServer(
   let LaneSelector: any;
   let phaseTransitionHooks: any;
   let contextPreservation: any;
+  let storyContextValidator: any;
 
   let projectState: any;
   let bmadBridge: any;
@@ -247,6 +250,10 @@ export async function runOrchestratorServer(
   let quickLane: any;
   const laneDecisions: LaneDecisionRecord[] = [];
   let developerContextInjectorRegistered = false;
+  const developerLaneConfig: { validateStoryContext: boolean; validationLane: LaneKey } = {
+    validateStoryContext: false,
+    validationLane: "review",
+  };
 
   async function loadDependencies() {
     const libPath = path.join(__dirname, "..", "..", "lib");
@@ -275,6 +282,10 @@ export async function runOrchestratorServer(
     }
     if (!contextPreservation) {
       contextPreservation = await import(path.join(hooksPath, "context-preservation.js"));
+    }
+    if (!storyContextValidator) {
+      const module = await import(path.join(libPath, "story-context-validator.js"));
+      storyContextValidator = module?.default ?? module;
     }
   }
 
@@ -377,6 +388,63 @@ export async function runOrchestratorServer(
     });
   }
 
+  async function runStoryContextValidationHook({
+    notes,
+    trigger,
+  }: { notes?: string; trigger?: string } = {}) {
+    if (!storyContextValidator?.runStoryContextValidation) {
+      await loadDependencies();
+    }
+
+    const validationModule = storyContextValidator?.default
+      ? storyContextValidator.default
+      : storyContextValidator;
+
+    if (!validationModule?.runStoryContextValidation) {
+      throw new Error("Story context validator not available");
+    }
+
+    const lane = developerLaneConfig.validationLane ?? ("review" as LaneKey);
+
+    return validationModule.runStoryContextValidation({
+      projectState,
+      createLLMClient,
+      BMADBridge,
+      lane,
+      notes,
+      trigger,
+      log,
+    });
+  }
+
+  async function ensureStoryContextReadyForDevelopment({
+    notes,
+    trigger,
+  }: { notes?: string; trigger?: string } = {}) {
+    if (!storyContextValidator) {
+      await loadDependencies();
+    }
+
+    const validationModule = storyContextValidator?.default
+      ? storyContextValidator.default
+      : storyContextValidator;
+
+    if (validationModule?.ensureStoryContextReadyForDevelopment) {
+      const lane = developerLaneConfig.validationLane ?? ("review" as LaneKey);
+      return validationModule.ensureStoryContextReadyForDevelopment({
+        projectState,
+        createLLMClient,
+        BMADBridge,
+        lane,
+        notes,
+        trigger,
+        log,
+      });
+    }
+
+    return runStoryContextValidationHook({ notes, trigger });
+  }
+
   const server = new Server(
     {
       name: serverName,
@@ -468,6 +536,39 @@ export async function runOrchestratorServer(
             },
           },
           required: ["toPhase"],
+        },
+      },
+      {
+        name: "configure_developer_lane",
+        description:
+          "Configure developer lane behavior including story context validation toggles",
+        inputSchema: {
+          type: "object",
+          properties: {
+            validateStoryContext: {
+              type: "boolean",
+              description:
+                "Enable or disable story context validation before developer transitions",
+            },
+            validationLane: {
+              type: "string",
+              description: "Lane key to use for story context validation reviewer bridge",
+            },
+          },
+        },
+      },
+      {
+        name: "run_story_context_validation",
+        description:
+          "Re-run story context enrichment in isolation and record the audit checkpoint",
+        inputSchema: {
+          type: "object",
+          properties: {
+            notes: {
+              type: "string",
+              description: "Additional notes to attach to the validation record",
+            },
+          },
         },
       },
       {
@@ -753,6 +854,20 @@ export async function runOrchestratorServer(
             userValidated?: boolean;
           };
 
+          let storyContextValidationResult: any = null;
+          if (params.toPhase === "dev" && developerLaneConfig.validateStoryContext) {
+            await ensureOperationAllowed("run_story_context_validation", {
+              checkpoint: STORY_CONTEXT_VALIDATION_CHECKPOINT,
+              mode: "pre_transition",
+              lane: developerLaneConfig.validationLane,
+            });
+
+            storyContextValidationResult = await ensureStoryContextReadyForDevelopment({
+              notes: params.context?.validationNotes,
+              trigger: "phase_transition",
+            });
+          }
+
           const transitionResult = await phaseTransitionHooks.handleTransition(
             projectState,
             params.toPhase,
@@ -760,11 +875,78 @@ export async function runOrchestratorServer(
             params.userValidated || false
           );
 
+          if (transitionResult && storyContextValidationResult?.record) {
+            transitionResult.storyContextValidation = storyContextValidationResult.record;
+          }
+
           return {
             content: [
               {
                 type: "text",
                 text: JSON.stringify(transitionResult, null, 2),
+              },
+            ],
+          };
+        }
+
+        case "configure_developer_lane": {
+          const params = args as { validateStoryContext?: boolean; validationLane?: string };
+
+          await ensureOperationAllowed("configure_developer_lane", params || {});
+
+          if (typeof params.validateStoryContext === "boolean") {
+            developerLaneConfig.validateStoryContext = params.validateStoryContext;
+          }
+
+          if (params.validationLane) {
+            developerLaneConfig.validationLane = params.validationLane as LaneKey;
+          }
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    validateStoryContext: developerLaneConfig.validateStoryContext,
+                    validationLane: developerLaneConfig.validationLane,
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
+          };
+        }
+
+        case "run_story_context_validation": {
+          const params = args as { notes?: string };
+
+          await ensureOperationAllowed("run_story_context_validation", {
+            checkpoint: STORY_CONTEXT_VALIDATION_CHECKPOINT,
+            lane: developerLaneConfig.validationLane,
+            mode: "manual",
+          });
+
+          const result = await runStoryContextValidationHook({
+            notes: params.notes,
+            trigger: "manual_tool",
+          });
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    checkpoint: result.checkpoint,
+                    status: result.status,
+                    issues: result.issues,
+                    record: result.record,
+                  },
+                  null,
+                  2
+                ),
               },
             ],
           };

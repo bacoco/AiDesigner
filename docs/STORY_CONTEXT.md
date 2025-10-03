@@ -46,3 +46,24 @@ Additional enrichers can be registered to append design docs, recent decisions, 
 3. Run the invisible workflow as normal; when the orchestrator reaches development, the enriched packet is automatically included for the `dev` and `qa` agents.
 
 This approach keeps the workflow silent for end users while achieving parity with V6’s story preparedness philosophy.
+
+## Validation & Audit Trail
+
+- `story_context_validation` is a new checkpoint that replays the registered enrichers inside a disposable reviewer lane before development begins.
+- Enable the gate with the MCP tool:
+  ```json
+  {
+    "name": "configure_developer_lane",
+    "arguments": { "validateStoryContext": true }
+  }
+  ```
+- When enabled, transitioning into the developer phase automatically calls `run_story_context_validation`. Any missing persona fragments, acceptance criteria, or definition of done entries will block the transition and capture a record in `.bmad-invisible/reviews.json` via `ProjectState.recordReviewOutcome()`.
+- Operators can also run the checkpoint manually to inspect the enriched packet:
+  ```json
+  {
+    "name": "run_story_context_validation",
+    "arguments": { "notes": "Spot check before coding" }
+  }
+  ```
+
+This mirrors the optional V6 `validate-story-context` command while preserving the invisible workflow.
