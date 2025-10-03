@@ -13,6 +13,88 @@ type TargetedSection = {
   priority?: string | number;
 };
 
+export interface AgentTriggerParseError {
+  ok: false;
+  errorType: "agent_parse_error";
+  agentId: string;
+  message: string;
+  rawSnippet: string;
+  rawResponse: unknown;
+  guidance: string;
+  cause: {
+    name?: string;
+    message: string;
+    stack?: string;
+  };
+  contextMetadata?: {
+    provided: boolean;
+    keys?: string[];
+  };
+}
+
+function buildParseError({
+  agentId,
+  rawResponse,
+  error,
+  context,
+}: {
+  agentId: string;
+  rawResponse: unknown;
+  error: unknown;
+  context: any;
+}): AgentTriggerParseError {
+  let stringified = "";
+  if (typeof rawResponse === "string") {
+    stringified = rawResponse;
+  } else if (rawResponse != null) {
+    try {
+      stringified = JSON.stringify(rawResponse);
+    } catch {
+      stringified = "[unserializable payload]";
+    }
+  }
+
+  const snippet = stringified.slice(0, 200);
+  const cause =
+    error instanceof Error
+      ? {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        }
+      : {
+          message: String(error),
+        };
+
+  const contextMetadata = (() => {
+    if (!context || typeof context !== "object") {
+      return { provided: Boolean(context) };
+    }
+
+    try {
+      return {
+        provided: true,
+        keys: Object.keys(context).slice(0, 12),
+      };
+    } catch {
+      return { provided: true };
+    }
+  })();
+
+  return {
+    ok: false,
+    errorType: "agent_parse_error",
+    agentId,
+    message: `Failed to parse response from agent ${agentId}`,
+    rawSnippet: snippet,
+    rawResponse,
+    guidance:
+      "Ensure the agent returns valid JSON matching the documented contract before attempting a phase transition.",
+    cause,
+    contextMetadata,
+  };
+}
+
 function stringifyValue(value: unknown): string {
   if (value == null) {
     return "";
@@ -387,15 +469,21 @@ export async function runOrchestratorServer(
           try {
             return JSON.parse(rawResponse);
           } catch (error: unknown) {
+            const structuredError = buildParseError({
+              agentId,
+              rawResponse,
+              error,
+              context,
+            });
+
+            const errorDetails =
+              structuredError.cause?.stack || structuredError.cause?.message;
             log(
               `[MCP] Failed to parse response from agent ${agentId}: ${
-                error instanceof Error ? error.message : error
+                errorDetails ?? "Unknown error"
               }`
             );
-            return {
-              error: `Failed to parse response from agent ${agentId}`,
-              rawResponse,
-            };
+            return structuredError;
           }
         }
 
@@ -403,10 +491,16 @@ export async function runOrchestratorServer(
           return rawResponse;
         }
 
-        return {
-          error: `Unsupported response type from agent ${agentId}`,
+        const structuredError = buildParseError({
+          agentId,
           rawResponse,
-        };
+          error: new Error("Unsupported response type"),
+          context,
+        });
+        log(
+          `[MCP] Failed to parse response from agent ${agentId}: Unsupported response type (${typeof rawResponse})`
+        );
+        return structuredError;
       },
       triggerCommand: async (command: string, context: any) => {
         await ensureOperationAllowed("execute_auto_command", { command });
@@ -856,6 +950,24 @@ export async function runOrchestratorServer(
             params.userMessage,
             projectState.state.currentPhase
           );
+
+          if (result && typeof result === "object" && "error" in result) {
+            const errorPayload = {
+              detected_phase: projectState.state.currentPhase,
+              confidence: 0,
+              shouldTransition: false,
+              error: result.error,
+            } as const;
+
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(errorPayload, null, 2),
+                },
+              ],
+            };
+          }
 
           const detection =
             result || ({
