@@ -84,7 +84,16 @@ function findBinaryPath(binaryName) {
   if (lookup.status === 0) {
     const output = lookup.stdout.toString().split(/\r?\n/).find(Boolean);
     if (output) {
-      return output.trim();
+      const binaryPath = output.trim();
+      // Validate that the binary is actually executable by running --version
+      const validation = spawnSync(binaryPath, ['--version'], {
+        stdio: 'pipe',
+        timeout: 5000, // 5 second timeout for validation
+      });
+      // If --version succeeds (exit code 0), the binary is executable
+      if (validation.status === 0) {
+        return binaryPath;
+      }
     }
   }
   return null;
@@ -132,10 +141,17 @@ function printManualInstructions(friendlyName, manualSteps = []) {
 
 function nonInteractiveMode() {
   return Boolean(
+    // Detect common CI environment variables
     process.env.CI === 'true' ||
       process.env.CI === '1' ||
+      process.env.CONTINUOUS_INTEGRATION === 'true' ||
+      process.env.GITHUB_ACTIONS === 'true' ||
+      process.env.GITLAB_CI === 'true' ||
+      process.env.CIRCLECI === 'true' ||
+      process.env.TRAVIS === 'true' ||
+      process.env.BUILD_NUMBER || // Jenkins
       !process.stdin.isTTY ||
-      !process.stdout.isTTY
+      !process.stdout.isTTY,
   );
 }
 
@@ -189,6 +205,17 @@ function runShellCommand(command, cwd) {
 }
 
 async function ensureCliBinary({ rootDir, binaryName, friendlyName, installGuide = {} }) {
+  // Validate required parameters
+  if (!rootDir || typeof rootDir !== 'string') {
+    throw new Error('ensureCliBinary: rootDir parameter is required and must be a string');
+  }
+  if (!binaryName || typeof binaryName !== 'string') {
+    throw new Error('ensureCliBinary: binaryName parameter is required and must be a string');
+  }
+  if (!friendlyName || typeof friendlyName !== 'string') {
+    throw new Error('ensureCliBinary: friendlyName parameter is required and must be a string');
+  }
+
   const state = loadState(rootDir);
   const now = new Date().toISOString();
   const existingRecord = state[binaryName] || {};
