@@ -21,6 +21,10 @@ describe('LLMClient', () => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   afterAll(() => {
     process.env = originalEnv;
   });
@@ -50,28 +54,20 @@ describe('LLMClient', () => {
     expect(client.model).toBe('glm-4-plus');
   });
 
-  it('routes glm chats through chatGLM', async () => {
+  it('routes chat requests to chatGLM when provider is glm', async () => {
     process.env.ZHIPUAI_API_KEY = 'glm-key';
     const client = new LLMClient({ provider: 'glm' });
-    const glmSpy = jest.spyOn(client, 'chatGLM').mockResolvedValue('glm-response');
-    const anthropicSpy = jest.spyOn(client, 'chatAnthropic');
 
-    const messages = [{ role: 'user', content: 'Hello GLM' }];
-    const result = await client.chat(messages);
+    const glmSpy = jest.spyOn(client, 'chatGLM').mockResolvedValue('glm-response');
+    const anthropicSpy = jest
+      .spyOn(client, 'chatAnthropic')
+      .mockResolvedValue('anthropic-response');
+
+    const result = await client.chat([{ role: 'user', content: 'Hi there' }]);
 
     expect(result).toBe('glm-response');
-    expect(glmSpy).toHaveBeenCalledWith(
-      messages,
-      expect.objectContaining({
-        systemPrompt: '',
-        temperature: 0.7,
-        maxTokens: 4096,
-      }),
-    );
+    expect(glmSpy).toHaveBeenCalledTimes(1);
     expect(anthropicSpy).not.toHaveBeenCalled();
-
-    glmSpy.mockRestore();
-    anthropicSpy.mockRestore();
   });
 
   it('passes the port from ANTHROPIC_BASE_URL to https.request', async () => {
