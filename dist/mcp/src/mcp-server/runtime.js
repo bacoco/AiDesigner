@@ -4,6 +4,11 @@ exports.runOrchestratorServer = runOrchestratorServer;
 const index_js_1 = require('@modelcontextprotocol/sdk/server/index.js');
 const stdio_js_1 = require('@modelcontextprotocol/sdk/server/stdio.js');
 const types_js_1 = require('@modelcontextprotocol/sdk/types.js');
+const path = __importStar(require('node:path'));
+const repositoryRoot = path.resolve(__dirname, '..', '..', '..', '..');
+const libDirectory = path.join(repositoryRoot, 'lib');
+const hooksDirectory = path.join(repositoryRoot, 'hooks');
+const auto_commands_js_1 = require(path.join(libDirectory, 'auto-commands.js'));
 const observability_js_1 = require('./observability.js');
 const lib_resolver_js_1 = require('./lib-resolver.js');
 const { executeAutoCommand } = (0, lib_resolver_js_1.requireLibModule)('auto-commands.js');
@@ -274,41 +279,33 @@ async function runOrchestratorServer(options = {}) {
   };
   async function loadDependencies() {
     if (!ProjectState) {
-      ({ ProjectState } = await (0, lib_resolver_js_1.importLibModule)('project-state.js'));
+      ({ ProjectState } = await import(path.join(libDirectory, 'project-state.js')));
     }
     if (!BMADBridge) {
-      ({ BMADBridge } = await (0, lib_resolver_js_1.importLibModule)('bmad-bridge.js'));
+      ({ BMADBridge } = await import(path.join(libDirectory, 'bmad-bridge.js')));
     }
     if (!DeliverableGenerator) {
-      ({ DeliverableGenerator } = await (0, lib_resolver_js_1.importLibModule)(
-        'deliverable-generator.js',
+      ({ DeliverableGenerator } = await import(
+        path.join(libDirectory, 'deliverable-generator.js')
       ));
     }
     if (!BrownfieldAnalyzer) {
-      ({ BrownfieldAnalyzer } = await (0, lib_resolver_js_1.importLibModule)(
-        'brownfield-analyzer.js',
-      ));
+      ({ BrownfieldAnalyzer } = await import(path.join(libDirectory, 'brownfield-analyzer.js')));
     }
     if (!QuickLane) {
-      ({ QuickLane } = await (0, lib_resolver_js_1.importLibModule)('quick-lane.js'));
+      ({ QuickLane } = await import(path.join(libDirectory, 'quick-lane.js')));
     }
     if (!LaneSelector) {
-      LaneSelector = await (0, lib_resolver_js_1.importLibModule)('lane-selector.js');
+      LaneSelector = await import(path.join(libDirectory, 'lane-selector.js'));
     }
     if (!phaseTransitionHooks) {
-      phaseTransitionHooks = await (0, lib_resolver_js_1.importFromPackageRoot)(
-        'hooks',
-        'phase-transition.js',
-      );
+      phaseTransitionHooks = await import(path.join(hooksDirectory, 'phase-transition.js'));
     }
     if (!contextPreservation) {
-      contextPreservation = await (0, lib_resolver_js_1.importFromPackageRoot)(
-        'hooks',
-        'context-preservation.js',
-      );
+      contextPreservation = await import(path.join(hooksDirectory, 'context-preservation.js'));
     }
     if (!storyContextValidator) {
-      const module = await (0, lib_resolver_js_1.importLibModule)('story-context-validator.js');
+      const module = await import(path.join(libDirectory, 'story-context-validator.js'));
       storyContextValidator = module?.default ?? module;
     }
   }

@@ -5,6 +5,12 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { performance } from "node:perf_hooks";
+const repositoryRoot = path.resolve(__dirname, "../../../..");
+const libDirectory = path.join(repositoryRoot, "lib");
+const hooksDirectory = path.join(repositoryRoot, "hooks");
+const { executeAutoCommand } = require(
+  path.join(libDirectory, "auto-commands.js")
+) as typeof import("../../lib/auto-commands.js");
 import { createStructuredLogger, StructuredLogger } from "./observability.js";
 import {
   importFromPackageRoot,
@@ -413,34 +419,31 @@ export async function runOrchestratorServer(
 
   async function loadDependencies() {
     if (!ProjectState) {
-      ({ ProjectState } = await importLibModule("project-state.js"));
+      ({ ProjectState } = await import(path.join(libDirectory, "project-state.js")));
     }
     if (!BMADBridge) {
-      ({ BMADBridge } = await importLibModule("bmad-bridge.js"));
+      ({ BMADBridge } = await import(path.join(libDirectory, "bmad-bridge.js")));
     }
     if (!DeliverableGenerator) {
-      ({ DeliverableGenerator } = await importLibModule("deliverable-generator.js"));
+      ({ DeliverableGenerator } = await import(path.join(libDirectory, "deliverable-generator.js")));
     }
     if (!BrownfieldAnalyzer) {
-      ({ BrownfieldAnalyzer } = await importLibModule("brownfield-analyzer.js"));
+      ({ BrownfieldAnalyzer } = await import(path.join(libDirectory, "brownfield-analyzer.js")));
     }
     if (!QuickLane) {
-      ({ QuickLane } = await importLibModule("quick-lane.js"));
+      ({ QuickLane } = await import(path.join(libDirectory, "quick-lane.js")));
     }
     if (!LaneSelector) {
-      LaneSelector = await importLibModule("lane-selector.js");
+      LaneSelector = await import(path.join(libDirectory, "lane-selector.js"));
     }
     if (!phaseTransitionHooks) {
-      phaseTransitionHooks = await importFromPackageRoot("hooks", "phase-transition.js");
+      phaseTransitionHooks = await import(path.join(hooksDirectory, "phase-transition.js"));
     }
     if (!contextPreservation) {
-      contextPreservation = await importFromPackageRoot(
-        "hooks",
-        "context-preservation.js"
-      );
+      contextPreservation = await import(path.join(hooksDirectory, "context-preservation.js"));
     }
     if (!storyContextValidator) {
-      const module: any = await importLibModule("story-context-validator.js");
+      const module = await import(path.join(libDirectory, "story-context-validator.js"));
       storyContextValidator = module?.default ?? module;
     }
   }
