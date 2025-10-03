@@ -81,8 +81,17 @@ describe('Codex operation policy enforcement', () => {
     await expect(client.ensureOperationAllowed('run_review_checkpoint')).resolves.toBeUndefined();
   });
 
+  let tempDir;
+
+  afterEach(async () => {
+    if (tempDir) {
+      await fs.remove(tempDir);
+      tempDir = undefined;
+    }
+  });
+
   test('loads policies from environment-specified YAML files', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codex-policy-'));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codex-policy-'));
     const policyPath = path.join(tempDir, 'policy.yaml');
 
     await fs.writeFile(
@@ -117,8 +126,6 @@ describe('Codex operation policy enforcement', () => {
       process.env.CODEX_APPROVAL_MODE = originalEnv.CODEX_APPROVAL_MODE;
       process.env.CODEX_AUTO_APPROVE = originalEnv.CODEX_AUTO_APPROVE;
       process.env.CODEX_APPROVED_OPERATIONS = originalEnv.CODEX_APPROVED_OPERATIONS;
-
-      await fs.remove(tempDir);
     }
   });
 });

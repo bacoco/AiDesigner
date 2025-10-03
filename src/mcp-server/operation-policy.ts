@@ -88,14 +88,24 @@ export class OperationPolicyEnforcer {
         };
       }
 
-      const now = this.now();
+      const assessNow = this.now();
       const state = this.usage.get(key);
-      const withinWindow = Boolean(state && now - state.windowStart < HOUR_IN_MS);
+      const withinWindow = Boolean(state && assessNow - state.windowStart < HOUR_IN_MS);
       const usedCount = withinWindow && state ? state.count : 0;
 
+      // Memory leak mitigation: clean up stale entries when map grows large
+      if (this.usage.size > 1000) {
+        const cutoff = assessNow - HOUR_IN_MS;
+        for (const [mapKey, window] of this.usage.entries()) {
+          if (window.windowStart < cutoff) {
+            this.usage.delete(mapKey);
+          }
+        }
+      }
+
       if (usedCount >= limit) {
-        const windowEndsAt = withinWindow && state ? state.windowStart + HOUR_IN_MS : now + HOUR_IN_MS;
-        const waitMs = Math.max(0, windowEndsAt - now);
+        const windowEndsAt = withinWindow && state ? state.windowStart + HOUR_IN_MS : assessNow + HOUR_IN_MS;
+        const waitMs = Math.max(0, windowEndsAt - assessNow);
         const waitDescription = formatDuration(waitMs);
         const error = new Error(
           `[Codex] Operation "${operation}" blocked by policy rule "${key}". Limit of ${limit} executions per hour exceeded. Retry in ${waitDescription}.`
@@ -113,11 +123,10 @@ export class OperationPolicyEnforcer {
         matchedKey: key,
         requiresEscalation,
         commit: () => {
-          const commitNow = this.now();
           const current = this.usage.get(key);
 
-          if (!current || commitNow - current.windowStart >= HOUR_IN_MS) {
-            this.usage.set(key, { windowStart: commitNow, count: 1 });
+          if (!current || assessNow - current.windowStart >= HOUR_IN_MS) {
+            this.usage.set(key, { windowStart: assessNow, count: 1 });
           } else {
             current.count += 1;
           }

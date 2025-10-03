@@ -214,7 +214,8 @@ export class CodexClient {
       try {
         policyEnforcer = OperationPolicyEnforcer.fromFile(policyPath);
       } catch (error) {
-        console.error(`[Codex] Failed to load policy configuration from ${policyPath}:`, error);
+        console.error(`[Codex] FATAL: Failed to load policy from ${policyPath}:`, error);
+        console.error('[Codex] Server will run WITHOUT policy enforcement');
       }
     }
 
