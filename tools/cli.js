@@ -220,4 +220,87 @@ mcp
     await manager.browse(options);
   });
 
+// Profile management commands
+const profile = mcp.command('profile').description('Manage MCP configuration profiles');
+
+profile
+  .command('list')
+  .description('List all available profiles')
+  .action(async () => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.manageProfiles('list');
+  });
+
+profile
+  .command('create <name>')
+  .description('Create a new profile')
+  .option('-d, --description <desc>', 'Profile description')
+  .option('-c, --copy-from <profile>', 'Copy from existing profile')
+  .option('-i, --inherit-from <profile>', 'Inherit from existing profile')
+  .action(async (name, options) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.manageProfiles('create', name, options);
+  });
+
+profile
+  .command('switch <name>')
+  .description('Switch to a different profile')
+  .action(async (name) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.manageProfiles('switch', name);
+  });
+
+profile
+  .command('delete <name>')
+  .description('Delete a profile')
+  .action(async (name) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.manageProfiles('delete', name);
+  });
+
+profile
+  .command('diff <profile1> <profile2>')
+  .description('Compare two profiles')
+  .option('-t, --type <type>', 'Config type (claude or bmad)', 'claude')
+  .action(async (profile1, profile2, options) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.manageProfiles('diff', profile1, profile2, options);
+  });
+
+profile
+  .command('export <name> <file>')
+  .description('Export a profile to a file')
+  .action(async (name, file) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.manageProfiles('export', name, file);
+  });
+
+profile
+  .command('import <file>')
+  .description('Import a profile from a file')
+  .option('-n, --name <name>', 'Profile name (defaults to name from file)')
+  .action(async (file, options) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.manageProfiles('import', file, options);
+  });
+
+// Security commands
+mcp
+  .command('secure')
+  .description('Migrate credentials to secure encrypted storage')
+  .option('-p, --profile <profile>', 'Target profile (defaults to active profile)')
+  .action(async (options) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.secure(options);
+  });
+
+mcp
+  .command('audit')
+  .description('Run security audit on MCP configurations')
+  .option('-p, --profile <profile>', 'Target profile (defaults to active profile)')
+  .action(async (options) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.audit(options);
+  });
+
 program.parse();

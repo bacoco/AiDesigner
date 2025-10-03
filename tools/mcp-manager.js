@@ -4,67 +4,67 @@ const { spawn } = require('node:child_process');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 const McpRegistry = require('./mcp-registry');
+const McpProfiles = require('./mcp-profiles');
+const McpSecurity = require('./mcp-security');
 
 class McpManager {
   constructor(options = {}) {
     this.rootDir = options.rootDir || process.cwd();
+    this.profile = options.profile || null;
+    this.registry = new McpRegistry();
+    this.profiles = new McpProfiles({ rootDir: this.rootDir });
+    this.security = new McpSecurity();
+
+    // Backward compatibility - will be deprecated
     this.claudeConfigPath = path.join(this.rootDir, '.claude', 'mcp-config.json');
     this.bmadConfigPath = path.join(this.rootDir, 'mcp', 'bmad-config.json');
-    this.registry = new McpRegistry();
   }
 
   /**
-   * Load configuration from .claude/mcp-config.json
+   * Get current active profile
    */
-  loadClaudeConfig() {
-    if (!fs.existsSync(this.claudeConfigPath)) {
-      return { mcpServers: {} };
-    }
-    try {
-      const content = fs.readFileSync(this.claudeConfigPath, 'utf8');
-      return JSON.parse(content);
-    } catch (error) {
-      console.error(chalk.red(`Error loading Claude config: ${error.message}`));
-      return { mcpServers: {} };
-    }
+  getCurrentProfile() {
+    return this.profile || this.profiles.getActiveProfile();
   }
 
   /**
-   * Load configuration from mcp/bmad-config.json
+   * Load configuration from .claude/mcp-config.json (with profile support)
    */
-  loadBmadConfig() {
-    if (!fs.existsSync(this.bmadConfigPath)) {
-      return { mcpServers: {} };
-    }
-    try {
-      const content = fs.readFileSync(this.bmadConfigPath, 'utf8');
-      return JSON.parse(content);
-    } catch (error) {
-      console.error(chalk.red(`Error loading BMAD config: ${error.message}`));
-      return { mcpServers: {} };
-    }
+  loadClaudeConfig(profileName = null) {
+    const profile = profileName || this.getCurrentProfile();
+    return this.profiles.loadConfig('claude', profile);
   }
 
   /**
-   * Save configuration to .claude/mcp-config.json
+   * Load configuration from mcp/bmad-config.json (with profile support)
    */
-  saveClaudeConfig(config) {
-    const dir = path.dirname(this.claudeConfigPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(this.claudeConfigPath, JSON.stringify(config, null, 2) + '\n');
+  loadBmadConfig(profileName = null) {
+    const profile = profileName || this.getCurrentProfile();
+    return this.profiles.loadConfig('bmad', profile);
   }
 
   /**
-   * Save configuration to mcp/bmad-config.json
+   * Save configuration to .claude/mcp-config.json (with profile support)
    */
-  saveBmadConfig(config) {
-    const dir = path.dirname(this.bmadConfigPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(this.bmadConfigPath, JSON.stringify(config, null, 2) + '\n');
+  saveClaudeConfig(config, profileName = null) {
+    const profile = profileName || this.getCurrentProfile();
+    this.profiles.saveConfig('claude', config, profile);
+  }
+
+  /**
+   * Save configuration to mcp/bmad-config.json (with profile support)
+   */
+  saveBmadConfig(config, profileName = null) {
+    const profile = profileName || this.getCurrentProfile();
+    this.profiles.saveConfig('bmad', config, profile);
+  }
+
+  /**
+   * Resolve vault references in config (for secure credentials)
+   */
+  async resolveConfig(config) {
+    const profile = this.getCurrentProfile();
+    return await this.security.resolveVaultReferences(config, profile);
   }
 
   /**
@@ -677,6 +677,401 @@ class McpManager {
 
     console.log(chalk.dim(`\n\nTotal: ${servers.length} server(s)`));
     console.log(chalk.dim('Install with: bmad-invisible mcp install <server-id>\n'));
+  }
+
+  /**
+   * Secure configuration - migrate to encrypted storage
+   */
+  async secure() {
+    console.log(chalk.bold('\n🔒 Securing MCP Configuration\n'));
+
+    await this.security.initialize();
+
+    const profile = this.getCurrentProfile();
+    const claudeConfig = this.loadClaudeConfig();
+    const bmadConfig = this.loadBmadConfig();
+
+    // Audit first
+    const auditClaude = this.security.auditConfig(claudeConfig);
+    const auditBmad = this.security.auditConfig(bmadConfig);
+
+    const totalIssues = auditClaude.issues.length + auditBmad.issues.length;
+
+    if (totalIssues === 0) {
+      console.log(chalk.green('✓ No security issues found. Configuration is already secure.\n'));
+      return;
+    }
+
+    console.log(chalk.yellow(`Found ${totalIssues} security issue(s)\n`));
+
+    // Ask for confirmation
+    const answer = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'proceed',
+        message: 'Migrate credentials to secure storage?',
+        default: true,
+      },
+    ]);
+
+    if (!answer.proceed) {
+      console.log(chalk.yellow('\nCancelled.\n'));
+      return;
+    }
+
+    // Migrate Claude config
+    if (auditClaude.issues.length > 0) {
+      const migrated = await this.security.migrateToSecure(claudeConfig, profile);
+      this.saveClaudeConfig(migrated.config);
+      console.log(
+        chalk.green(
+          `✓ Migrated ${migrated.count} credential(s) from Claude config to secure storage`,
+        ),
+      );
+    }
+
+    // Migrate BMAD config
+    if (auditBmad.issues.length > 0) {
+      const migrated = await this.security.migrateToSecure(bmadConfig, profile);
+      this.saveBmadConfig(migrated.config);
+      console.log(
+        chalk.green(
+          `✓ Migrated ${migrated.count} credential(s) from BMAD config to secure storage`,
+        ),
+      );
+    }
+
+    console.log(chalk.green('\n✓ Configuration secured successfully!\n'));
+  }
+
+  /**
+   * Run security audit
+   */
+  async audit() {
+    console.log(chalk.bold('\n🔍 Security Audit\n'));
+
+    const profile = this.getCurrentProfile();
+    const claudeConfig = this.loadClaudeConfig();
+    const bmadConfig = this.loadBmadConfig();
+
+    const auditClaude = this.security.auditConfig(claudeConfig);
+    const auditBmad = this.security.auditConfig(bmadConfig);
+
+    console.log(chalk.bold('Claude Configuration:'));
+    if (auditClaude.secure) {
+      console.log(chalk.green('  ✓ Secure'));
+    } else {
+      console.log(chalk.red(`  ✗ ${auditClaude.issues.length} issue(s) found`));
+      for (const issue of auditClaude.issues) {
+        console.log(`    - ${issue.message}`);
+      }
+    }
+
+    console.log('');
+    console.log(chalk.bold('BMAD Configuration:'));
+    if (auditBmad.secure) {
+      console.log(chalk.green('  ✓ Secure'));
+    } else {
+      console.log(chalk.red(`  ✗ ${auditBmad.issues.length} issue(s) found`));
+      for (const issue of auditBmad.issues) {
+        console.log(`    - ${issue.message}`);
+      }
+    }
+
+    console.log('');
+    console.log(chalk.bold('Stored Credentials:'));
+    const credentials = this.security.listCredentials(profile);
+    if (credentials.length === 0) {
+      console.log(chalk.dim('  No credentials in secure storage'));
+    } else {
+      for (const cred of credentials) {
+        console.log(`  ${chalk.cyan('●')} ${cred.key} (${cred.type}) - ${cred.stored}`);
+      }
+    }
+
+    console.log('');
+    if (!auditClaude.secure || !auditBmad.secure) {
+      console.log(
+        chalk.yellow('⚠️  Run `npm run mcp:secure` to migrate credentials to secure storage\n'),
+      );
+    } else {
+      console.log(chalk.green('✓ All configurations are secure\n'));
+    }
+  }
+
+  /**
+   * Manage profiles
+   */
+  async manageProfiles(action, ...args) {
+    switch (action) {
+      case 'list': {
+        await this.listAllProfiles();
+        break;
+      }
+      case 'create': {
+        await this.createNewProfile(...args);
+        break;
+      }
+      case 'switch': {
+        await this.switchProfile(...args);
+        break;
+      }
+      case 'delete': {
+        await this.deleteProfileInteractive(...args);
+        break;
+      }
+      case 'diff': {
+        await this.diffProfiles(...args);
+        break;
+      }
+      case 'export': {
+        await this.exportProfile(...args);
+        break;
+      }
+      case 'import': {
+        await this.importProfile(...args);
+        break;
+      }
+      default: {
+        console.log(chalk.red(`Unknown profile action: ${action}`));
+      }
+    }
+  }
+
+  async listAllProfiles() {
+    console.log(chalk.bold('\n📋 MCP Profiles\n'));
+
+    const profiles = this.profiles.listProfiles();
+
+    for (const profile of profiles) {
+      const active = profile.active ? chalk.green(' [ACTIVE]') : '';
+      console.log(`${chalk.cyan('●')} ${chalk.bold(profile.name)}${active}`);
+      console.log(`  ${chalk.dim(profile.description)}`);
+
+      if (profile.inheritsFrom && profile.inheritsFrom !== 'default') {
+        console.log(`  ${chalk.dim('Inherits from:')} ${profile.inheritsFrom}`);
+      }
+
+      const status = [];
+      if (profile.hasClaudeConfig) status.push('Claude');
+      if (profile.hasBmadConfig) status.push('BMAD');
+
+      if (status.length > 0) {
+        console.log(`  ${chalk.dim('Configs:')} ${status.join(', ')}`);
+      }
+
+      console.log('');
+    }
+
+    console.log(chalk.dim(`Total: ${profiles.length} profile(s)\n`));
+  }
+
+  async createNewProfile(name, options = {}) {
+    if (!name) {
+      const answer = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'name',
+          message: 'Profile name:',
+          validate: (input) => (input.trim() ? true : 'Profile name is required'),
+        },
+        {
+          type: 'input',
+          name: 'description',
+          message: 'Description:',
+          default: (answers) => `${answers.name} environment`,
+        },
+        {
+          type: 'list',
+          name: 'copyFrom',
+          message: 'Copy from existing profile?',
+          choices: [
+            { name: 'Start empty', value: null },
+            { name: 'Copy from default', value: 'default' },
+            ...this.profiles
+              .listProfiles()
+              .filter((p) => p.name !== 'default')
+              .map((p) => ({ name: `Copy from ${p.name}`, value: p.name })),
+          ],
+        },
+      ]);
+
+      name = answer.name;
+      options.description = answer.description;
+      options.copyFrom = answer.copyFrom;
+    }
+
+    const profile = this.profiles.createProfile(name, options);
+    console.log(chalk.green(`\n✓ Created profile: ${name}`));
+
+    // Show recommendations
+    const recommendations = this.profiles.getEnvironmentRecommendations(name);
+    if (recommendations.length > 0) {
+      console.log(chalk.bold('\nRecommendations:'));
+      for (const rec of recommendations) {
+        console.log(`  ${chalk.yellow('•')} ${rec.message}`);
+        console.log(`    ${chalk.dim(rec.action)}`);
+      }
+    }
+
+    console.log('');
+  }
+
+  async switchProfile(profileName) {
+    if (!profileName) {
+      const profiles = this.profiles.listProfiles();
+      const answer = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'profile',
+          message: 'Select profile:',
+          choices: profiles.map((p) => ({
+            name: p.active ? `${p.name} (current)` : p.name,
+            value: p.name,
+          })),
+        },
+      ]);
+
+      profileName = answer.profile;
+    }
+
+    this.profiles.setActiveProfile(profileName);
+    console.log(chalk.green(`\n✓ Switched to profile: ${profileName}\n`));
+  }
+
+  async deleteProfileInteractive(profileName) {
+    if (!profileName) {
+      const profiles = this.profiles.listProfiles().filter((p) => p.name !== 'default');
+      const answer = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'profile',
+          message: 'Select profile to delete:',
+          choices: profiles.map((p) => ({ name: p.name, value: p.name })),
+        },
+        {
+          type: 'confirm',
+          name: 'confirm',
+          message: (answers) => `Delete profile "${answers.profile}"? This cannot be undone.`,
+          default: false,
+        },
+      ]);
+
+      if (!answer.confirm) {
+        console.log(chalk.yellow('\nCancelled.\n'));
+        return;
+      }
+
+      profileName = answer.profile;
+    }
+
+    this.profiles.deleteProfile(profileName);
+    console.log(chalk.green(`\n✓ Deleted profile: ${profileName}\n`));
+  }
+
+  async diffProfiles(profile1, profile2) {
+    if (!profile1 || !profile2) {
+      const profiles = this.profiles.listProfiles();
+      const answer = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'profile1',
+          message: 'First profile:',
+          choices: profiles.map((p) => p.name),
+        },
+        {
+          type: 'list',
+          name: 'profile2',
+          message: 'Second profile:',
+          choices: profiles.map((p) => p.name),
+        },
+      ]);
+
+      profile1 = answer.profile1;
+      profile2 = answer.profile2;
+    }
+
+    console.log(chalk.bold(`\n📊 Comparing ${profile1} vs ${profile2}\n`));
+
+    const diff = this.profiles.diffProfiles(profile1, profile2);
+
+    if (diff.onlyIn1.length > 0) {
+      console.log(chalk.bold(`Only in ${profile1}:`));
+      for (const server of diff.onlyIn1) {
+        console.log(`  ${chalk.cyan('+')} ${server}`);
+      }
+      console.log('');
+    }
+
+    if (diff.onlyIn2.length > 0) {
+      console.log(chalk.bold(`Only in ${profile2}:`));
+      for (const server of diff.onlyIn2) {
+        console.log(`  ${chalk.red('-')} ${server}`);
+      }
+      console.log('');
+    }
+
+    if (diff.different.length > 0) {
+      console.log(chalk.bold('Different configuration:'));
+      for (const server of diff.different) {
+        console.log(`  ${chalk.yellow('~')} ${server}`);
+      }
+      console.log('');
+    }
+
+    if (diff.identical.length > 0) {
+      console.log(chalk.dim(`Identical: ${diff.identical.length} server(s)\n`));
+    }
+  }
+
+  async exportProfile(profileName, outputPath) {
+    if (!profileName) {
+      const profiles = this.profiles.listProfiles();
+      const answer = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'profile',
+          message: 'Select profile to export:',
+          choices: profiles.map((p) => p.name),
+        },
+        {
+          type: 'input',
+          name: 'output',
+          message: 'Output file path:',
+          default: (answers) => `./${answers.profile}-profile.json`,
+        },
+      ]);
+
+      profileName = answer.profile;
+      outputPath = answer.output;
+    }
+
+    this.profiles.exportProfile(profileName, outputPath);
+    console.log(chalk.green(`\n✓ Exported profile "${profileName}" to ${outputPath}\n`));
+  }
+
+  async importProfile(inputPath, newName) {
+    if (!inputPath) {
+      const answer = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'input',
+          message: 'Profile file path:',
+          validate: (input) => (fs.existsSync(input) ? true : 'File not found'),
+        },
+        {
+          type: 'input',
+          name: 'name',
+          message: 'New profile name (leave empty to use original):',
+        },
+      ]);
+
+      inputPath = answer.input;
+      newName = answer.name || null;
+    }
+
+    const imported = this.profiles.importProfile(inputPath, newName);
+    console.log(chalk.green(`\n✓ Imported profile: ${imported}\n`));
   }
 }
 
