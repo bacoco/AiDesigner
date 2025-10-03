@@ -321,6 +321,11 @@ For detailed documentation, visit:
       cwd: process.cwd(),
     });
 
+    child.on('error', (error) => {
+      console.error('❌ Failed to launch Codex CLI:', error.message);
+      process.exit(1);
+    });
+
     child.on('exit', (code) => {
       process.exit(code || 0);
     });
@@ -342,6 +347,11 @@ For detailed documentation, visit:
     const child = spawn('node', [chatScript, ...args], {
       stdio: 'inherit',
       cwd: process.cwd(),
+    });
+
+    child.on('error', (error) => {
+      console.error('❌ Failed to launch Claude CLI:', error.message);
+      process.exit(1);
     });
 
     child.on('exit', (code) => {
