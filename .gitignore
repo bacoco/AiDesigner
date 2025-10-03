@@ -30,6 +30,7 @@ Thumbs.db
 .windsurf/
 .trae/
 .bmad*/
+!.bmad-invisible/
 .cursor/
 
 # AI assistant files
