@@ -437,10 +437,13 @@ const buildSpawnEnv = () => {
     env.LLM_PROVIDER = runtimeOptions.llmProvider;
 
     if (runtimeOptions.llmProvider === 'glm') {
+      env.BMAD_ASSISTANT_PROVIDER = 'glm';
       const existingKey = env.ZHIPUAI_API_KEY || env.GLM_API_KEY;
       if (existingKey && !env.ZHIPUAI_API_KEY) {
         env.ZHIPUAI_API_KEY = existingKey;
       }
+    } else if (env.BMAD_ASSISTANT_PROVIDER === 'glm') {
+      delete env.BMAD_ASSISTANT_PROVIDER;
     }
   }
 

@@ -84,6 +84,11 @@ async function main() {
 
   const codexBinary = codexCheck.binaryPath || 'codex';
   const { env: codexEnv, isGlm } = buildAssistantSpawnEnv();
+  const mergedEnv = { ...process.env, ...codexEnv };
+
+  if (process.env.BMAD_ASSISTANT_PROVIDER) {
+    mergedEnv.BMAD_ASSISTANT_PROVIDER = process.env.BMAD_ASSISTANT_PROVIDER;
+  }
 
   if (isGlm) {
     console.log('🌐 GLM mode active: routing Codex CLI through configured GLM endpoint.');
@@ -93,7 +98,7 @@ async function main() {
   const codex = spawn(codexBinary, codexArgs, {
     stdio: 'inherit',
     shell: false,
-    env: codexEnv,
+    env: mergedEnv,
   });
 
   codex.on('error', (error) => {
