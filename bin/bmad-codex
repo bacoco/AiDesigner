@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const { runIntegrityPreflight } = require('../common/utils/integrity');
 const { ensureCliBinary } = require('../common/utils/cli-provisioning');
+const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
 
 // Get paths
 const rootDir = path.join(__dirname, '..');
@@ -82,11 +83,17 @@ async function main() {
   console.log('💬 Type your project idea to begin!\n');
 
   const codexBinary = codexCheck.binaryPath || 'codex';
+  const { env: codexEnv, isGlm } = buildAssistantSpawnEnv();
+
+  if (isGlm) {
+    console.log('🌐 GLM mode active: routing Codex CLI through configured GLM endpoint.');
+  }
 
   // Launch Codex CLI
   const codex = spawn(codexBinary, codexArgs, {
     stdio: 'inherit',
     shell: false,
+    env: codexEnv,
   });
 
   codex.on('error', (error) => {
