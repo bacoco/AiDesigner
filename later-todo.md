@@ -143,7 +143,6 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 - [ ] Scale-adaptive workflows (0-4) align with invisible orchestration
 - [x] Modular plugin system benefits our expansion strategy
 - [ ] JIT context injection improves invisible agent performance
-
 - [ ] Web bundles become production-ready
 - [ ] Community adoption makes it the standard
 
@@ -152,16 +151,13 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 - [ ] V6 stability confirmed (beta/stable release)
 - [ ] Migration path tested for custom features
 - [x] Codex CLI compatibility verified
-- [ ] Dual-lane orchestration adaptable to v6 workflows
+- [ ] Dual-lane orchestration adaptable to v6 workflows _(lane selector prototype maps quick vs complex phase plans; validate against real V6 runtime when available)_
 - [x] Invisible orchestrator compatible with v6 module system (prototype documented in `docs/v6-module-bridge.md`)
 - [x] MCP server integration maintained
 
-- [ ] Codex CLI compatibility verified
-- [ ] Dual-lane orchestration adaptable to v6 workflows _(lane selector prototype maps quick vs complex phase plans; validate against real V6 runtime when available)_
-
 ### Features Worth Cherry-Picking (Without Full Migration)
 
-- [ ] JIT context injection concept (adapt to invisible orchestrator)
+- [x] JIT context injection concept (adapt to invisible orchestrator)
 - [x] Fresh context validation pattern (different models for dev/review) — documented in docs/review-checkpoints.md and wired into MCP review lanes
 - [x] Hash file checking (prevent customization overwrites)
 - [x] Scale-adaptive workflow logic (integrate into phase detector)
