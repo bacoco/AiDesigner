@@ -41,6 +41,45 @@ Just talk about your project. The system:
 - **Local-first** - Works with Claude CLI, Codex CLI, or OpenCode - your choice
 - **No API costs** - Runs through your existing CLI tooling
 
+### ⚡ Supercharge Your AI in 30 Seconds
+
+**Extend Agilai with any tool through MCP (Model Context Protocol) integration:**
+
+```bash
+# Add GitHub integration
+npm run mcp:install github
+# ✓ Your AI can now create issues, PRs, and review code!
+
+# Add database access
+npm run mcp:install postgres
+# ✓ Your AI can now query and manage your database!
+
+# Add filesystem access
+npm run mcp:install filesystem
+# ✓ Your AI can now read, write, and search files!
+```
+
+**Popular integrations** (15+ available):
+
+- 🐙 **GitHub** - Create issues, manage PRs, review code
+- 🗄️ **PostgreSQL** - Query databases, manage schemas
+- 📁 **Filesystem** - Read, write, search project files
+- 🌐 **Puppeteer** - Browser automation, E2E testing
+- 🔍 **Brave Search** - Web search integration
+- 💬 **Slack** - Team notifications and collaboration
+- ☁️ **AWS** - Cloud resource management
+
+**Or get smart suggestions:**
+
+```bash
+npm run mcp:suggest
+# 🔍 Analyzing your project...
+# 💡 Recommended: github, postgres, filesystem
+# Install all? (y/n)
+```
+
+→ **See [MCP Management Guide](docs/mcp-management.md) for complete integration examples**
+
 ### 🚀 NEW: Dual-Lane Orchestration (v1.2+)
 
 Agilai intelligently routes tasks between two development approaches:
@@ -672,67 +711,209 @@ Example log line:
 }
 ```
 
-## 🔌 MCP Management System
+## 🔌 MCP Integration: Extend Your AI with Any Tool
 
-Agilai includes a comprehensive **Model Context Protocol (MCP) management system** for seamless AI tool integration.
+Agilai includes a comprehensive **Model Context Protocol (MCP) management system** for seamless AI tool integration. Add powerful capabilities to your AI in seconds, not hours.
 
-### Key Features
+### 🎯 Real-World Examples
 
-- **🔍 Interactive CLI** - Manage MCP servers with simple commands
-- **📦 Registry Integration** - 15+ official MCP servers (filesystem, github, postgres, puppeteer, etc.)
-- **🌍 Environment Profiles** - Separate dev/staging/prod configurations
-- **🔒 Secure Storage** - Encrypted credentials with keychain integration
-- **💬 Conversational Setup** - Install tools through natural conversation
-- **🏥 Health Monitoring** - Diagnostics and automatic troubleshooting
-
-### Quick MCP Commands
+#### Example 1: Add GitHub Integration
 
 ```bash
-# Browse available MCP servers
+# Install GitHub MCP server
+npm run mcp:install github
+
+# Interactive prompts:
+# ? GitHub Personal Access Token: ghp_****
+# ✓ GitHub server configured!
+
+# Now your AI can:
+# • Create and manage issues
+# • Review and create pull requests
+# • Search repositories
+# • Manage branches and releases
+```
+
+**Use it naturally:**
+
+```
+You: "Create a GitHub issue for the login bug"
+AI: ✓ Created issue #42: "Fix login authentication error"
+```
+
+#### Example 2: Add Database Access
+
+```bash
+# Install PostgreSQL server
+npm run mcp:install postgres
+
+# Configure connection:
+# ? Database URL: postgresql://localhost/myapp
+# ✓ PostgreSQL server ready!
+
+# Now your AI can:
+# • Query your database
+# • Generate SQL from natural language
+# • Analyze schema and relationships
+# • Suggest optimizations
+```
+
+**Use it naturally:**
+
+```
+You: "Show me all users who signed up this week"
+AI: [Executes query and shows results]
+    Found 47 users. The top registration day was Tuesday.
+```
+
+#### Example 3: Add Filesystem Access
+
+```bash
+# Install filesystem server
+npm run mcp:install filesystem
+
+# ? Root directory: /Users/me/projects/myapp
+# ✓ Filesystem access configured!
+
+# Now your AI can:
+# • Read and write project files
+# • Search across your codebase
+# • Analyze file structure
+# • Refactor code safely
+```
+
+**Use it naturally:**
+
+```
+You: "Find all TODO comments in the codebase"
+AI: Found 23 TODO items across 8 files.
+    The oldest is from 3 months ago in auth.js
+```
+
+### 📦 Available MCP Servers (15+)
+
+**Development Tools:**
+
+- 🐙 `github` - GitHub API integration
+- 📁 `filesystem` - File system operations
+- 🔧 `git` - Git repository management
+- 🦊 `gitlab` - GitLab integration
+- 🎭 `puppeteer` - Browser automation
+- 🎬 `playwright` - E2E testing
+
+**Databases:**
+
+- 🐘 `postgres` - PostgreSQL database
+- 💾 `sqlite` - SQLite database
+- 🧠 `memory` - In-memory storage
+
+**Cloud & Services:**
+
+- ☁️ `aws-kb-retrieval` - AWS knowledge base
+- 🌐 `cloudflare` - Cloudflare API
+- 💬 `slack` - Slack integration
+- 🐛 `sentry` - Error tracking
+
+**Search & AI:**
+
+- 🔍 `brave-search` - Web search
+- 🌍 `fetch` - HTTP requests
+- 🔎 `everything` - Local search
+
+### 🚀 Quick Commands
+
+```bash
+# Browse all available servers
 npm run mcp:browse
 
-# Install a server (e.g., filesystem access)
-npm run mcp:install filesystem
+# Get smart suggestions for your project
+npm run mcp:suggest
+# 🔍 Analyzing project...
+# 💡 Recommended: github, postgres, filesystem
+
+# Install a server
+npm run mcp:install <server-name>
 
 # List configured servers
 npm run mcp:list
 
-# Health check
+# Health check all servers
 npm run mcp:doctor
 
-# Manage profiles
-npm run mcp:profile:list
-npm run mcp:profile:create dev
+# Search for specific capabilities
+npm run mcp:search "database"
+
+# Manage environment profiles
+npm run mcp:profile:create production
+npm run mcp:profile:switch production
 
 # Security
-npm run mcp:secure     # Migrate to encrypted storage
-npm run mcp:audit      # Run security audit
+npm run mcp:secure     # Encrypt credentials
+npm run mcp:audit      # Security audit
 ```
 
-### Conversational Installation
+### 💬 Conversational Installation
 
-The invisible orchestrator can install MCP tools naturally:
+The Agilai orchestrator can install MCP tools through natural conversation:
 
 ```
-You: "I need database access"
-Assistant: I can help with that! Would you like PostgreSQL or SQLite?
+You: "I need to access my database"
+AI: I can help with that! What database are you using?
 
 You: "PostgreSQL"
-Assistant: ✓ PostgreSQL MCP server configured and ready!
+AI: Great! I'll set up PostgreSQL access.
+    What's your database connection string?
+
+You: "postgresql://localhost/myapp"
+AI: ✓ PostgreSQL MCP server configured and ready!
+    You can now ask me to query your database naturally.
+
+You: "Show me the users table schema"
+AI: [Shows table schema with columns and types]
 ```
 
-**📖 Complete Guide**: See **[docs/mcp-management.md](docs/mcp-management.md)** for:
+### 🎯 Common Workflows
 
-- Detailed command reference
-- Environment profiles guide
-- Security best practices
-- Troubleshooting
-- API documentation
+**Full-Stack Development:**
+
+```bash
+npm run mcp:install filesystem github postgres puppeteer
+# ✓ Complete development environment ready!
+```
+
+**API Development:**
+
+```bash
+npm run mcp:install filesystem postgres brave-search
+# ✓ Backend API tools configured!
+```
+
+**Frontend Development:**
+
+```bash
+npm run mcp:install filesystem github puppeteer
+# ✓ Frontend development tools ready!
+```
+
+**DevOps:**
+
+```bash
+npm run mcp:install git github aws-kb-retrieval slack
+# ✓ DevOps automation configured!
+```
+
+**📖 Complete Documentation**:
+
+- **[MCP Management Guide](docs/mcp-management.md)** - Detailed command reference and best practices
+- **[MCP Examples](docs/mcp-examples.md)** - Real-world integration workflows
+- **[Environment Profiles](docs/mcp-management.md#environment-profiles)** - Multi-environment setup
+- **[Security Guide](docs/mcp-management.md#security)** - Credential management and encryption
 
 ## 📚 Documentation
 
 - **[QUICKSTART.md](QUICKSTART.md)** - ⭐ Start here! Quick installation and first use
-- **[docs/mcp-management.md](docs/mcp-management.md)** - 🆕 Complete MCP management guide
+- **[docs/mcp-management.md](docs/mcp-management.md)** - ⚡ Complete MCP integration guide
+- **[docs/mcp-examples.md](docs/mcp-examples.md)** - 🎯 Real-world MCP integration examples
 - **[USAGE.md](USAGE.md)** - Complete usage guide with examples
 - **[DUAL_LANE_ORCHESTRATION.md](docs/DUAL_LANE_ORCHESTRATION.md)** - 🆕 Intelligent routing system
 - **[IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md)** - Complete feature list

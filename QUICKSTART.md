@@ -139,6 +139,74 @@ codex --version
 - Claude CLI (`claude`) – legacy support
 - OpenCode CLI (`opencode`)
 
+## ⚡ Supercharge with MCP (Optional but Recommended)
+
+Extend your AI with powerful tools in 30 seconds! Add GitHub integration, database access, filesystem tools, and more.
+
+### Quick Setup
+
+```bash
+# Get smart suggestions based on your project
+npm run mcp:suggest
+# 🔍 Analyzing project...
+# 💡 Recommended: github, filesystem, postgres
+# Install all? (y/n)
+
+# Or install specific tools
+npm run mcp:install github      # GitHub integration
+npm run mcp:install filesystem  # File operations
+npm run mcp:install postgres    # Database access
+```
+
+### Popular Integrations
+
+**For Full-Stack Projects:**
+
+```bash
+npm run mcp:install filesystem github postgres puppeteer
+# ✓ Complete development environment ready!
+```
+
+**For API Development:**
+
+```bash
+npm run mcp:install filesystem postgres brave-search
+# ✓ Backend tools configured!
+```
+
+**For Frontend Projects:**
+
+```bash
+npm run mcp:install filesystem github puppeteer
+# ✓ Frontend tools ready!
+```
+
+### What You Get
+
+After installing MCP servers, your AI can:
+
+- 🐙 **GitHub**: Create issues, manage PRs, review code
+- 📁 **Filesystem**: Read/write files, search codebase
+- 🗄️ **PostgreSQL**: Query databases, analyze schemas
+- 🌐 **Puppeteer**: Browser automation, E2E testing
+- 🔍 **Brave Search**: Web search integration
+- 💬 **Slack**: Team notifications
+
+### Example Usage
+
+```
+You: "Create a GitHub issue for the login bug"
+AI: ✓ Created issue #42: "Fix login authentication error"
+
+You: "Show me all users who signed up this week"
+AI: [Queries database] Found 47 users. Top day was Tuesday.
+
+You: "Find all TODO comments in the codebase"
+AI: Found 23 TODOs across 8 files. Oldest is 3 months old.
+```
+
+**📖 See [MCP Management Guide](docs/mcp-management.md) for complete documentation**
+
 ## Usage
 
 ### Quick Commands
