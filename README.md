@@ -445,6 +445,50 @@ Want detailed code for each step? (y/n)
 Once you're done, I'll help you test it thoroughly!
 ````
 
+## ⚙️ Configuration
+
+### GLM Provider Support
+
+BMAD-Invisible supports routing requests through GLM (or other Anthropic-compatible) endpoints. This allows you to use alternative LLM providers while maintaining compatibility with Claude, Codex, and OpenCode CLIs.
+
+#### Environment Variables
+
+Set `BMAD_ASSISTANT_PROVIDER=glm` to enable GLM routing. The system will automatically configure the environment for Anthropic-compatible GLM endpoints.
+
+**GLM Configuration Priority** (first available value is used):
+
+| Variable | Priority | Description |
+|----------|----------|-------------|
+| `BMAD_GLM_BASE_URL` | 1 | GLM API base URL (BMAD-specific) |
+| `GLM_BASE_URL` | 2 | GLM API base URL (standard) |
+| `ANTHROPIC_BASE_URL` | 3 | Anthropic base URL (fallback) |
+| `BMAD_GLM_AUTH_TOKEN` | 1 | GLM authentication token (BMAD-specific) |
+| `GLM_AUTH_TOKEN` | 2 | GLM authentication token (standard) |
+| `ANTHROPIC_AUTH_TOKEN` | 3 | Anthropic auth token (fallback) |
+| `BMAD_GLM_API_KEY` | 1 | GLM API key (BMAD-specific) |
+| `GLM_API_KEY` | 2 | GLM API key (standard) |
+| `ANTHROPIC_API_KEY` | 3 | Anthropic API key (fallback) |
+
+**Note:** At least one of `*_BASE_URL` or `*_API_KEY` must be set when using GLM mode.
+
+#### Usage Example
+
+```bash
+# Set GLM provider and credentials
+export BMAD_ASSISTANT_PROVIDER=glm
+export BMAD_GLM_BASE_URL=https://your-glm-endpoint.com
+export BMAD_GLM_API_KEY=your-api-key
+
+# Start BMAD with GLM routing
+npm run bmad:claude
+# Output: 🌐 GLM mode active: routing Claude CLI through configured GLM endpoint.
+```
+
+GLM routing works with all three assistant CLIs:
+- `npm run bmad:claude` - Routes Claude CLI through GLM
+- `npm run bmad:codex` - Routes Codex CLI through GLM
+- `npm run bmad:opencode` - Routes OpenCode CLI through GLM
+
 ## 🛠️ Current Status
 
 **FULLY IMPLEMENTED AND PRODUCTION-READY** ✅

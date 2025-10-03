@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const { runIntegrityPreflight } = require('../common/utils/integrity');
+const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
 
 let command;
 let args = [];
@@ -1248,13 +1249,17 @@ For detailed documentation, visit:
   },
 
   opencode: async () => {
-    consumeLlmOptionsFromArgs();
+    const { env: opencodeEnv, isGlm } = buildAssistantSpawnEnv();
+
+    if (isGlm) {
+      console.log('🌐 GLM mode active: routing OpenCode CLI through configured GLM endpoint.');
+    }
 
     const child = spawn('opencode', args, {
       stdio: 'inherit',
       cwd: process.cwd(),
       shell: false,
-      env: buildSpawnEnv(),
+      env: opencodeEnv,
     });
 
     child.on('error', (error) => {

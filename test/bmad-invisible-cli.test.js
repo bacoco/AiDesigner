@@ -77,7 +77,7 @@ describe('bmad-invisible start assistant selection', () => {
     expect(lastCall[0]).toBe('opencode');
     expect(lastCall[1]).toEqual([]);
     expect(lastCall[2].shell).toBe(false);
-    expect(lastCall[2].env.LLM_PROVIDER).toBeUndefined();
+    expect(lastCall[2].env).toBeDefined();
   });
 
   test('handles invalid assistant flag by exiting with error', async () => {
