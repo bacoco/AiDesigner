@@ -457,17 +457,17 @@ Set `BMAD_ASSISTANT_PROVIDER=glm` to enable GLM routing. The system will automat
 
 **GLM Configuration Priority** (first available value is used):
 
-| Variable | Priority | Description |
-|----------|----------|-------------|
-| `BMAD_GLM_BASE_URL` | 1 | GLM API base URL (BMAD-specific) |
-| `GLM_BASE_URL` | 2 | GLM API base URL (standard) |
-| `ANTHROPIC_BASE_URL` | 3 | Anthropic base URL (fallback) |
-| `BMAD_GLM_AUTH_TOKEN` | 1 | GLM authentication token (BMAD-specific) |
-| `GLM_AUTH_TOKEN` | 2 | GLM authentication token (standard) |
-| `ANTHROPIC_AUTH_TOKEN` | 3 | Anthropic auth token (fallback) |
-| `BMAD_GLM_API_KEY` | 1 | GLM API key (BMAD-specific) |
-| `GLM_API_KEY` | 2 | GLM API key (standard) |
-| `ANTHROPIC_API_KEY` | 3 | Anthropic API key (fallback) |
+| Variable               | Priority | Description                              |
+| ---------------------- | -------- | ---------------------------------------- |
+| `BMAD_GLM_BASE_URL`    | 1        | GLM API base URL (BMAD-specific)         |
+| `GLM_BASE_URL`         | 2        | GLM API base URL (standard)              |
+| `ANTHROPIC_BASE_URL`   | 3        | Anthropic base URL (fallback)            |
+| `BMAD_GLM_AUTH_TOKEN`  | 1        | GLM authentication token (BMAD-specific) |
+| `GLM_AUTH_TOKEN`       | 2        | GLM authentication token (standard)      |
+| `ANTHROPIC_AUTH_TOKEN` | 3        | Anthropic auth token (fallback)          |
+| `BMAD_GLM_API_KEY`     | 1        | GLM API key (BMAD-specific)              |
+| `GLM_API_KEY`          | 2        | GLM API key (standard)                   |
+| `ANTHROPIC_API_KEY`    | 3        | Anthropic API key (fallback)             |
 
 **Note:** At least one of `*_BASE_URL` or `*_API_KEY` must be set when using GLM mode.
 
@@ -485,6 +485,7 @@ npm run bmad:claude
 ```
 
 GLM routing works with all three assistant CLIs:
+
 - `npm run bmad:claude` - Routes Claude CLI through GLM
 - `npm run bmad:codex` - Routes Codex CLI through GLM
 - `npm run bmad:opencode` - Routes OpenCode CLI through GLM

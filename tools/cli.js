@@ -2,6 +2,7 @@ const { Command } = require('commander');
 const WebBuilder = require('./builders/web-builder');
 const V3ToV4Upgrader = require('./upgraders/v3-to-v4-upgrader');
 const IdeSetup = require('./installer/lib/ide-setup');
+const McpManager = require('./mcp-manager');
 const path = require('node:path');
 
 const program = new Command();
@@ -147,6 +148,76 @@ program
       dryRun: options.dryRun,
       backup: options.backup,
     });
+  });
+
+// MCP Management Commands
+const mcp = program.command('mcp').description('Manage Model Context Protocol servers');
+
+mcp
+  .command('list')
+  .description('List all configured MCP servers')
+  .action(async () => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.list();
+  });
+
+mcp
+  .command('doctor')
+  .description('Run health checks on MCP servers')
+  .action(async () => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.doctor();
+  });
+
+mcp
+  .command('add [name]')
+  .description('Add a new MCP server interactively')
+  .action(async (name) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.add(name);
+  });
+
+mcp
+  .command('remove <name>')
+  .description('Remove an MCP server')
+  .action(async (name) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.remove(name);
+  });
+
+mcp
+  .command('search <query>')
+  .description('Search for MCP servers in the registry')
+  .option('-c, --category <category>', 'Filter by category')
+  .action(async (query, options) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.search(query, options);
+  });
+
+mcp
+  .command('install <server>')
+  .description('Install an MCP server from the registry')
+  .option('--config <type>', 'Target config (claude, bmad, or both)', 'claude')
+  .action(async (server, options) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.install(server, options);
+  });
+
+mcp
+  .command('suggest')
+  .description('Get MCP server suggestions based on your project')
+  .action(async () => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.suggest();
+  });
+
+mcp
+  .command('browse')
+  .description('Browse all available MCP servers')
+  .option('-r, --refresh', 'Refresh the registry cache')
+  .action(async (options) => {
+    const manager = new McpManager({ rootDir: process.cwd() });
+    await manager.browse(options);
   });
 
 program.parse();
