@@ -43,4 +43,10 @@ describe('LLMClient', () => {
     const client = new LLMClient({ provider: 'glm' });
     expect(client.model).toBe('glm-4-plus');
   });
+
+  it('uses the current OpenAI production model by default', () => {
+    process.env.OPENAI_API_KEY = 'openai-key';
+    const client = new LLMClient({ provider: 'openai' });
+    expect(client.model).toBe('gpt-4.1');
+  });
 });
