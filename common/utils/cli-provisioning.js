@@ -15,11 +15,7 @@ function ensureStateDir(rootDir) {
       return stateDir;
     } catch (error) {
       // If rootDir is read-only (e.g., global npm install, CI artifact), fall back to user home
-      if (
-        error.code === 'EACCES' ||
-        error.code === 'EROFS' ||
-        error.code === 'EPERM'
-      ) {
+      if (error.code === 'EACCES' || error.code === 'EROFS' || error.code === 'EPERM') {
         const fallbackDir = path.join(os.homedir(), '.bmad-invisible');
         if (!fs.existsSync(fallbackDir)) {
           try {
@@ -29,16 +25,11 @@ function ensureStateDir(rootDir) {
             );
             return fallbackDir;
           } catch (fallbackError) {
-            console.warn(
-              'Warning: unable to create state directory:',
-              fallbackError.message,
-            );
+            console.warn('Warning: unable to create state directory:', fallbackError.message);
             return fallbackDir; // Return path anyway, saveState will handle write failures gracefully
           }
         }
-        console.warn(
-          `Note: Using ${fallbackDir} for cache (installation directory is read-only)`,
-        );
+        console.warn(`Note: Using ${fallbackDir} for cache (installation directory is read-only)`);
         return fallbackDir;
       }
       // For other errors, log and return the path anyway (saveState handles write failures)
