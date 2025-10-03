@@ -23,6 +23,7 @@ try {
   console.log(`Installer context not found (${error.message}), trying root context...`);
   try {
     version = require('../../../package.json').version;
+    packageName = require('../../../package.json').name;
     installer = require('../../../tools/installer/lib/installer');
   } catch (error) {
     console.error(
