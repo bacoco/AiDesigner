@@ -24,12 +24,20 @@ let updateProjectState = unboundUpdateProjectState;
 let saveDeliverable = unboundSaveDeliverable;
 let loadPhaseContext = unboundLoadPhaseContext;
 
+/**
+ * Type guard to check if a result is an AgentTriggerParseError.
+ *
+ * @param {unknown} result - The result to check
+ * @returns {boolean} True if the result is an AgentTriggerParseError
+ */
 function isAgentParseError(result) {
   return Boolean(
     result &&
       typeof result === 'object' &&
+      result.ok === false &&
       result.errorType === 'agent_parse_error' &&
-      result.agentId,
+      result.agentId &&
+      typeof result.agentId === 'string',
   );
 }
 
@@ -118,10 +126,11 @@ async function checkTransition(conversationContext, userMessage, currentPhase) {
   });
   // Expect JSON shape guaranteed by the detector prompt.  [oai_citation:3‡phase_detector_agent.md](file-service://file-PCqsBDyx6LqYNBC2Dit6x1)
   if (isAgentParseError(detected)) {
+    const { agentId, rawSnippet, guidance } = detected;
     console.warn('[INVISIBLE] Phase detector returned an unparsable payload', {
-      agentId: detected.agentId,
-      snippet: detected.rawSnippet,
-      guidance: detected.guidance,
+      agentId,
+      snippet: rawSnippet,
+      guidance,
     });
     return { error: detected, shouldTransition: false };
   }

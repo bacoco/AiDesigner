@@ -32,16 +32,28 @@ export interface AgentTriggerParseError {
   };
 }
 
+/**
+ * Builds a structured parse error for agent trigger failures.
+ *
+ * @param agentId - The ID of the agent that failed to parse
+ * @param rawResponse - The unparsable response from the agent
+ * @param error - The error that occurred during parsing
+ * @param context - The context passed to the agent
+ * @param guidance - Optional custom guidance message for the error
+ * @returns A structured AgentTriggerParseError with debugging metadata
+ */
 function buildParseError({
   agentId,
   rawResponse,
   error,
   context,
+  guidance,
 }: {
   agentId: string;
   rawResponse: unknown;
   error: unknown;
   context: any;
+  guidance?: string;
 }): AgentTriggerParseError {
   let stringified = "";
   if (typeof rawResponse === "string") {
@@ -66,7 +78,7 @@ function buildParseError({
           message: String(error),
         };
 
-  const contextMetadata = (() => {
+  const contextMetadata: { provided: boolean; keys?: string[] } = (() => {
     if (!context || typeof context !== "object") {
       return { provided: Boolean(context) };
     }
@@ -89,7 +101,8 @@ function buildParseError({
     rawSnippet: snippet,
     rawResponse,
     guidance:
-      "Ensure the agent returns valid JSON matching the documented contract before attempting a phase transition.",
+      guidance ??
+      "Ensure the agent returns valid JSON matching the documented contract.",
     cause,
     contextMetadata,
   };
