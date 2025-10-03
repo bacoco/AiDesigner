@@ -4,11 +4,12 @@ The invisible orchestrator now enforces three governance gates that run on a fre
 
 ## Checkpoint Catalog
 
-| Checkpoint ID                | Reviewer Lane                  | Scope                                                                     | Expected Output                                                                                        |
-| ---------------------------- | ------------------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `pm_plan_review`             | `review` (Product Owner)       | Validates PRD, roadmap, and delivery risks after the PM plan is approved. | JSON payload with status (`approve`, `revise`, or `block`), summary, risk list, and follow-up actions. |
-| `architecture_design_review` | `review` (Principal Architect) | Audits architecture/system design packages before stories are written.    | Same JSON schema focusing on feasibility and integration risks.                                        |
-| `story_scope_review`         | `review` (Senior QA)           | Confirms stories/epics are testable and scoped prior to implementation.   | Same JSON schema with emphasis on acceptance coverage and testability.                                 |
+| Checkpoint ID                | Reviewer Lane                  | Scope                                                                         | Expected Output                                                                                        |
+| ---------------------------- | ------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `pm_plan_review`             | `review` (Product Owner)       | Validates PRD, roadmap, and delivery risks after the PM plan is approved.     | JSON payload with status (`approve`, `revise`, or `block`), summary, risk list, and follow-up actions. |
+| `architecture_design_review` | `review` (Principal Architect) | Audits architecture/system design packages before stories are written.        | Same JSON schema focusing on feasibility and integration risks.                                        |
+| `story_scope_review`         | `review` (Senior QA)           | Confirms stories/epics are testable and scoped prior to implementation.       | Same JSON schema with emphasis on acceptance coverage and testability.                                 |
+| `story_context_validation`   | `review` (Context Validator)   | Replays story-context enrichers in isolation before development when enabled. | Auto-recorded outcome with persona/section snapshot; blocks dev transition on `block` status.          |
 
 ## Running a Review
 
@@ -25,7 +26,7 @@ The invisible orchestrator now enforces three governance gates that run on a fre
    ```
 3. The MCP server instantiates a dedicated `BMADBridge` wired to the `review` lane. Deliverables from the source phase plus the overall project snapshot are passed as context.
 4. The reviewer agent responds with JSON. Results are stored automatically via `ProjectState.recordReviewOutcome()` in `.bmad-invisible/reviews.json` for auditability.
-5. If the reviewer returns `revise` or `block`, stay in the current phase, address the findings with the user, and re-run the checkpoint.
+5. If the reviewer returns `revise` or `block`, stay in the current phase, address the findings with the user, and re-run the checkpoint. When story-context validation is enabled, a `block` result prevents the developer transition automatically.
 
 ## Data Capture
 
