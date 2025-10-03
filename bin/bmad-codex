@@ -9,6 +9,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const { runIntegrityPreflight } = require('../common/utils/integrity');
+const { ensureCliBinary } = require('../common/utils/cli-provisioning');
 
 // Get paths
 const rootDir = path.join(__dirname, '..');
@@ -40,35 +41,69 @@ if (userArgs.length > 0 && ['start', 'chat', 'run'].includes(userArgs[0])) {
   userArgs = userArgs.slice(1);
 }
 
-// Build Codex command
-const codexArgs = [
-  '--mcp-config',
-  mcpConfigPath,
-  '--append-system-prompt',
-  orchestratorContent,
-  ...userArgs,
-];
+async function main() {
+  const codexCheck = await ensureCliBinary({
+    rootDir,
+    binaryName: 'codex',
+    friendlyName: 'OpenAI Codex CLI',
+    installGuide: {
+      autoInstallCommand:
+        'npm exec --yes @openai/codex-cli@latest -- codex --help',
+      manualSteps: [
+        {
+          label: 'Homebrew (macOS/Linux)',
+          command: 'brew install openai/codex/codex',
+        },
+        {
+          label: 'Manual download & docs',
+          url: 'https://platform.openai.com/docs/guides/codex',
+        },
+      ],
+    },
+  });
 
-console.log('🎯 Starting BMAD Invisible Orchestrator with Codex...');
+  if (!codexCheck.ok) {
+    process.exit(codexCheck.exitCode ?? 1);
+  }
 
-console.log('📡 MCP Server: bmad-invisible-orchestrator');
-console.log('🤖 Agent: Invisible BMAD Orchestrator');
-console.log('💬 Type your project idea to begin!\n');
+  // Build Codex command
+  const codexArgs = [
+    '--mcp-config',
+    mcpConfigPath,
+    '--append-system-prompt',
+    orchestratorContent,
+    ...userArgs,
+  ];
 
-// Launch Codex CLI
-const codex = spawn('codex', codexArgs, {
-  stdio: 'inherit',
-  shell: false,
-});
+  console.log('🎯 Starting BMAD Invisible Orchestrator with Codex...');
 
-codex.on('error', (error) => {
-  console.error('Error launching Codex CLI:', error.message);
-  console.error('\nMake sure Codex CLI is installed and in your PATH');
-  console.error('Install: https://platform.openai.com/docs/guides/codex');
+  console.log('📡 MCP Server: bmad-invisible-orchestrator');
+  console.log('🤖 Agent: Invisible BMAD Orchestrator');
+  console.log('💬 Type your project idea to begin!\n');
 
+  const codexBinary = codexCheck.binaryPath || 'codex';
+
+  // Launch Codex CLI
+  const codex = spawn(codexBinary, codexArgs, {
+    stdio: 'inherit',
+    shell: false,
+  });
+
+  codex.on('error', (error) => {
+    console.error('Error launching Codex CLI:', error.message);
+    console.error(
+      '\nCodex CLI is required. See https://platform.openai.com/docs/guides/codex for manual installation steps.'
+    );
+
+    process.exit(1);
+  });
+
+  codex.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+
+main().catch((error) => {
+  console.error('Unexpected error while starting Codex:', error);
   process.exit(1);
-});
-
-codex.on('exit', (code) => {
-  process.exit(code || 0);
 });

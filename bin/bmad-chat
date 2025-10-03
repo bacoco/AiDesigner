@@ -9,6 +9,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const { runIntegrityPreflight } = require('../common/utils/integrity');
+const { ensureCliBinary } = require('../common/utils/cli-provisioning');
 
 // Get paths
 const rootDir = path.join(__dirname, '..');
@@ -33,36 +34,70 @@ let orchestratorContent = fs.readFileSync(orchestratorPath, 'utf8');
 // Remove YAML frontmatter (everything between --- markers)
 orchestratorContent = orchestratorContent.replace(/^---\n[\s\S]*?\n---\n/, '');
 
-// Build Claude command
-const claudeArgs = [
-  '--mcp-config', mcpConfigPath,
-  '--append-system-prompt', orchestratorContent,
-];
+async function main() {
+  const claudeCheck = await ensureCliBinary({
+    rootDir,
+    binaryName: 'claude',
+    friendlyName: 'Claude Code CLI',
+    installGuide: {
+      autoInstallCommand:
+        'npm exec --yes @anthropic-ai/claude-code@latest -- claude --help',
+      manualSteps: [
+        {
+          label: 'Homebrew (macOS/Linux)',
+          command: 'brew install anthropic-ai/anthropic/claude',
+        },
+        {
+          label: 'Official installer & docs',
+          url: 'https://claude.ai/code',
+        },
+      ],
+    },
+  });
 
-// Add any additional args from user
-const userArgs = process.argv.slice(2);
-if (userArgs.length > 0) {
-  claudeArgs.push(...userArgs);
+  if (!claudeCheck.ok) {
+    process.exit(claudeCheck.exitCode ?? 1);
+  }
+
+  // Build Claude command
+  const claudeArgs = [
+    '--mcp-config', mcpConfigPath,
+    '--append-system-prompt', orchestratorContent,
+  ];
+
+  // Add any additional args from user
+  const userArgs = process.argv.slice(2);
+  if (userArgs.length > 0) {
+    claudeArgs.push(...userArgs);
+  }
+
+  console.log('🎯 Starting BMAD Invisible Orchestrator...');
+  console.log('📡 MCP Server: bmad-invisible-orchestrator');
+  console.log('🤖 Agent: Invisible BMAD Orchestrator');
+  console.log('💬 Type your project idea to begin!\n');
+
+  const claudeBinary = claudeCheck.binaryPath || 'claude';
+
+  // Launch Claude CLI
+  const claude = spawn(claudeBinary, claudeArgs, {
+    stdio: 'inherit',
+    shell: false, // Don't use shell to avoid parsing issues with multi-line content
+  });
+
+  claude.on('error', (error) => {
+    console.error('Error launching Claude CLI:', error.message);
+    console.error(
+      '\nClaude CLI is required. See https://claude.ai/code for installation instructions.'
+    );
+    process.exit(1);
+  });
+
+  claude.on('exit', (code) => {
+    process.exit(code || 0);
+  });
 }
 
-console.log('🎯 Starting BMAD Invisible Orchestrator...');
-console.log('📡 MCP Server: bmad-invisible-orchestrator');
-console.log('🤖 Agent: Invisible BMAD Orchestrator');
-console.log('💬 Type your project idea to begin!\n');
-
-// Launch Claude CLI
-const claude = spawn('claude', claudeArgs, {
-  stdio: 'inherit',
-  shell: false, // Don't use shell to avoid parsing issues with multi-line content
-});
-
-claude.on('error', (error) => {
-  console.error('Error launching Claude CLI:', error.message);
-  console.error('\nMake sure Claude CLI is installed and in your PATH');
-  console.error('Install: https://claude.ai/code');
+main().catch((error) => {
+  console.error('Unexpected error while starting Claude chat:', error);
   process.exit(1);
-});
-
-claude.on('exit', (code) => {
-  process.exit(code || 0);
 });

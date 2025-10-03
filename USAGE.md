@@ -214,6 +214,16 @@ When you include Codex CLI during installation, the wizard now also prepares you
 
 This step is skipped automatically in non-interactive environments. See [`codex-config.toml.example`](./codex-config.toml.example) for the full TOML structure you can tailor afterwards.
 
+### Automatic CLI Provisioning
+
+The `bin/bmad-codex` and `bin/bmad-chat` launchers now validate that the Codex and Claude CLIs are installed **before** spawning the orchestrator session. If a binary is missing, the script will:
+
+- Offer an interactive menu with installation helpers (for example `npm exec --yes @openai/codex-cli@latest -- codex --help`, Homebrew taps, and the official download docs).
+- Fall back to printing the same guidance when running in non-interactive contexts (CI, redirected stdin/stdout) so automation jobs fail fast but still surface the remediation steps.
+- Cache the resolved binary location in `.bmad-invisible/cli-state.json` once the CLI is detected so you are not prompted again on subsequent runs.
+
+Ensure your environment has network access and an up-to-date Node.js runtime so that `npm exec`-based installers can complete successfully. If you prefer manual installation, pick the documentation option from the prompt and follow the upstream instructions before re-running the launcher.
+
 ### Invisible Story Context Packets
 
 - When the orchestrator transitions into development or QA, it now assembles a just-in-time story packet inspired by V6’s `story-context` command.
