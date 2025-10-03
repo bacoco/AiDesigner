@@ -5,7 +5,9 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import * as path from "node:path";
+import { performance } from "node:perf_hooks";
 import { executeAutoCommand } from "../../lib/auto-commands.js";
+import { createStructuredLogger, StructuredLogger } from "./observability.js";
 
 type TargetedSection = {
   title: string;
@@ -288,6 +290,7 @@ export interface OrchestratorServerOptions {
   ) => Promise<void> | void;
   log?: (message: string) => void;
   onServerReady?: (server: Server) => void | Promise<void>;
+  logger?: StructuredLogger;
 }
 
 interface LaneDecisionRecord {
@@ -350,7 +353,13 @@ export async function runOrchestratorServer(
 ): Promise<void> {
   const serverName = options.serverInfo?.name ?? "bmad-invisible-orchestrator";
   const serverVersion = options.serverInfo?.version ?? "1.0.0";
-  const log = options.log ?? console.error;
+  const logger =
+    options.logger ??
+    createStructuredLogger({
+      name: serverName,
+      base: { component: "mcp-orchestrator" },
+    });
+  const textLog = options.log ?? ((message: string) => logger.info("runtime_log", { message }));
   const ensureOperationAllowed =
     options.ensureOperationAllowed ?? (async () => {
       /* no-op */
@@ -443,9 +452,12 @@ export async function runOrchestratorServer(
           : null;
 
       if (environmentInfo?.mode === "v6-modules") {
-        log(
-          `[MCP] Detected BMAD v6 module layout at ${environmentInfo.modulesRoot || environmentInfo.root} (${environmentInfo.catalog?.moduleCount ?? 0} modules)`
-        );
+        logger.info("environment_detected", {
+          operation: "detect_environment",
+          mode: environmentInfo.mode,
+          modulesRoot: environmentInfo.modulesRoot || environmentInfo.root,
+          moduleCount: environmentInfo.catalog?.moduleCount ?? 0,
+        });
       }
     }
 
@@ -482,21 +494,15 @@ export async function runOrchestratorServer(
           try {
             return JSON.parse(rawResponse);
           } catch (error: unknown) {
-            const structuredError = buildParseError({
+            logger.warn("agent_response_parse_failed", {
+              operation: "trigger_agent",
               agentId,
-              rawResponse,
-              error,
-              context,
+              error: error instanceof Error ? error.message : String(error),
             });
-
-            const errorDetails =
-              structuredError.cause?.stack || structuredError.cause?.message;
-            log(
-              `[MCP] Failed to parse response from agent ${agentId}: ${
-                errorDetails ?? "Unknown error"
-              }`
-            );
-            return structuredError;
+            return {
+              error: `Failed to parse response from agent ${agentId}`,
+              rawResponse,
+            };
           }
         }
 
@@ -517,7 +523,10 @@ export async function runOrchestratorServer(
       },
       triggerCommand: async (command: string, context: any) => {
         await ensureOperationAllowed("execute_auto_command", { command });
-        log(`[MCP] Executing command: ${command}`);
+        logger.info("auto_command_execute", {
+          operation: "execute_auto_command",
+          command,
+        });
         return executeAutoCommand(command, context, bmadBridge);
       },
       updateProjectState: async (updates: any) => {
@@ -562,7 +571,7 @@ export async function runOrchestratorServer(
       lane,
       notes,
       trigger,
-      log,
+      log: textLog,
     });
   }
 
@@ -587,7 +596,7 @@ export async function runOrchestratorServer(
         lane,
         notes,
         trigger,
-        log,
+        log: textLog,
       });
     }
 
@@ -914,12 +923,17 @@ export async function runOrchestratorServer(
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
+    const toolLogger = logger.child({ tool: name });
+    const stopToolTimer = logger.startTimer();
+    const outcomeFields: Record<string, unknown> = { operation: name };
 
     try {
       if (!ProjectState) {
         await loadDependencies();
       }
       await initializeProject();
+
+      let response: any;
 
       switch (name) {
         case "get_project_context": {
@@ -945,7 +959,7 @@ export async function runOrchestratorServer(
             );
           }
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -953,6 +967,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "detect_phase": {
@@ -989,7 +1004,7 @@ export async function runOrchestratorServer(
               shouldTransition: false,
             } as const);
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -997,6 +1012,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "load_agent_persona": {
@@ -1004,7 +1020,7 @@ export async function runOrchestratorServer(
           const phase = params.phase || projectState.state.currentPhase;
           const agent = await bmadBridge.loadAgent(`${phase}`);
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1012,6 +1028,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "transition_phase": {
@@ -1046,7 +1063,7 @@ export async function runOrchestratorServer(
             transitionResult.storyContextValidation = storyContextValidationResult.record;
           }
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1054,6 +1071,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "configure_developer_lane": {
@@ -1069,7 +1087,7 @@ export async function runOrchestratorServer(
             developerLaneConfig.validationLane = params.validationLane as LaneKey;
           }
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1084,6 +1102,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "run_story_context_validation": {
@@ -1100,7 +1119,7 @@ export async function runOrchestratorServer(
             trigger: "manual_tool",
           });
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1117,6 +1136,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "generate_deliverable": {
@@ -1201,7 +1221,7 @@ export async function runOrchestratorServer(
 
           await projectState.storeDeliverable(params.type, result.content, metadata);
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1212,6 +1232,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "record_decision": {
@@ -1222,7 +1243,7 @@ export async function runOrchestratorServer(
             params.rationale || ""
           );
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1230,13 +1251,14 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "add_conversation_message": {
           const params = args as { role: string; content: string };
           await projectState.addMessage(params.role, params.content);
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1244,12 +1266,13 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "get_project_summary": {
           const summary = projectState.getSummary();
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1257,12 +1280,13 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "list_bmad_agents": {
           const agents = await bmadBridge.listAgents();
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1272,6 +1296,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "execute_bmad_workflow": {
@@ -1281,7 +1306,7 @@ export async function runOrchestratorServer(
             params.context || {}
           );
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1289,6 +1314,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "run_review_checkpoint": {
@@ -1305,9 +1331,12 @@ export async function runOrchestratorServer(
           });
 
           const lane = config.lane ?? "review";
-          log(
-            `[MCP] Running review checkpoint ${params.checkpoint} using ${config.agent} on lane ${lane}`
-          );
+          logger.info("review_checkpoint_started", {
+            operation: "run_review_checkpoint",
+            checkpoint: params.checkpoint,
+            reviewer: config.agent,
+            lane,
+          });
 
           const reviewLLM = await createLLMClient(lane);
           const reviewBridge = new BMADBridge({ llmClient: reviewLLM });
@@ -1373,7 +1402,7 @@ export async function runOrchestratorServer(
             outcome: parsedOutcome,
           });
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1388,12 +1417,13 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "scan_codebase": {
           const codebase = await brownfieldAnalyzer.scanCodebase();
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1401,12 +1431,13 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "detect_existing_docs": {
           const docs = await brownfieldAnalyzer.detectExistingDocs();
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1414,6 +1445,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "load_previous_state": {
@@ -1422,7 +1454,7 @@ export async function runOrchestratorServer(
           if (previousState.exists && previousState.state) {
             await projectState.updateState(previousState.state);
 
-            return {
+            response = {
               content: [
                 {
                   type: "text",
@@ -1436,9 +1468,10 @@ export async function runOrchestratorServer(
                 },
               ],
             };
+            break;
           }
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1446,12 +1479,13 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "get_codebase_summary": {
           const summary = await brownfieldAnalyzer.generateCodebaseSummary();
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1459,6 +1493,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "select_development_lane": {
@@ -1469,11 +1504,24 @@ export async function runOrchestratorServer(
             hasExistingPRD: Object.keys(projectState.deliverables).length > 0,
           };
 
+          const selectionTimer = logger.startTimer();
           const decision = await LaneSelector.selectLaneWithLog(
             params.userMessage,
             context,
             projectState.projectPath
           );
+
+          const selectionDurationMs = selectionTimer();
+          logger.info("lane_selection_completed", {
+            operation: "select_development_lane",
+            lane: decision.lane,
+            confidence: decision.confidence,
+            durationMs: selectionDurationMs,
+          });
+          logger.recordTiming("mcp.lane.selection.duration_ms", selectionDurationMs, {
+            operation: "select_development_lane",
+            lane: decision.lane,
+          });
 
           await projectState.recordLaneDecision(
             decision.lane,
@@ -1489,7 +1537,11 @@ export async function runOrchestratorServer(
             trigger: params.userMessage,
           });
 
-          return {
+          outcomeFields.lane = decision.lane;
+          outcomeFields.confidence = decision.confidence;
+          outcomeFields.trigger = params.userMessage;
+
+          response = {
             content: [
               {
                 type: "text",
@@ -1497,6 +1549,7 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         case "execute_workflow": {
@@ -1507,11 +1560,24 @@ export async function runOrchestratorServer(
             hasExistingPRD: Object.keys(projectState.deliverables).length > 0,
           };
 
+          const selectionTimer = logger.startTimer();
           const decision = await LaneSelector.selectLaneWithLog(
             params.userRequest,
             context,
             projectState.projectPath
           );
+
+          const selectionDurationMs = selectionTimer();
+          logger.info("lane_selection_completed", {
+            operation: "execute_workflow",
+            lane: decision.lane,
+            confidence: decision.confidence,
+            durationMs: selectionDurationMs,
+          });
+          logger.recordTiming("mcp.lane.selection.duration_ms", selectionDurationMs, {
+            operation: "execute_workflow",
+            lane: decision.lane,
+          });
 
           await projectState.recordLaneDecision(
             decision.lane,
@@ -1529,13 +1595,34 @@ export async function runOrchestratorServer(
 
           let result: any;
 
+          outcomeFields.lane = decision.lane;
+          outcomeFields.confidence = decision.confidence;
+          outcomeFields.request = params.userRequest;
+
           if (decision.lane === "quick") {
             await ensureOperationAllowed("execute_quick_lane", {
               decision,
               request: params.userRequest,
             });
-            log("[MCP] Executing quick lane workflow...");
+            logger.info("lane_workflow_started", {
+              operation: "execute_workflow",
+              lane: "quick",
+              request: params.userRequest,
+            });
+            const laneTimer = logger.startTimer();
             result = await quickLane.execute(params.userRequest, context);
+            const laneDurationMs = laneTimer();
+            logger.info("lane_workflow_completed", {
+              operation: "execute_workflow",
+              lane: "quick",
+              confidence: decision.confidence,
+              durationMs: laneDurationMs,
+            });
+            logger.recordTiming("mcp.lane.workflow.duration_ms", laneDurationMs, {
+              operation: "execute_workflow",
+              lane: "quick",
+            });
+            outcomeFields.workflowDurationMs = laneDurationMs;
             result.lane = "quick";
             result.decision = decision;
           } else {
@@ -1543,8 +1630,12 @@ export async function runOrchestratorServer(
               decision,
               request: params.userRequest,
             });
-            log("[MCP] Executing complex lane workflow...");
-
+            logger.info("lane_workflow_started", {
+              operation: "execute_workflow",
+              lane: "complex",
+              request: params.userRequest,
+            });
+            const laneTimer = logger.startTimer();
             await bmadBridge.executePhaseWorkflow("analyst", {
               userMessage: params.userRequest,
               ...context,
@@ -1559,9 +1650,21 @@ export async function runOrchestratorServer(
               files: ["docs/prd.md", "docs/architecture.md", "docs/stories/*.md"],
               message: "Complex workflow executed through BMAD agents",
             };
+            const laneDurationMs = laneTimer();
+            logger.info("lane_workflow_completed", {
+              operation: "execute_workflow",
+              lane: "complex",
+              confidence: decision.confidence,
+              durationMs: laneDurationMs,
+            });
+            logger.recordTiming("mcp.lane.workflow.duration_ms", laneDurationMs, {
+              operation: "execute_workflow",
+              lane: "complex",
+            });
+            outcomeFields.workflowDurationMs = laneDurationMs;
           }
 
-          return {
+          response = {
             content: [
               {
                 type: "text",
@@ -1569,12 +1672,35 @@ export async function runOrchestratorServer(
               },
             ],
           };
+          break;
         }
 
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
+
+      const durationMs = stopToolTimer();
+      toolLogger.info("tool_completed", { ...outcomeFields, durationMs });
+      logger.recordTiming(`mcp.tool.${name}.duration_ms`, durationMs, {
+        tool: name,
+        operation: name,
+        status: "ok",
+      });
+
+      return response;
     } catch (error: unknown) {
+      const durationMs = stopToolTimer();
+      toolLogger.error("tool_failed", {
+        ...outcomeFields,
+        durationMs,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      logger.recordTiming(`mcp.tool.${name}.duration_ms`, durationMs, {
+        tool: name,
+        operation: name,
+        status: "error",
+      });
+
       return {
         content: [
           {
@@ -1591,11 +1717,13 @@ export async function runOrchestratorServer(
   const transport = options.transport ?? new StdioServerTransport();
   await server.connect(transport);
 
-  log(
-    `${serverName} MCP Server v${serverVersion} running on stdio${
-      laneDecisions.length > 0 ? ` (lanes tracked: ${laneDecisions.length})` : ""
-    }`
-  );
+  logger.info("server_started", {
+    operation: "startup",
+    server: serverName,
+    version: serverVersion,
+    transport: "stdio",
+    lanesTracked: laneDecisions.length,
+  });
 
   if (options.onServerReady) {
     await options.onServerReady(server);

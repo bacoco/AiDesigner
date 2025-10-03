@@ -119,14 +119,13 @@ class ModelRouter {
     return this.defaultRoute;
   }
 
-  describe(): string {
-    const entries = Array.from(this.routes.entries())
-      .map(([key, route]) => `- ${key}: ${route.provider}/${route.model}${
-        route.maxTokens ? ` (maxTokens=${route.maxTokens})` : ""
-      }`)
-      .join("\n");
-
-    return entries;
+  snapshot(): Array<ModelRoute & { key: string }> {
+    return Array.from(this.routes.entries()).map(([key, route]) => ({
+      key,
+      provider: route.provider,
+      model: route.model,
+      maxTokens: route.maxTokens,
+    }));
   }
 }
 
@@ -191,8 +190,27 @@ export class CodexClient {
     const key = (lane || "default").toLowerCase();
 
     if (!this.llmCache.has(key)) {
+      const stopTimer = this.logger.startTimer();
       const route = this.router.resolve(lane);
       this.llmCache.set(key, new LLMClient({ provider: route.provider, model: route.model }));
+
+      const durationMs = stopTimer();
+      this.logger.info("llm_client_initialized", {
+        operation: "create_llm_client",
+        lane: key,
+        provider: route.provider,
+        model: route.model,
+        durationMs,
+      });
+      this.logger.recordTiming("codex.llm_client.init_ms", durationMs, {
+        operation: "create_llm_client",
+        lane: key,
+      });
+    } else {
+      this.logger.debug("llm_client_cache_hit", {
+        operation: "create_llm_client",
+        lane: key,
+      });
     }
 
     return this.llmCache.get(key)!;
@@ -235,6 +253,21 @@ export class CodexClient {
       return;
     }
 
+    const durationMs = stopTimer();
+    this.logger.error("approval_blocked", {
+      operation,
+      lane,
+      mode,
+      durationMs,
+      keys,
+    });
+    this.logger.recordTiming("codex.approval.duration_ms", durationMs, {
+      operation,
+      lane,
+      mode,
+      status: "blocked",
+    });
+
     throw new Error(
       `Operation "${operation}" blocked by Codex approval mode. ` +
         `Add it to CODEX_APPROVED_OPERATIONS or set CODEX_AUTO_APPROVE=1 to proceed.`
@@ -242,17 +275,18 @@ export class CodexClient {
   }
 
   logStartup(): void {
-    if (this.approvalMode) {
-      if (this.autoApprove) {
-        console.error("[Codex] Approval mode enabled with auto-approval");
-      } else {
-        console.error(
-          "[Codex] Approval mode enabled. Blocked operations must be explicitly allowed via CODEX_APPROVED_OPERATIONS"
-        );
-      }
-    } else {
-      console.error("[Codex] Approval mode disabled");
-    }
+    const approvalMode = this.approvalMode
+      ? this.autoApprove
+        ? "auto"
+        : "manual"
+      : "disabled";
+
+    this.logger.info("codex_startup", {
+      approvalMode,
+      approvedOperations: Array.from(this.approvedOperations),
+      routes: this.router.snapshot(),
+    });
+  }
 
     if (this.policyEnforcer?.getSource()) {
       console.error(`[Codex] Operation policy loaded from ${this.policyEnforcer.getSource()}`);
@@ -267,6 +301,9 @@ async function main(): Promise<void> {
   const codexClient = CodexClient.fromEnvironment();
   codexClient.logStartup();
 
+  const baseLogger = codexClient.getLogger();
+  const orchestratorLogger = baseLogger.child({ component: "mcp-orchestrator" });
+
   const options: OrchestratorServerOptions = {
     serverInfo: {
       name: "bmad-invisible-codex",
@@ -275,11 +312,15 @@ async function main(): Promise<void> {
     createLLMClient: (lane) => codexClient.createLLMClient(lane),
     ensureOperationAllowed: (operation, metadata) =>
       codexClient.ensureOperationAllowed(operation, metadata),
+    logger: orchestratorLogger,
     log: (message) => {
-      console.error(message.startsWith("[MCP]") ? message : `[MCP] ${message}`);
+      orchestratorLogger.info("legacy_log", { message });
     },
     onServerReady: () => {
-      console.error("[Codex] BMAD Codex MCP bridge ready on stdio");
+      orchestratorLogger.info("server_ready", {
+        event: "server_ready",
+        transport: "stdio",
+      });
     },
   };
 
@@ -291,4 +332,8 @@ if (require.main === module) {
     console.error("[Codex] Server error:", error);
     process.exit(1);
   });
-}
+  logger.error("server_error", {
+    error: error instanceof Error ? error.message : String(error),
+  });
+  process.exit(1);
+});
