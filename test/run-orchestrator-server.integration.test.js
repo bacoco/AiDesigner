@@ -349,6 +349,7 @@ function createMockLogger() {
   return {
     info: jest.fn(),
     error: jest.fn(),
+    warn: jest.fn(),
     recordTiming: jest.fn(),
     startTimer: jest.fn(() => stopTimerStub),
     child: jest.fn(() => childLogger),
@@ -528,6 +529,65 @@ describe('runOrchestratorServer integration flows', () => {
         levelSignals: expect.any(Object),
         levelRationale: expect.stringContaining('Result: level 2'),
       }),
+    );
+  });
+
+  it('falls back to the complex lane when quick lane setup fails', async () => {
+    laneSelector.__laneDecisionsQueue.push({
+      lane: 'quick',
+      rationale: 'fallback scenario',
+      confidence: 0.6,
+    });
+
+    const quickError = new Error('quick lane unavailable');
+    const createLLMClient = jest.fn().mockImplementation(async (lane) => {
+      if (lane === 'quick') {
+        throw quickError;
+      }
+
+      return { lane };
+    });
+
+    const ensureOperationAllowed = jest.fn().mockResolvedValue();
+    const logger = createMockLogger();
+
+    const { server } = await setupServer({
+      createLLMClient,
+      ensureOperationAllowed,
+      logger,
+    });
+
+    const callTool = server.handlers.get(CallToolRequestSchema);
+
+    const response = await callTool({
+      params: {
+        name: 'execute_workflow',
+        arguments: { userRequest: 'Fix landing page typo', context: {} },
+      },
+    });
+
+    expect(response.isError).not.toBe(true);
+    const payload = JSON.parse(response.content[0].text);
+    expect(payload.lane).toBe('complex');
+    expect(payload.quickLane).toEqual(
+      expect.objectContaining({
+        available: false,
+        reason: expect.stringContaining('quick lane unavailable'),
+      }),
+    );
+    expect(quickLaneModule.__quickLaneMocks.initialize).not.toHaveBeenCalled();
+    expect(quickLaneModule.__quickLaneMocks.execute).not.toHaveBeenCalled();
+    expect(ensureOperationAllowed).toHaveBeenCalledWith(
+      'execute_complex_lane',
+      expect.objectContaining({ request: 'Fix landing page typo' }),
+    );
+    expect(logger.warn).toHaveBeenCalledWith(
+      'quick_lane_disabled',
+      expect.objectContaining({ reason: expect.stringContaining('quick lane unavailable') }),
+    );
+    expect(logger.info).toHaveBeenCalledWith(
+      'quick_lane_execution_skipped',
+      expect.objectContaining({ fallbackLane: 'complex' }),
     );
   });
 

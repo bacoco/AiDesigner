@@ -510,6 +510,7 @@ BMAD-invisible v1.2 is a complete, working system that combines:
 ✅ **Dual-lane routing** - automatic complexity detection
 ✅ **BMAD integration** - full agent/template/task support
 ✅ **Quick lane** - template-based generation (2-3 min)
+✅ **Quick lane graceful fallback** - automatically routes to complex lane if disabled
 ✅ **Complex lane** - complete BMAD workflow (10-15 min)
 ✅ **Deliverable generation** - PRD, architecture, stories
 ✅ **State persistence** - resume anytime
@@ -727,6 +728,7 @@ Assistant: ✓ PostgreSQL MCP server configured and ready!
 ✅ Project state persistence
 ✅ User validation checkpoints
 ✅ Full BMAD agent integration
+✅ Quick lane gracefully disables and defers to complex lane when unavailable
 
 ### How to Use
 
