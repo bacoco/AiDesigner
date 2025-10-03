@@ -7,8 +7,12 @@ const { spawnSync } = require('node:child_process');
 const rootDir = path.resolve(__dirname, '..');
 const distMcpDir = path.join(rootDir, 'dist', 'mcp');
 
-if (existsSync(distMcpDir)) {
+// Check for --force flag
+const forceRebuild = process.argv.includes('--force');
+
+if (existsSync(distMcpDir) && !forceRebuild) {
   console.log('MCP assets already exist in dist/mcp; skipping postinstall build.');
+  console.log('Use --force to rebuild anyway.');
   process.exit(0);
 }
 
@@ -42,11 +46,14 @@ function runTsc(tscPath, projectPath) {
   });
 
   if (result.error) {
-    throw result.error;
+    console.warn(`TypeScript compilation error for ${projectPath}:`, result.error.message);
+    console.warn('Continuing with postinstall despite compilation error...');
+    return;
   }
 
   if (result.status !== 0) {
-    throw new Error(`TypeScript compilation failed for ${projectPath}`);
+    console.warn(`TypeScript compilation failed for ${projectPath} (exit code ${result.status})`);
+    console.warn('Continuing with postinstall despite compilation failure...');
   }
 }
 
