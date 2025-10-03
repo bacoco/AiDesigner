@@ -7,6 +7,135 @@ import {
 import * as path from "node:path";
 import { executeAutoCommand } from "../../lib/auto-commands.js";
 
+type TargetedSection = {
+  title: string;
+  body: string;
+  priority?: string | number;
+};
+
+function stringifyValue(value: unknown): string {
+  if (value == null) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => `- ${stringifyValue(item)}`)
+      .join("\n");
+  }
+
+  if (typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .map(([key, val]) => `- ${key}: ${stringifyValue(val)}`)
+      .join("\n");
+  }
+
+  return JSON.stringify(value, null, 2);
+}
+
+function buildDeveloperContextSections(projectState: any): TargetedSection[] {
+  if (!projectState) {
+    return [];
+  }
+
+  const sections: TargetedSection[] = [];
+  const state = typeof projectState.getState === "function" ? projectState.getState() : {};
+
+  const story =
+    typeof projectState.getDeliverable === "function"
+      ? projectState.getDeliverable("sm", "story")
+      : null;
+
+  if (story?.content) {
+    sections.push({
+      title: "Current Story Overview",
+      body: typeof story.content === "string" ? story.content : stringifyValue(story.content),
+      priority: "high",
+    });
+  }
+
+  if (state?.requirements && Object.keys(state.requirements).length > 0) {
+    sections.push({
+      title: "Key Requirements Snapshot",
+      body: stringifyValue(state.requirements),
+      priority: "high",
+    });
+  }
+
+  if (state?.decisions && Object.keys(state.decisions).length > 0) {
+    sections.push({
+      title: "Relevant Decisions",
+      body: stringifyValue(
+        Object.fromEntries(
+          Object.entries(state.decisions).map(([key, entry]: [string, any]) => [
+            key,
+            entry?.value ?? entry,
+          ])
+        )
+      ),
+      priority: "medium",
+    });
+  }
+
+  if (state?.nextSteps) {
+    sections.push({
+      title: "Next Steps from SM",
+      body: stringifyValue(state.nextSteps),
+      priority: "medium",
+    });
+  }
+
+  const recentConversation =
+    typeof projectState.getConversation === "function"
+      ? projectState.getConversation(5)
+      : [];
+
+  if (Array.isArray(recentConversation) && recentConversation.length > 0) {
+    const conversationBody = recentConversation
+      .map((msg: any) => {
+        const role = msg?.role ?? "unknown";
+        const phase = msg?.phase ? ` [${msg.phase}]` : "";
+        const content = msg?.content ?? "";
+        return `- ${role}${phase}: ${content}`;
+      })
+      .join("\n");
+
+    sections.push({
+      title: "Recent Conversation Signals",
+      body: conversationBody,
+      priority: "low",
+    });
+  }
+
+  return sections;
+}
+
+function createDeveloperContextInjector(projectState: any) {
+  return async function developerContextInjector({ agentId }: { agentId: string }) {
+    if (agentId !== "dev") {
+      return null;
+    }
+
+    const sections = buildDeveloperContextSections(projectState);
+
+    if (!sections.length) {
+      return null;
+    }
+
+    return {
+      sections,
+    };
+  };
+}
+
 export type LaneKey = "default" | "quick" | "complex" | string;
 
 export interface OrchestratorServerOptions {
@@ -30,6 +159,47 @@ interface LaneDecisionRecord {
   confidence?: number;
   trigger?: string;
 }
+
+interface ReviewCheckpointConfig {
+  title: string;
+  sourcePhase: string;
+  agent: string;
+  lane?: LaneKey;
+  deliverableKeys?: string[];
+  instructions: string;
+}
+
+const REVIEW_CHECKPOINTS: Record<string, ReviewCheckpointConfig> = {
+  pm_plan_review: {
+    title: "Plan Quality Gate",
+    sourcePhase: "pm",
+    agent: "po",
+    lane: "review",
+    deliverableKeys: ["prd", "project_plan", "timeline"],
+    instructions:
+      "You are acting as an independent reviewer validating the product plan. Review the provided planning deliverables, identify risks or gaps, and respond with JSON {\"status\": \"approve\"|\"revise\"|\"block\", \"summary\": string, \"risks\": string[], \"follow_up\": string[]}.",
+  },
+  architecture_design_review: {
+    title: "Architecture Design Review",
+    sourcePhase: "architect",
+    agent: "architect",
+    lane: "review",
+    deliverableKeys: ["architecture", "system_design", "tech_stack"],
+    instructions:
+      "You are a principal architect performing a design review. Inspect the architecture deliverables for feasibility, scalability, and alignment with requirements. Respond with JSON {\"status\": \"approve\"|\"revise\"|\"block\", \"summary\": string, \"risks\": string[], \"follow_up\": string[]}.",
+  },
+  story_scope_review: {
+    title: "Story Scope Review",
+    sourcePhase: "sm",
+    agent: "qa",
+    lane: "review",
+    deliverableKeys: ["user_stories", "epics", "sprint_plan"],
+    instructions:
+      "You are a senior QA reviewer validating story readiness. Evaluate the backlog deliverables for clarity, testability, and risk. Respond with JSON {\"status\": \"approve\"|\"revise\"|\"block\", \"summary\": string, \"risks\": string[], \"follow_up\": string[]}.",
+  },
+};
+
+const REVIEW_CHECKPOINT_NAMES = Object.freeze(Object.keys(REVIEW_CHECKPOINTS));
 
 async function getDefaultLLMClientCtor(): Promise<any> {
   const mod = await import("../../lib/llm-client.js");
@@ -76,6 +246,7 @@ export async function runOrchestratorServer(
   let brownfieldAnalyzer: any;
   let quickLane: any;
   const laneDecisions: LaneDecisionRecord[] = [];
+  let developerContextInjectorRegistered = false;
 
   async function loadDependencies() {
     const libPath = path.join(__dirname, "..", "..", "lib");
@@ -117,6 +288,17 @@ export async function runOrchestratorServer(
       const llmClient = await createLLMClient("default");
       bmadBridge = new BMADBridge({ llmClient });
       await bmadBridge.initialize();
+
+      const environmentInfo =
+        typeof bmadBridge.getEnvironmentInfo === "function"
+          ? bmadBridge.getEnvironmentInfo()
+          : null;
+
+      if (environmentInfo?.mode === "v6-modules") {
+        log(
+          `[MCP] Detected BMAD v6 module layout at ${environmentInfo.modulesRoot || environmentInfo.root} (${environmentInfo.catalog?.moduleCount ?? 0} modules)`
+        );
+      }
     }
 
     if (!deliverableGen) {
@@ -382,6 +564,26 @@ export async function runOrchestratorServer(
             },
           },
           required: ["phase"],
+        },
+      },
+      {
+        name: "run_review_checkpoint",
+        description:
+          "Run an independent reviewer model against a validation checkpoint and capture the outcome",
+        inputSchema: {
+          type: "object",
+          properties: {
+            checkpoint: {
+              type: "string",
+              enum: REVIEW_CHECKPOINT_NAMES,
+              description: "Review checkpoint identifier",
+            },
+            notes: {
+              type: "string",
+              description: "Additional context or concerns for the reviewer",
+            },
+          },
+          required: ["checkpoint"],
         },
       },
       {
@@ -685,6 +887,105 @@ export async function runOrchestratorServer(
               {
                 type: "text",
                 text: JSON.stringify(result, null, 2),
+              },
+            ],
+          };
+        }
+
+        case "run_review_checkpoint": {
+          const params = args as { checkpoint: string; notes?: string };
+          const config = REVIEW_CHECKPOINTS[params.checkpoint];
+
+          if (!config) {
+            throw new Error(`Unknown review checkpoint: ${params.checkpoint}`);
+          }
+
+          await ensureOperationAllowed("run_review_checkpoint", {
+            checkpoint: params.checkpoint,
+            phase: config.sourcePhase,
+          });
+
+          const lane = config.lane ?? "review";
+          log(
+            `[MCP] Running review checkpoint ${params.checkpoint} using ${config.agent} on lane ${lane}`
+          );
+
+          const reviewLLM = await createLLMClient(lane);
+          const reviewBridge = new BMADBridge({ llmClient: reviewLLM });
+          await reviewBridge.initialize();
+
+          const projectSnapshot = projectState.exportForLLM();
+          const phaseDeliverables = projectState.getPhaseDeliverables(config.sourcePhase);
+
+          const deliverables =
+            config.deliverableKeys && config.deliverableKeys.length > 0
+              ? Object.fromEntries(
+                  config.deliverableKeys
+                    .map((key) => [key, phaseDeliverables?.[key]])
+                    .filter(([, value]) => value != null)
+                )
+              : phaseDeliverables;
+
+          const reviewContext = {
+            task: config.instructions,
+            checkpoint: params.checkpoint,
+            reviewerTitle: config.title,
+            project: projectSnapshot,
+            phaseDeliverables: deliverables,
+            additionalNotes: params.notes ?? "",
+          };
+
+          const reviewResult = await reviewBridge.runAgent(config.agent, reviewContext);
+          let parsedOutcome: any = reviewResult?.response;
+
+          if (typeof parsedOutcome === "string") {
+            try {
+              parsedOutcome = JSON.parse(parsedOutcome);
+            } catch (error) {
+              parsedOutcome = {
+                status: "revise",
+                summary: "Reviewer response was not valid JSON.",
+                raw: reviewResult?.response,
+              };
+            }
+          }
+
+          if (parsedOutcome == null || typeof parsedOutcome !== "object") {
+            parsedOutcome = {
+              status: "revise",
+              summary: "Reviewer response unavailable.",
+              raw: reviewResult?.response,
+            };
+          }
+
+          if (!parsedOutcome.status) {
+            parsedOutcome.status = "revise";
+          }
+
+          const record = await projectState.recordReviewOutcome(params.checkpoint, {
+            phase: config.sourcePhase,
+            reviewer: config.agent,
+            lane,
+            status: parsedOutcome.status,
+            summary: parsedOutcome.summary ?? parsedOutcome.notes ?? "",
+            risks: parsedOutcome.risks ?? [],
+            followUp: parsedOutcome.follow_up ?? parsedOutcome.actions ?? [],
+            additionalNotes: params.notes ?? undefined,
+            outcome: parsedOutcome,
+          });
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    checkpoint: params.checkpoint,
+                    record,
+                  },
+                  null,
+                  2
+                ),
               },
             ],
           };

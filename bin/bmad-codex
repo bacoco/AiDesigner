@@ -8,9 +8,11 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const { runIntegrityPreflight } = require('../common/utils/integrity');
 
 // Get paths
 const rootDir = path.join(__dirname, '..');
+runIntegrityPreflight(rootDir, { silentOnMatch: true });
 const mcpConfigPath = path.join(rootDir, 'mcp', 'bmad-config.json');
 const orchestratorPath = path.join(rootDir, 'agents', 'invisible-orchestrator.md');
 
