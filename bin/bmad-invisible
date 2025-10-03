@@ -465,6 +465,8 @@ const commands = {
         // Detect Tailwind config variant (.ts vs .js)
         if (fs.existsSync(path.join(projectRoot, 'tailwind.config.js'))) {
           config.tailwindConfig = 'tailwind.config.js';
+        } else if (fs.existsSync(path.join(projectRoot, 'tailwind.config.cjs'))) {
+          config.tailwindConfig = 'tailwind.config.cjs';
         } else if (fs.existsSync(path.join(projectRoot, 'tailwind.config.mjs'))) {
           config.tailwindConfig = 'tailwind.config.mjs';
         }
