@@ -1,0 +1,16 @@
+{
+  // Existing OpenCode configuration fixture without explicit model
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["./custom/instructions.yaml"],
+  "agent": {
+    "custom": {
+      "prompt": "{file:./agents/custom.md}"
+    }
+  },
+  "fallbackModels": ["custom/provider-model"],
+  "command": {
+    "custom": {
+      "template": "{file:./tasks/custom.md}"
+    }
+  }
+}
