@@ -136,6 +136,32 @@ You: This looks good but I want Firebase instead of PostgreSQL
 Assistant: Absolutely! Let me update the architecture...
 ```
 
+## Integrity Safeguards
+
+BMAD-Invisible now records SHA-256 hashes for critical, user-modifiable resources.
+When you launch any CLI entry point (`bmad-invisible`, `bmad-invisible-codex`, or
+`bmad-chat`), a quick pre-flight check compares the current files against the
+baseline stored in `.bmad-invisible/critical-hashes.json`.
+
+- ✅ Matching hashes: the CLI proceeds silently.
+- ⚠️ Diverging hashes: you receive a warning summarising which core files changed,
+  went missing, or were newly added under tracked scopes such as:
+  - `bmad-core/core-config.yaml`
+  - `bmad-core/checklists/`
+  - `bmad-core/templates/`
+  - `expansion-packs/`
+  - `codex-config.toml.example`
+
+If you intentionally customise these resources, regenerate the baseline after
+your edits:
+
+```bash
+node tools/update-critical-hashes.js
+```
+
+The baseline is committed per project, so the warning helps catch accidental
+overwrites during upgrades while still allowing deliberate extensions.
+
 ## Advanced Usage
 
 ### Using Other LLMs
