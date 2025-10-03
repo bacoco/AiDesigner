@@ -1,6 +1,6 @@
 # MCP Management System
 
-The BMAD-invisible project includes a comprehensive Model Context Protocol (MCP) management system that enables seamless integration with AI tools and services.
+The Agilai project includes a comprehensive Model Context Protocol (MCP) management system that enables seamless integration with AI tools and services.
 
 ## Overview
 
@@ -212,8 +212,8 @@ MCP servers often require API keys, tokens, and passwords. The security system p
 
 2. **Encrypted Vault** (fallback):
    - AES-256-GCM encryption
-   - Master key stored with agilai6agilaiagilai permissions
-   - Located in `~/.bmad-invisible/secure/`
+   - Master key stored with `600` permissions
+   - Located in `~/.agilai/secure/`
 
 ### Migrate to Secure Storage
 
@@ -272,7 +272,7 @@ Claude Configuration:
     Path: mcpServers.github.env.GITHUB_TOKEN
     Fix: Run 'npm run mcp:secure'
 
-BMAD Configuration:
+Agilai Configuration:
   ✓ Secure
 
 Stored Credentials:
@@ -332,12 +332,12 @@ The orchestrator follows these rules:
   .mcp-profiles.json        # Profile metadata
 
 mcp/
-  bmad-config.json          # BMAD MCP config (default profile)
-  bmad-config.dev.json      # Dev profile
+  agilai-config.json        # Agilai MCP config (default profile)
+  agilai-config.dev.json    # Dev profile
 
-~/.bmad-invisible/secure/
+~/.agilai/secure/
   vault.enc                 # Encrypted credentials
-  .master.key               # Encryption key (agilai6agilaiagilai)
+  .master.key               # Encryption key (chmod 600)
 ```
 
 ### Config Format
@@ -402,7 +402,7 @@ npm run mcp:doctor
 
 # Common issues:
 # - Missing dependencies: npm install <package>
-# - Permission errors: chmod 6agilaiagilai ~/.bmad-invisible/secure/.master.key
+# - Permission errors: chmod 600 ~/.agilai/secure/.master.key
 # - Server not responding: Restart Claude Desktop or MCP server
 # - Config corruption: Restore from profile export
 
@@ -613,7 +613,7 @@ npm run mcp:doctor
 
 ```bash
 # Fix permissions
-chmod 6agilaiagilai ~/.bmad-invisible/secure/.master.key
+chmod 600 ~/.agilai/secure/.master.key
 ```
 
 ### Getting Help
@@ -621,7 +621,7 @@ chmod 6agilaiagilai ~/.bmad-invisible/secure/.master.key
 - Check logs: `DEBUG=mcp:* <command>`
 - Run doctor: `npm run mcp:doctor`
 - Security audit: `npm run mcp:audit`
-- GitHub Issues: https://github.com/bacoco/BMAD-invisible/issues
+- GitHub Issues: https://github.com/bacoco/agilai/issues
 
 ## Contributing
 
