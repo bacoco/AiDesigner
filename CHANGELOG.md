@@ -1,3 +1,113 @@
+## [1.3.7](https://github.com/bacoco/BMAD-invisible/compare/v1.3.5...v1.3.7) (2025-10-03)
+
+### Features
+
+**🎉 Complete MCP Management System** - Four-phase implementation of comprehensive Model Context Protocol management:
+
+#### Phase 1: Interactive MCP CLI
+
+- **Interactive server management**: `mcp:list`, `mcp:doctor`, `mcp:add`, `mcp:remove` commands
+- **Health diagnostics**: Comprehensive health checks with error detection and fix suggestions
+- **Configuration validation**: Automatic validation of MCP server configurations
+- **Interactive wizards**: Guided setup for adding custom MCP servers
+
+#### Phase 2: MCP Registry Integration
+
+- **Built-in server catalog**: 15+ official MCP servers (filesystem, github, postgres, puppeteer, etc.)
+- **Smart search**: `mcp:search` with category filtering
+- **One-command installation**: `mcp:install` with automatic environment setup
+- **Context-aware suggestions**: `mcp:suggest` analyzes project and recommends servers
+- **Registry browser**: `mcp:browse` to explore all available servers
+- **24-hour caching**: Efficient registry data caching with GitHub fallback
+
+#### Phase 3: Conversational Configuration
+
+- **Natural language installation**: Install MCP servers through conversation with invisible orchestrator
+- **6 new MCP tools** integrated into runtime:
+  - `search_mcp_servers` - Find servers by keyword/category
+  - `suggest_mcp_servers` - Context-aware project recommendations
+  - `install_mcp_server` - Automated installation and configuration
+  - `list_mcp_servers` - List configured servers
+  - `get_mcp_health` - Health diagnostics
+  - `browse_mcp_registry` - Explore registry
+- **Transparent integration**: Users can request tools naturally without MCP terminology
+- **Updated orchestrator**: Enhanced invisible-orchestrator.md with MCP management capabilities
+
+#### Phase 4: Environment Profiles & Security
+
+- **Environment profiles**: Separate dev/staging/prod configurations
+- **Profile inheritance**: Parent-child profile relationships to reduce duplication
+- **Auto-detection**: Smart profile selection based on MCP_PROFILE env, NODE_ENV, or git branch
+- **Profile management**: Create, switch, delete, compare, export, import profiles
+- **AES-256-GCM encryption**: Secure credential storage with military-grade encryption
+- **Cross-platform keychain**: Integration with macOS Keychain, Windows Credential Manager, Linux Secret Service
+- **Automatic migration**: `mcp:secure` converts plain-text credentials to encrypted vault
+- **Security audit**: `mcp:audit` scans for exposed secrets and security issues
+- **Vault references**: `{{vault:key}}` pattern for secure credential resolution
+
+### New Files
+
+#### Tools
+
+- `tools/mcp-manager.js` (1066 lines) - Core MCP management with profiles and security
+- `tools/mcp-registry.js` (470 lines) - Registry integration with caching
+- `tools/mcp-security.js` (458 lines) - Encryption and keychain integration
+- `tools/mcp-profiles.js` (445 lines) - Environment profile management
+
+#### Documentation
+
+- `docs/mcp-management.md` (623 lines) - Complete MCP management guide
+- `docs/mcp-examples.md` (1095 lines) - 18 real-world usage examples
+
+### Documentation Updates
+
+- **README.md**: Added comprehensive "MCP Management System" section with quick start
+- **Updated examples**: All MCP workflows documented with complete command references
+
+### CLI Commands Added
+
+**Profile Management:**
+
+```bash
+npm run mcp:profile:list      # List all profiles
+npm run mcp:profile:create    # Create new profile
+npm run mcp:profile:switch    # Switch active profile
+npm run mcp:profile:delete    # Delete profile
+npm run mcp:profile:diff      # Compare profiles
+npm run mcp:profile:export    # Export profile
+npm run mcp:profile:import    # Import profile
+```
+
+**Security:**
+
+```bash
+npm run mcp:secure            # Migrate to encrypted storage
+npm run mcp:audit             # Run security audit
+```
+
+**Server Management:**
+
+```bash
+npm run mcp:browse            # Browse registry
+npm run mcp:search            # Search servers
+npm run mcp:install           # Install server
+npm run mcp:suggest           # Get suggestions
+npm run mcp:add               # Add custom server
+npm run mcp:remove            # Remove server
+npm run mcp:list              # List configured servers
+npm run mcp:doctor            # Health check
+```
+
+### Key Benefits
+
+- **Zero-config for common tools**: Popular servers install with one command
+- **Enterprise-ready security**: Production credentials safely encrypted
+- **Team collaboration**: Export/import profiles for consistent team setups
+- **Multi-environment**: Separate configs for dev/staging/prod
+- **Automatic suggestions**: System recommends relevant tools based on project
+- **Conversational setup**: Install tools through natural language
+- **Comprehensive docs**: 1700+ lines of documentation with 18 examples
+
 ## [1.3.5](https://github.com/bacoco/BMAD-invisible/compare/v1.3.4...v1.3.5) (2025-10-03)
 
 ### Bug Fixes
