@@ -241,16 +241,39 @@ async function runOrchestratorServer(options = {}) {
     (async () => {
       /* no-op */
     });
+  let quickLane;
+  let quickLaneEnabled = true;
+  let quickLaneDisabledReason;
+  const disableQuickLane = (stage, error) => {
+    if (!quickLaneEnabled) {
+      return;
+    }
+    quickLaneEnabled = false;
+    quickLane = undefined;
+    quickLaneDisabledReason = error instanceof Error ? error.message : String(error);
+    logger.warn('quick_lane_disabled', {
+      operation: stage,
+      reason: quickLaneDisabledReason,
+    });
+  };
   let defaultLLMCtor;
   const createLLMClient = async (lane) => {
-    if (options.createLLMClient) {
-      const result = await options.createLLMClient(lane);
-      return result;
+    try {
+      if (options.createLLMClient) {
+        const result = await options.createLLMClient(lane);
+        return result;
+      }
+      if (!defaultLLMCtor) {
+        defaultLLMCtor = await getDefaultLLMClientCtor();
+      }
+      return new defaultLLMCtor();
+    } catch (error) {
+      if (lane === 'quick') {
+        disableQuickLane('create_llm_client', error);
+        return undefined;
+      }
+      throw error;
     }
-    if (!defaultLLMCtor) {
-      defaultLLMCtor = await getDefaultLLMClientCtor();
-    }
-    return new defaultLLMCtor();
   };
   let ProjectState;
   let BMADBridge;
@@ -265,7 +288,6 @@ async function runOrchestratorServer(options = {}) {
   let bmadBridge;
   let deliverableGen;
   let brownfieldAnalyzer;
-  let quickLane;
   const laneDecisions = [];
   let developerContextInjectorRegistered = false;
   const developerLaneConfig = {
@@ -341,10 +363,17 @@ async function runOrchestratorServer(options = {}) {
     if (!brownfieldAnalyzer) {
       brownfieldAnalyzer = new BrownfieldAnalyzer(projectPath);
     }
-    if (!quickLane) {
-      const quickLaneLLM = await createLLMClient('quick');
-      quickLane = new QuickLane(projectPath, { llmClient: quickLaneLLM });
-      await quickLane.initialize();
+    if (quickLaneEnabled && !quickLane) {
+      try {
+        const quickLaneLLM = await createLLMClient('quick');
+        if (!quickLaneEnabled) {
+          return;
+        }
+        quickLane = new QuickLane(projectPath, { llmClient: quickLaneLLM });
+        await quickLane.initialize();
+      } catch (error) {
+        disableQuickLane('initialize_quick_lane', error);
+      }
     }
     phaseTransitionHooks.bindDependencies({
       triggerAgent: async (agentId, context) => {
@@ -1451,7 +1480,11 @@ async function runOrchestratorServer(options = {}) {
             levelRationale,
           });
           let result;
+          const quickLaneActive = quickLaneEnabled && typeof quickLane?.execute === 'function';
+          const selectedQuickLane = decision.lane === 'quick';
+          const executedLane = selectedQuickLane && quickLaneActive ? 'quick' : 'complex';
           outcomeFields.lane = decision.lane;
+          outcomeFields.executedLane = executedLane;
           outcomeFields.confidence = decision.confidence;
           outcomeFields.request = params.userRequest;
           if (scaleLevel !== undefined) {
@@ -1466,7 +1499,13 @@ async function runOrchestratorServer(options = {}) {
           if (levelRationale) {
             outcomeFields.levelRationale = levelRationale;
           }
-          if (decision.lane === 'quick') {
+          if (selectedQuickLane && !quickLaneActive) {
+            outcomeFields.quickLaneAvailable = false;
+            if (quickLaneDisabledReason) {
+              outcomeFields.quickLaneDisabledReason = quickLaneDisabledReason;
+            }
+          }
+          if (executedLane === 'quick') {
             await ensureOperationAllowed('execute_quick_lane', {
               decision,
               request: params.userRequest,
@@ -1493,6 +1532,13 @@ async function runOrchestratorServer(options = {}) {
             result.lane = 'quick';
             result.decision = decision;
           } else {
+            if (selectedQuickLane && !quickLaneActive) {
+              logger.info('quick_lane_execution_skipped', {
+                operation: 'execute_workflow',
+                fallbackLane: 'complex',
+                reason: quickLaneDisabledReason ?? 'Quick lane unavailable or not initialized',
+              });
+            }
             await ensureOperationAllowed('execute_complex_lane', {
               decision,
               request: params.userRequest,
@@ -1516,6 +1562,12 @@ async function runOrchestratorServer(options = {}) {
               files: ['docs/prd.md', 'docs/architecture.md', 'docs/stories/*.md'],
               message: 'Complex workflow executed through BMAD agents',
             };
+            if (selectedQuickLane && !quickLaneActive) {
+              result.quickLane = {
+                available: false,
+                reason: quickLaneDisabledReason,
+              };
+            }
             const laneDurationMs = laneTimer();
             logger.info('lane_workflow_completed', {
               operation: 'execute_workflow',
