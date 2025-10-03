@@ -7,7 +7,22 @@
  * Get the configured assistant provider from environment
  * @returns {string} Provider name (normalized to lowercase)
  */
-const getAssistantProvider = () => (process.env.BMAD_ASSISTANT_PROVIDER || '').trim().toLowerCase();
+const normalizeProvider = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
+
+const getAssistantProvider = () => {
+  const directProvider = normalizeProvider(process.env.BMAD_ASSISTANT_PROVIDER);
+
+  if (directProvider && directProvider !== 'anthropic') {
+    return directProvider;
+  }
+
+  const fallbackProvider = normalizeProvider(process.env.LLM_PROVIDER);
+  if (fallbackProvider) {
+    return fallbackProvider;
+  }
+
+  return directProvider;
+};
 
 /**
  * Build spawn environment for assistant CLI with GLM support
