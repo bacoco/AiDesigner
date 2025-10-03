@@ -119,7 +119,7 @@ describe('LLMClient', () => {
       'POST',
       expect.any(Object),
       expect.objectContaining({ Authorization: 'Bearer glm-key' }),
-      '7443',
+      7443,
     );
   });
 
@@ -301,5 +301,44 @@ describe('LLMClient', () => {
       }),
       expect.any(Function),
     );
+  });
+
+  it('automatically adds https:// scheme to GLM base URL without scheme', async () => {
+    process.env.ZHIPUAI_API_KEY = 'glm-key';
+    process.env.GLM_BASE_URL = 'example.com';
+
+    const client = new LLMClient({ provider: 'glm' });
+
+    const makeRequestSpy = jest
+      .spyOn(client, 'makeRequest')
+      .mockResolvedValue({ choices: [{ message: { content: 'response' } }] });
+
+    await client.chatGLM([{ role: 'user', content: 'Ping?' }], {
+      temperature: 0.2,
+      maxTokens: 32,
+    });
+
+    expect(makeRequestSpy).toHaveBeenCalledWith(
+      'example.com',
+      '/api/paas/v4/chat/completions',
+      'POST',
+      expect.any(Object),
+      expect.any(Object),
+      undefined,
+    );
+  });
+
+  it('throws descriptive error for invalid GLM base URL', async () => {
+    process.env.ZHIPUAI_API_KEY = 'glm-key';
+    process.env.BMAD_GLM_BASE_URL = 'ht!tp://invalid url with spaces';
+
+    const client = new LLMClient({ provider: 'glm' });
+
+    await expect(
+      client.chatGLM([{ role: 'user', content: 'Test' }], {
+        temperature: 0.2,
+        maxTokens: 32,
+      }),
+    ).rejects.toThrow(/Invalid GLM base URL/);
   });
 });
