@@ -5,6 +5,7 @@ import {
   OrchestratorServerOptions,
   runOrchestratorServer,
 } from "./runtime.js";
+import { OperationPolicyEnforcer } from "./operation-policy.js";
 
 interface ModelRoute {
   provider: string;
@@ -138,18 +139,26 @@ class ModelRouter {
   }
 }
 
-class CodexClient {
+export class CodexClient {
   private readonly router: ModelRouter;
   private readonly approvalMode: boolean;
   private readonly autoApprove: boolean;
   private readonly approvedOperations: Set<string>;
   private readonly llmCache: Map<string, LLMClient> = new Map();
+  private readonly policyEnforcer?: OperationPolicyEnforcer;
 
-  constructor(router: ModelRouter, approvalMode: boolean, autoApprove: boolean, approvedOps: Set<string>) {
+  constructor(
+    router: ModelRouter,
+    approvalMode: boolean,
+    autoApprove: boolean,
+    approvedOps: Set<string>,
+    policyEnforcer?: OperationPolicyEnforcer
+  ) {
     this.router = router;
     this.approvalMode = approvalMode;
     this.autoApprove = autoApprove;
     this.approvedOperations = approvedOps;
+    this.policyEnforcer = policyEnforcer;
   }
 
   static fromEnvironment(): CodexClient {
@@ -198,7 +207,18 @@ class CodexClient {
         .filter((token) => token.length > 0)
     );
 
-    return new CodexClient(router, approvalMode, autoApprove, approvedOps);
+    const policyPath = process.env.CODEX_POLICY_PATH || process.env.CODEX_POLICY_FILE;
+    let policyEnforcer: OperationPolicyEnforcer | undefined;
+
+    if (policyPath) {
+      try {
+        policyEnforcer = OperationPolicyEnforcer.fromFile(policyPath);
+      } catch (error) {
+        console.error(`[Codex] Failed to load policy configuration from ${policyPath}:`, error);
+      }
+    }
+
+    return new CodexClient(router, approvalMode, autoApprove, approvedOps, policyEnforcer);
   }
 
   createLLMClient(lane?: LaneKey): LLMClient {
@@ -213,18 +233,39 @@ class CodexClient {
   }
 
   async ensureOperationAllowed(operation: string, metadata?: Record<string, unknown>): Promise<void> {
-    if (!this.approvalMode) {
-      return;
-    }
-
-    if (this.autoApprove) {
-      return;
-    }
-
     const keys = normalizeOperation(operation, metadata);
     const hasApproval = keys.some((key) => this.approvedOperations.has(key));
+    const assessment = this.policyEnforcer?.assess(operation, keys);
+
+    if (assessment?.violation) {
+      throw assessment.violation;
+    }
+
+    const requiresEscalation = assessment?.requiresEscalation ?? false;
+
+    if (requiresEscalation && !hasApproval) {
+      const ruleDescription = assessment?.matchedKey
+        ? `policy rule "${assessment.matchedKey}"`
+        : "the configured policy";
+
+      throw new Error(
+        `[Codex] Operation "${operation}" requires escalation per ${ruleDescription}. ` +
+          `Request approval or add a matching key to CODEX_APPROVED_OPERATIONS.`
+      );
+    }
+
+    if (!this.approvalMode) {
+      assessment?.commit?.();
+      return;
+    }
+
+    if (this.autoApprove && !requiresEscalation) {
+      assessment?.commit?.();
+      return;
+    }
 
     if (hasApproval) {
+      assessment?.commit?.();
       return;
     }
 
@@ -245,6 +286,10 @@ class CodexClient {
       }
     } else {
       console.error("[Codex] Approval mode disabled");
+    }
+
+    if (this.policyEnforcer?.getSource()) {
+      console.error(`[Codex] Operation policy loaded from ${this.policyEnforcer.getSource()}`);
     }
 
     console.error("[Codex] Model routing:");
@@ -275,7 +320,9 @@ async function main(): Promise<void> {
   await runOrchestratorServer(options);
 }
 
-main().catch((error) => {
-  console.error("[Codex] Server error:", error);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error("[Codex] Server error:", error);
+    process.exit(1);
+  });
+}
