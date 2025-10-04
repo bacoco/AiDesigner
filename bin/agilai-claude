@@ -29,12 +29,21 @@ if (!fs.existsSync(mcpConfigPath)) {
     try {
       const legacyConfig = JSON.parse(fs.readFileSync(legacyMcpConfigPath, 'utf8'));
       if (!legacyConfig.mcpServers || typeof legacyConfig.mcpServers !== 'object') {
-        throw new Error('Invalid MCP config structure');
+        throw new Error('Invalid MCP config structure: missing mcpServers object');
+      }
+      if (Object.keys(legacyConfig.mcpServers).length === 0) {
+        throw new Error('Invalid MCP config structure: no servers configured');
       }
       usingLegacyMcpConfig = true;
       mcpConfigPath = legacyMcpConfigPath;
     } catch (error) {
-      console.error(`Error: Legacy config file ${legacyMcpConfigPath} is invalid or corrupted.`);
+      if (error instanceof SyntaxError) {
+        console.error(`Error: Legacy config file ${legacyMcpConfigPath} contains invalid JSON.`);
+        console.error(`Parse error: ${error.message}`);
+      } else {
+        console.error(`Error: Legacy config file ${legacyMcpConfigPath} is invalid or corrupted.`);
+        console.error(error.message);
+      }
       console.error('Expected mcp/agilai-config.json. Run: npm run build:mcp');
       process.exit(1);
     }
@@ -44,6 +53,11 @@ if (!fs.existsSync(mcpConfigPath)) {
 if (!fs.existsSync(mcpConfigPath)) {
   console.error('Error: MCP config not found. Expected mcp/agilai-config.json. Run: npm run build:mcp');
   process.exit(1);
+}
+
+// Warn if both configs exist
+if (fs.existsSync(newMcpConfigPath) && fs.existsSync(legacyMcpConfigPath)) {
+  console.warn('ℹ️  Found legacy mcp/bmad-config.json alongside new config. You can safely remove the legacy file.');
 }
 
 if (!fs.existsSync(orchestratorPath)) {
