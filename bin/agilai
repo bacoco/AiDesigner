@@ -755,6 +755,16 @@ const OPTIONAL_MCP_SERVERS = [
       disabled: false,
     },
   },
+  {
+    id: 'gitmcp',
+    label: 'Git repository operations',
+    description: 'Git operations and version control via MCP.',
+    config: {
+      command: 'npx',
+      args: ['-y', 'gitmcp'],
+      disabled: false,
+    },
+  },
 ];
 
 const formatAssistantName = (value) =>
@@ -1113,7 +1123,7 @@ const commands = {
       }
     }
 
-    const orchestratorKey = 'agilai-orchestrator';
+    const orchestratorKey = 'agilai-invisible-orchestrator';
     const orchestratorConfig = {
       command: 'node',
       args: ['node_modules/agilai/dist/mcp/mcp/server.js'],
