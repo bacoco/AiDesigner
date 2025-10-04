@@ -360,7 +360,7 @@ async function runOrchestratorServer(options = {}) {
       }
     }
     if (!deliverableGen) {
-      deliverableGen = new DeliverableGenerator(projectPath, { agilaiBridge });
+      deliverableGen = new DeliverableGenerator(projectPath, { bmadBridge: agilaiBridge });
       await deliverableGen.initialize();
     }
     if (!brownfieldAnalyzer) {
@@ -458,7 +458,7 @@ async function runOrchestratorServer(options = {}) {
     return validationModule.runStoryContextValidation({
       projectState,
       createLLMClient,
-      AgilaiBridge,
+      BMADBridge: AgilaiBridge,
       lane,
       notes,
       trigger,
@@ -477,7 +477,7 @@ async function runOrchestratorServer(options = {}) {
       return validationModule.ensureStoryContextReadyForDevelopment({
         projectState,
         createLLMClient,
-        AgilaiBridge,
+        BMADBridge: AgilaiBridge,
         lane,
         notes,
         trigger,

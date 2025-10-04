@@ -510,7 +510,7 @@ export async function runOrchestratorServer(
     }
 
     if (!deliverableGen) {
-      deliverableGen = new DeliverableGenerator(projectPath, { agilaiBridge });
+      deliverableGen = new DeliverableGenerator(projectPath, { bmadBridge: agilaiBridge });
       await deliverableGen.initialize();
     }
 
@@ -625,7 +625,7 @@ export async function runOrchestratorServer(
     return validationModule.runStoryContextValidation({
       projectState,
       createLLMClient,
-      AgilaiBridge,
+      BMADBridge: AgilaiBridge,
       lane,
       notes,
       trigger,
@@ -650,7 +650,7 @@ export async function runOrchestratorServer(
       return validationModule.ensureStoryContextReadyForDevelopment({
         projectState,
         createLLMClient,
-        AgilaiBridge,
+        BMADBridge: AgilaiBridge,
         lane,
         notes,
         trigger,

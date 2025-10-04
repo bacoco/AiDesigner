@@ -60,10 +60,19 @@ function ensureStateDir(rootDir) {
         }
       }
 
+      // Verify fallbackDir exists before returning it
+      if (fs.existsSync(fallbackDir)) {
+        console.warn(
+          `Note: Using ${fallbackDir} for Agilai cache (installation directory is read-only)`,
+        );
+        return fallbackDir;
+      }
+
+      // If fallbackDir doesn't exist, return original stateDir as last resort
       console.warn(
-        `Note: Using ${fallbackDir} for Agilai cache (installation directory is read-only)`,
+        `Warning: Unable to create state directory. Falling back to ${stateDir} (may not be writable)`,
       );
-      return fallbackDir;
+      return stateDir;
     }
 
     if (fs.existsSync(legacyDir)) {
