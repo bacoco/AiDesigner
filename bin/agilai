@@ -741,27 +741,30 @@ const OPTIONAL_MCP_SERVERS = [
     description: 'Inspect and control active Chrome tabs via the DevTools protocol.',
     config: {
       command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-chrome-devtools'],
+      args: ['-y', 'chrome-devtools-mcp'],
       disabled: false,
     },
   },
   {
-    id: 'shadcn',
+    id: 'shadcn-ui',
     label: 'shadcn/ui component generator',
     description: 'Generate UI components from the shadcn library.',
     config: {
       command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-shadcn'],
+      args: ['-y', '@jpisnice/shadcn-ui-mcp-server'],
       disabled: false,
     },
   },
   {
-    id: 'gitmcp',
-    label: 'Git repository operations',
-    description: 'Git operations and version control via MCP.',
+    id: 'github',
+    label: 'GitHub repository operations',
+    description: 'Git operations and GitHub API via MCP.',
+    needsEnvPrompt: true,
+    envKey: 'GITHUB_PERSONAL_ACCESS_TOKEN',
+    envPrompt: 'Enter your GitHub Personal Access Token (or leave blank to skip)',
     config: {
       command: 'npx',
-      args: ['-y', 'gitmcp'],
+      args: ['-y', '@modelcontextprotocol/server-github'],
       disabled: false,
     },
   },
@@ -1190,6 +1193,40 @@ const commands = {
       });
     };
 
+    const promptInput = async (question) => {
+      if (!process.stdout.isTTY) {
+        return '';
+      }
+
+      return new Promise((resolve, reject) => {
+        const rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout,
+        });
+
+        let cleanedUp = false;
+        const cleanup = () => {
+          if (cleanedUp) return;
+          cleanedUp = true;
+          try {
+            rl.close();
+          } catch {
+            // ignore cleanup errors
+          }
+        };
+
+        rl.on('error', (error) => {
+          cleanup();
+          reject(error);
+        });
+
+        rl.question(`${question}: `, (answer) => {
+          cleanup();
+          resolve((answer || '').trim());
+        });
+      });
+    };
+
     const optionalServerPromptsNeeded = OPTIONAL_MCP_SERVERS.filter(
       ({ id }) => !mcpConfig.mcpServers[id],
     );
@@ -1223,7 +1260,35 @@ const commands = {
       }
 
       if (shouldAdd) {
-        mcpConfig.mcpServers[optional.id] = { ...optional.config };
+        const serverConfig = { ...optional.config };
+
+        // Prompt for environment variables if needed
+        if (optional.needsEnvPrompt && optional.envKey && optional.envPrompt) {
+          try {
+            // Check if env var already exists in system environment
+            const existingValue = process.env[optional.envKey];
+            if (existingValue) {
+              console.log(`ℹ️  Using ${optional.envKey} from system environment`);
+              serverConfig.env = serverConfig.env || {};
+              serverConfig.env[optional.envKey] = existingValue;
+            } else {
+              const envValue = await promptInput(optional.envPrompt);
+              if (envValue) {
+                serverConfig.env = serverConfig.env || {};
+                serverConfig.env[optional.envKey] = envValue;
+                console.log(`✅ Added ${optional.envKey} to ${optional.label} configuration`);
+              } else {
+                console.log(`⚠️ Skipping ${optional.envKey} - you can add it manually to .mcp.json later`);
+              }
+            }
+          } catch (error) {
+            console.warn(
+              `⚠️ Failed to prompt for ${optional.envKey}: ${error.message || error}`,
+            );
+          }
+        }
+
+        mcpConfig.mcpServers[optional.id] = serverConfig;
         console.log(`✅ Added optional MCP server: ${optional.label}`);
       } else {
         console.log(`⏭️ Skipped optional MCP server: ${optional.label}`);
@@ -1284,7 +1349,7 @@ const commands = {
     }
 
     // Only create components.json if shadcn MCP server is enabled
-    const shadcnEnabled = mcpConfig.mcpServers.shadcn && !mcpConfig.mcpServers.shadcn.disabled;
+    const shadcnEnabled = mcpConfig.mcpServers['shadcn-ui'] && !mcpConfig.mcpServers['shadcn-ui'].disabled;
     if (shadcnEnabled) {
       const componentsPath = path.join(projectRoot, 'components.json');
 
