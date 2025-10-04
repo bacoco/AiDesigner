@@ -1,13 +1,13 @@
-# BMAD-Invisible Critical Customizations
+# Agilai Invisible Critical Customizations
 
-This inventory captures the invisible-first features that must be preserved during any migration to the BMAD V6 module architecture.
+This inventory captures the invisible-first features that must be preserved during any migration to the Agilai V6 module architecture.
 
 ## 1. MCP Server (`src/mcp-server`)
 
 ### Purpose
 
 - Hosts the invisible orchestration workflow over Model Context Protocol (MCP) so Codex and other clients can interact through stdio.
-- Orchestrates tooling exposure, lane routing, and deliverable generation without revealing BMAD internals to the user.
+- Orchestrates tooling exposure, lane routing, and deliverable generation without revealing Agilai internals to the user.
 
 ### Key Components
 
@@ -16,7 +16,7 @@ This inventory captures the invisible-first features that must be preserved duri
   - Approval-mode safety guardrails that gate sensitive operations (auto command execution, deliverable persistence, etc.).
   - Bootstraps the orchestrator runtime with lane-aware LLM clients and logs MCP availability for Codex integration.
 - **`runtime.ts`**
-  - Lazily loads BMAD core services (`ProjectState`, `BMADBridge`, deliverable generator, brownfield analyzer) and hooks modules dynamically.
+- Lazily loads Agilai core services (`ProjectState`, `BMADBridge`, deliverable generator, brownfield analyzer) and hooks modules dynamically.
   - Exposes a rich tool surface (phase detection, lane selection, deliverable generation, workflow execution) via MCP handlers.
   - Implements dual-lane execution (`quick` vs. `complex`) with explicit approval hooks and project state updates.
   - Persists lane decisions, conversation history, and deliverables through shared project state utilities.
@@ -31,7 +31,7 @@ This inventory captures the invisible-first features that must be preserved duri
 
 ### Purpose
 
-- Provides glue between invisible orchestrator and BMAD core assets (agents, tasks, templates, checklists).
+- Provides glue between invisible orchestrator and Agilai core assets (agents, tasks, templates, checklists).
 - Ensures agent personas remain discoverable and executable without exposing methodology details to the user.
 
 ### Key Capabilities
@@ -52,7 +52,7 @@ This inventory captures the invisible-first features that must be preserved duri
 
 ### Purpose
 
-- Defines the invisible-first conversational contract that hides BMAD phases, agents, and jargon from end users.
+- Defines the invisible-first conversational contract that hides Agilai phases, agents, and jargon from end users.
 - Documents mandatory MCP tool usage patterns for brownfield detection, phase transitions, and deliverable generation.
 
 ### Critical Behaviors to Preserve
@@ -82,3 +82,7 @@ This inventory captures the invisible-first features that must be preserved duri
 - [ ] Reconcile persona tool invocations with V6 command set while maintaining invisible conversational contract.
 - [ ] Port supporting hooks (phase transition, context preservation, lane selector, auto commands) into V6 lifecycle.
 - [ ] Validate deliverable outputs remain in `docs/` and maintain naming conventions for downstream tooling.
+
+### Legacy Compatibility Notes
+
+Until the V6 refactor ships, maintainers should continue shipping the legacy `.bmad-core/` tree and `npm run bmad*` scripts alongside the new Agilai tooling. Document any custom hooks or environment expectations that rely on those legacy assets so they can be rewritten or replaced before the compatibility layer is eventually removed.

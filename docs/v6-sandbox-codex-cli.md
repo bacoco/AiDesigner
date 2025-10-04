@@ -25,7 +25,7 @@ The new defaults introduced in `lib/codex/config-manager` target the V6 CLI prof
 - Model: `GPT-5-Codex`
 - Automated approvals for both CLI tools and MCP server actions
 - MCP servers:
-  - `bmad_invisible` → `npx agilai mcp`
+  - `agilai_invisible` → `npx agilai invisible mcp`
   - Optional `chrome-devtools` and `shadcn` helpers (declared with
     `auto_start = false` until you install their binaries)
 
@@ -35,7 +35,7 @@ To (re)generate the CLI config from the sandbox, run:
 node -e "(async () => { const { ensureCodexConfig } = require('./lib/codex/config-manager.js'); const result = await ensureCodexConfig({ nonInteractive: false }); console.log('Codex config written to', result.configPath); })();"
 ```
 
-This writes/updates `~/.codex/config.toml` with the auto-approval profile and ensures the BMAD MCP server entry matches the compiled assets, while stubbing the optional helpers so Claude/Chromium tooling can be toggled on later.
+This writes/updates `~/.codex/config.toml` with the auto-approval profile and ensures the Agilai MCP server entry matches the compiled assets, while stubbing the optional helpers so Claude/Chromium tooling can be toggled on later.
 
 ## 3. Representative Chat Session Simulations
 

@@ -65,7 +65,7 @@ Successfully implemented a **fully functional MCP-based invisible orchestrator**
    - Loads orchestrator agent
    - User-friendly startup messages
 
-9. **MCP Configuration** (`.claude/mcp-config.json`, `mcp/bmad-config.json`)
+9. **MCP Configuration** (`.claude/mcp-config.json`, `mcp/agilai-config.json`)
    - Claude Code integration
    - Workspace-relative paths
 
@@ -81,16 +81,16 @@ User Types Message
 Claude CLI (with MCP)
     ↓
 MCP Server (1agilai tools)
-    ├→ get_project_context
-    ├→ detect_phase
-    ├→ load_agent_persona
-    ├→ transition_phase
-    ├→ generate_deliverable
-    ├→ record_decision
-    ├→ add_conversation_message
-    ├→ get_project_summary
-    ├→ list_bmad_agents
-    └→ execute_bmad_workflow
+     ├→ get_project_context
+     ├→ detect_phase
+     ├→ load_agent_persona
+     ├→ transition_phase
+     ├→ generate_deliverable
+     ├→ record_decision
+     ├→ add_conversation_message
+     ├→ get_project_summary
+     ├→ list_agilai_agents
+     └→ execute_agilai_workflow
     ↓
 BMAD Bridge → agilai-core agents
     ↓
@@ -126,7 +126,7 @@ npm install
 npm run build:mcp
 
 # Start conversational interface
-npm run agilai
+npx agilai start
 
 # Talk naturally
 "Help me build a task management app for my family"
@@ -218,7 +218,7 @@ npm test
 ## Success Criteria
 
 ✅ **Works without API keys** - Uses Claude Pro subscription
-✅ **Integrates with Agilai CLI** - `npm run agilai` (with `npm run agilai:claude` / `npm run agilai:codex` for specific front-ends)
+✅ **Integrates with Agilai CLI** - `npx agilai start` (with `--assistant=claude` / `--assistant=codex` for specific front-ends)
 ✅ **Generates real deliverables** - docs/ folder populated
 ✅ **Maintains invisible UX** - No methodology jargon
 ✅ **Persists state** - .agilai/ folder
@@ -237,13 +237,17 @@ npm test
 ## Usage Command
 
 ```bash
-npm run agilai
+npx agilai start
 # Or pick a specific front-end:
-# npm run agilai:claude
-# npm run agilai:codex
+# npx agilai start --assistant=claude
+# npx agilai start --assistant=codex
 ```
 
 That's literally it. Just run one command and start talking about your project!
+
+### Legacy Compatibility
+
+Need to support older automation or scripts? The legacy `npm run bmad*` aliases still ship in the package. They forward to the Agilai launcher so existing integrations continue to work while you migrate. Document any remaining dependencies on those scripts separately and plan to move them to the new `npx agilai` interface during your next maintenance window.
 
 ---
 

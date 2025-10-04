@@ -150,7 +150,7 @@ npm install
 #### 2. Start conversation
 
 ```bash
-npm run agilai
+npx agilai start
 ```
 
 #### 3. Tell the orchestrator about existing work
@@ -217,7 +217,7 @@ The orchestrator intelligently handles existing docs:
 ```bash
 # Come back days/weeks later
 cd your-project
-npm run agilai
+npx agilai start
 
 # Orchestrator automatically loads state
 Orchestrator: "Welcome back! We were working on the team todo app.
@@ -468,7 +468,7 @@ You can still:
 
 ```bash
 # Traditional BMAD (IDE-based)
-npx bmad-method install
+npx agilai install
 # Use agents directly in VS Code/Cursor/Claude Code
 
 # Agilai (conversational)
@@ -504,7 +504,7 @@ ls -la dist/mcp/mcp/server.js
 ```bash
 # Reset state (backs up old state)
 rm .agilai/state.json
-npm run agilai
+npx agilai start
 # Orchestrator will start fresh
 ```
 

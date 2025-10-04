@@ -62,8 +62,6 @@ npx agilai start
 # npx agilai start --assistant=codex     # respects --glm/--anthropic flags
 # npx agilai start --assistant=opencode  # respects --glm/--anthropic flags
 
-> **Legacy aliases**: `npm run bmad*` still routes to the same commands if you have existing scripts, but new projects should prefer the `agilai` equivalents shown above.
-
 ```
 
 ### Option 2: Global Installation
@@ -97,7 +95,7 @@ npm run build:mcp
 
 
 # Start conversation (prompts for choice)
-npm run agilai
+npx agilai start
 ```
 
 #### Choosing Your LLM Provider (GLM vs Anthropic)
@@ -216,23 +214,23 @@ AI: Found 23 TODOs across 8 files. Oldest is 3 months old.
 ### Quick Commands
 
 ```bash
-npx agilai@latest start # 🚀 One-command setup and launch (prompts for choice)
-npx agilai@latest init         # Initialize in project
-npx agilai@latest build        # Build MCP server
-npm run agilai                 # Start conversation (prompts for assistant choice)
-npm run agilai:claude          # Start Claude directly
-npm run agilai:codex           # Start Codex directly
-npm run agilai:opencode        # Start OpenCode directly
-# Append -- --glm (or -- --anthropic) to any npm script to swap providers
+npx agilai@latest invisible start # 🚀 One-command setup and launch (prompts for choice)
+npx agilai invisible init         # Initialize in project
+npx agilai invisible build        # Build MCP server
+npx agilai start                    # Start conversation (prompts for assistant choice)
+npx agilai start --assistant=claude             # Start Claude directly
+npx agilai start --assistant=codex              # Start Codex directly
+npx agilai start --assistant=opencode           # Start OpenCode directly
+# Append --glm (or --anthropic) to any Agilai command to swap providers
 
-npx agilai@latest test         # Run tests
-npx agilai@latest validate     # Validate config
-npx agilai@latest help         # Show all commands
+npx agilai invisible test         # Run tests
+npx agilai invisible validate     # Validate config
+npx agilai invisible help         # Show all commands
 ```
 
 ### Example Session
 
-Run `npm run agilai` and choose your assistant, or use direct commands (`npm run agilai:claude`, `npm run agilai:codex`, `npm run agilai:opencode`). You'll see an experience like this:
+Run `npx agilai start` and choose your assistant, or use direct commands (`npx agilai start --assistant=claude`, `npx agilai start --assistant=codex`, `npx agilai start --assistant=opencode`). You'll see an experience like this:
 
 ```
 🎯 Starting Agilai Orchestrator...

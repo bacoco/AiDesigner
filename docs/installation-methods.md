@@ -73,14 +73,14 @@ npx agilai@latest init
 npm install
 
 # Start chatting
-npm run agilai              # Prompts for assistant choice
-npm run agilai:claude       # Claude front-end
-npm run agilai:codex        # Codex front-end
-npm run agilai:opencode     # OpenCode front-end
+npx agilai start              # Prompts for assistant choice
+npx agilai start --assistant=claude       # Claude front-end
+npx agilai start --assistant=codex        # Codex front-end
+npx agilai start --assistant=opencode     # OpenCode front-end
 
 # Use GLM provider
-npm run agilai -- --glm
-npm run agilai:claude -- --glm
+npx agilai start --glm
+npx agilai start --assistant=claude --glm
 ```
 
 > **Legacy aliases**: Older `npm run bmad*` scripts remain available for backwards compatibility, but the examples above use the preferred `agilai` commands.
@@ -126,10 +126,10 @@ npm install
 npm run build:mcp
 
 # Start conversational interface
-npm run agilai                # Prompts for choice
-npm run agilai:claude         # Claude CLI
-npm run agilai:codex          # Codex CLI
-npm run agilai:opencode       # OpenCode CLI
+npx agilai start                # Prompts for choice
+npx agilai start --assistant=claude         # Claude CLI
+npx agilai start --assistant=codex          # Codex CLI
+npx agilai start --assistant=opencode       # OpenCode CLI
 ```
 
 ### Development Commands
@@ -166,11 +166,11 @@ Use ZhipuAI's GLM models with the `--glm` flag:
 
 ```bash
 # CLI flag
-npm run agilai -- --glm
+npx agilai start --glm
 npx agilai@latest start --glm
 
 # Or explicit provider
-npm run agilai -- --llm-provider=glm
+npx agilai start --llm-provider=glm
 ```
 
 **Required environment variables:**
@@ -194,11 +194,11 @@ Use Anthropic's Claude models (default behavior):
 
 ```bash
 # CLI flag
-npm run agilai -- --anthropic
+npx agilai start --anthropic
 npx agilai@latest start --anthropic
 
 # Or explicit provider
-npm run agilai -- --llm-provider=claude
+npx agilai start --llm-provider=claude
 ```
 
 **Environment variables:**
@@ -217,10 +217,10 @@ Switch providers anytime with CLI flags:
 
 ```bash
 # Start with GLM
-npm run agilai -- --glm
+npx agilai start --glm
 
 # Later, switch to Anthropic
-npm run agilai -- --anthropic
+npx agilai start --anthropic
 ```
 
 Environment variable changes take effect on next launch. CLI flags override environment variables.
@@ -347,7 +347,7 @@ If using the wrong LLM provider:
 
 1. Check environment variables: `echo $LLM_PROVIDER`
 2. Verify `.env` file contents
-3. Use explicit CLI flag: `npm run agilai -- --glm` or `--anthropic`
+3. Use explicit CLI flag: `npx agilai start --glm` or `--anthropic`
 
 ### Permission Errors
 

@@ -18,7 +18,7 @@ This example shows the complete flow for starting a new app from scratch.
 ### Example: Family Chore Tracking App
 
 ````bash
-$ npm run agilai
+$ npx agilai start
 Which assistant should we launch? (Claude / Codex / Opencode): claude
 
 🎯 Starting Agilai Orchestrator...
@@ -579,12 +579,12 @@ Agilai maintains separate contexts for different projects:
 ```bash
 # Work on project A
 cd project-a
-npm run agilai
+npx agilai start
 # Context: Project A state
 
 # Switch to project B
 cd ../project-b
-npm run agilai
+npx agilai start
 # Context: Project B state (completely separate)
 ````
 
@@ -599,7 +599,7 @@ Each project has its own:
 Agilai remembers where you left off:
 
 ```bash
-$ npm run agilai
+$ npx agilai start
 
 Welcome back! Last time we were working on:
 - Story 1.2: Assign Tasks to Family Members

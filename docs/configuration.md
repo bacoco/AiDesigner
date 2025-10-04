@@ -42,11 +42,9 @@ Enable GLM (ZhipuAI) for the orchestrator:
 
 ```bash
 # Use GLM via flag
-npm run agilai -- --glm
 npx agilai start --glm
 
 # Explicit provider specification
-npm run agilai -- --llm-provider=glm
 npx agilai start --llm-provider=glm
 ```
 
@@ -124,7 +122,7 @@ npm run agilai:claude
 # Output: 🌐 GLM mode active: routing Claude CLI through configured GLM endpoint.
 ```
 
-GLM routing works with all three assistant CLIs:
+GLM routing works with all three assistant entry points:
 
 - `npm run agilai:claude` - Routes Claude CLI through GLM
 - `npm run agilai:codex` - Routes Codex CLI through GLM
@@ -139,11 +137,11 @@ Using Anthropic's Claude (default behavior):
 
 ```bash
 # Use Anthropic (default)
-npm run agilai
-npm run agilai -- --anthropic
+npx agilai start
+npx agilai start --anthropic
 
 # Explicit provider
-npm run agilai -- --llm-provider=claude
+npx agilai start --llm-provider=claude
 ```
 
 #### Environment Variables
@@ -167,14 +165,14 @@ Switch providers anytime:
 
 ```bash
 # Start with GLM
-npm run agilai -- --glm
+npx agilai start --glm
 
 # Later, switch to Anthropic
-npm run agilai -- --anthropic
+npx agilai start --anthropic
 
 # Or change .env file
 echo "LLM_PROVIDER=claude" >> .env
-npm run agilai
+npx agilai start
 ```
 
 **Priority order:**
@@ -485,7 +483,7 @@ Validate your configuration:
 npm run mcp:doctor
 
 # Test LLM provider connection
-npm run agilai -- --test
+npx agilai start --test
 
 # Audit security settings
 npm run mcp:audit
@@ -545,7 +543,7 @@ If environment variables aren't being read:
 
 If using the wrong provider:
 
-1. Check CLI flag: `npm run agilai -- --glm`
+1. Check CLI flag: `npx agilai start --glm`
 2. Verify `.env` contents: `cat .env | grep LLM_PROVIDER`
 3. Check priority: CLI flags override environment variables
 
