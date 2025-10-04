@@ -3,7 +3,7 @@ installation-options:
     name: Complete Agilai Core
     description: Copy the entire .agilai-core folder with all agents, templates, and tools
     action: copy-folder
-    source: bmad-core
+    source: agilai-core
   single-agent:
     name: Single Agent
     description: Select and install a single agent with its dependencies
