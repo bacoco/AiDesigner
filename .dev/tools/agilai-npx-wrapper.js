@@ -1,5 +1,5 @@
 /**
- * BMad Method CLI - Direct execution wrapper for npx
+ * Agilai CLI - Direct execution wrapper for npx
  * This file ensures proper execution when run via npx from GitHub
  */
 
@@ -15,16 +15,16 @@ if (isNpxExecution) {
   const arguments_ = process.argv.slice(2);
 
   // Use the installer for all commands
-  const bmadScriptPath = path.join(__dirname, 'installer', 'bin', 'bmad.js');
+  const agilaiScriptPath = path.join(__dirname, 'installer', 'bin', 'bmad.js');
 
-  if (!fs.existsSync(bmadScriptPath)) {
-    console.error('Error: Could not find bmad.js at', bmadScriptPath);
+  if (!fs.existsSync(agilaiScriptPath)) {
+    console.error('Error: Could not find Agilai installer at', agilaiScriptPath);
     console.error('Current directory:', __dirname);
     process.exit(1);
   }
 
   try {
-    execSync(`node "${bmadScriptPath}" ${arguments_.join(' ')}`, {
+    execSync(`node "${agilaiScriptPath}" ${arguments_.join(' ')}`, {
       stdio: 'inherit',
       cwd: path.dirname(__dirname),
     });

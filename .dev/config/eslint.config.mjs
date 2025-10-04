@@ -129,7 +129,7 @@ export default [
 
   // YAML workflow templates allow empty mapping values intentionally
   {
-    files: ['bmad-core/workflows/**/*.yaml'],
+    files: ['agilai-core/workflows/**/*.yaml'],
     rules: {
       'yml/no-empty-mapping-value': 'off',
     },

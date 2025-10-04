@@ -1,9 +1,9 @@
 {
-  "name": "bmad-method",
+  "name": "agilai-install",
   "version": "4.43.0",
-  "description": "BMad Method installer - AI-powered Agile development framework",
+  "description": "Agilai installer - AI-powered agile development framework",
   "keywords": [
-    "bmad",
+    "agilai",
     "agile",
     "ai",
     "development",
@@ -11,20 +11,20 @@
     "installer",
     "agents"
   ],
-  "homepage": "https://github.com/bmad-team/bmad-method#readme",
+  "homepage": "https://github.com/agilai-team/agilai#readme",
   "bugs": {
-    "url": "https://github.com/bmad-team/bmad-method/issues"
+    "url": "https://github.com/agilai-team/agilai/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/bmad-team/bmad-method.git"
+    "url": "https://github.com/agilai-team/agilai.git"
   },
   "license": "MIT",
-  "author": "BMad Team",
+  "author": "Agilai Team",
   "main": "lib/installer.js",
   "bin": {
-    "bmad": "./bin/bmad.js",
-    "bmad-method": "./bin/bmad.js"
+    "agilai": "./bin/bmad.js",
+    "agilai-install": "./bin/bmad.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

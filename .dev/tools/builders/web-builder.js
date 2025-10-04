@@ -21,7 +21,7 @@ class WebBuilder {
     return yaml.load(content);
   }
 
-  convertToWebPath(filePath, bundleRoot = 'bmad-core') {
+  convertToWebPath(filePath, bundleRoot = 'agilai-core') {
     // Convert absolute paths to web bundle paths with dot prefix
     // All resources get installed under the bundle root, so use that path
     const relativePath = path.relative(this.rootDir, filePath);
@@ -32,7 +32,7 @@ class WebBuilder {
       // For expansion packs, remove 'expansion-packs/packname' and use the rest
       resourcePath = pathParts.slice(2).join('/');
     } else {
-      // For bmad-core, common, etc., remove the first part
+      // For agilai-core, common, etc., remove the first part
       resourcePath = pathParts.slice(1).join('/');
     }
 
@@ -41,22 +41,22 @@ class WebBuilder {
 
   generateWebInstructions(bundleType, packName = null) {
     // Generate dynamic web instructions based on bundle type
-    const rootExample = packName ? `.${packName}` : '.bmad-core';
+    const rootExample = packName ? `.${packName}` : '.agilai-core';
     const examplePath = packName
       ? `.${packName}/folder/filename.md`
-      : '.bmad-core/folder/filename.md';
+      : '.agilai-core/folder/filename.md';
     const personasExample = packName
       ? `.${packName}/personas/analyst.md`
-      : '.bmad-core/personas/analyst.md';
+      : '.agilai-core/personas/analyst.md';
     const tasksExample = packName
       ? `.${packName}/tasks/create-story.md`
-      : '.bmad-core/tasks/create-story.md';
+      : '.agilai-core/tasks/create-story.md';
     const utilitiesExample = packName
       ? `.${packName}/utils/template-format.md`
-      : '.bmad-core/utils/template-format.md';
+      : '.agilai-core/utils/template-format.md';
     const tasksReference = packName
       ? `.${packName}/tasks/create-story.md`
-      : '.bmad-core/tasks/create-story.md';
+      : '.agilai-core/tasks/create-story.md';
 
     return `# Web Agent Bundle Instructions
 
@@ -158,13 +158,13 @@ These references map directly to bundle sections:
     const sections = [template];
 
     // Add agent configuration
-    const agentPath = this.convertToWebPath(dependencies.agent.path, 'bmad-core');
-    sections.push(this.formatSection(agentPath, dependencies.agent.content, 'bmad-core'));
+    const agentPath = this.convertToWebPath(dependencies.agent.path, 'agilai-core');
+    sections.push(this.formatSection(agentPath, dependencies.agent.content, 'agilai-core'));
 
     // Add all dependencies
     for (const resource of dependencies.resources) {
-      const resourcePath = this.convertToWebPath(resource.path, 'bmad-core');
-      sections.push(this.formatSection(resourcePath, resource.content, 'bmad-core'));
+      const resourcePath = this.convertToWebPath(resource.path, 'agilai-core');
+      sections.push(this.formatSection(resourcePath, resource.content, 'agilai-core'));
     }
 
     return sections.join('\n');
@@ -177,19 +177,19 @@ These references map directly to bundle sections:
     const sections = [template];
 
     // Add team configuration
-    const teamPath = this.convertToWebPath(dependencies.team.path, 'bmad-core');
-    sections.push(this.formatSection(teamPath, dependencies.team.content, 'bmad-core'));
+    const teamPath = this.convertToWebPath(dependencies.team.path, 'agilai-core');
+    sections.push(this.formatSection(teamPath, dependencies.team.content, 'agilai-core'));
 
     // Add all agents
     for (const agent of dependencies.agents) {
-      const agentPath = this.convertToWebPath(agent.path, 'bmad-core');
-      sections.push(this.formatSection(agentPath, agent.content, 'bmad-core'));
+      const agentPath = this.convertToWebPath(agent.path, 'agilai-core');
+      sections.push(this.formatSection(agentPath, agent.content, 'agilai-core'));
     }
 
     // Add all deduplicated resources
     for (const resource of dependencies.resources) {
-      const resourcePath = this.convertToWebPath(resource.path, 'bmad-core');
-      sections.push(this.formatSection(resourcePath, resource.content, 'bmad-core'));
+      const resourcePath = this.convertToWebPath(resource.path, 'agilai-core');
+      sections.push(this.formatSection(resourcePath, resource.content, 'agilai-core'));
     }
 
     return sections.join('\n');
@@ -247,7 +247,7 @@ These references map directly to bundle sections:
     }
   }
 
-  formatSection(path, content, bundleRoot = 'bmad-core') {
+  formatSection(path, content, bundleRoot = 'agilai-core') {
     const separator = '====================';
 
     // Process agent content if this is an agent file
@@ -418,7 +418,12 @@ These references map directly to bundle sections:
 
                 // If not found in expansion pack, try core
                 if (!found) {
-                  const corePath = path.join(this.rootDir, 'bmad-core', resourceType, resourceName);
+                  const corePath = path.join(
+                    this.rootDir,
+                    'agilai-core',
+                    resourceType,
+                    resourceName,
+                  );
                   try {
                     const coreContent = await fs.readFile(corePath, 'utf8');
                     const coreWebPath = this.convertToWebPath(corePath, packName);
@@ -545,7 +550,7 @@ These references map directly to bundle sections:
       } else {
         // Use core BMad version
         try {
-          const coreAgentPath = path.join(this.rootDir, 'bmad-core', 'agents', `${agentId}.md`);
+          const coreAgentPath = path.join(this.rootDir, 'agilai-core', 'agents', `${agentId}.md`);
           const coreAgentContent = await fs.readFile(coreAgentPath, 'utf8');
           const coreAgentWebPath = this.convertToWebPath(coreAgentPath, packName);
           sections.push(this.formatSection(coreAgentWebPath, coreAgentContent, packName));
@@ -599,7 +604,7 @@ These references map directly to bundle sections:
 
       // If not found in expansion pack (or doesn't exist there), try core
       if (!found) {
-        const corePath = path.join(this.rootDir, 'bmad-core', dep.type, dep.name);
+        const corePath = path.join(this.rootDir, 'agilai-core', dep.type, dep.name);
         try {
           const content = await fs.readFile(corePath, 'utf8');
           const coreWebPath = this.convertToWebPath(corePath, packName);

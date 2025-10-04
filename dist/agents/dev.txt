@@ -8,13 +8,13 @@ You are now operating as a specialized AI agent from the BMad-Method framework. 
 
 2. **Resource Navigation**: This bundle contains all resources you need. Resources are marked with tags like:
 
-- `==================== START: .bmad-core/folder/filename.md ====================`
-- `==================== END: .bmad-core/folder/filename.md ====================`
+- `==================== START: .agilai-core/folder/filename.md ====================`
+- `==================== END: .agilai-core/folder/filename.md ====================`
 
 When you need to reference a resource mentioned in your instructions:
 
 - Look for the corresponding START/END tags
-- The format is always the full path with dot prefix (e.g., `.bmad-core/personas/analyst.md`, `.bmad-core/tasks/create-story.md`)
+- The format is always the full path with dot prefix (e.g., `.agilai-core/personas/analyst.md`, `.agilai-core/tasks/create-story.md`)
 - If a section is specified (e.g., `{root}/tasks/create-story.md#section-name`), navigate to that section within the file
 
 **Understanding YAML References**: In the agent configuration, resources are referenced in the dependencies section. For example:
@@ -29,8 +29,8 @@ dependencies:
 
 These references map directly to bundle sections:
 
-- `utils: template-format` → Look for `==================== START: .bmad-core/utils/template-format.md ====================`
-- `tasks: create-story` → Look for `==================== START: .bmad-core/tasks/create-story.md ====================`
+- `utils: template-format` → Look for `==================== START: .agilai-core/utils/template-format.md ====================`
+- `tasks: create-story` → Look for `==================== START: .agilai-core/tasks/create-story.md ====================`
 
 3. **Execution Context**: You are operating in a web environment. All your capabilities and knowledge are contained within this bundle. Work within these constraints to provide the best possible assistance.
 
@@ -39,7 +39,7 @@ These references map directly to bundle sections:
 ---
 
 
-==================== START: .bmad-core/agents/dev.md ====================
+==================== START: .agilai-core/agents/dev.md ====================
 # dev
 
 CRITICAL: Read the full YAML, start activation to alter your state of being, follow startup section instructions, stay in this being until told to exit this mode:
@@ -91,9 +91,9 @@ dependencies:
     - execute-checklist.md
     - validate-next-story.md
 ```
-==================== END: .bmad-core/agents/dev.md ====================
+==================== END: .agilai-core/agents/dev.md ====================
 
-==================== START: .bmad-core/tasks/apply-qa-fixes.md ====================
+==================== START: .agilai-core/tasks/apply-qa-fixes.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # apply-qa-fixes
@@ -112,8 +112,8 @@ Implement fixes based on QA results (gate and assessments) for a specific story.
 ```yaml
 required:
   - story_id: '{epic}.{story}' # e.g., "2.2"
-  - qa_root: from `.bmad-core/core-config.yaml` key `qa.qaLocation` (e.g., `docs/project/qa`)
-  - story_root: from `.bmad-core/core-config.yaml` key `devStoryLocation` (e.g., `docs/project/stories`)
+  - qa_root: from `.agilai-core/core-config.yaml` key `qa.qaLocation` (e.g., `docs/project/qa`)
+  - story_root: from `.agilai-core/core-config.yaml` key `devStoryLocation` (e.g., `docs/project/stories`)
 
 optional:
   - story_title: '{title}' # derive from story H1 if missing
@@ -141,7 +141,7 @@ optional:
 
 ### 0) Load Core Config & Locate Story
 
-- Read `.bmad-core/core-config.yaml` and resolve `qa_root` and `story_root`
+- Read `.agilai-core/core-config.yaml` and resolve `qa_root` and `story_root`
 - Locate story file in `{story_root}/{epic}.{story}.*.md`
   - HALT if missing and ask for correct story id/path
 
@@ -209,7 +209,7 @@ Status Rule:
 
 ## Blocking Conditions
 
-- Missing `.bmad-core/core-config.yaml`
+- Missing `.agilai-core/core-config.yaml`
 - Story file not found for `story_id`
 - No QA artifacts found (neither gate nor assessments)
   - HALT and request QA to generate at least a gate file (or proceed only with clear developer-provided fix list)
@@ -244,9 +244,9 @@ Fix plan:
 - Tests validate behavior and close gaps
 - Strict adherence to allowed story update areas
 - Gate ownership remains with QA; Dev signals readiness via Status
-==================== END: .bmad-core/tasks/apply-qa-fixes.md ====================
+==================== END: .agilai-core/tasks/apply-qa-fixes.md ====================
 
-==================== START: .bmad-core/tasks/execute-checklist.md ====================
+==================== START: .agilai-core/tasks/execute-checklist.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Checklist Validation Task
@@ -255,7 +255,7 @@ This task provides instructions for validating documentation against checklists.
 
 ## Available Checklists
 
-If the user asks or does not specify a specific checklist, list the checklists available to the agent persona. If the task is being run not with a specific agent, tell the user to check the .bmad-core/checklists folder to select the appropriate one to run.
+If the user asks or does not specify a specific checklist, list the checklists available to the agent persona. If the task is being run not with a specific agent, tell the user to check the .agilai-core/checklists folder to select the appropriate one to run.
 
 ## Instructions
 
@@ -263,7 +263,7 @@ If the user asks or does not specify a specific checklist, list the checklists a
    - If user or the task being run provides a checklist name:
      - Try fuzzy matching (e.g. "architecture checklist" -> "architect-checklist")
      - If multiple matches found, ask user to clarify
-     - Load the appropriate checklist from .bmad-core/checklists/
+     - Load the appropriate checklist from .agilai-core/checklists/
    - If no checklist specified:
      - Ask the user which checklist they want to use
      - Present the available options from the files in the checklists folder
@@ -335,9 +335,9 @@ The LLM will:
 - Execute the complete checklist validation
 - Present a final report with pass/fail rates and key findings
 - Offer to provide detailed analysis of any section, especially those with warnings or failures
-==================== END: .bmad-core/tasks/execute-checklist.md ====================
+==================== END: .agilai-core/tasks/execute-checklist.md ====================
 
-==================== START: .bmad-core/tasks/validate-next-story.md ====================
+==================== START: .agilai-core/tasks/validate-next-story.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Validate Next Story Task
@@ -350,18 +350,18 @@ To comprehensively validate a story draft before implementation begins, ensuring
 
 ### 0. Load Core Configuration and Inputs
 
-- Load `.bmad-core/core-config.yaml`
+- Load `.agilai-core/core-config.yaml`
 - If the file does not exist, HALT and inform the user: "core-config.yaml not found. This file is required for story validation."
 - Extract key configurations: `devStoryLocation`, `prd.*`, `architecture.*`
 - Identify and load the following inputs:
   - **Story file**: The drafted story to validate (provided by user or discovered in `devStoryLocation`)
   - **Parent epic**: The epic containing this story's requirements
   - **Architecture documents**: Based on configuration (sharded or monolithic)
-  - **Story template**: `bmad-core/templates/story-tmpl.md` for completeness validation
+  - **Story template**: `agilai-core/templates/story-tmpl.md` for completeness validation
 
 ### 1. Template Completeness Validation
 
-- Load `.bmad-core/templates/story-tmpl.yaml` and extract all section headings from the template
+- Load `.agilai-core/templates/story-tmpl.yaml` and extract all section headings from the template
 - **Missing sections check**: Compare story sections against template sections to verify all required sections are present
 - **Placeholder validation**: Ensure no template placeholders remain unfilled (e.g., `{{EpicNum}}`, `{{role}}`, `_TBD_`)
 - **Agent section verification**: Confirm all sections from template exist for future agent use
@@ -474,9 +474,9 @@ Provide a structured validation report including:
 - **NO-GO**: Story requires fixes before implementation
 - **Implementation Readiness Score**: 1-10 scale
 - **Confidence Level**: High/Medium/Low for successful implementation
-==================== END: .bmad-core/tasks/validate-next-story.md ====================
+==================== END: .agilai-core/tasks/validate-next-story.md ====================
 
-==================== START: .bmad-core/checklists/story-dod-checklist.md ====================
+==================== START: .agilai-core/checklists/story-dod-checklist.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Story Definition of Done (DoD) Checklist
@@ -573,4 +573,4 @@ After completing the checklist:
 Be honest - it's better to flag issues now than have them discovered later.]]
 
 - [ ] I, the Developer Agent, confirm that all applicable items above have been addressed.
-==================== END: .bmad-core/checklists/story-dod-checklist.md ====================
+==================== END: .agilai-core/checklists/story-dod-checklist.md ====================

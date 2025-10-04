@@ -6,7 +6,7 @@ const ignore = require('ignore');
 // These complement .gitignore and are applied regardless of VCS presence.
 const DEFAULT_PATTERNS = [
   // Project/VCS
-  '**/.bmad-core/**',
+  '**/.agilai-core/**',
   '**/.git/**',
   '**/.svn/**',
   '**/.hg/**',
