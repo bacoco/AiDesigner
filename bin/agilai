@@ -842,51 +842,20 @@ const parseAssistantFromArgs = (currentArgs) => {
 };
 
 /**
- * Prompts user to select an LLM provider using interactive list
- * @returns {Promise<string>} Selected provider (anthropic, glm, openai, or gemini)
+ * Provider label and description mappings for interactive selection
  */
-const promptForLlmProvider = async () => {
-  if (!isInteractiveTerminal()) {
-    return undefined;
-  }
+const PROVIDER_LABELS = {
+  anthropic: 'Anthropic',
+  glm: 'GLM',
+  openai: 'OpenAI',
+  gemini: 'Gemini'
+};
 
-  const choices = [
-    {
-      name: 'Claude (Anthropic) - Advanced reasoning and coding',
-      value: 'anthropic',
-      short: 'Anthropic'
-    },
-    {
-      name: 'GLM (ZhipuAI) - Chinese language excellence',
-      value: 'glm',
-      short: 'GLM'
-    },
-    {
-      name: 'OpenAI (GPT) - General purpose AI',
-      value: 'openai',
-      short: 'OpenAI'
-    },
-    {
-      name: 'Gemini (Google) - Multimodal capabilities',
-      value: 'gemini',
-      short: 'Gemini'
-    }
-  ];
-
-  try {
-    const { provider } = await inquirer.prompt([{
-      type: 'list',
-      name: 'provider',
-      message: 'Which LLM provider would you like to use?',
-      choices,
-      default: 'anthropic'
-    }]);
-
-    return provider;
-  } catch (error) {
-    console.warn('⚠️ Provider selection cancelled or failed:', error.message || error);
-    return undefined;
-  }
+const PROVIDER_DESCRIPTIONS = {
+  anthropic: 'Advanced reasoning and coding',
+  glm: 'Chinese language excellence',
+  openai: 'General purpose AI',
+  gemini: 'Multimodal capabilities'
 };
 
 const promptForAssistant = async () => {
@@ -896,49 +865,37 @@ const promptForAssistant = async () => {
   }
 
   try {
-    // Step 1: Select assistant type
-    const assistantChoices = ASSISTANT_CHOICES.map(choice => ({
-      name: formatAssistantName(choice.id),
-      value: choice.id,
-      short: formatAssistantName(choice.id)
-    }));
+    // Build all valid CLI-provider combinations
+    const choices = [];
+    for (const choice of ASSISTANT_CHOICES) {
+      for (const provider of choice.providers) {
+        const cliName = formatAssistantName(choice.id) + ' CLI';
+        const providerLabel = PROVIDER_LABELS[provider];
+        const description = PROVIDER_DESCRIPTIONS[provider];
 
-    const { assistant } = await inquirer.prompt([{
+        choices.push({
+          name: `${cliName} → ${providerLabel} - ${description}`,
+          value: { assistant: choice.id, provider },
+          short: `${cliName} → ${providerLabel}`
+        });
+      }
+    }
+
+    const { selection } = await inquirer.prompt([{
       type: 'list',
-      name: 'assistant',
-      message: 'Which assistant would you like to launch?',
-      choices: assistantChoices,
-      default: 'claude'
+      name: 'selection',
+      message: 'Select CLI and provider:',
+      choices,
+      default: { assistant: 'claude', provider: 'anthropic' }
     }]);
 
-    const choice = findAssistantChoice(assistant);
-    if (!choice) {
-      console.error('⚠️ Invalid assistant selection');
-      return undefined;
-    }
-
-    // Step 2: Select provider using interactive list
-    const provider = await promptForLlmProvider();
-    if (!provider) {
-      console.error('⚠️ No provider selected');
-      return undefined;
-    }
-
-    // Validate provider is supported by this assistant
-    if (!choice.providers.includes(provider)) {
-      const supported = choice.providers.join(', ');
-      console.error(`⚠️ Provider "${provider}" is not supported by ${assistant} CLI`);
-      console.error(`   Supported providers for ${assistant}: ${supported}`);
-      return undefined;
-    }
-
     return {
-      assistant: choice.id,
-      provider,
+      assistant: selection.assistant,
+      provider: selection.provider,
       providerExplicit: true
     };
   } catch (error) {
-    console.warn('⚠️ Assistant selection cancelled or failed:', error.message || error);
+    console.warn('⚠️ Selection cancelled or failed:', error.message || error);
     return undefined;
   }
 };
