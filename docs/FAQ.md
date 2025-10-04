@@ -2,6 +2,8 @@
 
 ## How It Works
 
+> **Legacy aliases**: Historical `npm run bmad*` scripts still function, but the answers below reference the preferred `agilai` commands.
+
 ### Where are documents generated?
 
 All project deliverables are automatically generated in your project's `docs/` folder:

@@ -54,14 +54,15 @@ npm install
 
 
 # Start chatting (prompts for your choice)
-npm run agilai
-# Force GLM for the orchestrator (requires AGILAI_GLM_API_KEY, ZHIPUAI_API_KEY, or GLM_API_KEY)
-# npm run agilai -- --glm
+npx agilai start
+# Force GLM for the orchestrator (requires ZHIPUAI_API_KEY or GLM_API_KEY)
+# npx agilai start --glm
 # OR use explicit commands:
-# npm run agilai:claude    # respects --glm/--anthropic flags
-# npm run agilai:codex     # respects --glm/--anthropic flags
-# npm run agilai:opencode  # respects --glm/--anthropic flags
-# Legacy `npm run bmad*` scripts remain available if you prefer the old names.
+# npx agilai start --assistant=claude    # respects --glm/--anthropic flags
+# npx agilai start --assistant=codex     # respects --glm/--anthropic flags
+# npx agilai start --assistant=opencode  # respects --glm/--anthropic flags
+
+> **Legacy aliases**: `npm run bmad*` still routes to the same commands if you have existing scripts, but new projects should prefer the `agilai` equivalents shown above.
 
 ```
 
@@ -216,18 +217,17 @@ AI: Found 23 TODOs across 8 files. Oldest is 3 months old.
 
 ```bash
 npx agilai@latest start # 🚀 One-command setup and launch (prompts for choice)
-npx agilai init         # Initialize in project
-npx agilai build        # Build MCP server
-npm run agilai          # Start conversation (prompts for assistant choice)
-npm run agilai:claude   # Start Claude directly
-npm run agilai:codex    # Start Codex directly
-npm run agilai:opencode # Start OpenCode directly
+npx agilai@latest init         # Initialize in project
+npx agilai@latest build        # Build MCP server
+npm run agilai                 # Start conversation (prompts for assistant choice)
+npm run agilai:claude          # Start Claude directly
+npm run agilai:codex           # Start Codex directly
+npm run agilai:opencode        # Start OpenCode directly
 # Append -- --glm (or -- --anthropic) to any npm script to swap providers
 
-npx agilai test         # Run tests
-npx agilai validate     # Validate config
-npx agilai help         # Show all commands
-# Legacy `bmad` commands remain available if you encounter older guides.
+npx agilai@latest test         # Run tests
+npx agilai@latest validate     # Validate config
+npx agilai@latest help         # Show all commands
 ```
 
 ### Example Session

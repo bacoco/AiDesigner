@@ -2,6 +2,8 @@
 
 Complete configuration reference for Agilai.
 
+> **Legacy aliases**: Existing `npm run bmad*` scripts continue to work, but new projects should prefer the `agilai` commands documented below.
+
 ## Table of Contents
 
 - [Environment Variables](#environment-variables)

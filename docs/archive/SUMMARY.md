@@ -172,11 +172,11 @@ async function runAnalystPhase(context) {
 npx bmad-method install    # Install BMAD framework
 npx bmad-method flatten    # Flatten codebase
 
-# BMAD-invisible should be
-npx bmad-invisible chat           # Start conversation
-npx bmad-invisible init          # Initialize project
-npx bmad-invisible status        # Show current phase
-npx bmad-invisible continue      # Resume conversation
+# Agilai CLI replaces BMAD-invisible
+npx agilai chat           # Start conversation
+npx agilai init          # Initialize project
+npx agilai status        # Show current phase
+npx agilai continue      # Resume conversation
 ```
 
 ### Chat Interface Example

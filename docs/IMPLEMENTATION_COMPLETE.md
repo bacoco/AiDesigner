@@ -118,6 +118,8 @@ docs/prd.md, architecture.md, etc.
 
 ## How to Use
 
+> **Legacy aliases**: Historical `npm run bmad*` scripts still route to these commands, but the steps below use the modern `agilai` scripts.
+
 ```bash
 # One-time setup
 npm install
@@ -216,7 +218,7 @@ npm test
 ## Success Criteria
 
 ✅ **Works without API keys** - Uses Claude Pro subscription
-✅ **Integrates with the Agilai CLI** - npm run agilai (with `npm run agilai:claude` / `npm run agilai:codex` for specific front-ends)
+✅ **Integrates with Agilai CLI** - `npm run agilai` (with `npm run agilai:claude` / `npm run agilai:codex` for specific front-ends)
 ✅ **Generates real deliverables** - docs/ folder populated
 ✅ **Maintains invisible UX** - No methodology jargon
 ✅ **Persists state** - .agilai/ folder
