@@ -184,9 +184,9 @@ baseline stored in `.agilai/critical-hashes.json`.
 - ✅ Matching hashes: the CLI proceeds silently.
 - ⚠️ Diverging hashes: you receive a warning summarising which core files changed,
   went missing, or were newly added under tracked scopes such as:
-  - Agilai core configuration (`bmad-core/core-config.yaml`)
-  - Agilai core checklists (`bmad-core/checklists/`)
-  - Agilai core templates (`bmad-core/templates/`)
+  - Agilai core configuration (`agilai-core/core-config.yaml`)
+  - Agilai core checklists (`agilai-core/checklists/`)
+  - Agilai core templates (`agilai-core/templates/`)
   - `expansion-packs/`
   - `codex-config.toml.example`
 
