@@ -22,13 +22,35 @@ class LLMClient {
     }
   }
 
+  /**
+   * Detects if the current process is running as part of the MCP server.
+   * Checks process.argv for the MCP server entry points to allow bypassing API key validation.
+   * @returns {boolean} True if running in MCP server context, false otherwise
+   */
   detectMcpExecution() {
     const { argv } = process;
     if (!Array.isArray(argv)) {
       return false;
     }
 
-    return argv.some((arg) => typeof arg === 'string' && arg.includes('mcp/server.js'));
+    return argv.some((arg) => {
+      if (typeof arg !== 'string') {
+        return false;
+      }
+
+      // Normalize path separators for cross-platform compatibility (Windows uses backslashes)
+      const normalizedArg = arg.replace(/\\/g, '/');
+
+      // Match the actual MCP server paths:
+      // - dist/mcp/mcp/server.js (published package, absolute or relative)
+      // - .dev/mcp/server.ts (development mode)
+      return (
+        normalizedArg.endsWith('/dist/mcp/mcp/server.js') ||
+        normalizedArg.endsWith('/.dev/mcp/server.ts') ||
+        normalizedArg === 'dist/mcp/mcp/server.js' ||
+        normalizedArg === '.dev/mcp/server.ts'
+      );
+    });
   }
 
   getApiKeyFromEnv() {
