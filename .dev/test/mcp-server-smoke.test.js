@@ -6,20 +6,19 @@ describe('MCP server bundle smoke test', () => {
   const repoRoot = path.resolve(__dirname, '..', '..');
   const serverEntry = path.join(repoRoot, 'dist', 'mcp', 'mcp', 'server.js');
 
-  if (!fs.existsSync(serverEntry)) {
-    throw new Error(
-      'Expected dist/mcp/mcp/server.js to exist. Run the MCP build before executing tests.',
-    );
-  }
-
   test('server boots without missing auto-commands module', async () => {
+    if (!fs.existsSync(serverEntry)) {
+      throw new Error(
+        'Expected dist/mcp/mcp/server.js to exist. Run the MCP build before executing tests.',
+      );
+    }
+
+    const script = `require(${JSON.stringify(serverEntry)}); setTimeout(() => process.exit(0), 0);`;
+
     await new Promise((resolve, reject) => {
       const child = spawn(
         process.execPath,
-        [
-          '-e',
-          `require(${JSON.stringify(serverEntry)});` + 'setTimeout(() => process.exit(0), 0);',
-        ],
+        ['-e', script],
         {
           cwd: repoRoot,
           env: { ...process.env },

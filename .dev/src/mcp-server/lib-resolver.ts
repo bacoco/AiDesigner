@@ -32,6 +32,11 @@ export function resolveFromPackageRoot(...segments: string[]): string {
   return path.resolve(getPackageRoot(), ...segments);
 }
 
+// Search paths in order of preference:
+// 1. Production build output (dist/mcp/lib) - bundled distribution
+// 2. Development build output (.dev/dist/mcp/lib) - compiled TypeScript
+// 3. Development lib source (.dev/lib) - original source files
+// 4. Fallback to package lib folder (lib) - see resolveLibPath below
 const LIB_SEARCH_PATHS: string[][] = [
   ["dist", "mcp", "lib"],
   [".dev", "dist", "mcp", "lib"],
