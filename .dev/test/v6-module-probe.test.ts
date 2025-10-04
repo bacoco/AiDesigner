@@ -17,7 +17,7 @@ describe('probeInvisibleModule', () => {
     const personaPath = path.join(legacyRoot, 'agents', 'invisible-orchestrator.md');
     const agentsDir = path.join(workspaceRoot, 'src', 'modules', 'invisible', 'agents');
     const runtimeModulePath = path.join(legacyRoot, 'src', 'mcp-server', 'runtime.ts');
-    const legacyBridgePath = path.join(legacyRoot, 'lib', 'bmad-bridge.js');
+    const legacyBridgePath = path.join(legacyRoot, 'lib', 'agilai-bridge.js');
 
     jest.resetModules();
 
@@ -49,7 +49,7 @@ describe('probeInvisibleModule', () => {
             return initializeMock();
           }
         }
-        return { BMADBridge: MockBridge };
+        return { AgilaiBridge: MockBridge };
       }
       throw new Error(`Unexpected require path: ${requestedPath}`);
     });
@@ -81,7 +81,7 @@ describe('probeInvisibleModule', () => {
     expect(result.blockers).toHaveLength(1);
     expect(result.blockers[0]).toMatch(/Failed to import MCP runtime as ESM:.*TypeScript compilation currently targets CommonJS paths, incompatible with V6's native ES build\./);
     expect(result.warnings).toEqual([
-      'BMADBridge loads via CommonJS require(); V6 default ESM bundler will need a compatibility shim or rewrite.',
+      'AgilaiBridge loads via CommonJS require(); V6 default ESM bundler will need a compatibility shim or rewrite.',
     ]);
     expect(result.notes).toEqual([
       `Found candidate module directory at ${expectedModuleDir}.`,
@@ -95,7 +95,7 @@ describe('probeInvisibleModule', () => {
     const expectedModuleDir = path.join(workspaceRoot, 'src', 'modules', 'invisible');
     const personaPath = path.join(legacyRoot, 'agents', 'invisible-orchestrator.md');
     const runtimeModulePath = path.join(legacyRoot, 'src', 'mcp-server', 'runtime.ts');
-    const legacyBridgePath = path.join(legacyRoot, 'lib', 'bmad-bridge.js');
+    const legacyBridgePath = path.join(legacyRoot, 'lib', 'agilai-bridge.js');
 
     jest.resetModules();
 
@@ -144,7 +144,7 @@ describe('probeInvisibleModule', () => {
     // The important check is the result, not the exact error messages
     expect(result.blockers).toHaveLength(4);
     expect(result.blockers[0]).toBe(`Missing module slot: expected directory at ${expectedModuleDir}. V6 alpha currently ships only BMM/BMB/CIS modules, so invisible orchestration needs a new module registration point.`);
-    expect(result.blockers[1]).toBe('Failed to require legacy BMAD bridge: CommonJS module rejection. V6 loaders refuse CommonJS modules without explicit compatibility wrappers.');
+    expect(result.blockers[1]).toBe('Failed to require legacy Agilai bridge: CommonJS module rejection. V6 loaders refuse CommonJS modules without explicit compatibility wrappers.');
     expect(result.blockers[2]).toMatch(/Failed to import MCP runtime as ESM:.*TypeScript compilation currently targets CommonJS paths, incompatible with V6's native ES build\./);
     expect(result.blockers[3]).toBe(`Agilai orchestrator persona missing at ${personaPath}.`);
     expect(result.warnings).toEqual([]);

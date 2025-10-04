@@ -37,20 +37,20 @@ export async function probeInvisibleModule(context: V6ModuleContext): Promise<Co
     notes.push(`Found candidate module directory at ${expectedModuleDir}.`);
   }
 
-  // 2. Attempt to reuse the CommonJS BMAD bridge inside an ESM-oriented runtime.
+  // 2. Attempt to reuse the CommonJS Agilai bridge inside an ESM-oriented runtime.
   try {
-    const { BMADBridge } = require(path.join(context.legacyRoot, "lib", "bmad-bridge.js"));
-    const bridge = new BMADBridge();
+    const { AgilaiBridge } = require(path.join(context.legacyRoot, "lib", "agilai-bridge.js"));
+    const bridge = new AgilaiBridge();
     if (typeof bridge.initialize !== "function") {
-      blockers.push("BMADBridge.initialize is not available after require() shim.");
+      blockers.push("AgilaiBridge.initialize is not available after require() shim.");
     } else {
       warnings.push(
-        "BMADBridge loads via CommonJS require(); V6 default ESM bundler will need a compatibility shim or rewrite."
+        "AgilaiBridge loads via CommonJS require(); V6 default ESM bundler will need a compatibility shim or rewrite."
       );
     }
   } catch (error) {
     blockers.push(
-      `Failed to require legacy BMAD bridge: ${(error as Error).message}. ` +
+      `Failed to require legacy Agilai bridge: ${(error as Error).message}. ` +
         "V6 loaders refuse CommonJS modules without explicit compatibility wrappers."
     );
   }

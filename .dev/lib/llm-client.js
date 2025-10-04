@@ -35,7 +35,12 @@ class LLMClient {
         return process.env.GOOGLE_API_KEY;
       }
       case 'glm': {
-        return process.env.AGILAI_GLM_API_KEY || process.env.BMAD_GLM_API_KEY || process.env.GLM_API_KEY || process.env.ZHIPUAI_API_KEY;
+        return (
+          process.env.AGILAI_GLM_API_KEY ||
+          process.env.BMAD_GLM_API_KEY ||
+          process.env.GLM_API_KEY ||
+          process.env.ZHIPUAI_API_KEY
+        );
       }
       default: {
         throw new Error(`Unknown LLM provider: ${this.provider}`);
@@ -291,7 +296,10 @@ class LLMClient {
     };
 
     const baseUrl =
-      process.env.AGILAI_GLM_BASE_URL || process.env.BMAD_GLM_BASE_URL || process.env.GLM_BASE_URL || 'https://open.bigmodel.cn';
+      process.env.AGILAI_GLM_BASE_URL ||
+      process.env.BMAD_GLM_BASE_URL ||
+      process.env.GLM_BASE_URL ||
+      'https://open.bigmodel.cn';
 
     const normalizedBaseUrl = /^https?:\/\//i.test(baseUrl) ? baseUrl : `https://${baseUrl}`;
 

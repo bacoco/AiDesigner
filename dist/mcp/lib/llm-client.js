@@ -38,8 +38,8 @@ class LLMClient {
         return (
           process.env.AGILAI_GLM_API_KEY ||
           process.env.BMAD_GLM_API_KEY ||
-          process.env.ZHIPUAI_API_KEY ||
-          process.env.GLM_API_KEY
+          process.env.GLM_API_KEY ||
+          process.env.ZHIPUAI_API_KEY
         );
       }
       default: {
