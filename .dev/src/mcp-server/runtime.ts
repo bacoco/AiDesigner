@@ -4,7 +4,10 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { mkdtempSync, rmSync } from "node:fs";
 import { performance } from "node:perf_hooks";
+import * as path from "node:path";
+import { tmpdir } from "node:os";
 import { createStructuredLogger, StructuredLogger } from "./observability.js";
 import {
   importFromPackageRoot,
@@ -2229,6 +2232,15 @@ export async function runOrchestratorServer(
   });
 
   await loadDependencies();
+
+  const smokeTestCompleted = await runBundledToolsSmokeCheck({
+    ensureOperationAllowed,
+    logger,
+  });
+
+  if (smokeTestCompleted) {
+    return;
+  }
   const transport = options.transport ?? new StdioServerTransport();
   await server.connect(transport);
 
@@ -2242,5 +2254,83 @@ export async function runOrchestratorServer(
 
   if (options.onServerReady) {
     await options.onServerReady(server);
+  }
+}
+
+async function runBundledToolsSmokeCheck({
+  ensureOperationAllowed,
+  logger,
+}: {
+  ensureOperationAllowed: NonNullable<OrchestratorServerOptions["ensureOperationAllowed"]>;
+  logger: StructuredLogger;
+}): Promise<boolean> {
+  if (process.env.AGILAI_MCP_SMOKE_TEST !== "1") {
+    return false;
+  }
+
+  const McpRegistry = requireLibModule<any>("../tools/mcp-registry.js");
+  const McpManager = requireLibModule<any>("../tools/mcp-manager.js");
+
+  const smokeRoot =
+    process.env.AGILAI_MCP_SMOKE_ROOT ?? mkdtempSync(path.join(tmpdir(), "agilai-mcp-smoke-"));
+  const cleanupRoot = !process.env.AGILAI_MCP_SMOKE_ROOT;
+  const profile = process.env.MCP_PROFILE ?? "default";
+
+  try {
+    const registry = new McpRegistry();
+    const manager = new McpManager({ rootDir: smokeRoot, profile });
+    const searchResults = await registry.search("filesystem", {});
+
+    if (!Array.isArray(searchResults) || searchResults.length === 0) {
+      throw new Error("MCP smoke test failed: registry search returned no results");
+    }
+
+    const targetServer = await registry.getServer(searchResults[0].id);
+
+    if (!targetServer) {
+      throw new Error("MCP smoke test failed: unable to resolve server from registry");
+    }
+
+    await ensureOperationAllowed("install_mcp_server", { serverId: targetServer.id });
+
+    const serverConfig: Record<string, unknown> = {
+      command: targetServer.installType === "npx" ? "npx" : targetServer.command,
+      args:
+        targetServer.installType === "npx"
+          ? ["-y", targetServer.name]
+          : Array.isArray(targetServer.args)
+            ? targetServer.args
+            : [],
+      disabled: false,
+    };
+
+    if (targetServer.envVars && targetServer.envVars.length > 0) {
+      const placeholderEnv: Record<string, string> = {};
+      for (const key of targetServer.envVars) {
+        placeholderEnv[key] = `set-${key.toLowerCase()}`;
+      }
+      serverConfig.env = placeholderEnv;
+    }
+
+    const claudeConfig = manager.loadClaudeConfig();
+    claudeConfig.mcpServers = claudeConfig.mcpServers || {};
+    claudeConfig.mcpServers[targetServer.id] = serverConfig;
+    manager.saveClaudeConfig(claudeConfig);
+
+    const agilaiConfig = manager.loadAgilaiConfig();
+    agilaiConfig.mcpServers = agilaiConfig.mcpServers || {};
+    agilaiConfig.mcpServers[targetServer.id] = serverConfig;
+    manager.saveAgilaiConfig(agilaiConfig);
+
+    logger.info("mcp_smoke_test_completed", {
+      operation: "smoke_test",
+      serverId: targetServer.id,
+    });
+
+    return true;
+  } finally {
+    if (cleanupRoot) {
+      rmSync(smokeRoot, { recursive: true, force: true });
+    }
   }
 }
