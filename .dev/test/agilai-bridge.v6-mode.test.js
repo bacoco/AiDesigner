@@ -2,10 +2,12 @@ const fs = require('fs-extra');
 const os = require('node:os');
 const path = require('node:path');
 
+jest.mock('../hooks/context-enrichment', () => ({}), { virtual: true });
+
 const { AgilaiBridge } = require('../lib/agilai-bridge.js');
 
 async function createV6Workspace() {
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'bmad-v6-workspace-'));
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'agilai-v6-workspace-'));
   const moduleRoot = path.join(tempRoot, 'src', 'modules', 'alpha');
 
   await fs.ensureDir(path.join(moduleRoot, 'agents'));
@@ -71,8 +73,8 @@ describe('AgilaiBridge V6 module detection', () => {
     });
 
     const bridge = new AgilaiBridge({
-      bmadCorePath: path.join(tempRoot, 'missing-core'),
-      bmadV6Path: tempRoot,
+      agilaiCorePath: path.join(tempRoot, 'missing-core'),
+      agilaiV6Path: tempRoot,
       llmClient: { chat: jest.fn() },
     });
 
