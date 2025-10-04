@@ -8,13 +8,13 @@ You are now operating as a specialized AI agent from the BMad-Method framework. 
 
 2. **Resource Navigation**: This bundle contains all resources you need. Resources are marked with tags like:
 
-- `==================== START: .bmad-core/folder/filename.md ====================`
-- `==================== END: .bmad-core/folder/filename.md ====================`
+- `==================== START: .agilai-core/folder/filename.md ====================`
+- `==================== END: .agilai-core/folder/filename.md ====================`
 
 When you need to reference a resource mentioned in your instructions:
 
 - Look for the corresponding START/END tags
-- The format is always the full path with dot prefix (e.g., `.bmad-core/personas/analyst.md`, `.bmad-core/tasks/create-story.md`)
+- The format is always the full path with dot prefix (e.g., `.agilai-core/personas/analyst.md`, `.agilai-core/tasks/create-story.md`)
 - If a section is specified (e.g., `{root}/tasks/create-story.md#section-name`), navigate to that section within the file
 
 **Understanding YAML References**: In the agent configuration, resources are referenced in the dependencies section. For example:
@@ -29,8 +29,8 @@ dependencies:
 
 These references map directly to bundle sections:
 
-- `utils: template-format` → Look for `==================== START: .bmad-core/utils/template-format.md ====================`
-- `tasks: create-story` → Look for `==================== START: .bmad-core/tasks/create-story.md ====================`
+- `utils: template-format` → Look for `==================== START: .agilai-core/utils/template-format.md ====================`
+- `tasks: create-story` → Look for `==================== START: .agilai-core/tasks/create-story.md ====================`
 
 3. **Execution Context**: You are operating in a web environment. All your capabilities and knowledge are contained within this bundle. Work within these constraints to provide the best possible assistance.
 
@@ -39,7 +39,7 @@ These references map directly to bundle sections:
 ---
 
 
-==================== START: .bmad-core/agents/bmad-orchestrator.md ====================
+==================== START: .agilai-core/agents/bmad-orchestrator.md ====================
 # bmad-orchestrator
 
 CRITICAL: Read the full YAML, start activation to alter your state of being, follow startup section instructions, stay in this being until told to exit this mode:
@@ -164,9 +164,9 @@ dependencies:
   utils:
     - workflow-management.md
 ```
-==================== END: .bmad-core/agents/bmad-orchestrator.md ====================
+==================== END: .agilai-core/agents/bmad-orchestrator.md ====================
 
-==================== START: .bmad-core/tasks/advanced-elicitation.md ====================
+==================== START: .agilai-core/tasks/advanced-elicitation.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Advanced Elicitation Task
@@ -286,9 +286,9 @@ Choose a number (0-8) or 9 to proceed:
 - **Stay Relevant**: Tie all elicitation back to the specific content being analyzed
 - **Identify Personas**: For multi-persona methods, clearly identify which viewpoint is speaking
 - **Maintain Flow**: Keep the process moving efficiently
-==================== END: .bmad-core/tasks/advanced-elicitation.md ====================
+==================== END: .agilai-core/tasks/advanced-elicitation.md ====================
 
-==================== START: .bmad-core/tasks/create-doc.md ====================
+==================== START: .agilai-core/tasks/create-doc.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Create Document from Template (YAML Driven)
@@ -308,7 +308,7 @@ When this task is invoked:
 
 ## Critical: Template Discovery
 
-If a YAML Template has not been provided, list all templates from .bmad-core/templates or ask the user to provide another.
+If a YAML Template has not been provided, list all templates from .agilai-core/templates or ask the user to provide another.
 
 ## CRITICAL: Mandatory Elicitation Format
 
@@ -392,9 +392,9 @@ User can type `#yolo` to toggle to YOLO mode (process all sections at once).
 - Select options 2-9 from data/elicitation-methods only
 - Provide detailed rationale explaining decisions
 - End with "Select 1-9 or just type your question/feedback:"
-==================== END: .bmad-core/tasks/create-doc.md ====================
+==================== END: .agilai-core/tasks/create-doc.md ====================
 
-==================== START: .bmad-core/tasks/kb-mode-interaction.md ====================
+==================== START: .agilai-core/tasks/kb-mode-interaction.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # KB Mode Interaction Task
@@ -472,9 +472,9 @@ Or ask me about anything else related to BMad-Method!
 **User**: Tell me about workflows
 
 **Assistant**: [Provides focused information about workflows from the KB, then offers to explore specific workflow types or related topics]
-==================== END: .bmad-core/tasks/kb-mode-interaction.md ====================
+==================== END: .agilai-core/tasks/kb-mode-interaction.md ====================
 
-==================== START: .bmad-core/data/bmad-kb.md ====================
+==================== START: .agilai-core/data/bmad-kb.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # BMAD™ Knowledge Base
@@ -585,7 +585,7 @@ npx bmad-method install
 
 **Verify Installation**:
 
-- `.bmad-core/` folder created with all agents
+- `.agilai-core/` folder created with all agents
 - IDE-specific integration files created
 - All agent commands/rules/modes available
 
@@ -658,7 +658,7 @@ npx bmad-method install
 
 ## Core Configuration (core-config.yaml)
 
-**New in V4**: The `.bmad-core/core-config.yaml` file is a critical innovation that enables BMad to work seamlessly with any project structure, providing maximum flexibility and backwards compatibility.
+**New in V4**: The `.agilai-core/core-config.yaml` file is a critical innovation that enables BMad to work seamlessly with any project structure, providing maximum flexibility and backwards compatibility.
 
 ### What is core-config.yaml?
 
@@ -833,24 +833,24 @@ You are the "Vibe CEO" - thinking like a CEO with unlimited resources and a sing
 
 ### System Overview
 
-The BMAD-METHOD™ is built around a modular architecture centered on the `bmad-core` directory, which serves as the brain of the entire system. This design enables the framework to operate effectively in both IDE environments (like Cursor, VS Code) and web-based AI interfaces (like ChatGPT, Gemini).
+The BMAD-METHOD™ is built around a modular architecture centered on the `agilai-core` directory, which serves as the brain of the entire system. This design enables the framework to operate effectively in both IDE environments (like Cursor, VS Code) and web-based AI interfaces (like ChatGPT, Gemini).
 
 ### Key Architectural Components
 
-#### 1. Agents (`bmad-core/agents/`)
+#### 1. Agents (`agilai-core/agents/`)
 
 - **Purpose**: Each markdown file defines a specialized AI agent for a specific Agile role (PM, Dev, Architect, etc.)
 - **Structure**: Contains YAML headers specifying the agent's persona, capabilities, and dependencies
 - **Dependencies**: Lists of tasks, templates, checklists, and data files the agent can use
 - **Startup Instructions**: Can load project-specific documentation for immediate context
 
-#### 2. Agent Teams (`bmad-core/agent-teams/`)
+#### 2. Agent Teams (`agilai-core/agent-teams/`)
 
 - **Purpose**: Define collections of agents bundled together for specific purposes
 - **Examples**: `team-all.yaml` (comprehensive bundle), `team-fullstack.yaml` (full-stack development)
 - **Usage**: Creates pre-packaged contexts for web UI environments
 
-#### 3. Workflows (`bmad-core/workflows/`)
+#### 3. Workflows (`agilai-core/workflows/`)
 
 - **Purpose**: YAML files defining prescribed sequences of steps for specific project types
 - **Types**: Greenfield (new projects) and Brownfield (existing projects) for UI, service, and fullstack development
@@ -858,10 +858,10 @@ The BMAD-METHOD™ is built around a modular architecture centered on the `bmad-
 
 #### 4. Reusable Resources
 
-- **Templates** (`bmad-core/templates/`): Markdown templates for PRDs, architecture specs, user stories
-- **Tasks** (`bmad-core/tasks/`): Instructions for specific repeatable actions like "shard-doc" or "create-next-story"
-- **Checklists** (`bmad-core/checklists/`): Quality assurance checklists for validation and review
-- **Data** (`bmad-core/data/`): Core knowledge base and technical preferences
+- **Templates** (`agilai-core/templates/`): Markdown templates for PRDs, architecture specs, user stories
+- **Tasks** (`agilai-core/tasks/`): Instructions for specific repeatable actions like "shard-doc" or "create-next-story"
+- **Checklists** (`agilai-core/checklists/`): Quality assurance checklists for validation and review
+- **Data** (`agilai-core/data/`): Core knowledge base and technical preferences
 
 ### Dual Environment Architecture
 
@@ -1284,9 +1284,9 @@ Use the **expansion-creator** pack to build your own:
 - **Documentation**: Check `docs/` folder for project-specific context
 - **Community**: Discord and GitHub resources available for support
 - **Contributing**: See `CONTRIBUTING.md` for full guidelines
-==================== END: .bmad-core/data/bmad-kb.md ====================
+==================== END: .agilai-core/data/bmad-kb.md ====================
 
-==================== START: .bmad-core/data/elicitation-methods.md ====================
+==================== START: .agilai-core/data/elicitation-methods.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Elicitation Methods Data
@@ -1443,9 +1443,9 @@ Use the **expansion-creator** pack to build your own:
 - Acknowledge choice to finalize current work
 - Accept output as-is or move to next step
 - Prepare to continue without additional elicitation
-==================== END: .bmad-core/data/elicitation-methods.md ====================
+==================== END: .agilai-core/data/elicitation-methods.md ====================
 
-==================== START: .bmad-core/utils/workflow-management.md ====================
+==================== START: .agilai-core/utils/workflow-management.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Workflow Management
@@ -1517,4 +1517,4 @@ Handle conditional paths by asking clarifying questions when needed.
 ## Agent Integration
 
 Agents should be workflow-aware: know active workflow, their role, access artifacts, understand expected outputs.
-==================== END: .bmad-core/utils/workflow-management.md ====================
+==================== END: .agilai-core/utils/workflow-management.md ====================

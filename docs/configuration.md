@@ -94,6 +94,8 @@ When GLM mode is active, variables are resolved in this order:
 
 **Note:** At least one of the GLM `*_BASE_URL` or `*_API_KEY` variables must be set when using GLM mode. Prefer the `AGILAI_*` keys; `BMAD_*`, `ZHIPUAI_*`, and unprefixed `GLM_*` remain for backwards compatibility.
 
+> ℹ️ **Agilai naming update**: The runtime still reads the legacy `BMAD_*` environment variables for GLM routing. You can safely define `AGILAI_*` aliases in your own tooling, but keep exporting the `BMAD_*` names until the CLI adds first-class Agilai prefixes.
+
 #### Custom Endpoints
 
 GLM base URLs can include schemes, ports, and paths:
@@ -285,7 +287,7 @@ CODEX_APPROVED_OPERATIONS=generate_deliverable:prd,execute_quick_lane
 - `generate_deliverable:story` - Generate user stories
 - `execute_quick_lane` - Run Quick Lane workflow
 - `execute_complex_lane` - Run Complex Lane workflow
-- `transition_phase` - Move to next BMAD phase
+- `transition_phase` - Move to next Agilai phase
 
 ### Model Overrides
 

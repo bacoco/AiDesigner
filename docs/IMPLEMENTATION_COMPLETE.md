@@ -92,7 +92,7 @@ MCP Server (1agilai tools)
     ├→ list_bmad_agents
     └→ execute_bmad_workflow
     ↓
-BMAD Bridge → bmad-core agents
+BMAD Bridge → agilai-core agents
     ↓
 Deliverable Generator
     ↓
@@ -124,7 +124,7 @@ npm install
 npm run build:mcp
 
 # Start conversational interface
-npm run bmad
+npm run agilai
 
 # Talk naturally
 "Help me build a task management app for my family"
@@ -216,7 +216,7 @@ npm test
 ## Success Criteria
 
 ✅ **Works without API keys** - Uses Claude Pro subscription
-✅ **Integrates with existing BMAD CLI** - npm run bmad (with `npm run bmad:claude` / `npm run bmad:codex` for specific front-ends)
+✅ **Integrates with the Agilai CLI** - npm run agilai (with `npm run agilai:claude` / `npm run agilai:codex` for specific front-ends)
 ✅ **Generates real deliverables** - docs/ folder populated
 ✅ **Maintains invisible UX** - No methodology jargon
 ✅ **Persists state** - .agilai/ folder
@@ -235,10 +235,10 @@ npm test
 ## Usage Command
 
 ```bash
-npm run bmad
+npm run agilai
 # Or pick a specific front-end:
-# npm run bmad:claude
-# npm run bmad:codex
+# npm run agilai:claude
+# npm run agilai:codex
 ```
 
 That's literally it. Just run one command and start talking about your project!
