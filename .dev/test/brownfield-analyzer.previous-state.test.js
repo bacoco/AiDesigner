@@ -20,7 +20,7 @@ describe('BrownfieldAnalyzer.detectPreviousState', () => {
 
   it('surfaces updatedAt timestamps when present in stored state', async () => {
     const analyzer = new BrownfieldAnalyzer(tempDir);
-    const stateDir = path.join(tempDir, '.bmad-invisible');
+    const stateDir = path.join(tempDir, '.agilai');
     const stateFile = path.join(stateDir, 'state.json');
     const storedState = {
       phase: 'analyst',
@@ -39,7 +39,7 @@ describe('BrownfieldAnalyzer.detectPreviousState', () => {
 
   it('falls back to legacy lastUpdated timestamps when updatedAt is absent', async () => {
     const analyzer = new BrownfieldAnalyzer(tempDir);
-    const stateDir = path.join(tempDir, '.bmad-invisible');
+    const stateDir = path.join(tempDir, '.agilai');
     const stateFile = path.join(stateDir, 'state.json');
     const storedState = {
       phase: 'strategist',
