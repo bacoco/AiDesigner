@@ -118,6 +118,26 @@ describe('prepack MCP integration tests', () => {
         }
         fs.renameSync(distMcpDir, distMcpBackup);
       }
+
+      // Run npm pack once for all tests in this suite
+      const packResult = spawnSync('npm', ['pack'], {
+        cwd: rootDir,
+        env: { ...process.env },
+        encoding: 'utf8',
+        shell: true,
+      });
+
+      if (packResult.status !== 0) {
+        throw new Error(`npm pack failed: ${packResult.stderr}`);
+      }
+
+      // Compute tarball path
+      const packageJson = require(path.join(rootDir, 'package.json'));
+      tarballPath = path.join(rootDir, `${packageJson.name}-${packageJson.version}.tgz`);
+
+      if (!fs.existsSync(tarballPath)) {
+        throw new Error(`Tarball not found at ${tarballPath}`);
+      }
     });
 
     afterAll(() => {
@@ -136,27 +156,13 @@ describe('prepack MCP integration tests', () => {
     });
 
     test('npm pack includes dist/mcp/mcp/server.js', () => {
-      // Run npm pack
-      const result = spawnSync('npm', ['pack'], {
-        cwd: rootDir,
-        env: { ...process.env },
-        encoding: 'utf8',
-        shell: true,
-      });
-
-      expect(result.status).toBe(0);
-
-      // Find the created tarball
-      const packageJson = require(path.join(rootDir, 'package.json'));
-      const expectedTarballName = `${packageJson.name}-${packageJson.version}.tgz`;
-      tarballPath = path.join(rootDir, expectedTarballName);
-
+      // Tarball already created in beforeAll
       expect(fs.existsSync(tarballPath)).toBe(true);
 
       // Check tarball contents for server.js
       const listResult = spawnSync(
         'tar',
-        ['-tzf', expectedTarballName, 'package/dist/mcp/mcp/server.js'],
+        ['-tzf', path.basename(tarballPath), 'package/dist/mcp/mcp/server.js'],
         {
           cwd: rootDir,
           encoding: 'utf8',
@@ -168,18 +174,8 @@ describe('prepack MCP integration tests', () => {
     });
 
     test('npm pack includes MCP assets (lib, hooks, tools)', () => {
-      if (!tarballPath) {
-        // Run npm pack if not already done
-        spawnSync('npm', ['pack'], {
-          cwd: rootDir,
-          env: { ...process.env },
-          encoding: 'utf8',
-          shell: true,
-        });
-
-        const packageJson = require(path.join(rootDir, 'package.json'));
-        tarballPath = path.join(rootDir, `${packageJson.name}-${packageJson.version}.tgz`);
-      }
+      // Tarball already created in beforeAll
+      expect(fs.existsSync(tarballPath)).toBe(true);
 
       // List all files in the tarball
       const listResult = spawnSync('tar', ['-tzf', path.basename(tarballPath)], {

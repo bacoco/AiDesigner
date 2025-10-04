@@ -41,18 +41,12 @@ describe('postinstall-build-mcp script', () => {
       }
     });
 
-    test('exits early when no prebuilt server is found', () => {
+    test('exits early with helpful message when no prebuilt server is found', () => {
       const result = runPostinstall();
 
       expect(result.status).toBe(0);
       expect(result.stderr).toContain('Prebuilt MCP server not found');
       expect(result.stderr).toContain('npm run build:mcp');
-    });
-
-    test('exits early when prebuilt server is missing', () => {
-      const result = runPostinstall();
-
-      expect(result.status).toBe(0);
       expect(result.stderr).toContain('Skipping MCP asset sync');
     });
   });
