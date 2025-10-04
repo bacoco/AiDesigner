@@ -2,6 +2,8 @@
 
 Complete configuration reference for Agilai.
 
+> **Legacy aliases**: Existing `npm run bmad*` scripts continue to work, but new projects should prefer the `agilai` commands documented below.
+
 ## Table of Contents
 
 - [Environment Variables](#environment-variables)
@@ -22,12 +24,14 @@ Agilai can be configured via environment variables in a `.env` file at your proj
 LLM_PROVIDER=glm
 
 # API Keys
-ZHIPUAI_API_KEY=sk-...          # For GLM
+AGILAI_GLM_API_KEY=sk-...       # For GLM (preferred)
 ANTHROPIC_API_KEY=sk-ant-...    # For Claude
 
 # Optional: Override model
 LLM_MODEL=glm-4-plus            # Custom GLM model
 ```
+
+Legacy names (`BMAD_*`, `GLM_*`, `ZHIPUAI_*`) continue to work, but new projects should prefer the `AGILAI_*` convention.
 
 ## LLM Provider Configuration
 
@@ -39,11 +43,9 @@ Enable GLM (ZhipuAI) for the orchestrator:
 
 ```bash
 # Use GLM via flag
-npm run bmad -- --glm
 npx agilai start --glm
 
 # Explicit provider specification
-npm run bmad -- --llm-provider=glm
 npx agilai start --llm-provider=glm
 ```
 
@@ -58,41 +60,47 @@ Create a `.env` file:
 LLM_PROVIDER=glm
 
 # API Key (choose one format)
-ZHIPUAI_API_KEY=sk-...          # Preferred
-GLM_API_KEY=sk-...               # Also supported
+AGILAI_GLM_API_KEY=sk-...       # Preferred
+GLM_API_KEY=sk-...               # Legacy alias
+ZHIPUAI_API_KEY=sk-...          # Legacy alias (Codex CLI)
 
 # Optional: Custom model
 LLM_MODEL=glm-4-plus            # Default: glm-4
 
 # Optional: Custom endpoint
-GLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4/chat/completions
+AGILAI_GLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4/chat/completions
 ```
 
 #### Variable Priority
 
 When GLM mode is active, variables are resolved in this order:
 
-| Variable               | Priority | Description                              |
-| ---------------------- | -------- | ---------------------------------------- |
-| `BMAD_GLM_BASE_URL`    | 1        | GLM API base URL (BMAD-specific)         |
-| `GLM_BASE_URL`         | 2        | GLM API base URL (standard)              |
-| `ANTHROPIC_BASE_URL`   | 3        | Anthropic base URL (fallback)            |
-| `BMAD_GLM_AUTH_TOKEN`  | 1        | GLM authentication token (BMAD-specific) |
-| `GLM_AUTH_TOKEN`       | 2        | GLM authentication token (standard)      |
-| `ANTHROPIC_AUTH_TOKEN` | 3        | Anthropic auth token (fallback)          |
-| `BMAD_GLM_API_KEY`     | 1        | GLM API key (BMAD-specific)              |
-| `GLM_API_KEY`          | 2        | GLM API key (standard)                   |
-| `ANTHROPIC_API_KEY`    | 3        | Anthropic API key (fallback)             |
+| Variable                | Priority | Description                                   |
+| ----------------------- | -------- | --------------------------------------------- |
+| `AGILAI_GLM_BASE_URL`   | 1        | GLM API base URL (preferred)                  |
+| `BMAD_GLM_BASE_URL`     | 2        | GLM API base URL (legacy support)             |
+| `GLM_BASE_URL`          | 3        | GLM API base URL (standard alias)             |
+| `ANTHROPIC_BASE_URL`    | 4        | Anthropic base URL (fallback)                 |
+| `AGILAI_GLM_AUTH_TOKEN` | 1        | GLM authentication token (preferred)          |
+| `BMAD_GLM_AUTH_TOKEN`   | 2        | GLM authentication token (legacy support)     |
+| `GLM_AUTH_TOKEN`        | 3        | GLM authentication token (standard alias)     |
+| `ANTHROPIC_AUTH_TOKEN`  | 4        | Anthropic auth token (fallback)               |
+| `AGILAI_GLM_API_KEY`    | 1        | GLM API key (preferred)                       |
+| `BMAD_GLM_API_KEY`      | 2        | GLM API key (legacy support)                  |
+| `GLM_API_KEY`           | 3        | GLM API key (standard alias)                  |
+| `ZHIPUAI_API_KEY`       | 4        | GLM API key (legacy Codex alias)              |
+| `ANTHROPIC_API_KEY`     | 5        | Anthropic API key (fallback when nothing set) |
 
-**Note:** At least one of `*_BASE_URL` or `*_API_KEY` must be set when using GLM mode.
+**Note:** At least one of `*_BASE_URL` or `*_API_KEY` must be set when using GLM mode. Legacy `BMAD_*`, `GLM_*`, and `ZHIPUAI_*` values continue to work, but `AGILAI_*` is now the canonical naming.
 
 #### Custom Endpoints
 
 GLM base URLs can include schemes, ports, and paths:
 
 ```bash
-# Full custom endpoint
-BMAD_GLM_BASE_URL=https://example.com:7443/custom/base
+# Full custom endpoint (preferred)
+AGILAI_GLM_BASE_URL=https://example.com:7443/custom/base
+# Legacy fallback names such as BMAD_GLM_BASE_URL or GLM_BASE_URL remain supported.
 # Agilai appends: /api/paas/v4/chat/completions
 
 # Default (if no base URL provided)
@@ -102,21 +110,22 @@ BMAD_GLM_BASE_URL=https://example.com:7443/custom/base
 #### Example Usage
 
 ```bash
-# Set GLM provider and credentials
-export BMAD_ASSISTANT_PROVIDER=glm
-export BMAD_GLM_BASE_URL=https://your-glm-endpoint.com
-export BMAD_GLM_API_KEY=your-api-key
+# Set GLM provider and credentials (preferred names)
+export AGILAI_ASSISTANT_PROVIDER=glm
+export AGILAI_GLM_BASE_URL=https://your-glm-endpoint.com
+export AGILAI_GLM_API_KEY=your-api-key
+# Legacy BMAD_* and GLM_* variables are still honored for backward compatibility.
 
-# Start BMAD with GLM routing
+# Start Agilai with GLM routing
 npm run bmad:claude
 # Output: 🌐 GLM mode active: routing Claude CLI through configured GLM endpoint.
 ```
 
-GLM routing works with all three assistant CLIs:
+GLM routing works with all three assistant entry points:
 
-- `npm run bmad:claude` - Routes Claude CLI through GLM
-- `npm run bmad:codex` - Routes Codex CLI through GLM
-- `npm run bmad:opencode` - Routes OpenCode CLI through GLM
+- `npx agilai start --assistant=claude --glm` - Routes Claude CLI through GLM
+- `npx agilai start --assistant=codex --glm` - Routes Codex CLI through GLM
+- `npx agilai start --assistant=opencode --glm` - Routes OpenCode CLI through GLM
 
 ### Anthropic Provider (Default)
 
@@ -126,11 +135,11 @@ Using Anthropic's Claude (default behavior):
 
 ```bash
 # Use Anthropic (default)
-npm run bmad
-npm run bmad -- --anthropic
+npx agilai start
+npx agilai start --anthropic
 
 # Explicit provider
-npm run bmad -- --llm-provider=claude
+npx agilai start --llm-provider=claude
 ```
 
 #### Environment Variables
@@ -154,14 +163,14 @@ Switch providers anytime:
 
 ```bash
 # Start with GLM
-npm run bmad -- --glm
+npx agilai start --glm
 
 # Later, switch to Anthropic
-npm run bmad -- --anthropic
+npx agilai start --anthropic
 
 # Or change .env file
 echo "LLM_PROVIDER=claude" >> .env
-npm run bmad
+npx agilai start
 ```
 
 **Priority order:**
@@ -276,7 +285,7 @@ CODEX_APPROVED_OPERATIONS=generate_deliverable:prd,execute_quick_lane
 - `generate_deliverable:story` - Generate user stories
 - `execute_quick_lane` - Run Quick Lane workflow
 - `execute_complex_lane` - Run Complex Lane workflow
-- `transition_phase` - Move to next BMAD phase
+- `transition_phase` - Move to next Agilai phase
 
 ### Model Overrides
 
@@ -336,7 +345,7 @@ Agilai emits structured JSON logs to `stderr`:
   "ts": "2024-07-16T12:34:56.789Z",
   "level": "info",
   "msg": "lane_selection_completed",
-  "service": "bmad-codex",
+  "service": "agilai-codex",
   "component": "mcp-orchestrator",
   "operation": "execute_workflow",
   "lane": "quick",
@@ -472,7 +481,7 @@ Validate your configuration:
 npm run mcp:doctor
 
 # Test LLM provider connection
-npm run bmad -- --test
+npx agilai start --test
 
 # Audit security settings
 npm run mcp:audit
@@ -497,7 +506,7 @@ CODEX_LOG_CONTEXT='{"environment":"local"}'
 ```bash
 # .env
 LLM_PROVIDER=glm
-ZHIPUAI_API_KEY=sk-...
+AGILAI_GLM_API_KEY=sk-...
 LOG_LEVEL=info
 AUTO_APPROVE=false
 CODEX_APPROVAL_MODE=true
@@ -510,7 +519,7 @@ CODEX_METRICS_STDOUT=true
 ```bash
 # .env
 LLM_PROVIDER=glm
-ZHIPUAI_API_KEY=${CI_GLM_API_KEY}
+AGILAI_GLM_API_KEY=${CI_GLM_API_KEY}
 LOG_LEVEL=warn
 AUTO_APPROVE=true
 CODEX_APPROVAL_MODE=false
@@ -532,7 +541,7 @@ If environment variables aren't being read:
 
 If using the wrong provider:
 
-1. Check CLI flag: `npm run bmad -- --glm`
+1. Check CLI flag: `npx agilai start --glm`
 2. Verify `.env` contents: `cat .env | grep LLM_PROVIDER`
 3. Check priority: CLI flags override environment variables
 

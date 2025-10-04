@@ -13,7 +13,8 @@ This does everything: creates structure, installs dependencies, and launches cha
 You'll be prompted to pick Codex, Claude, or OpenCode (defaults to Codex). Use
 `--assistant=<choice>` to skip the prompt. Add `--glm` / `--llm-provider=glm`
 to launch the orchestrator against ZhipuAI's GLM using the
-`ZHIPUAI_API_KEY`/`GLM_API_KEY` credentials, or `--anthropic` to force the
+`AGILAI_GLM_API_KEY` (or legacy `ZHIPUAI_API_KEY`/`GLM_API_KEY`) credentials,
+or `--anthropic` to force the
 legacy Claude defaults.
 
 > **💡 Tip**: Always use `@latest` to get the newest version!
@@ -36,7 +37,7 @@ npm run agilai:codex
 npm run agilai:claude
 # OpenCode front-end
 npm run agilai:opencode
-# Add -- --glm to any npm script invocation to switch providers
+# Add --glm to any Agilai invocation to switch providers
 ```
 
 > **UI Toolkit Opt-in**: When you include the optional shadcn UI helpers, the
@@ -60,15 +61,15 @@ npm run agilai
 ### Selecting Your LLM Provider
 
 - Use `--glm` (alias for `--llm-provider=glm`) with any Agilai CLI command to run
-  the orchestrator on ZhipuAI's GLM. Provide credentials via `ZHIPUAI_API_KEY`
-  or the fallback `GLM_API_KEY`.
+  the orchestrator on ZhipuAI's GLM. Provide credentials via `AGILAI_GLM_API_KEY`
+  (or legacy aliases such as `ZHIPUAI_API_KEY` or `GLM_API_KEY`).
 - Override the model with `--llm-model=<model>` or by exporting `LLM_MODEL`.
 - Persist defaults in a `.env` file so every spawn inherits them:
 
   ```bash
   # .env
   LLM_PROVIDER=glm
-  ZHIPUAI_API_KEY=sk-...
+  AGILAI_GLM_API_KEY=sk-...
   LLM_MODEL=glm-4-plus
   ```
 
@@ -179,14 +180,14 @@ Assistant: Absolutely! Let me update the architecture...
 Agilai now records SHA-256 hashes for critical, user-modifiable resources.
 When you launch any CLI entry point (`agilai`, `agilai-codex`, or
 `npm run agilai:claude`), a quick pre-flight check compares the current files against the
-baseline stored in `.agilai/critical-hashes.json`.
+baseline stored in `.agilai-invisible/critical-hashes.json`.
 
 - ✅ Matching hashes: the CLI proceeds silently.
 - ⚠️ Diverging hashes: you receive a warning summarising which core files changed,
   went missing, or were newly added under tracked scopes such as:
-  - Agilai core configuration (`bmad-core/core-config.yaml`)
-  - Agilai core checklists (`bmad-core/checklists/`)
-  - Agilai core templates (`bmad-core/templates/`)
+  - Agilai core configuration (`agilai-core/core-config.yaml`)
+  - Agilai core checklists (`agilai-core/checklists/`)
+  - Agilai core templates (`agilai-core/templates/`)
   - `expansion-packs/`
   - `codex-config.toml.example`
 
@@ -194,7 +195,7 @@ If you intentionally customise these resources, regenerate the baseline after
 your edits:
 
 ```bash
-node tools/update-critical-hashes.js
+node .dev/tools/update-critical-hashes.js
 ```
 
 The baseline is committed per project, so the warning helps catch accidental
@@ -259,7 +260,7 @@ This step is skipped automatically in non-interactive environments. See [`codex-
 
 ### Automatic CLI Provisioning
 
-The Agilai Codex (`bin/bmad-codex`) and Agilai Claude (`bin/bmad-claude`) launchers now validate that the Codex and Claude CLIs are installed **before** spawning the orchestrator session. If a binary is missing, the script will:
+The Agilai Codex (`bin/agilai-codex`) and Agilai Claude (`bin/agilai-claude`) launchers now validate that the Codex and Claude CLIs are installed **before** spawning the orchestrator session. If a binary is missing, the script will:
 
 - Offer an interactive menu with installation helpers (for example `npm exec --yes @openai/codex-cli@latest -- codex --help`, Homebrew taps, and the official download docs).
 - Fall back to printing the same guidance when running in non-interactive contexts (CI, redirected stdin/stdout) so automation jobs fail fast but still surface the remediation steps.
@@ -293,10 +294,10 @@ npm run build:mcp
 ls -la dist/mcp/mcp/
 ```
 
-### Permission denied on Agilai Claude (`bin/bmad-claude`)
+### Permission denied on Agilai Claude (`bin/agilai-claude`)
 
 ```bash
-chmod +x bin/bmad-claude
+chmod +x bin/agilai-claude
 ```
 
 ### No deliverables generated

@@ -300,9 +300,7 @@ async function runOrchestratorServer(options = {}) {
       ({ ProjectState } = await (0, lib_resolver_js_1.importLibModule)('project-state.js'));
     }
     if (!AgilaiBridge) {
-      ({ BMADBridge: AgilaiBridge } = await (0, lib_resolver_js_1.importLibModule)(
-        'bmad-bridge.js',
-      ));
+      ({ AgilaiBridge } = await (0, lib_resolver_js_1.importLibModule)('agilai-bridge.js'));
     }
     if (!DeliverableGenerator) {
       ({ DeliverableGenerator } = await (0, lib_resolver_js_1.importLibModule)(
@@ -360,7 +358,7 @@ async function runOrchestratorServer(options = {}) {
       }
     }
     if (!deliverableGen) {
-      deliverableGen = new DeliverableGenerator(projectPath, { bmadBridge: agilaiBridge });
+      deliverableGen = new DeliverableGenerator(projectPath, { agilaiBridge });
       await deliverableGen.initialize();
     }
     if (!brownfieldAnalyzer) {
@@ -458,7 +456,7 @@ async function runOrchestratorServer(options = {}) {
     return validationModule.runStoryContextValidation({
       projectState,
       createLLMClient,
-      BMADBridge: AgilaiBridge,
+      AgilaiBridge,
       lane,
       notes,
       trigger,
@@ -477,7 +475,7 @@ async function runOrchestratorServer(options = {}) {
       return validationModule.ensureStoryContextReadyForDevelopment({
         projectState,
         createLLMClient,
-        BMADBridge: AgilaiBridge,
+        AgilaiBridge,
         lane,
         notes,
         trigger,

@@ -10,7 +10,7 @@ Keep OpenCode config schema‑compliant and small, avoid key collisions, and pro
 
 ## How
 
-- Ensure `.bmad-core/core-config.yaml` in `instructions`
+- Ensure `.agilai-core/core-config.yaml` in `instructions`
 - Merge only selected packages’ agents/commands into opencode.json file
 - Orchestrators `mode: primary`; all agents enable `write`, `edit`, `bash`
 - Descriptions from `whenToUse`/task `Purpose` with sanitization + fallbacks
@@ -18,7 +18,7 @@ Keep OpenCode config schema‑compliant and small, avoid key collisions, and pro
 
 ## Testing
 
-- Run: `npx bmad-method install -f -i opencode`
+- Run: `npx agilai install -f -i opencode`
 - Verify: `opencode.json[c]` updated/created as expected, `AGENTS.md` OpenCode section is compact with links
 - Pre‑push checks:
 

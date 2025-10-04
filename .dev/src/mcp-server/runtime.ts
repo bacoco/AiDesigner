@@ -449,7 +449,7 @@ export async function runOrchestratorServer(
         ({ ProjectState } = await importLibModule<any>("project-state.js"));
       }
       if (!AgilaiBridge) {
-        ({ BMADBridge: AgilaiBridge } = await importLibModule<any>("bmad-bridge.js"));
+        ({ AgilaiBridge } = await importLibModule<any>("agilai-bridge.js"));
       }
       if (!DeliverableGenerator) {
         ({ DeliverableGenerator } = await importLibModule<any>(
@@ -510,7 +510,7 @@ export async function runOrchestratorServer(
     }
 
     if (!deliverableGen) {
-      deliverableGen = new DeliverableGenerator(projectPath, { bmadBridge: agilaiBridge });
+      deliverableGen = new DeliverableGenerator(projectPath, { agilaiBridge });
       await deliverableGen.initialize();
     }
 
@@ -625,7 +625,7 @@ export async function runOrchestratorServer(
     return validationModule.runStoryContextValidation({
       projectState,
       createLLMClient,
-      BMADBridge: AgilaiBridge,
+      AgilaiBridge,
       lane,
       notes,
       trigger,
@@ -650,7 +650,7 @@ export async function runOrchestratorServer(
       return validationModule.ensureStoryContextReadyForDevelopment({
         projectState,
         createLLMClient,
-        BMADBridge: AgilaiBridge,
+        AgilaiBridge,
         lane,
         notes,
         trigger,

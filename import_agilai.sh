@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# import_bmad.sh — bring the BMAD-METHOD repo into the current repo without losing existing work
+# import_agilai.sh — bring the Agilai repo into the current repo without losing existing work
 
 set -euo pipefail
 
-UPSTREAM_URL="${1:-https://github.com/bmad-code-org/BMAD-METHOD.git}"
-UPSTREAM_REMOTE="bmad-upstream"
+UPSTREAM_URL="${1:-https://github.com/AgilaiHQ/Agilai.git}"
+UPSTREAM_REMOTE="agilai-upstream"
 BASE_BRANCH="${2:-main}"
-FEATURE_BRANCH="${3:-feature/import-bmad}"
-BACKUP_BRANCH="${4:-backup/pre-bmad-import}"
+FEATURE_BRANCH="${3:-feature/import-agilai}"
+BACKUP_BRANCH="${4:-backup/pre-agilai-import}"
 
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
   echo "❌ Not inside a Git repository."
@@ -60,7 +60,7 @@ cat <<'EONOTE'
   1. Resolve any merge conflicts that Git reports.
   2. When satisfied, run:
        git add .
-       git commit -m "Import BMAD upstream sources"
+       git commit -m "Import Agilai upstream sources"
   3. Push your branch:
        git push origin FEATURE_BRANCH
   4. Open a pull request comparing FEATURE_BRANCH with BASE_BRANCH.
