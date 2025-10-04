@@ -352,7 +352,10 @@ describe('LLMClient', () => {
     });
 
     it('detects MCP execution with published package path (Windows)', () => {
-      process.argv = ['node', 'C:\\projects\\myapp\\node_modules\\agilai\\dist\\mcp\\mcp\\server.js'];
+      process.argv = [
+        'node',
+        'C:\\projects\\myapp\\node_modules\\agilai\\dist\\mcp\\mcp\\server.js',
+      ];
       const client = new LLMClient({ provider: 'claude' });
       expect(client.isMcpExecution).toBe(true);
     });
