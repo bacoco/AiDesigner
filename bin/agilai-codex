@@ -126,7 +126,11 @@ async function main() {
   const { env: codexEnv, isGlm } = buildAssistantSpawnEnv();
   const mergedEnv = { ...process.env, ...codexEnv };
 
-  if (process.env.BMAD_ASSISTANT_PROVIDER) {
+  if (process.env.AGILAI_ASSISTANT_PROVIDER && !('AGILAI_ASSISTANT_PROVIDER' in codexEnv)) {
+    mergedEnv.AGILAI_ASSISTANT_PROVIDER = process.env.AGILAI_ASSISTANT_PROVIDER;
+  }
+
+  if (process.env.BMAD_ASSISTANT_PROVIDER && !('BMAD_ASSISTANT_PROVIDER' in codexEnv)) {
     mergedEnv.BMAD_ASSISTANT_PROVIDER = process.env.BMAD_ASSISTANT_PROVIDER;
   }
 

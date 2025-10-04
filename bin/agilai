@@ -21,12 +21,51 @@ let args = [];
 const packageRoot = path.join(__dirname, '..');
 
 const CLAUDE_PROVIDER_ENV_KEYS = [
+  'AGILAI_ASSISTANT_PROVIDER',
+  'BMAD_ASSISTANT_PROVIDER',
   'CLAUDE_CLI_PROVIDER',
   'CLAUDE_CLI_DEFAULT_PROVIDER',
   'CLAUDE_DEFAULT_PROVIDER',
   'CLAUDE_PROVIDER',
   'CLAUDE_CODE_PROVIDER',
 ];
+
+const GLM_API_KEY_ENV_KEYS = ['AGILAI_GLM_API_KEY', 'BMAD_GLM_API_KEY', 'GLM_API_KEY', 'ZHIPUAI_API_KEY'];
+const GLM_BASE_URL_ENV_KEYS = ['AGILAI_GLM_BASE_URL', 'BMAD_GLM_BASE_URL', 'GLM_BASE_URL'];
+const GLM_AUTH_TOKEN_ENV_KEYS = ['AGILAI_GLM_AUTH_TOKEN', 'BMAD_GLM_AUTH_TOKEN', 'GLM_AUTH_TOKEN'];
+
+const hasOwn = (source, key) => Boolean(source && Object.prototype.hasOwnProperty.call(source, key));
+
+const resolveEnvValue = (source, keys) => {
+  for (const key of keys) {
+    const value = source?.[key];
+    if (typeof value === 'string' && value.trim()) {
+      return { key, value: value.trim() };
+    }
+  }
+
+  return { key: undefined, value: undefined };
+};
+
+const chooseWriteKey = (source, keys) => {
+  for (const key of keys) {
+    if (hasOwn(source, key)) {
+      return key;
+    }
+  }
+
+  return keys[0];
+};
+
+const setProcessEnvIfMissing = (key, value) => {
+  if (!value) {
+    return;
+  }
+
+  if (typeof process.env[key] !== 'string' || process.env[key].trim() === '') {
+    process.env[key] = value;
+  }
+};
 
 const parseEnvFile = (filePath) => {
   const parsed = {};
@@ -265,17 +304,67 @@ const ensureClaudeEnvironment = async ({ projectRoot, userArgs = [] }) => {
     process.env.ANTHROPIC_AUTH_TOKEN = anthropicToken;
   }
 
-  const glmKeyFromProcess = process.env.GLM_API_KEY;
-  const glmKeyFromFile = fileEnv.GLM_API_KEY;
-  const glmBaseFromProcess = process.env.GLM_BASE_URL;
-  const glmBaseFromFile = fileEnv.GLM_BASE_URL;
+  const processApiKey = resolveEnvValue(process.env, GLM_API_KEY_ENV_KEYS);
+  const fileApiKey = resolveEnvValue(fileEnv, GLM_API_KEY_ENV_KEYS);
+  const processBaseUrl = resolveEnvValue(process.env, GLM_BASE_URL_ENV_KEYS);
+  const fileBaseUrl = resolveEnvValue(fileEnv, GLM_BASE_URL_ENV_KEYS);
+  const processAuthToken = resolveEnvValue(process.env, GLM_AUTH_TOKEN_ENV_KEYS);
+  const fileAuthToken = resolveEnvValue(fileEnv, GLM_AUTH_TOKEN_ENV_KEYS);
 
-  if (!glmKeyFromProcess && glmKeyFromFile) {
-    process.env.GLM_API_KEY = glmKeyFromFile;
+  const glmApiKey = processApiKey.value || fileApiKey.value;
+  const glmBaseUrl = processBaseUrl.value || fileBaseUrl.value;
+  const glmAuthToken = processAuthToken.value || fileAuthToken.value;
+
+  if (!processApiKey.value && fileApiKey.value) {
+    setProcessEnvIfMissing(fileApiKey.key, fileApiKey.value);
   }
 
-  if (!glmBaseFromProcess && glmBaseFromFile) {
-    process.env.GLM_BASE_URL = glmBaseFromFile;
+  if (!processBaseUrl.value && fileBaseUrl.value) {
+    setProcessEnvIfMissing(fileBaseUrl.key, fileBaseUrl.value);
+  }
+
+  if (!processAuthToken.value && fileAuthToken.value) {
+    setProcessEnvIfMissing(fileAuthToken.key, fileAuthToken.value);
+  }
+
+  setProcessEnvIfMissing('AGILAI_GLM_API_KEY', glmApiKey);
+  setProcessEnvIfMissing('AGILAI_GLM_BASE_URL', glmBaseUrl);
+  setProcessEnvIfMissing('AGILAI_GLM_AUTH_TOKEN', glmAuthToken);
+
+  const legacyBmadApiKeyDetected = Boolean(process.env.BMAD_GLM_API_KEY || hasOwn(fileEnv, 'BMAD_GLM_API_KEY'));
+  const legacyBmadBaseDetected = Boolean(process.env.BMAD_GLM_BASE_URL || hasOwn(fileEnv, 'BMAD_GLM_BASE_URL'));
+  const legacyBmadAuthDetected = Boolean(process.env.BMAD_GLM_AUTH_TOKEN || hasOwn(fileEnv, 'BMAD_GLM_AUTH_TOKEN'));
+  const legacyGlmApiKeyDetected = Boolean(process.env.GLM_API_KEY || hasOwn(fileEnv, 'GLM_API_KEY'));
+  const legacyGlmBaseDetected = Boolean(process.env.GLM_BASE_URL || hasOwn(fileEnv, 'GLM_BASE_URL'));
+  const legacyGlmAuthDetected = Boolean(process.env.GLM_AUTH_TOKEN || hasOwn(fileEnv, 'GLM_AUTH_TOKEN'));
+  const legacyZhipuKeyDetected = Boolean(process.env.ZHIPUAI_API_KEY || hasOwn(fileEnv, 'ZHIPUAI_API_KEY'));
+
+  if (legacyGlmApiKeyDetected) {
+    setProcessEnvIfMissing('GLM_API_KEY', glmApiKey);
+  }
+
+  if (legacyGlmBaseDetected) {
+    setProcessEnvIfMissing('GLM_BASE_URL', glmBaseUrl);
+  }
+
+  if (legacyGlmAuthDetected) {
+    setProcessEnvIfMissing('GLM_AUTH_TOKEN', glmAuthToken);
+  }
+
+  if (legacyBmadApiKeyDetected) {
+    setProcessEnvIfMissing('BMAD_GLM_API_KEY', glmApiKey);
+  }
+
+  if (legacyBmadBaseDetected) {
+    setProcessEnvIfMissing('BMAD_GLM_BASE_URL', glmBaseUrl);
+  }
+
+  if (legacyBmadAuthDetected) {
+    setProcessEnvIfMissing('BMAD_GLM_AUTH_TOKEN', glmAuthToken);
+  }
+
+  if (legacyZhipuKeyDetected) {
+    setProcessEnvIfMissing('ZHIPUAI_API_KEY', glmApiKey);
   }
 
   const provider = determineClaudeProvider(userArgs, fileEnv);
@@ -283,16 +372,16 @@ const ensureClaudeEnvironment = async ({ projectRoot, userArgs = [] }) => {
     return;
   }
 
-  const effectiveBaseUrl = process.env.GLM_BASE_URL || glmBaseFromFile;
+  const effectiveBaseUrl = glmBaseUrl;
 
-  if (process.env.GLM_API_KEY) {
+  if (glmApiKey) {
     return;
   }
 
   if (!isInteractiveTerminal()) {
-    console.error('❌ GLM provider selected but GLM_API_KEY is not set.');
+    console.error('❌ GLM provider selected but no GLM API key is configured.');
     console.error(
-      '   Provide GLM_API_KEY (and optional GLM_BASE_URL) via environment variables or a project .env file before running in non-interactive mode.',
+      '   Provide AGILAI_GLM_API_KEY (or legacy GLM_API_KEY / BMAD_GLM_API_KEY) and optional AGILAI_GLM_BASE_URL before running in non-interactive mode.',
     );
     process.exit(1);
   }
@@ -305,11 +394,37 @@ const ensureClaudeEnvironment = async ({ projectRoot, userArgs = [] }) => {
     process.exit(1);
   }
 
-  process.env.GLM_API_KEY = credentials.apiKey;
+  process.env.AGILAI_GLM_API_KEY = credentials.apiKey;
+  if (legacyGlmApiKeyDetected && !process.env.GLM_API_KEY) {
+    process.env.GLM_API_KEY = credentials.apiKey;
+  }
+  if (legacyBmadApiKeyDetected && !process.env.BMAD_GLM_API_KEY) {
+    process.env.BMAD_GLM_API_KEY = credentials.apiKey;
+  }
+  if (legacyZhipuKeyDetected && !process.env.ZHIPUAI_API_KEY) {
+    process.env.ZHIPUAI_API_KEY = credentials.apiKey;
+  }
+
   if (credentials.baseUrl) {
-    process.env.GLM_BASE_URL = credentials.baseUrl;
+    process.env.AGILAI_GLM_BASE_URL = credentials.baseUrl;
+    if (legacyGlmBaseDetected && !process.env.GLM_BASE_URL) {
+      process.env.GLM_BASE_URL = credentials.baseUrl;
+    }
+    if (legacyBmadBaseDetected && !process.env.BMAD_GLM_BASE_URL) {
+      process.env.BMAD_GLM_BASE_URL = credentials.baseUrl;
+    }
   } else if (effectiveBaseUrl) {
-    process.env.GLM_BASE_URL = effectiveBaseUrl;
+    setProcessEnvIfMissing('AGILAI_GLM_BASE_URL', effectiveBaseUrl);
+    if (legacyGlmBaseDetected) {
+      setProcessEnvIfMissing('GLM_BASE_URL', effectiveBaseUrl);
+    }
+    if (legacyBmadBaseDetected) {
+      setProcessEnvIfMissing('BMAD_GLM_BASE_URL', effectiveBaseUrl);
+    }
+  }
+
+  if (glmAuthToken) {
+    setProcessEnvIfMissing('AGILAI_GLM_AUTH_TOKEN', glmAuthToken);
   }
 
   const shouldPersist = await promptToPersistGlmEnv();
@@ -318,10 +433,11 @@ const ensureClaudeEnvironment = async ({ projectRoot, userArgs = [] }) => {
     return;
   }
 
-  const updates = { GLM_API_KEY: credentials.apiKey };
+  const updates = {};
+  updates[chooseWriteKey(fileEnv, GLM_API_KEY_ENV_KEYS)] = credentials.apiKey;
   const baseToPersist = credentials.baseUrl || effectiveBaseUrl;
   if (baseToPersist) {
-    updates.GLM_BASE_URL = baseToPersist;
+    updates[chooseWriteKey(fileEnv, GLM_BASE_URL_ENV_KEYS)] = baseToPersist;
   }
 
   try {
@@ -432,18 +548,66 @@ const consumeLlmOptionsFromArgs = () => {
 
 const buildSpawnEnv = () => {
   const env = { ...process.env };
+  const legacyBmadProviderDetected = typeof process.env.BMAD_ASSISTANT_PROVIDER === 'string';
+  const legacyBmadApiKeyDetected = typeof process.env.BMAD_GLM_API_KEY === 'string';
+  const legacyBmadBaseDetected = typeof process.env.BMAD_GLM_BASE_URL === 'string';
+  const legacyBmadAuthDetected = typeof process.env.BMAD_GLM_AUTH_TOKEN === 'string';
+  const legacyGlmApiKeyDetected = typeof process.env.GLM_API_KEY === 'string';
+  const legacyGlmBaseDetected = typeof process.env.GLM_BASE_URL === 'string';
+  const legacyGlmAuthDetected = typeof process.env.GLM_AUTH_TOKEN === 'string';
+  const legacyZhipuKeyDetected = typeof process.env.ZHIPUAI_API_KEY === 'string';
 
   if (runtimeOptions.llmProvider) {
     env.LLM_PROVIDER = runtimeOptions.llmProvider;
+    env.AGILAI_ASSISTANT_PROVIDER = runtimeOptions.llmProvider;
 
-    if (runtimeOptions.llmProvider === 'glm') {
-      env.BMAD_ASSISTANT_PROVIDER = 'glm';
-      const existingKey = env.ZHIPUAI_API_KEY || env.GLM_API_KEY;
-      if (existingKey && !env.ZHIPUAI_API_KEY) {
-        env.ZHIPUAI_API_KEY = existingKey;
-      }
+    if (legacyBmadProviderDetected) {
+      env.BMAD_ASSISTANT_PROVIDER = runtimeOptions.llmProvider;
     } else if (env.BMAD_ASSISTANT_PROVIDER === 'glm') {
       delete env.BMAD_ASSISTANT_PROVIDER;
+    }
+
+    if (runtimeOptions.llmProvider === 'glm') {
+      const existingKey =
+        env.AGILAI_GLM_API_KEY || env.BMAD_GLM_API_KEY || env.GLM_API_KEY || env.ZHIPUAI_API_KEY;
+      const existingBase =
+        env.AGILAI_GLM_BASE_URL || env.BMAD_GLM_BASE_URL || env.GLM_BASE_URL;
+      const existingAuth =
+        env.AGILAI_GLM_AUTH_TOKEN || env.BMAD_GLM_AUTH_TOKEN || env.GLM_AUTH_TOKEN;
+
+      if (existingKey && !env.AGILAI_GLM_API_KEY) {
+        env.AGILAI_GLM_API_KEY = existingKey;
+      }
+      if (existingBase && !env.AGILAI_GLM_BASE_URL) {
+        env.AGILAI_GLM_BASE_URL = existingBase;
+      }
+      if (existingAuth && !env.AGILAI_GLM_AUTH_TOKEN) {
+        env.AGILAI_GLM_AUTH_TOKEN = existingAuth;
+      }
+
+      if (legacyGlmApiKeyDetected && !env.GLM_API_KEY && existingKey) {
+        env.GLM_API_KEY = existingKey;
+      }
+      if (legacyGlmBaseDetected && !env.GLM_BASE_URL && existingBase) {
+        env.GLM_BASE_URL = existingBase;
+      }
+      if (legacyGlmAuthDetected && !env.GLM_AUTH_TOKEN && existingAuth) {
+        env.GLM_AUTH_TOKEN = existingAuth;
+      }
+
+      if (legacyBmadApiKeyDetected && !env.BMAD_GLM_API_KEY && existingKey) {
+        env.BMAD_GLM_API_KEY = existingKey;
+      }
+      if (legacyBmadBaseDetected && !env.BMAD_GLM_BASE_URL && existingBase) {
+        env.BMAD_GLM_BASE_URL = existingBase;
+      }
+      if (legacyBmadAuthDetected && !env.BMAD_GLM_AUTH_TOKEN && existingAuth) {
+        env.BMAD_GLM_AUTH_TOKEN = existingAuth;
+      }
+
+      if (legacyZhipuKeyDetected && !env.ZHIPUAI_API_KEY && existingKey) {
+        env.ZHIPUAI_API_KEY = existingKey;
+      }
     }
   }
 
@@ -496,7 +660,7 @@ Examples:
   npx agilai@latest start --assistant=opencode
                                       # Skip the prompt and launch OpenCode
   npx agilai@latest start --glm
-                                      # Use GLM with ZHIPUAI_API_KEY / GLM_API_KEY
+                                      # Use GLM with AGILAI_GLM_API_KEY (preferred)
   npx agilai@latest init       # Setup in current project
   npm run codex                        # Start conversation (after install)
 
@@ -510,7 +674,7 @@ Flags:
    npx agilai@latest start
 
 Environment:
-  Set ZHIPUAI_API_KEY (or GLM_API_KEY) and optionally LLM_MODEL when using --glm.
+  Set AGILAI_GLM_API_KEY (preferred) or legacy GLM_API_KEY/ZHIPUAI_API_KEY and optionally LLM_MODEL when using --glm.
   Use --anthropic or LLM_PROVIDER=claude to switch back to Anthropic defaults.
 
 For more information: https://github.com/bacoco/Agilai
@@ -821,7 +985,10 @@ const commands = {
       resolvedProvider = 'glm';
     }
 
-    process.env.BMAD_ASSISTANT_PROVIDER = resolvedProvider;
+    process.env.AGILAI_ASSISTANT_PROVIDER = resolvedProvider;
+    if (process.env.BMAD_ASSISTANT_PROVIDER) {
+      process.env.BMAD_ASSISTANT_PROVIDER = resolvedProvider;
+    }
 
     if (process.stdout.isTTY) {
       console.log(
