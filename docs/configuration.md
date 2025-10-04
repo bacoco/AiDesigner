@@ -118,16 +118,15 @@ export AGILAI_GLM_BASE_URL=https://your-glm-endpoint.com
 export AGILAI_GLM_API_KEY=your-api-key
 
 # Start Agilai with GLM routing
-npm run agilai:claude
+npx agilai start --assistant=claude --glm
 # Output: 🌐 GLM mode active: routing Claude CLI through configured GLM endpoint.
 ```
 
 GLM routing works with all three assistant entry points:
 
-- `npm run agilai:claude` - Routes Claude CLI through GLM
-- `npm run agilai:codex` - Routes Codex CLI through GLM
-- `npm run agilai:opencode` - Routes OpenCode CLI through GLM
-- Legacy `npm run bmad:*` scripts remain available for backwards compatibility.
+- `npx agilai start --assistant=claude --glm` - Routes Claude CLI through GLM
+- `npx agilai start --assistant=codex --glm` - Routes Codex CLI through GLM
+- `npx agilai start --assistant=opencode --glm` - Routes OpenCode CLI through GLM
 
 ### Anthropic Provider (Default)
 
