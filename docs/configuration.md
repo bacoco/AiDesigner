@@ -2,6 +2,8 @@
 
 Complete configuration reference for Agilai.
 
+> **Legacy aliases**: Existing `npm run bmad*` scripts continue to work, but new projects should prefer the `agilai` commands documented below.
+
 ## Table of Contents
 
 - [Environment Variables](#environment-variables)
@@ -22,7 +24,8 @@ Agilai can be configured via environment variables in a `.env` file at your proj
 LLM_PROVIDER=glm
 
 # API Keys
-ZHIPUAI_API_KEY=sk-...          # For GLM
+AGILAI_GLM_API_KEY=sk-...       # Preferred for GLM
+ZHIPUAI_API_KEY=sk-...          # Legacy alias for GLM
 ANTHROPIC_API_KEY=sk-ant-...    # For Claude
 
 # Optional: Override model
@@ -56,33 +59,40 @@ Create a `.env` file:
 LLM_PROVIDER=glm
 
 # API Key (choose one format)
-ZHIPUAI_API_KEY=sk-...          # Preferred
-GLM_API_KEY=sk-...               # Also supported
+AGILAI_GLM_API_KEY=sk-...       # Preferred
+BMAD_GLM_API_KEY=sk-...         # Legacy alias
+ZHIPUAI_API_KEY=sk-...          # Legacy alias
+GLM_API_KEY=sk-...               # Standard fallback
 
 # Optional: Custom model
 LLM_MODEL=glm-4-plus            # Default: glm-4
 
 # Optional: Custom endpoint
-GLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4/chat/completions
+AGILAI_GLM_BASE_URL=https://open.bigmodel.cn
+# Legacy aliases also supported: BMAD_GLM_BASE_URL or GLM_BASE_URL
 ```
 
 #### Variable Priority
 
 When GLM mode is active, variables are resolved in this order:
 
-| Variable               | Priority | Description                            |
-| ---------------------- | -------- | -------------------------------------- |
-| `BMAD_GLM_BASE_URL`    | 1        | GLM API base URL (legacy BMAD name)    |
-| `GLM_BASE_URL`         | 2        | GLM API base URL (standard)            |
-| `ANTHROPIC_BASE_URL`   | 3        | Anthropic base URL (fallback)          |
-| `BMAD_GLM_AUTH_TOKEN`  | 1        | GLM authentication token (legacy name) |
-| `GLM_AUTH_TOKEN`       | 2        | GLM authentication token (standard)    |
-| `ANTHROPIC_AUTH_TOKEN` | 3        | Anthropic auth token (fallback)        |
-| `BMAD_GLM_API_KEY`     | 1        | GLM API key (legacy name)              |
-| `GLM_API_KEY`          | 2        | GLM API key (standard)                 |
-| `ANTHROPIC_API_KEY`    | 3        | Anthropic API key (fallback)           |
+| Variable                | Priority | Description                                    |
+| ----------------------- | -------- | ---------------------------------------------- |
+| `AGILAI_GLM_BASE_URL`   | 1        | GLM API base URL (Agilai preferred)            |
+| `BMAD_GLM_BASE_URL`     | 2        | GLM API base URL (legacy BMAD)                 |
+| `GLM_BASE_URL`          | 3        | GLM API base URL (standard)                    |
+| `ANTHROPIC_BASE_URL`    | 4        | Anthropic base URL (fallback)                  |
+| `AGILAI_GLM_AUTH_TOKEN` | 1        | GLM authentication token (Agilai preferred)    |
+| `BMAD_GLM_AUTH_TOKEN`   | 2        | GLM authentication token (legacy BMAD)         |
+| `GLM_AUTH_TOKEN`        | 3        | GLM authentication token (standard)            |
+| `ANTHROPIC_AUTH_TOKEN`  | 4        | Anthropic auth token (fallback)                |
+| `AGILAI_GLM_API_KEY`    | 1        | GLM API key (Agilai preferred)                 |
+| `BMAD_GLM_API_KEY`      | 2        | GLM API key (legacy BMAD)                      |
+| `ZHIPUAI_API_KEY`       | 3        | GLM API key (ZhipuAI legacy)                   |
+| `GLM_API_KEY`           | 4        | GLM API key (standard)                         |
+| `ANTHROPIC_API_KEY`     | 5        | Anthropic API key (fallback for compatibility) |
 
-**Note:** At least one of `*_BASE_URL` or `*_API_KEY` must be set when using GLM mode.
+**Note:** At least one of the GLM `*_BASE_URL` or `*_API_KEY` variables must be set when using GLM mode. Prefer the `AGILAI_*` keys; `BMAD_*`, `ZHIPUAI_*`, and unprefixed `GLM_*` remain for backwards compatibility.
 
 > ℹ️ **Agilai naming update**: The runtime still reads the legacy `BMAD_*` environment variables for GLM routing. You can safely define `AGILAI_*` aliases in your own tooling, but keep exporting the `BMAD_*` names until the CLI adds first-class Agilai prefixes.
 
@@ -92,7 +102,7 @@ GLM base URLs can include schemes, ports, and paths:
 
 ```bash
 # Full custom endpoint
-BMAD_GLM_BASE_URL=https://example.com:7443/custom/base
+AGILAI_GLM_BASE_URL=https://example.com:7443/custom/base
 # Agilai appends: /api/paas/v4/chat/completions
 
 # Default (if no base URL provided)
@@ -103,20 +113,21 @@ BMAD_GLM_BASE_URL=https://example.com:7443/custom/base
 
 ```bash
 # Set GLM provider and credentials
-export BMAD_ASSISTANT_PROVIDER=glm
-export BMAD_GLM_BASE_URL=https://your-glm-endpoint.com
-export BMAD_GLM_API_KEY=your-api-key
+export AGILAI_ASSISTANT_PROVIDER=glm
+export AGILAI_GLM_BASE_URL=https://your-glm-endpoint.com
+export AGILAI_GLM_API_KEY=your-api-key
 
 # Start Agilai with GLM routing
-npx agilai start --assistant=claude --glm
+npm run agilai:claude
 # Output: 🌐 GLM mode active: routing Claude CLI through configured GLM endpoint.
 ```
 
 GLM routing works with all three assistant entry points:
 
-- `npx agilai start --assistant=claude --glm` - Routes Claude CLI through GLM
-- `npx agilai start --assistant=codex --glm` - Routes Codex CLI through GLM
-- `npx agilai start --assistant=opencode --glm` - Routes OpenCode CLI through GLM
+- `npm run agilai:claude` - Routes Claude CLI through GLM
+- `npm run agilai:codex` - Routes Codex CLI through GLM
+- `npm run agilai:opencode` - Routes OpenCode CLI through GLM
+- Legacy `npm run bmad:*` scripts remain available for backwards compatibility.
 
 ### Anthropic Provider (Default)
 
@@ -497,7 +508,7 @@ CODEX_LOG_CONTEXT='{"environment":"local"}'
 ```bash
 # .env
 LLM_PROVIDER=glm
-ZHIPUAI_API_KEY=sk-...
+AGILAI_GLM_API_KEY=sk-...
 LOG_LEVEL=info
 AUTO_APPROVE=false
 CODEX_APPROVAL_MODE=true
@@ -510,7 +521,7 @@ CODEX_METRICS_STDOUT=true
 ```bash
 # .env
 LLM_PROVIDER=glm
-ZHIPUAI_API_KEY=${CI_GLM_API_KEY}
+AGILAI_GLM_API_KEY=${CI_GLM_API_KEY}
 LOG_LEVEL=warn
 AUTO_APPROVE=true
 CODEX_APPROVAL_MODE=false

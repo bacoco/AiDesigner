@@ -83,6 +83,8 @@ npx agilai start --glm
 npx agilai start --assistant=claude --glm
 ```
 
+> **Legacy aliases**: Older `npm run bmad*` scripts remain available for backwards compatibility, but the examples above use the preferred `agilai` commands.
+
 ## Option 3: Global Installation
 
 Install globally for use across multiple projects:
