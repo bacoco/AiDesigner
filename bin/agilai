@@ -1072,6 +1072,10 @@ const commands = {
     }
 
     if (assistant === 'opencode') {
+      // Ensure GLM credentials are configured if using GLM provider
+      if (resolvedProvider === 'glm') {
+        await ensureClaudeEnvironment({ projectRoot: process.cwd(), userArgs: args });
+      }
       await commands.opencode();
       return;
     }
@@ -1908,6 +1912,11 @@ Happy building with BMAD! 🚀
   },
 
   opencode: async () => {
+    consumeLlmOptionsFromArgs();
+
+    // Ensure GLM credentials are configured if GLM provider is active
+    await ensureClaudeEnvironment({ projectRoot: process.cwd(), userArgs: args });
+
     const { env: opencodeEnv, isGlm } = buildAssistantSpawnEnv();
 
     if (isGlm) {
