@@ -1,5 +1,5 @@
 /**
- * BMAD Integration Bridge
+ * Agilai Integration Bridge
  * Connects invisible orchestrator with BMAD core agents, tasks, and templates
  */
 
@@ -49,7 +49,7 @@ function arrayify(value) {
   return [value];
 }
 
-class BMADBridge {
+class AgilaiBridge {
   constructor(options = {}) {
     this.bmadCorePath = options.bmadCorePath || path.join(__dirname, '..', 'bmad-core');
     this.bmadV6Path = options.bmadV6Path || path.join(__dirname, '..', 'bmad');
@@ -648,4 +648,4 @@ class BMADBridge {
   }
 }
 
-module.exports = { BMADBridge };
+module.exports = { AgilaiBridge };

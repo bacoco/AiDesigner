@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const os = require('node:os');
 const path = require('node:path');
 
-const { BMADBridge } = require('../lib/bmad-bridge.js');
+const { AgilaiBridge } = require('../lib/agilai-bridge.js');
 
 async function createV6Workspace() {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'bmad-v6-workspace-'));
@@ -24,7 +24,7 @@ async function createV6Workspace() {
   return tempRoot;
 }
 
-describe('BMADBridge V6 module detection', () => {
+describe('AgilaiBridge V6 module detection', () => {
   let tempRoot;
   let pathExistsSpy;
   let readFileSpy;
@@ -70,7 +70,7 @@ describe('BMADBridge V6 module detection', () => {
       throw new Error(`Unexpected readFile access during test: ${targetPath}`);
     });
 
-    const bridge = new BMADBridge({
+    const bridge = new AgilaiBridge({
       bmadCorePath: path.join(tempRoot, 'missing-core'),
       bmadV6Path: tempRoot,
       llmClient: { chat: jest.fn() },
