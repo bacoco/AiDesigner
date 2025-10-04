@@ -1095,7 +1095,8 @@ const commands = {
     }
 
     // Create MCP config (inline template since we might be running from npx cache)
-    const mcpConfigDest = path.join(claudeDir, 'mcp-config.json');
+    // Use .mcp.json in project root for better Claude CLI compatibility
+    const mcpConfigDest = path.join(projectRoot, '.mcp.json');
     let mcpConfig = { mcpServers: {} };
     let hadExistingMcpConfig = false;
     if (fs.existsSync(mcpConfigDest)) {
