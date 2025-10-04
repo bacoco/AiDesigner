@@ -1,3 +1,12 @@
+/**
+ * Normalizes MCP config target names, mapping legacy aliases to current values.
+ * @param {string|undefined|null} value - The config target value to normalize
+ * @returns {string|undefined|null} The normalized config target ('agilai' if 'bmad', otherwise lowercase)
+ * @example
+ * normalizeConfigTarget('bmad') // returns 'agilai'
+ * normalizeConfigTarget('CLAUDE') // returns 'claude'
+ * normalizeConfigTarget(null) // returns null
+ */
 function normalizeConfigTarget(value) {
   if (!value) {
     return value;

@@ -58,7 +58,17 @@ describe('mcp install config aliases', () => {
     const agilaiConfigPath = path.join(tempDir, 'mcp', 'agilai-config.json');
     expect(fs.existsSync(agilaiConfigPath)).toBe(true);
 
+    // Verify that bmad-config.json is NOT created (ensuring proper alias resolution)
+    const bmadConfigPath = path.join(tempDir, 'mcp', 'bmad-config.json');
+    expect(fs.existsSync(bmadConfigPath)).toBe(false);
+
     const config = JSON.parse(fs.readFileSync(agilaiConfigPath, 'utf8'));
     expect(config.mcpServers).toHaveProperty('alias-test');
+
+    // Verify the structure of the saved config matches expectations
+    expect(config.mcpServers['alias-test']).toMatchObject({
+      command: 'npx',
+      disabled: false,
+    });
   });
 });
