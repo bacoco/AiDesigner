@@ -16,15 +16,11 @@ describe('MCP server bundle smoke test', () => {
     const script = `require(${JSON.stringify(serverEntry)}); setTimeout(() => process.exit(0), 0);`;
 
     await new Promise((resolve, reject) => {
-      const child = spawn(
-        process.execPath,
-        ['-e', script],
-        {
-          cwd: repoRoot,
-          env: { ...process.env },
-          stdio: ['ignore', 'pipe', 'pipe'],
-        },
-      );
+      const child = spawn(process.execPath, ['-e', script], {
+        cwd: repoRoot,
+        env: { ...process.env },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
 
       let stderr = '';
       child.stderr.on('data', (chunk) => {
