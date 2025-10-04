@@ -18,7 +18,7 @@ Keep OpenCode config schema‑compliant and small, avoid key collisions, and pro
 
 ## Testing
 
-- Run: `npx bmad-method install -f -i opencode`
+- Run: `npx agilai-method install -f -i opencode` (legacy `npx bmad-method install -f -i opencode` still works)
 - Verify: `opencode.json[c]` updated/created as expected, `AGENTS.md` OpenCode section is compact with links
 - Pre‑push checks:
 

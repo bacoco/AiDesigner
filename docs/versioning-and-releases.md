@@ -67,7 +67,8 @@ The workflow automatically generates professional release notes like this:
 ## 📦 Installation
 
 ```bash
-npx bmad-method install
+npx agilai-method install
+# Legacy `npx bmad-method install` alias still works during the transition.
 ```
 ````
 
@@ -80,7 +81,8 @@ npx bmad-method install
 After any release, users can immediately get the new version with:
 
 ```bash
-npx bmad-method install    # Always gets latest release
+npx agilai-method install    # Always gets latest release
+# Legacy `npx bmad-method install` continues to resolve for older scripts.
 ```
 
 ## 📊 Preview Before Release
@@ -125,7 +127,7 @@ We track the upstream `bmad-upstream/v6-alpha` branch for signals that BMAD V6 h
 1. **Develop Freely** - Merge PRs to main without triggering releases
 2. **Test Unreleased Changes** - Clone repo to test latest main branch
 3. **Release When Ready** - Use command line or GitHub Actions to cut releases
-4. **Users Get Updates** - Via simple `npx bmad-method install` command
+4. **Users Get Updates** - Via simple `npx agilai-method install` command (legacy `npx bmad-method install` also works)
 
 This gives you complete control over when releases happen while automating all the tedious parts like version bumping, release notes, and publishing.
 
@@ -135,7 +137,7 @@ This gives you complete control over when releases happen while automating all t
 
 ```bash
 gh run list --workflow="Manual Release"
-npm view bmad-method dist-tags
+npm view agilai-method dist-tags
 git tag -l | sort -V | tail -5
 ```
 

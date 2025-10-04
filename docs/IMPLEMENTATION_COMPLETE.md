@@ -2,7 +2,7 @@
 
 ## Summary
 
-Successfully implemented a **fully functional MCP-based invisible orchestrator** that integrates with Claude Code CLI and the BMAD methodology.
+Successfully implemented a **fully functional MCP-based invisible orchestrator** that integrates with Claude Code CLI and the Agilai methodology (formerly branded as BMAD).
 
 ## What Was Built
 
@@ -10,11 +10,11 @@ Successfully implemented a **fully functional MCP-based invisible orchestrator**
 
 1. **MCP Server** (`mcp/server.ts`) - **521 lines**
    - 1agilai MCP tools for project orchestration
-   - Dynamic loading of BMAD agents
+   - Dynamic loading of Agilai agents (legacy BMAD naming supported)
    - Phase detection and transitions
    - Deliverable generation
    - State persistence integration
-   - Full BMAD workflow execution
+   - Full Agilai workflow execution
 
 2. **Project State Management** (`lib/project-state.js`) - **312 lines**
    - Conversation history tracking
@@ -23,7 +23,7 @@ Successfully implemented a **fully functional MCP-based invisible orchestrator**
    - Deliverables tracking
    - JSON persistence to `.agilai/`
 
-3. **BMAD Integration Bridge** (`lib/bmad-bridge.js`) - **343 lines**
+3. **Agilai Integration Bridge** (`lib/agilai-bridge.js`, legacy `lib/bmad-bridge.js`) - **343 lines**
    - Agent loading and persona extraction
    - Template resolution
    - Task and checklist loading
@@ -60,12 +60,12 @@ Successfully implemented a **fully functional MCP-based invisible orchestrator**
    - Natural conversation examples
    - Strict "invisibility" rules
 
-8. **CLI Wrapper** (`bin/bmad-claude`) - **44 lines**
+8. **CLI Wrapper** (`bin/agilai-claude`, legacy `bin/bmad-claude`) - **44 lines**
    - Launches Claude CLI with MCP config
    - Loads orchestrator agent
    - User-friendly startup messages
 
-9. **MCP Configuration** (`.claude/mcp-config.json`, `mcp/bmad-config.json`)
+9. **MCP Configuration** (`.claude/mcp-config.json`, `mcp/agilai-config.json` — falls back to legacy `mcp/bmad-config.json` when present)
    - Claude Code integration
    - Workspace-relative paths
 
@@ -89,10 +89,10 @@ MCP Server (1agilai tools)
     ├→ record_decision
     ├→ add_conversation_message
     ├→ get_project_summary
-    ├→ list_bmad_agents
-    └→ execute_bmad_workflow
+    ├→ list_agilai_agents
+    └→ execute_agilai_workflow
     ↓
-BMAD Bridge → bmad-core agents
+Agilai Bridge → agilai-core agents (legacy bmad-core aliases supported)
     ↓
 Deliverable Generator
     ↓
@@ -102,12 +102,12 @@ docs/prd.md, architecture.md, etc.
 ## Key Features
 
 ✅ **Zero API Costs** - Uses Claude Pro subscription via CLI
-✅ **Invisible Phases** - User never sees BMAD terminology
+✅ **Invisible Phases** - User never sees Agilai/BMAD terminology
 ✅ **Natural Conversation** - Just talk about your project
 ✅ **Automatic Deliverables** - Professional docs generated
 ✅ **Validation Checkpoints** - User confirms before proceeding
 ✅ **State Persistence** - Resume anytime
-✅ **Full BMAD Integration** - Uses real agents/templates/tasks
+✅ **Full Agilai Integration** - Uses real agents/templates/tasks (legacy BMAD assets supported)
 ✅ **MCP Native** - First-class Claude CLI integration
 
 ## File Count
@@ -124,7 +124,8 @@ npm install
 npm run build:mcp
 
 # Start conversational interface
-npm run bmad
+npm run agilai
+# Legacy `npm run bmad` alias remains available during the transition.
 
 # Talk naturally
 "Help me build a task management app for my family"
@@ -141,7 +142,7 @@ Unlike typical LLM integrations, this uses your existing Claude Pro subscription
 
 ### 2. Truly Invisible
 
-Users interact naturally without learning BMAD methodology. The system:
+Users interact naturally without learning the Agilai methodology (formerly BMAD). The system:
 
 - Never mentions "phases" or "agents"
 - Maintains one consistent voice
@@ -200,23 +201,23 @@ npm test
 
 ## Comparison to Original Plan
 
-| Feature                | Planned | Implemented | Notes                       |
-| ---------------------- | ------- | ----------- | --------------------------- |
-| MCP Server             | ✅      | ✅          | Enhanced with 1agilai tools |
-| Project State          | ✅      | ✅          | Full persistence            |
-| BMAD Bridge            | ✅      | ✅          | Complete integration        |
-| Deliverables           | ✅      | ✅          | 6 types supported           |
-| Phase Transitions      | ✅      | ✅          | With safety checks          |
-| CLI Wrapper            | ✅      | ✅          | Simple & effective          |
-| Validation Checkpoints | ✅      | ✅          | Built into orchestrator     |
-| Documentation          | ✅      | ✅          | Comprehensive               |
-| LLM API Client         | ❌      | ❌          | Not needed with MCP!        |
-| Separate CLI           | ❌      | ❌          | Uses Claude CLI instead     |
+| Feature                     | Planned | Implemented | Notes                       |
+| --------------------------- | ------- | ----------- | --------------------------- |
+| MCP Server                  | ✅      | ✅          | Enhanced with 1agilai tools |
+| Project State               | ✅      | ✅          | Full persistence            |
+| Agilai Bridge (legacy BMAD) | ✅      | ✅          | Complete integration        |
+| Deliverables                | ✅      | ✅          | 6 types supported           |
+| Phase Transitions           | ✅      | ✅          | With safety checks          |
+| CLI Wrapper                 | ✅      | ✅          | Simple & effective          |
+| Validation Checkpoints      | ✅      | ✅          | Built into orchestrator     |
+| Documentation               | ✅      | ✅          | Comprehensive               |
+| LLM API Client              | ❌      | ❌          | Not needed with MCP!        |
+| Separate CLI                | ❌      | ❌          | Uses Claude CLI instead     |
 
 ## Success Criteria
 
 ✅ **Works without API keys** - Uses Claude Pro subscription
-✅ **Integrates with existing BMAD CLI** - npm run bmad (with `npm run bmad:claude` / `npm run bmad:codex` for specific front-ends)
+✅ **Integrates with existing Agilai CLI** - npm run agilai (with `npm run agilai:claude` / `npm run agilai:codex` for specific front-ends; legacy `npm run bmad*` aliases still resolve)
 ✅ **Generates real deliverables** - docs/ folder populated
 ✅ **Maintains invisible UX** - No methodology jargon
 ✅ **Persists state** - .agilai/ folder
@@ -235,10 +236,11 @@ npm test
 ## Usage Command
 
 ```bash
-npm run bmad
+npm run agilai
 # Or pick a specific front-end:
-# npm run bmad:claude
-# npm run bmad:codex
+# npm run agilai:claude
+# npm run agilai:codex
+# Legacy `npm run bmad*` scripts remain available as aliases.
 ```
 
 That's literally it. Just run one command and start talking about your project!

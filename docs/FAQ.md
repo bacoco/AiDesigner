@@ -46,9 +46,9 @@ your-project/
 
 ## Validation & Quality Control
 
-### Will the orchestrator validate with me like BMAD method?
+### Will the orchestrator validate with me like the classic Agilai (BMAD) method?
 
-**YES!** The orchestrator includes all BMAD validation checkpoints, but presents them naturally:
+**YES!** The orchestrator includes all Agilai validation checkpoints (formerly branded as BMAD), but presents them naturally:
 
 #### After Discovery (Analyst Phase):
 
@@ -148,7 +148,8 @@ npm install
 #### 2. Start conversation
 
 ```bash
-npm run bmad
+npm run agilai
+# Legacy `npm run bmad` alias still works if you're returning to an older project.
 ```
 
 #### 3. Tell the orchestrator about existing work
@@ -215,7 +216,7 @@ The orchestrator intelligently handles existing docs:
 ```bash
 # Come back days/weeks later
 cd your-project
-npm run bmad
+npm run agilai
 
 # Orchestrator automatically loads state
 Orchestrator: "Welcome back! We were working on the team todo app.
@@ -400,7 +401,7 @@ The orchestrator uses **Claude Sonnet 4.5** via Claude Code CLI:
 - Runs locally on your machine
 - Uses your Claude Pro subscription (no API costs!)
 - Accesses MCP tools for state management
-- Loads BMAD agent personas dynamically
+- Loads Agilai agent personas dynamically (legacy BMAD naming still recognized)
 
 ### Is the conversation static or generated?
 
@@ -445,11 +446,11 @@ You can still:
 
 ---
 
-## Comparison with Traditional BMAD
+## Comparison with the Traditional Agilai Method (Legacy BMAD)
 
-### How is this different from regular BMAD?
+### How is this different from the legacy BMAD workflow?
 
-| Feature               | Traditional BMAD                         | Agilai                                  |
+| Feature               | Traditional Agilai Method (BMAD)         | Agilai                                  |
 | --------------------- | ---------------------------------------- | --------------------------------------- |
 | **User Experience**   | Must learn agent names, phases, commands | Natural conversation, no learning curve |
 | **Agent Interaction** | Explicitly invoke agents                 | Agents loaded invisibly behind scenes   |
@@ -460,13 +461,14 @@ You can still:
 | **Flexibility**       | Full control, explicit                   | Guided, automatic                       |
 | **Best For**          | Power users, teams familiar with agile   | New users, quick onboarding             |
 
-### Can I still use traditional BMAD?
+### Can I still use the traditional Agilai/BMAD tooling?
 
 **YES!** Agilai is a wrapper, not a replacement:
 
 ```bash
-# Traditional BMAD (IDE-based)
-npx bmad-method install
+# Traditional Agilai method (IDE-based)
+npx agilai-method install
+# Legacy `npx bmad-method install` still works if you haven't updated scripts yet.
 # Use agents directly in VS Code/Cursor/Claude Code
 
 # Agilai (conversational)
@@ -502,7 +504,7 @@ ls -la dist/mcp/mcp/server.js
 ```bash
 # Reset state (backs up old state)
 rm .agilai/state.json
-npm run bmad
+npm run agilai
 # Orchestrator will start fresh
 ```
 
@@ -592,7 +594,7 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for how to help!
 
 - **Issues**: https://github.com/bacoco/agilai/issues
 - **Docs**: See [README.md](../README.md) and [USAGE.md](../USAGE.md)
-- **Base BMAD**: https://github.com/bacoco/BMAD-METHOD
+- **Legacy BMAD Method**: https://github.com/bacoco/BMAD-METHOD
 
 ---
 

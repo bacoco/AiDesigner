@@ -1,6 +1,6 @@
-# Implementation Summary - BMAD-invisible
+# Implementation Summary - Agilai-invisible (Historical)
 
-> **⚠️ HISTORICAL DOCUMENT**: This file describes the early prototype phase from 2agilai24. BMAD-invisible is now fully functional (v1.2.agilai). See README.md and DUAL_LANE_ORCHESTRATION.md for current status.
+> **⚠️ HISTORICAL DOCUMENT**: This file describes the early prototype phase from 2024. The initiative was originally branded **BMAD-invisible** and is now shipped as **Agilai-invisible**. Command names and branding below have been updated to the current terminology, with legacy aliases noted where helpful. See README.md and DUAL_LANE_ORCHESTRATION.md for current status.
 
 ## ✅ Completed Tasks
 
@@ -8,13 +8,13 @@
 
 - Analyzed invisible orchestrator implementation
 - Examined agents, commands, hooks, and MCP server
-- Identified 8 auto-commands for each BMAD phase
+- Identified 8 auto-commands for each Agilai phase
 - Reviewed phase detection and transition logic
 
 ### 2. Implementation Assessment ✓
 
 - **Works**: Conceptual design, agent structure, safety patterns
-- **Needs Work**: LLM integration, BMAD core connection, CLI interface
+- **Needs Work**: LLM integration, Agilai core connection, CLI interface
 - **Critical Issue**: MCP SDK dependency (was `^agilai.1.agilai`, now `^1.18.2`)
 
 ### 3. Documentation Created ✓
@@ -27,9 +27,9 @@ This file documented the early prototype stage and has been removed as the proje
 
 Complete overhaul with:
 
-- Clear "What is BMAD-invisible" explanation
+- Clear "What is Agilai-invisible" explanation
 - Quick start guide
-- Traditional BMAD vs BMAD-invisible comparison
+- Traditional Agilai vs Agilai-invisible comparison
 - Visual architecture diagram
 - Complete 8-phase workflow table
 - Full end-to-end example (Family Chore App)
@@ -58,7 +58,7 @@ Complete overhaul with:
 
 1. CLI chat interface
 2. LLM client integration (Claude/GPT/Gemini)
-3. Connection to actual BMAD core agents
+3. Connection to actual Agilai core agents
 4. Deliverable generation (PRD, architecture docs)
 5. User validation checkpoints
 
@@ -69,7 +69,7 @@ Complete overhaul with:
 #### Priority 1 (Functional)
 
 - Build CLI chat interface (`cli/invisible-chat.js`)
-- Create BMAD integration bridge (`lib/bmad-bridge.js`)
+- Create Agilai integration bridge (historically `lib/bmad-bridge.js`)
 - Implement LLM client (`lib/llm-client.js`)
 - Add deliverable generation to `docs/` folder
 
@@ -95,13 +95,13 @@ Complete overhaul with:
 
 - Invisible phase detection
 - Natural conversation flow
-- Integration with BMAD core
+- Integration with Agilai core
 - User validation checkpoints
 - MCP for state persistence
 
 ⚠️ **Needs Improvement:**
 
-- Current auto-commands are just markdown, should invoke real BMAD agents
+- Current auto-commands are just markdown, should invoke real Agilai agents
 - Missing LLM integration layer
 - No actual CLI interface
 - Hooks have stub functions
@@ -143,23 +143,23 @@ Complete overhaul with:
    "Story complete! Ready for the next one? (y/review/pause)"
    ```
 
-## 🎯 How to Make It Work Like BMAD
+## 🎯 How to Make It Work Like Agilai
 
 ### Required Integration
 
 ```javascript
 // Instead of auto-analyze.md just having text:
-const bmad = require('./bmad-bridge');
+const agilai = require('./agilai-bridge');
 
 async function runAnalystPhase(context) {
-  // Use actual BMAD analyst agent
-  const brief = await bmad.runAgent('analyst', {
+  // Use actual Agilai analyst agent
+  const brief = await agilai.runAgent('analyst', {
     task: 'facilitate-brainstorming-session',
     context: context.conversation,
   });
 
   // Generate actual document
-  await bmad.generateDocument('docs/brief.md', brief);
+  await agilai.generateDocument('docs/brief.md', brief);
 
   return brief;
 }
@@ -168,15 +168,16 @@ async function runAnalystPhase(context) {
 ### NPX Usage Should Be:
 
 ```bash
-# Like BMAD
-npx bmad-method install    # Install BMAD framework
-npx bmad-method flatten    # Flatten codebase
+# Like Agilai
+npx agilai-method install    # Install Agilai framework
+npx agilai-method flatten    # Flatten codebase
 
-# BMAD-invisible should be
-npx bmad-invisible chat           # Start conversation
-npx bmad-invisible init          # Initialize project
-npx bmad-invisible status        # Show current phase
-npx bmad-invisible continue      # Resume conversation
+# Agilai-invisible should be
+npx agilai chat            # Start conversation
+npx agilai init            # Initialize project
+npx agilai status          # Show current phase
+npx agilai continue        # Resume conversation
+# Legacy note: `bmad-*` command aliases continue to work for returning teams.
 ```
 
 ### Chat Interface Example
@@ -219,11 +220,11 @@ async function chat() {
 2. ⏭️ Fix dependencies (`npm install` should work)
 3. ⏭️ Build CLI chat interface
 4. ⏭️ Create LLM client
-5. ⏭️ Implement BMAD bridge
+5. ⏭️ Implement Agilai bridge (legacy alias: BMAD bridge)
 
 ### Short Term (Week 3-4)
 
-6. Connect to actual BMAD agents
+6. Connect to actual Agilai agents
 7. Generate real deliverables (PRD, architecture)
 8. Add user validation checkpoints
 9. File I/O to `docs/` folder
@@ -247,13 +248,13 @@ async function chat() {
 - Actual implementation of the analysis
 - 4-8 weeks of focused development
 - LLM API integration
-- BMAD core integration bridge
+- Agilai core integration bridge
 - CLI chat interface
 
 **The Vision:**
-Natural conversation → Invisible phases → Real BMAD agents → Actual deliverables → Production-ready code
+Natural conversation → Invisible phases → Real Agilai agents → Actual deliverables → Production-ready code
 
-All without users needing to learn BMAD terminology!
+All without users needing to learn Agilai terminology!
 
 ---
 

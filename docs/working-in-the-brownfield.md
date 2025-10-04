@@ -14,7 +14,7 @@ If your project is too large, you can also flatten your codebase - which can mak
 
 Brownfield development refers to adding features, fixing bugs, or modernizing existing software projects. Unlike greenfield (new) projects, brownfield work requires understanding existing code, respecting constraints, and ensuring new changes integrate seamlessly without breaking existing functionality.
 
-## When to Use BMad for Brownfield
+## When to Use Agilai (Legacy BMad) for Brownfield
 
 - Add significant new features to existing applications
 - Modernize legacy codebases
@@ -32,7 +32,8 @@ If you have just completed an MVP with BMad, and you want to continue with post-
 Starting in the Web Option (potentially save some cost but a potentially more frustrating experience):
 
 1. **Follow the [<ins>User Guide - Installation</ins>](user-guide.md#installation) steps to setup your agent in the web.**
-2. **Generate a 'flattened' single file of your entire codebase** run: `npx bmad-method flatten`
+2. **Generate a 'flattened' single file of your entire codebase** run: `npx agilai-method flatten`
+   - Legacy alias: `npx bmad-method flatten`
 
 Starting in an IDE with large context and good models (Its important to use quality models for this process for the best results)
 
