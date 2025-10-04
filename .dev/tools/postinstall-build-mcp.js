@@ -16,19 +16,12 @@ const rootDir = path.resolve(__dirname, '..');
 const distMcpDir = path.join(rootDir, 'dist', 'mcp');
 const serverEntry = path.join(distMcpDir, 'mcp', 'server.js');
 
-// Check for --force flag
-const forceRebuild = process.argv.includes('--force');
-
 const hasPrebuiltServer = existsSync(serverEntry);
 
-if (!hasPrebuiltServer && !forceRebuild) {
+if (!hasPrebuiltServer) {
   console.warn('⚠️  Prebuilt MCP server not found at dist/mcp/mcp/server.js.');
   console.warn('    Skipping MCP asset sync. Run "npm run build:mcp" to generate the build.');
   process.exit(0);
-}
-
-if (!hasPrebuiltServer && forceRebuild) {
-  console.warn('⚠️  --force supplied but no MCP server present; continuing with asset copy.');
 }
 
 ensureDir(distMcpDir);

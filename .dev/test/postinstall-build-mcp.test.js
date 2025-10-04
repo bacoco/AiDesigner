@@ -6,6 +6,7 @@ describe('postinstall-build-mcp script', () => {
   const rootDir = path.resolve(__dirname, '..');
   const distMcpDir = path.join(rootDir, 'dist', 'mcp');
   const postinstallScript = path.join(rootDir, 'tools', 'postinstall-build-mcp.js');
+  const serverEntry = path.join(distMcpDir, 'mcp', 'server.js');
 
   // Helper to run the postinstall script
   const runPostinstall = (args = []) => {
@@ -16,142 +17,13 @@ describe('postinstall-build-mcp script', () => {
     });
   };
 
-  describe('early exit behavior', () => {
-    test('exits early when dist/mcp exists and is complete without --force', () => {
-      // Ensure dist/mcp exists with complete build structure
-      const mcpServerDir = path.join(distMcpDir, 'mcp');
-      const libDir = path.join(distMcpDir, 'lib');
-      const hooksDir = path.join(distMcpDir, 'hooks');
-
-      if (!fs.existsSync(mcpServerDir)) {
-        fs.mkdirSync(mcpServerDir, { recursive: true });
-      }
-      if (!fs.existsSync(libDir)) {
-        fs.mkdirSync(libDir, { recursive: true });
-      }
-      if (!fs.existsSync(hooksDir)) {
-        fs.mkdirSync(hooksDir, { recursive: true });
-      }
-
-      // Create the key server.js file
-      const serverJsPath = path.join(mcpServerDir, 'server.js');
-      if (!fs.existsSync(serverJsPath)) {
-        fs.writeFileSync(serverJsPath, '// Placeholder server.js for testing');
-      }
-
-      const result = runPostinstall();
-
-      expect(result.status).toBe(0);
-      expect(result.stdout).toContain('MCP assets already exist');
-      expect(result.stdout).toContain('Use --force to rebuild');
-    });
-
-    test('rebuilds when dist/mcp exists but is incomplete', () => {
-      // Create incomplete build (missing server.js)
-      const libDir = path.join(distMcpDir, 'lib');
-      const hooksDir = path.join(distMcpDir, 'hooks');
-
-      if (!fs.existsSync(libDir)) {
-        fs.mkdirSync(libDir, { recursive: true });
-      }
-      if (!fs.existsSync(hooksDir)) {
-        fs.mkdirSync(hooksDir, { recursive: true });
-      }
-
-      // Explicitly remove server.js if it exists to simulate incomplete build
-      const mcpServerDir = path.join(distMcpDir, 'mcp');
-      const serverJsPath = path.join(mcpServerDir, 'server.js');
-      if (fs.existsSync(serverJsPath)) {
-        fs.unlinkSync(serverJsPath);
-      }
-
-      const result = runPostinstall();
-
-      expect(result.status).toBe(0);
-      expect(result.stdout).toContain('Incomplete MCP build detected');
-      // Should see TypeScript compilation output or warning
-      expect(
-        result.stdout.includes('Running TypeScript compiler') ||
-          result.stdout.includes('TypeScript is not installed'),
-      ).toBe(true);
-    });
-
-    test('rebuilds when --force flag is provided', () => {
-      // Ensure dist/mcp exists
-      if (!fs.existsSync(distMcpDir)) {
-        fs.mkdirSync(distMcpDir, { recursive: true });
-      }
-
-      const result = runPostinstall(['--force']);
-
-      expect(result.status).toBe(0);
-      expect(result.stdout).not.toContain('skipping postinstall build');
-      // Should see TypeScript compilation output or warning
-      expect(
-        result.stdout.includes('Running TypeScript compiler') ||
-          result.stdout.includes('TypeScript is not installed'),
-      ).toBe(true);
-    });
-  });
-
-  describe('TypeScript compilation', () => {
-    test('continues when TypeScript is not installed', () => {
-      // Temporarily remove dist/mcp to trigger rebuild
-      const distMcpBackup = distMcpDir + '.backup';
-      if (fs.existsSync(distMcpDir)) {
-        fs.renameSync(distMcpDir, distMcpBackup);
-      }
-
-      try {
-        // Run with modified NODE_PATH to hide TypeScript
-        const result = spawnSync(process.execPath, [postinstallScript], {
-          cwd: rootDir,
-          env: {
-            ...process.env,
-            NODE_PATH: '/nonexistent', // Force TypeScript lookup to fail
-          },
-          encoding: 'utf8',
-        });
-
-        expect(result.status).toBe(0);
-        expect(result.stdout).toContain('TypeScript is not installed');
-        expect(result.stdout).toContain('skipping MCP TypeScript build');
-      } finally {
-        // Restore backup
-        if (fs.existsSync(distMcpBackup)) {
-          if (fs.existsSync(distMcpDir)) {
-            fs.rmSync(distMcpDir, { recursive: true });
-          }
-          fs.renameSync(distMcpBackup, distMcpDir);
-        }
-      }
-    });
-
-    test('script handles TypeScript compilation failures gracefully', () => {
-      // This test verifies the script continues even if TypeScript compilation fails
-      // In practice, TypeScript should compile successfully, but we verify
-      // that the script is designed to handle failures gracefully
-
-      const scriptContent = fs.readFileSync(postinstallScript, 'utf8');
-
-      // Verify the script has warning messages instead of throwing errors
-      expect(scriptContent).toContain('console.warn');
-      expect(scriptContent).toContain('Continuing with postinstall despite');
-      expect(scriptContent).not.toContain('throw new Error');
-    });
-  });
-
-  describe('directory copying', () => {
-    let originalDistMcpState;
+  describe('prebuilt server check', () => {
     let distMcpBackup;
 
-    beforeAll(() => {
-      // Save the original state
-      originalDistMcpState = fs.existsSync(distMcpDir);
-      distMcpBackup = distMcpDir + '.test-backup';
-
+    beforeEach(() => {
       // Back up existing dist/mcp if it exists
-      if (originalDistMcpState && fs.existsSync(distMcpDir)) {
+      distMcpBackup = distMcpDir + '.test-backup';
+      if (fs.existsSync(distMcpDir)) {
         if (fs.existsSync(distMcpBackup)) {
           fs.rmSync(distMcpBackup, { recursive: true, force: true });
         }
@@ -159,27 +31,102 @@ describe('postinstall-build-mcp script', () => {
       }
     });
 
-    afterAll(() => {
+    afterEach(() => {
       // Restore original state
       if (fs.existsSync(distMcpDir)) {
         fs.rmSync(distMcpDir, { recursive: true, force: true });
       }
-      if (originalDistMcpState && fs.existsSync(distMcpBackup)) {
+      if (fs.existsSync(distMcpBackup)) {
         fs.renameSync(distMcpBackup, distMcpDir);
       }
     });
 
-    test('copies lib and hooks directories to dist/mcp', () => {
-      // Run the script to build
-      const result = runPostinstall(['--force']);
+    test('exits early when no prebuilt server is found', () => {
+      const result = runPostinstall();
+
+      expect(result.status).toBe(0);
+      expect(result.stderr).toContain('Prebuilt MCP server not found');
+      expect(result.stderr).toContain('npm run build:mcp');
+    });
+
+    test('exits early when prebuilt server is missing', () => {
+      const result = runPostinstall();
+
+      expect(result.status).toBe(0);
+      expect(result.stderr).toContain('Skipping MCP asset sync');
+    });
+  });
+
+  describe('asset synchronization', () => {
+    let distMcpBackup;
+
+    beforeEach(() => {
+      // Back up and recreate with prebuilt server
+      distMcpBackup = distMcpDir + '.test-backup';
+      if (fs.existsSync(distMcpDir)) {
+        if (fs.existsSync(distMcpBackup)) {
+          fs.rmSync(distMcpBackup, { recursive: true, force: true });
+        }
+        fs.renameSync(distMcpDir, distMcpBackup);
+      }
+
+      // Create a mock prebuilt server
+      const mcpServerDir = path.join(distMcpDir, 'mcp');
+      fs.mkdirSync(mcpServerDir, { recursive: true });
+      fs.writeFileSync(serverEntry, '// Mock prebuilt server.js for testing');
+    });
+
+    afterEach(() => {
+      // Restore original state
+      if (fs.existsSync(distMcpDir)) {
+        fs.rmSync(distMcpDir, { recursive: true, force: true });
+      }
+      if (fs.existsSync(distMcpBackup)) {
+        fs.renameSync(distMcpBackup, distMcpDir);
+      }
+    });
+
+    test('copies lib, hooks, and tools when prebuilt server exists', () => {
+      const result = runPostinstall();
+
       expect(result.status).toBe(0);
 
       // Verify directories were copied
       const libDir = path.join(distMcpDir, 'lib');
       const hooksDir = path.join(distMcpDir, 'hooks');
+      const toolsDir = path.join(distMcpDir, 'tools');
 
-      expect(fs.existsSync(libDir)).toBe(true);
-      expect(fs.existsSync(hooksDir)).toBe(true);
+      // Only check if source directories exist in the repo
+      if (fs.existsSync(path.join(rootDir, '.dev', 'lib'))) {
+        expect(fs.existsSync(libDir)).toBe(true);
+      }
+
+      if (fs.existsSync(path.join(rootDir, 'hooks'))) {
+        expect(fs.existsSync(hooksDir)).toBe(true);
+      }
+
+      expect(fs.existsSync(toolsDir)).toBe(true);
+    });
+
+    test('copies specific tool module files', () => {
+      const result = runPostinstall();
+
+      expect(result.status).toBe(0);
+
+      const toolsDir = path.join(distMcpDir, 'tools');
+      const expectedFiles = [
+        'mcp-registry.js',
+        'mcp-manager.js',
+        'mcp-profiles.js',
+        'mcp-security.js',
+      ];
+
+      for (const file of expectedFiles) {
+        const filePath = path.join(toolsDir, file);
+        if (fs.existsSync(path.join(rootDir, '.dev', 'tools', file))) {
+          expect(fs.existsSync(filePath)).toBe(true);
+        }
+      }
     });
 
     test('handles missing source directories gracefully', () => {
@@ -189,15 +136,39 @@ describe('postinstall-build-mcp script', () => {
       expect(scriptContent).toContain('existsSync(source)');
       expect(scriptContent).toContain('Source directory not found');
     });
-  });
 
-  describe('force flag', () => {
-    test('recognizes --force flag in process arguments', () => {
+    test('skips symbolic links during copy', () => {
       const scriptContent = fs.readFileSync(postinstallScript, 'utf8');
 
-      // Verify --force flag is checked
-      expect(scriptContent).toContain('--force');
-      expect(scriptContent).toContain('forceRebuild');
+      // Verify the script intentionally skips symlinks
+      expect(scriptContent).toContain('isSymbolicLink');
+      expect(scriptContent).toContain('Skipping symbolic link');
+    });
+
+    test('warns about missing tool modules during copy', () => {
+      const scriptContent = fs.readFileSync(postinstallScript, 'utf8');
+
+      // Verify the script checks for missing tool modules
+      expect(scriptContent).toContain('Missing MCP tool module during copy');
+    });
+  });
+
+
+  describe('no TypeScript compilation', () => {
+    test('does not compile TypeScript in postinstall', () => {
+      const scriptContent = fs.readFileSync(postinstallScript, 'utf8');
+
+      // Verify TypeScript compilation code is NOT present
+      expect(scriptContent).not.toContain('Running TypeScript compiler');
+      expect(scriptContent).not.toContain('tsc');
+    });
+
+    test('script focuses on asset synchronization only', () => {
+      const scriptContent = fs.readFileSync(postinstallScript, 'utf8');
+
+      // Verify the script header describes synchronization, not compilation
+      expect(scriptContent).toContain('synchronise MCP');
+      expect(scriptContent).toContain('prepack');
     });
   });
 });
