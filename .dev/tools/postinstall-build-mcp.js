@@ -62,6 +62,28 @@ ensureDir(distMcpDir);
 
 copyDirectory(path.join(rootDir, '.dev', 'lib'), path.join(distMcpDir, 'lib'));
 copyDirectory(path.join(rootDir, 'hooks'), path.join(distMcpDir, 'hooks'));
+copyToolModules();
+
+function copyToolModules() {
+  const toolFiles = ['mcp-registry.js', 'mcp-manager.js', 'mcp-profiles.js', 'mcp-security.js'];
+
+  const sourceDir = path.join(rootDir, '.dev', 'tools');
+  const destinationDir = path.join(distMcpDir, 'tools');
+
+  ensureDir(destinationDir);
+
+  for (const file of toolFiles) {
+    const sourcePath = path.join(sourceDir, file);
+    const destinationPath = path.join(destinationDir, file);
+
+    if (!existsSync(sourcePath)) {
+      console.warn(`Missing MCP tool module during copy: ${sourcePath}`);
+      continue;
+    }
+
+    copyFileSync(sourcePath, destinationPath);
+  }
+}
 
 /**
  * Attempts to locate the TypeScript compiler binary
