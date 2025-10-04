@@ -673,12 +673,21 @@ Commands:
 Examples:
 
   npx agilai@latest start      # 🚀 Do everything in one command!
+
+  # Claude CLI (supports: anthropic, glm)
   npx agilai@latest start --assistant=claude --provider=glm
-                                      # Skip prompts & launch Claude with GLM
+                                      # Launch Claude CLI with GLM API
   npx agilai@latest start --assistant=claude-glm
                                       # Combined flag also supported
-  npx agilai@latest start --assistant=opencode
-                                      # Skip the prompt and launch OpenCode
+
+  # Codex CLI (supports: openai only)
+  npx agilai@latest start --assistant=codex --provider=openai
+                                      # Launch Codex CLI with OpenAI/GPT
+
+  # OpenCode CLI (supports: anthropic, glm, openai, gemini)
+  npx agilai@latest start --assistant=opencode --provider=glm
+                                      # Launch OpenCode with GLM API
+
   npx agilai@latest start --glm
                                       # Use GLM with AGILAI_GLM_API_KEY (preferred)
   npx agilai@latest init       # Setup in current project
@@ -704,15 +713,15 @@ For more information: https://github.com/bacoco/Agilai
 const ASSISTANT_CHOICES = [
   {
     id: 'claude',
-    providers: ['anthropic', 'glm', 'openai', 'gemini'],
+    providers: ['anthropic', 'glm'], // Claude CLI only supports Anthropic and GLM APIs
   },
   {
     id: 'codex',
-    providers: ['anthropic', 'glm', 'openai', 'gemini'],
+    providers: ['openai'], // Codex CLI only supports OpenAI/GPT models
   },
   {
     id: 'opencode',
-    providers: ['anthropic', 'glm', 'openai', 'gemini'],
+    providers: ['anthropic', 'glm', 'openai', 'gemini'], // OpenCode supports all providers
   },
 ];
 
@@ -917,7 +926,9 @@ const promptForAssistant = async () => {
 
     // Validate provider is supported by this assistant
     if (!choice.providers.includes(provider)) {
-      console.error(`⚠️ Provider "${provider}" is not supported by ${assistant}`);
+      const supported = choice.providers.join(', ');
+      console.error(`⚠️ Provider "${provider}" is not supported by ${assistant} CLI`);
+      console.error(`   Supported providers for ${assistant}: ${supported}`);
       return undefined;
     }
 
@@ -955,10 +966,10 @@ const determineAssistant = async (input = {}) => {
 
     if (provider && !choice.providers.includes(provider)) {
       console.error(
-        `⚠️ Unsupported provider "${provider}" for assistant "${normalizedAssistant}".`,
+        `⚠️ Unsupported provider "${provider}" for ${normalizedAssistant} CLI.`,
       );
       console.error(
-        `Valid providers for ${normalizedAssistant}: ${choice.providers.join(', ')}`,
+        `   Supported providers for ${normalizedAssistant}: ${choice.providers.join(', ')}`,
       );
       process.exit(1);
       return; // For testing when exit is mocked
