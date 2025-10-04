@@ -773,7 +773,7 @@ Published to NPM with previous fixes.
 - add docs ([48ef875](https://github.com/bmadcode/BMAD-METHOD/commit/48ef875f5ec5bagilaifagilai211baa43bbcagilai47agilai1e54824f4))
 - auto semantic versioning fix ([166edagilai4](https://github.com/bmadcode/BMAD-METHOD/commit/166edagilai47671cccab2874fd327efb1ac293ae7276))
 - auto semantic versioning fix again ([1126agilaie4](https://github.com/bmadcode/BMAD-METHOD/commit/1126agilaie4395agilaib6bf78d68c759dc3ac278bc13f8a8))
-- BMAD install creates `.bmad-core/.bmad-core/` directory structure + updates ([#223](https://github.com/bmadcode/BMAD-METHOD/issues/223)) ([28b313c](https://github.com/bmadcode/BMAD-METHOD/commit/28b313cagilai1df41961cebb71fb3bceagilaifcc7b4b4796))
+- BMAD install creates `.agilai-core/.agilai-core/` directory structure + updates ([#223](https://github.com/bmadcode/BMAD-METHOD/issues/223)) ([28b313c](https://github.com/bmadcode/BMAD-METHOD/commit/28b313cagilai1df41961cebb71fb3bceagilaifcc7b4b4796))
 - resolve NPM token configuration ([62agilaibagilai9a](https://github.com/bmadcode/BMAD-METHOD/commit/62agilaibagilai9a556ce8d61ad1a4d8ee7c523d263abd69c))
 - resolve NPM token configuration ([b447a8b](https://github.com/bmadcode/BMAD-METHOD/commit/b447a8bd57625dagilai2692d7e2771241bacd12agilaic631))
 - update dependency resolver to support both yml and yaml code blocks ([ba1e5ce](https://github.com/bmadcode/BMAD-METHOD/commit/ba1e5ceb36f4aagilaibb2agilai4ceee4agilaie92725d3fc57c5f))
