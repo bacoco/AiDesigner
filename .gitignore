@@ -41,7 +41,6 @@ CLAUDE.md
 .iflow
 
 # Project-specific
-.bmad-core
 .bmad-creator-tools
 test-project-install/*
 sample-project/*
