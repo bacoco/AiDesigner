@@ -7,18 +7,28 @@ const https = require('node:https');
 
 class LLMClient {
   constructor(options = {}) {
+    this.isMcpExecution = this.detectMcpExecution();
     this.provider = options.provider || process.env.LLM_PROVIDER || 'claude';
     this.apiKey = options.apiKey || this.getApiKeyFromEnv();
     this.model = options.model || this.getDefaultModel();
     this.maxRetries = options.maxRetries || 3;
     this.retryDelay = options.retryDelay || 1000;
 
-    if (!this.apiKey) {
+    if (!this.apiKey && !this.isMcpExecution) {
       const envVar = this.getApiKeyEnvVarName();
       throw new Error(
         `Missing API key for provider "${this.provider}". Set the ${envVar} environment variable or provide an apiKey option.`,
       );
     }
+  }
+
+  detectMcpExecution() {
+    const { argv } = process;
+    if (!Array.isArray(argv)) {
+      return false;
+    }
+
+    return argv.some((arg) => typeof arg === 'string' && arg.includes('mcp/server.js'));
   }
 
   getApiKeyFromEnv() {
