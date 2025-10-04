@@ -5,39 +5,81 @@ const os = require('node:os');
 const { spawnSync, spawn } = require('node:child_process');
 const readline = require('node:readline');
 
+const STATE_DIR_NAME = '.agilai-invisible';
+const LEGACY_STATE_DIR_NAME = '.bmad-invisible';
+let legacyStateDirNoticeShown = false;
+
 function ensureStateDir(rootDir) {
-  const stateDir = path.join(rootDir, '.bmad-invisible');
+  const stateDir = path.join(rootDir, STATE_DIR_NAME);
+  const legacyDir = path.join(rootDir, LEGACY_STATE_DIR_NAME);
+
+  if (fs.existsSync(stateDir)) {
+    return stateDir;
+  }
+
+  if (fs.existsSync(legacyDir)) {
+    if (!legacyStateDirNoticeShown) {
+      legacyStateDirNoticeShown = true;
+      console.warn(
+        '⚠️  Agilai compatibility: reusing legacy .bmad-invisible state directory. Rename to .agilai-invisible when convenient.',
+      );
+    }
+    return legacyDir;
+  }
 
   // Try creating in rootDir first
-  if (!fs.existsSync(stateDir)) {
-    try {
-      fs.mkdirSync(stateDir, { recursive: true });
-      return stateDir;
-    } catch (error) {
-      // If rootDir is read-only (e.g., global npm install, CI artifact), fall back to user home
-      if (error.code === 'EACCES' || error.code === 'EROFS' || error.code === 'EPERM') {
-        const fallbackDir = path.join(os.homedir(), '.bmad-invisible');
-        if (!fs.existsSync(fallbackDir)) {
-          try {
-            fs.mkdirSync(fallbackDir, { recursive: true });
-            console.warn(
-              `Note: Using ${fallbackDir} for cache (installation directory is read-only)`,
-            );
-            return fallbackDir;
-          } catch (fallbackError) {
-            console.warn('Warning: unable to create state directory:', fallbackError.message);
-            return fallbackDir; // Return path anyway, saveState will handle write failures gracefully
+  try {
+    fs.mkdirSync(stateDir, { recursive: true });
+    return stateDir;
+  } catch (error) {
+    // If rootDir is read-only (e.g., global npm install, CI artifact), fall back to user home
+    if (error.code === 'EACCES' || error.code === 'EROFS' || error.code === 'EPERM') {
+      const fallbackDir = path.join(os.homedir(), STATE_DIR_NAME);
+      const legacyFallbackDir = path.join(os.homedir(), LEGACY_STATE_DIR_NAME);
+
+      if (!fs.existsSync(fallbackDir)) {
+        try {
+          fs.mkdirSync(fallbackDir, { recursive: true });
+          console.warn(
+            `Note: Using ${fallbackDir} for Agilai cache (installation directory is read-only)`,
+          );
+          return fallbackDir;
+        } catch (fallbackError) {
+          if (fs.existsSync(legacyFallbackDir)) {
+            if (!legacyStateDirNoticeShown) {
+              legacyStateDirNoticeShown = true;
+              console.warn(
+                '⚠️  Agilai compatibility: falling back to legacy ~/.bmad-invisible cache directory.',
+              );
+            }
+            return legacyFallbackDir;
           }
+
+          console.warn('Warning: unable to create state directory:', fallbackError.message);
+          return fallbackDir; // Return path anyway, saveState will handle write failures gracefully
         }
-        console.warn(`Note: Using ${fallbackDir} for cache (installation directory is read-only)`);
-        return fallbackDir;
       }
-      // For other errors, log and return the path anyway (saveState handles write failures)
-      console.warn('Warning: unable to create state directory:', error.message);
-      return stateDir;
+
+      console.warn(
+        `Note: Using ${fallbackDir} for Agilai cache (installation directory is read-only)`,
+      );
+      return fallbackDir;
     }
+
+    if (fs.existsSync(legacyDir)) {
+      if (!legacyStateDirNoticeShown) {
+        legacyStateDirNoticeShown = true;
+        console.warn(
+          '⚠️  Agilai compatibility: reusing legacy .bmad-invisible state directory after creation failure.',
+        );
+      }
+      return legacyDir;
+    }
+
+    // For other errors, log and return the path anyway (saveState handles write failures)
+    console.warn('Warning: unable to create state directory:', error.message);
+    return stateDir;
   }
-  return stateDir;
 }
 
 function getStateFile(rootDir) {

@@ -277,7 +277,7 @@ async function runOrchestratorServer(options = {}) {
     }
   };
   let ProjectState;
-  let BMADBridge;
+  let AgilaiBridge;
   let DeliverableGenerator;
   let BrownfieldAnalyzer;
   let QuickLane;
@@ -286,7 +286,7 @@ async function runOrchestratorServer(options = {}) {
   let contextPreservation;
   let storyContextValidator;
   let projectState;
-  let bmadBridge;
+  let agilaiBridge;
   let deliverableGen;
   let brownfieldAnalyzer;
   const laneDecisions = [];
@@ -299,8 +299,10 @@ async function runOrchestratorServer(options = {}) {
     if (!ProjectState) {
       ({ ProjectState } = await (0, lib_resolver_js_1.importLibModule)('project-state.js'));
     }
-    if (!BMADBridge) {
-      ({ BMADBridge } = await (0, lib_resolver_js_1.importLibModule)('bmad-bridge.js'));
+    if (!AgilaiBridge) {
+      ({ BMADBridge: AgilaiBridge } = await (0, lib_resolver_js_1.importLibModule)(
+        'bmad-bridge.js',
+      ));
     }
     if (!DeliverableGenerator) {
       ({ DeliverableGenerator } = await (0, lib_resolver_js_1.importLibModule)(
@@ -340,13 +342,13 @@ async function runOrchestratorServer(options = {}) {
       projectState = new ProjectState(projectPath);
       await projectState.initialize();
     }
-    if (!bmadBridge) {
+    if (!agilaiBridge) {
       const llmClient = await createLLMClient('default');
-      bmadBridge = new BMADBridge({ llmClient });
-      await bmadBridge.initialize();
+      agilaiBridge = new AgilaiBridge({ llmClient });
+      await agilaiBridge.initialize();
       const environmentInfo =
-        typeof bmadBridge.getEnvironmentInfo === 'function'
-          ? bmadBridge.getEnvironmentInfo()
+        typeof agilaiBridge.getEnvironmentInfo === 'function'
+          ? agilaiBridge.getEnvironmentInfo()
           : null;
       if (environmentInfo?.mode === 'v6-modules') {
         logger.info('environment_detected', {
@@ -358,7 +360,7 @@ async function runOrchestratorServer(options = {}) {
       }
     }
     if (!deliverableGen) {
-      deliverableGen = new DeliverableGenerator(projectPath, { bmadBridge });
+      deliverableGen = new DeliverableGenerator(projectPath, { agilaiBridge });
       await deliverableGen.initialize();
     }
     if (!brownfieldAnalyzer) {
@@ -381,7 +383,7 @@ async function runOrchestratorServer(options = {}) {
     }
     phaseTransitionHooks.bindDependencies({
       triggerAgent: async (agentId, context) => {
-        const result = await bmadBridge.runAgent(agentId, context);
+        const result = await agilaiBridge.runAgent(agentId, context);
         if (!result) {
           return null;
         }
@@ -424,7 +426,7 @@ async function runOrchestratorServer(options = {}) {
           operation: 'execute_auto_command',
           command,
         });
-        return executeAutoCommand(command, context, bmadBridge);
+        return executeAutoCommand(command, context, agilaiBridge);
       },
       updateProjectState: async (updates) => {
         await projectState.updateState(updates);
@@ -456,7 +458,7 @@ async function runOrchestratorServer(options = {}) {
     return validationModule.runStoryContextValidation({
       projectState,
       createLLMClient,
-      BMADBridge,
+      AgilaiBridge,
       lane,
       notes,
       trigger,
@@ -475,7 +477,7 @@ async function runOrchestratorServer(options = {}) {
       return validationModule.ensureStoryContextReadyForDevelopment({
         projectState,
         createLLMClient,
-        BMADBridge,
+        AgilaiBridge,
         lane,
         notes,
         trigger,
@@ -519,7 +521,7 @@ async function runOrchestratorServer(options = {}) {
       },
       {
         name: 'detect_phase',
-        description: 'Analyze user message and conversation to determine appropriate BMAD phase',
+        description: 'Analyze user message and conversation to determine appropriate Agilai phase',
         inputSchema: {
           type: 'object',
           properties: {
@@ -539,7 +541,7 @@ async function runOrchestratorServer(options = {}) {
       },
       {
         name: 'load_agent_persona',
-        description: 'Load BMAD agent persona for the current or specified phase',
+        description: 'Load Agilai agent persona for the current or specified phase',
         inputSchema: {
           type: 'object',
           properties: {
@@ -608,7 +610,8 @@ async function runOrchestratorServer(options = {}) {
       },
       {
         name: 'generate_deliverable',
-        description: 'Generate BMAD deliverable (PRD, architecture, story, etc.) and save to docs/',
+        description:
+          'Generate Agilai deliverable (PRD, architecture, story, etc.) and save to docs/',
         inputSchema: {
           type: 'object',
           properties: {
@@ -675,16 +678,16 @@ async function runOrchestratorServer(options = {}) {
         },
       },
       {
-        name: 'list_bmad_agents',
-        description: 'List all available BMAD agents',
+        name: 'list_agilai_agents',
+        description: 'List all available Agilai agents',
         inputSchema: {
           type: 'object',
           properties: {},
         },
       },
       {
-        name: 'execute_bmad_workflow',
-        description: 'Execute a complete BMAD workflow for a phase',
+        name: 'execute_agilai_workflow',
+        description: 'Execute a complete Agilai workflow for a phase',
         inputSchema: {
           type: 'object',
           properties: {
@@ -733,7 +736,7 @@ async function runOrchestratorServer(options = {}) {
       {
         name: 'detect_existing_docs',
         description:
-          'Find and load existing BMAD documentation (brief, prd, architecture, stories)',
+          'Find and load existing Agilai documentation (brief, prd, architecture, stories)',
         inputSchema: {
           type: 'object',
           properties: {},
@@ -741,7 +744,7 @@ async function runOrchestratorServer(options = {}) {
       },
       {
         name: 'load_previous_state',
-        description: 'Load state from previous BMAD session to resume work',
+        description: 'Load state from previous Agilai session to resume work',
         inputSchema: {
           type: 'object',
           properties: {},
@@ -750,7 +753,7 @@ async function runOrchestratorServer(options = {}) {
       {
         name: 'get_codebase_summary',
         description:
-          'Get comprehensive codebase analysis including structure, tech stack, and existing BMAD docs',
+          'Get comprehensive codebase analysis including structure, tech stack, and existing Agilai docs',
         inputSchema: {
           type: 'object',
           properties: {},
@@ -835,8 +838,8 @@ async function runOrchestratorServer(options = {}) {
             },
             config: {
               type: 'string',
-              enum: ['claude', 'bmad', 'both'],
-              description: 'Target configuration (default: claude)',
+              enum: ['claude', 'agilai', 'both', 'bmad'],
+              description: 'Target configuration (default: claude, legacy alias: bmad)',
               default: 'claude',
             },
             envVars: {
@@ -962,7 +965,7 @@ async function runOrchestratorServer(options = {}) {
         case 'load_agent_persona': {
           const params = args;
           const phase = params.phase || projectState.state.currentPhase;
-          const agent = await bmadBridge.loadAgent(`${phase}`);
+          const agent = await agilaiBridge.loadAgent(`${phase}`);
           response = {
             content: [
               {
@@ -1176,21 +1179,24 @@ async function runOrchestratorServer(options = {}) {
           };
           break;
         }
-        case 'list_bmad_agents': {
-          const agents = await bmadBridge.listAgents();
+        case 'list_agilai_agents': {
+          const agents = await agilaiBridge.listAgents();
           response = {
             content: [
               {
                 type: 'text',
-                text: `Available BMAD Agents:\n${agents.map((a) => `- ${a}`).join('\n')}`,
+                text: `Available Agilai agents:\n${agents.map((a) => `- ${a}`).join('\n')}`,
               },
             ],
           };
           break;
         }
-        case 'execute_bmad_workflow': {
+        case 'execute_agilai_workflow': {
           const params = args;
-          const result = await bmadBridge.executePhaseWorkflow(params.phase, params.context || {});
+          const result = await agilaiBridge.executePhaseWorkflow(
+            params.phase,
+            params.context || {},
+          );
           response = {
             content: [
               {
@@ -1219,7 +1225,7 @@ async function runOrchestratorServer(options = {}) {
             lane,
           });
           const reviewLLM = await createLLMClient(lane);
-          const reviewBridge = new BMADBridge({ llmClient: reviewLLM });
+          const reviewBridge = new AgilaiBridge({ llmClient: reviewLLM });
           await reviewBridge.initialize();
           const projectSnapshot = projectState.exportForLLM();
           const phaseDeliverables = projectState.getPhaseDeliverables(config.sourcePhase);
@@ -1332,7 +1338,7 @@ async function runOrchestratorServer(options = {}) {
             content: [
               {
                 type: 'text',
-                text: 'No previous BMAD session found. Starting fresh.',
+                text: 'No previous Agilai session found. Starting fresh.',
               },
             ],
           };
@@ -1553,18 +1559,18 @@ async function runOrchestratorServer(options = {}) {
               request: params.userRequest,
             });
             const laneTimer = logger.startTimer();
-            await bmadBridge.executePhaseWorkflow('analyst', {
+            await agilaiBridge.executePhaseWorkflow('analyst', {
               userMessage: params.userRequest,
               ...context,
             });
-            await bmadBridge.executePhaseWorkflow('pm', context);
-            await bmadBridge.executePhaseWorkflow('architect', context);
-            await bmadBridge.executePhaseWorkflow('sm', context);
+            await agilaiBridge.executePhaseWorkflow('pm', context);
+            await agilaiBridge.executePhaseWorkflow('architect', context);
+            await agilaiBridge.executePhaseWorkflow('sm', context);
             result = {
               lane: 'complex',
               decision,
               files: ['docs/prd.md', 'docs/architecture.md', 'docs/stories/*.md'],
-              message: 'Complex workflow executed through BMAD agents',
+              message: 'Complex workflow executed through Agilai agents',
             };
             if (selectedQuickLane && !quickLaneActive) {
               result.quickLane = {
@@ -1675,18 +1681,23 @@ async function runOrchestratorServer(options = {}) {
           if (params.envVars && Object.keys(params.envVars).length > 0) {
             serverConfig.env = params.envVars;
           }
-          const targetConfig = params.config || 'claude';
-          if (targetConfig === 'claude' || targetConfig === 'both') {
+          const requestedConfig = params.config || 'claude';
+          const normalisedRequest = requestedConfig.toLowerCase();
+          const legacyAliasUsed = normalisedRequest === 'bmad';
+          const effectiveConfig = legacyAliasUsed ? 'agilai' : normalisedRequest;
+          const applyClaudeConfig = normalisedRequest === 'claude' || normalisedRequest === 'both';
+          const applyAgilaiConfig = effectiveConfig === 'agilai' || normalisedRequest === 'both';
+          if (applyClaudeConfig) {
             const config = manager.loadClaudeConfig();
             config.mcpServers = config.mcpServers || {};
             config.mcpServers[params.serverId] = serverConfig;
             manager.saveClaudeConfig(config);
           }
-          if (targetConfig === 'bmad' || targetConfig === 'both') {
-            const config = manager.loadBmadConfig();
+          if (applyAgilaiConfig) {
+            const config = manager.loadAgilaiConfig();
             config.mcpServers = config.mcpServers || {};
             config.mcpServers[params.serverId] = serverConfig;
-            manager.saveBmadConfig(config);
+            manager.saveAgilaiConfig(config);
           }
           response = {
             content: [
@@ -1697,8 +1708,9 @@ async function runOrchestratorServer(options = {}) {
                     success: true,
                     serverId: params.serverId,
                     serverName: server.name,
-                    targetConfig,
-                    message: `Successfully installed ${server.name} to ${targetConfig} configuration`,
+                    targetConfig: effectiveConfig,
+                    requestedConfig,
+                    message: `Successfully installed ${server.name} to ${effectiveConfig} configuration${legacyAliasUsed ? ' (legacy alias: bmad)' : ''}`,
                     restartRequired: true,
                     restartMessage:
                       'Please restart your chat session for the MCP server to be loaded and available.',
@@ -1715,14 +1727,14 @@ async function runOrchestratorServer(options = {}) {
           const McpManager = (0, lib_resolver_js_1.requireLibModule)('../tools/mcp-manager.js');
           const manager = new McpManager({ rootDir: projectState.projectPath });
           const claudeConfig = manager.loadClaudeConfig();
-          const bmadConfig = manager.loadBmadConfig();
+          const agilaiConfig = manager.loadAgilaiConfig();
           const allServers = new Map();
           for (const [name, config] of Object.entries(claudeConfig.mcpServers || {})) {
             allServers.set(name, { ...config, source: 'claude' });
           }
-          for (const [name, config] of Object.entries(bmadConfig.mcpServers || {})) {
+          for (const [name, config] of Object.entries(agilaiConfig.mcpServers || {})) {
             if (!allServers.has(name)) {
-              allServers.set(name, { ...config, source: 'bmad' });
+              allServers.set(name, { ...config, source: 'agilai' });
             } else {
               allServers.get(name).source = 'both';
             }
@@ -1756,12 +1768,12 @@ async function runOrchestratorServer(options = {}) {
           const McpManager = (0, lib_resolver_js_1.requireLibModule)('../tools/mcp-manager.js');
           const manager = new McpManager({ rootDir: projectState.projectPath });
           const claudeConfig = manager.loadClaudeConfig();
-          const bmadConfig = manager.loadBmadConfig();
+          const agilaiConfig = manager.loadAgilaiConfig();
           const allServers = new Map();
           for (const [name, config] of Object.entries(claudeConfig.mcpServers || {})) {
             allServers.set(name, config);
           }
-          for (const [name, config] of Object.entries(bmadConfig.mcpServers || {})) {
+          for (const [name, config] of Object.entries(agilaiConfig.mcpServers || {})) {
             if (!allServers.has(name)) {
               allServers.set(name, config);
             }

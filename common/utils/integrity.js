@@ -5,15 +5,18 @@ const crypto = require('node:crypto');
 
 const CRITICAL_PATHS = [
   {
-    path: 'bmad-core/core-config.yaml',
-    description: 'Core configuration that routes tasks to BMAD lanes',
+    path: 'agilai-core/core-config.yaml',
+    legacyPath: 'bmad-core/core-config.yaml',
+    description: 'Core configuration that routes tasks to Agilai lanes',
   },
   {
-    path: 'bmad-core/checklists',
+    path: 'agilai-core/checklists',
+    legacyPath: 'bmad-core/checklists',
     description: 'Safety and quality checklists used across workflows',
   },
   {
-    path: 'bmad-core/templates',
+    path: 'agilai-core/templates',
+    legacyPath: 'bmad-core/templates',
     description: 'Primary document and task templates',
   },
   {
@@ -27,8 +30,45 @@ const CRITICAL_PATHS = [
 ];
 
 const BASELINE_FILENAME = 'critical-hashes.json';
+const BASELINE_DIRNAME = '.agilai-invisible';
+const LEGACY_BASELINE_DIRNAME = '.bmad-invisible';
+const legacyPathNotices = new Set();
 
-const getBaselinePath = (rootDir) => path.join(rootDir, '.bmad-invisible', BASELINE_FILENAME);
+const getBaselinePath = (rootDir) => {
+  const preferred = path.join(rootDir, BASELINE_DIRNAME, BASELINE_FILENAME);
+  if (fs.existsSync(preferred)) {
+    return preferred;
+  }
+
+  const legacy = path.join(rootDir, LEGACY_BASELINE_DIRNAME, BASELINE_FILENAME);
+  if (fs.existsSync(legacy)) {
+    return legacy;
+  }
+
+  return preferred;
+};
+
+const resolveCriticalPath = (rootDir, target) => {
+  const modernPath = path.join(rootDir, target.path);
+  if (fs.existsSync(modernPath)) {
+    return modernPath;
+  }
+
+  if (target.legacyPath) {
+    const legacyPath = path.join(rootDir, target.legacyPath);
+    if (fs.existsSync(legacyPath)) {
+      if (!legacyPathNotices.has(target.legacyPath)) {
+        legacyPathNotices.add(target.legacyPath);
+        console.warn(
+          `⚠️  Agilai compatibility: using legacy path ${target.legacyPath}. Rename to ${target.path} to keep receiving updates.`,
+        );
+      }
+      return legacyPath;
+    }
+  }
+
+  return null;
+};
 
 const computeFileHash = (filePath) => {
   const hash = crypto.createHash('sha256');
@@ -56,8 +96,8 @@ const walkDirectory = (dirPath, files) => {
 const collectCriticalFiles = (rootDir) => {
   const files = [];
   for (const target of CRITICAL_PATHS) {
-    const absolute = path.join(rootDir, target.path);
-    if (!fs.existsSync(absolute)) continue;
+    const absolute = resolveCriticalPath(rootDir, target);
+    if (!absolute) continue;
 
     const stats = fs.statSync(absolute);
     if (stats.isDirectory()) {
@@ -203,13 +243,27 @@ const summariseDifferences = (differences, limit = 5) => {
   return `${sample.join(', ')} … (+${differences.length - limit} more)`;
 };
 
+const pathHasSegment = (filePath, segment) => filePath.split(path.sep).includes(segment);
+let legacyBaselineWarningShown = false;
+
 const runIntegrityPreflight = (rootDir, { logger = console, silentOnMatch = true } = {}) => {
   ensureBaseline(rootDir);
   const report = checkForCriticalFileChanges(rootDir);
 
+  if (
+    report.baselinePath &&
+    pathHasSegment(report.baselinePath, LEGACY_BASELINE_DIRNAME) &&
+    !legacyBaselineWarningShown
+  ) {
+    legacyBaselineWarningShown = true;
+    logger.warn(
+      '⚠️  Agilai compatibility: baseline hashes stored in legacy .bmad-invisible directory. Move them to .agilai-invisible to keep receiving updates.',
+    );
+  }
+
   if (report.status === 'missing-baseline') {
     logger.warn(
-      `⚠️  BMAD safeguard: baseline hashes missing at ${path.relative(rootDir, report.baselinePath)}. ` +
+      `⚠️  Agilai safeguard: baseline hashes missing at ${path.relative(rootDir, report.baselinePath)}. ` +
         'Re-run after generating the baseline with `node tools/update-critical-hashes.js`.',
     );
     return report;
@@ -217,7 +271,7 @@ const runIntegrityPreflight = (rootDir, { logger = console, silentOnMatch = true
 
   if (report.status === 'invalid-baseline') {
     logger.warn(
-      `⚠️  BMAD safeguard: could not read baseline hash file at ${path.relative(rootDir, report.baselinePath)}.`,
+      `⚠️  Agilai safeguard: could not read baseline hash file at ${path.relative(rootDir, report.baselinePath)}.`,
     );
     logger.warn(
       '    Resolve JSON errors or regenerate with `node tools/update-critical-hashes.js`.',
@@ -237,14 +291,14 @@ const runIntegrityPreflight = (rootDir, { logger = console, silentOnMatch = true
       messages.push(`new: ${summariseDifferences(report.unexpected)}`);
     }
 
-    logger.warn('⚠️  BMAD safeguard: critical resources diverged from recorded baseline.');
+    logger.warn('⚠️  Agilai safeguard: critical resources diverged from recorded baseline.');
     logger.warn(`    ${messages.join(' | ')}`);
     logger.warn(
       `    Baseline: ${path.relative(rootDir, report.baselinePath)} (update via \`node tools/update-critical-hashes.js\`).`,
     );
     logger.warn('    Review intentional customisations before proceeding.');
   } else if (!silentOnMatch) {
-    logger.log('✅ BMAD safeguard: critical resources match recorded baseline.');
+    logger.log('✅ Agilai safeguard: critical resources match recorded baseline.');
   }
 
   return report;

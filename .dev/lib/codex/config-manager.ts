@@ -16,16 +16,16 @@ type TomlTable = Record<string, any>;
 
 const DEFAULT_MODEL = 'GPT-5-Codex';
 const DEFAULT_MANUAL_APPROVAL = false;
-const SERVER_NAME = 'bmad-mcp';
+const SERVER_NAME = 'agilai-mcp';
 
 const DEFAULT_SERVERS: ReadonlyArray<TomlTable> = [
   {
     name: SERVER_NAME,
     displayName: 'Agilai MCP',
-    description: 'Agilai MCP server for orchestrating BMAD agents.',
+    description: 'Agilai MCP server for orchestrating Agilai agents.',
     transport: 'stdio',
     command: 'npx',
-    args: ['bmad-invisible', 'mcp'],
+    args: ['agilai', 'mcp'],
     autoStart: true,
     autoApprove: true,
   },
