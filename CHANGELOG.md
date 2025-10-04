@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Breaking Changes
+
+- **🔄 Agilai CLI naming**: Replaced `bmad` npm scripts with `agilai:chat` variants and renamed the installer script to `install:agilai` to match the Agilai brand. Update your commands to `npm run agilai:chat` (or the provider-specific variants) when launching the orchestrator.
+
 ## [1.3.11](https://github.com/bacoco/Agilai/compare/v1.3.10...v1.3.11) (2025-01-03)
 
 ### Improvements

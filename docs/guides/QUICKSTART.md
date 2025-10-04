@@ -53,13 +53,13 @@ npm install
 
 
 # Start chatting (prompts for your choice)
-npm run bmad
+npm run agilai:chat
 # Force GLM for the orchestrator (requires ZHIPUAI_API_KEY or GLM_API_KEY)
-# npm run bmad -- --glm
+# npm run agilai:chat -- --glm
 # OR use explicit commands:
-# npm run bmad:claude    # respects --glm/--anthropic flags
-# npm run bmad:codex     # respects --glm/--anthropic flags
-# npm run bmad:opencode  # respects --glm/--anthropic flags
+# npm run agilai:chat:claude    # respects --glm/--anthropic flags
+# npm run agilai:chat:codex     # respects --glm/--anthropic flags
+# npm run agilai:chat:opencode  # respects --glm/--anthropic flags
 
 ```
 
@@ -94,7 +94,7 @@ npm run build:mcp
 
 
 # Start conversation (prompts for choice)
-npm run bmad
+npm run agilai:chat
 ```
 
 #### Choosing Your LLM Provider (GLM vs Anthropic)
@@ -211,14 +211,16 @@ AI: Found 23 TODOs across 8 files. Oldest is 3 months old.
 
 ### Quick Commands
 
+> **Heads up**: Legacy `npm run bmad*` scripts have been replaced by the `npm run agilai:chat*` family. Update your saved commands and automations accordingly.
+
 ```bash
 npx bmad-invisible@latest start # 🚀 One-command setup and launch (prompts for choice)
 npx bmad-invisible init         # Initialize in project
 npx bmad-invisible build        # Build MCP server
-npm run bmad                    # Start conversation (prompts for assistant choice)
-npm run bmad:claude             # Start Claude directly
-npm run bmad:codex              # Start Codex directly
-npm run bmad:opencode           # Start OpenCode directly
+npm run agilai:chat             # Start conversation (prompts for assistant choice)
+npm run agilai:chat:claude      # Start Claude directly
+npm run agilai:chat:codex       # Start Codex directly
+npm run agilai:chat:opencode    # Start OpenCode directly
 # Append -- --glm (or -- --anthropic) to any npm script to swap providers
 
 npx bmad-invisible test         # Run tests
@@ -228,7 +230,7 @@ npx bmad-invisible help         # Show all commands
 
 ### Example Session
 
-Run `npm run bmad` and choose your assistant, or use direct commands (`npm run bmad:claude`, `npm run bmad:codex`, `npm run bmad:opencode`). You'll see an experience like this:
+Run `npm run agilai:chat` and choose your assistant, or use direct commands (`npm run agilai:chat:claude`, `npm run agilai:chat:codex`, `npm run agilai:chat:opencode`). You'll see an experience like this:
 
 ```
 🎯 Starting Agilai Orchestrator...

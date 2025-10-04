@@ -148,7 +148,7 @@ npm install
 #### 2. Start conversation
 
 ```bash
-npm run bmad
+npm run agilai:chat
 ```
 
 #### 3. Tell the orchestrator about existing work
@@ -215,7 +215,7 @@ The orchestrator intelligently handles existing docs:
 ```bash
 # Come back days/weeks later
 cd your-project
-npm run bmad
+npm run agilai:chat
 
 # Orchestrator automatically loads state
 Orchestrator: "Welcome back! We were working on the team todo app.
@@ -502,7 +502,7 @@ ls -la dist/mcp/mcp/server.js
 ```bash
 # Reset state (backs up old state)
 rm .agilai/state.json
-npm run bmad
+npm run agilai:chat
 # Orchestrator will start fresh
 ```
 
