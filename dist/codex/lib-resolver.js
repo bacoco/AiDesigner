@@ -83,7 +83,23 @@ function getPackageRoot() {
 function resolveFromPackageRoot(...segments) {
   return path.resolve(getPackageRoot(), ...segments);
 }
+// Search paths in order of preference:
+// 1. Production build output (dist/mcp/lib) - bundled distribution
+// 2. Development build output (.dev/dist/mcp/lib) - compiled TypeScript
+// 3. Development lib source (.dev/lib) - original source files
+// 4. Fallback to package lib folder (lib) - see resolveLibPath below
+const LIB_SEARCH_PATHS = [
+  ['dist', 'mcp', 'lib'],
+  ['.dev', 'dist', 'mcp', 'lib'],
+  ['.dev', 'lib'],
+];
 function resolveLibPath(moduleName) {
+  for (const segments of LIB_SEARCH_PATHS) {
+    const candidatePath = resolveFromPackageRoot(...segments, moduleName);
+    if ((0, node_fs_1.existsSync)(candidatePath)) {
+      return candidatePath;
+    }
+  }
   return resolveFromPackageRoot('lib', moduleName);
 }
 async function importLibModule(moduleName) {
