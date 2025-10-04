@@ -109,6 +109,17 @@ function arrayify(value) {
 }
 
 class AgilaiBridge {
+  /**
+   * Creates a new AgilaiBridge instance
+   * @param {Object} options - Configuration options
+   * @param {string} [options.agilaiCorePath] - Path to agilai-core directory
+   * @param {string} [options.agilaiV6Path] - Path to v6 modules directory
+   * @param {Object} [options.llmClient] - LLM client instance
+   * @param {Object} [options.contextEnrichment] - Context enrichment module
+   * @param {Array} [options.contextEnrichers] - Additional context enricher functions
+   * @param {string|string[]} [options.agentSearchPaths] - Custom agent search paths (replaces default core path)
+   * @param {string|string[]} [options.extraAgentSearchPaths] - Additional agent search paths (appended to defaults)
+   */
   constructor(options = {}) {
     this.agilaiCorePath = options.agilaiCorePath || DEFAULT_CORE_PATH;
     this.agilaiV6Path = options.agilaiV6Path || DEFAULT_V6_PATH || path.join(PACKAGE_ROOT, 'bmad');
@@ -118,6 +129,7 @@ class AgilaiBridge {
     this.contextEnrichers = Array.isArray(options.contextEnrichers)
       ? [...options.contextEnrichers]
       : [];
+    // Note: buildAgentSearchPaths() depends on this.agilaiCorePath being set first
     this.agentSearchPaths = this.buildAgentSearchPaths(options);
   }
 
@@ -202,13 +214,16 @@ class AgilaiBridge {
       const candidatePath = path.join(basePath, `${agentId}.md`);
 
       if (await fs.pathExists(candidatePath)) {
+        console.debug(`[AgilaiBridge] Found agent '${agentId}' at: ${candidatePath}`);
         resolvedAgentPath = candidatePath;
         break;
       }
     }
 
     if (!resolvedAgentPath) {
-      throw new Error(`Agent not found: ${agentId}`);
+      throw new Error(
+        `Agent not found: ${agentId}. Searched paths: ${this.agentSearchPaths.join(', ')}`,
+      );
     }
 
     const content = await fs.readFile(resolvedAgentPath, 'utf8');
@@ -261,6 +276,19 @@ class AgilaiBridge {
     };
   }
 
+  /**
+   * Build prioritized list of agent search paths with deduplication
+   *
+   * Resolution order:
+   * 1. Custom agentSearchPaths (if provided) OR default {agilaiCorePath}/agents
+   * 2. Additional extraAgentSearchPaths
+   * 3. Fallback to {packageRoot}/agents
+   *
+   * @param {Object} options - Configuration options
+   * @param {string|string[]} [options.agentSearchPaths] - Custom agent search paths (replaces default)
+   * @param {string|string[]} [options.extraAgentSearchPaths] - Additional paths to append
+   * @returns {string[]} Array of deduplicated, resolved absolute paths
+   */
   buildAgentSearchPaths(options) {
     const configuredPaths = arrayify(options.agentSearchPaths);
     const extraPaths = arrayify(options.extraAgentSearchPaths);
