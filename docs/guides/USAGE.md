@@ -13,7 +13,8 @@ This does everything: creates structure, installs dependencies, and launches cha
 You'll be prompted to pick Codex, Claude, or OpenCode (defaults to Codex). Use
 `--assistant=<choice>` to skip the prompt. Add `--glm` / `--llm-provider=glm`
 to launch the orchestrator against ZhipuAI's GLM using the
-`ZHIPUAI_API_KEY`/`GLM_API_KEY` credentials, or `--anthropic` to force the
+`AGILAI_GLM_API_KEY` (or legacy `ZHIPUAI_API_KEY`/`GLM_API_KEY`) credentials,
+or `--anthropic` to force the
 legacy Claude defaults.
 
 > **💡 Tip**: Always use `@latest` to get the newest version!
@@ -60,15 +61,15 @@ npm run agilai
 ### Selecting Your LLM Provider
 
 - Use `--glm` (alias for `--llm-provider=glm`) with any Agilai CLI command to run
-  the orchestrator on ZhipuAI's GLM. Provide credentials via `ZHIPUAI_API_KEY`
-  or the fallback `GLM_API_KEY`.
+  the orchestrator on ZhipuAI's GLM. Provide credentials via `AGILAI_GLM_API_KEY`
+  (or legacy aliases such as `ZHIPUAI_API_KEY` or `GLM_API_KEY`).
 - Override the model with `--llm-model=<model>` or by exporting `LLM_MODEL`.
 - Persist defaults in a `.env` file so every spawn inherits them:
 
   ```bash
   # .env
   LLM_PROVIDER=glm
-  ZHIPUAI_API_KEY=sk-...
+  AGILAI_GLM_API_KEY=sk-...
   LLM_MODEL=glm-4-plus
   ```
 
