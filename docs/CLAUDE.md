@@ -94,7 +94,7 @@ npm run validate               # Validate agent/team configurations
 ### Build System
 - **Web Builder**: `tools/builders/web-builder.js` - Creates .txt bundles for web UIs
 - **CLI**: `tools/cli.js` - Main CLI orchestrator
-- **Installer**: `tools/installer/bin/bmad.js` - Installation/upgrade system
+- **Installer**: `tools/installer/bin/agilai.js` - Installation/upgrade system
 - **Flattener**: `tools/flattener/main.js` - XML codebase aggregator for AI consumption
 
 ### Configuration
