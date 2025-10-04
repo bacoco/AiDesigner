@@ -736,12 +736,27 @@ const splitAssistantAndProvider = (value) => {
 
 const OPTIONAL_MCP_SERVERS = [
   {
-    id: 'chrome-devtools',
-    label: 'Chrome DevTools bridge',
-    description: 'Inspect and control active Chrome tabs via the DevTools protocol.',
+    id: 'github',
+    label: 'GitHub repository operations',
+    description: 'Git operations and GitHub API via MCP.',
+    recommended: true,
+    needsEnvPrompt: true,
+    envKey: 'GITHUB_PERSONAL_ACCESS_TOKEN',
+    envPrompt: 'Enter your GitHub Personal Access Token (or leave blank to skip)',
     config: {
       command: 'npx',
-      args: ['-y', 'chrome-devtools-mcp'],
+      args: ['-y', '@modelcontextprotocol/server-github'],
+      disabled: false,
+    },
+  },
+  {
+    id: 'chrome-devtools',
+    label: 'Chrome DevTools bridge',
+    description: 'Inspect and control active Chrome tabs via the DevTools protocol. Requires Chrome.',
+    recommended: false,
+    config: {
+      command: 'npx',
+      args: ['-y', 'chrome-devtools-mcp', '--headless'],
       disabled: false,
     },
   },
@@ -749,22 +764,10 @@ const OPTIONAL_MCP_SERVERS = [
     id: 'shadcn-ui',
     label: 'shadcn/ui component generator',
     description: 'Generate UI components from the shadcn library.',
+    recommended: false,
     config: {
       command: 'npx',
       args: ['-y', '@jpisnice/shadcn-ui-mcp-server'],
-      disabled: false,
-    },
-  },
-  {
-    id: 'github',
-    label: 'GitHub repository operations',
-    description: 'Git operations and GitHub API via MCP.',
-    needsEnvPrompt: true,
-    envKey: 'GITHUB_PERSONAL_ACCESS_TOKEN',
-    envPrompt: 'Enter your GitHub Personal Access Token (or leave blank to skip)',
-    config: {
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-github'],
       disabled: false,
     },
   },
@@ -1247,9 +1250,21 @@ const commands = {
 
     if (optionalServerPromptsNeeded.length > 0) {
       if (process.stdout.isTTY) {
-        console.log('\n✨ Optional MCP servers available:');
-        for (const server of optionalServerPromptsNeeded) {
-          console.log(`   • ${server.label} — ${server.description}`);
+        const recommended = optionalServerPromptsNeeded.filter(s => s.recommended);
+        const additional = optionalServerPromptsNeeded.filter(s => !s.recommended);
+
+        if (recommended.length > 0) {
+          console.log('\n✨ Recommended MCP servers:');
+          for (const server of recommended) {
+            console.log(`   • ${server.label} — ${server.description}`);
+          }
+        }
+
+        if (additional.length > 0) {
+          console.log('\n📦 Additional MCP servers available (optional):');
+          for (const server of additional) {
+            console.log(`   • ${server.label} — ${server.description}`);
+          }
         }
         console.log('');
       } else {
@@ -1266,7 +1281,10 @@ const commands = {
 
       let shouldAdd = false;
       try {
-        shouldAdd = await promptYesNo(`Would you like to enable the ${optional.label}?`);
+        const promptText = optional.recommended
+          ? `Enable ${optional.label}? (recommended)`
+          : `Enable ${optional.label}? (optional)`;
+        shouldAdd = await promptYesNo(promptText);
       } catch (error) {
         console.warn(
           `⚠️ Skipping ${optional.label} prompt due to an input error: ${error.message || error}`,
