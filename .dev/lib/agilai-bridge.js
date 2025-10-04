@@ -10,6 +10,14 @@ const { LLMClient } = require('./llm-client');
 const { V6ModuleLoader } = require('./v6-module-loader');
 const contextEnrichment = require('../hooks/context-enrichment');
 
+/**
+ * Searches upward from the current directory to find the nearest package.json.
+ * This function traverses parent directories until it finds a package.json file,
+ * which indicates the package root.
+ *
+ * @returns {string} Absolute path to the package root directory
+ * @throws {Error} If no package.json is found in any parent directory
+ */
 function resolvePackageRoot() {
   let currentDir = __dirname;
   const parsed = path.parse(currentDir);
@@ -22,9 +30,23 @@ function resolvePackageRoot() {
     currentDir = path.dirname(currentDir);
   }
 
-  return path.resolve(__dirname, '..', '..');
+  // Fallback: assume package root is two levels up from __dirname
+  const fallbackPath = path.resolve(__dirname, '..', '..');
+  console.warn(
+    `[AgilaiBridge] Warning: No package.json found in directory tree. Falling back to ${fallbackPath}`,
+  );
+  return fallbackPath;
 }
 
+/**
+ * Resolves the default V6 modules path by checking candidate directories.
+ * Searches for valid V6 module structures in priority order:
+ * 1. {root}/bmad/src/modules (development structure)
+ * 2. {root}/dist/mcp/src/modules (built/distributed structure)
+ *
+ * @param {string} rootDirectory - The package root directory to search from
+ * @returns {string|null} Absolute path to the V6 directory if found, null otherwise
+ */
 function resolveDefaultV6Path(rootDirectory) {
   const candidates = [path.join(rootDirectory, 'bmad'), path.join(rootDirectory, 'dist', 'mcp')];
 
@@ -36,6 +58,9 @@ function resolveDefaultV6Path(rootDirectory) {
     }
   }
 
+  console.warn(
+    `[AgilaiBridge] Warning: No V6 modules found in candidates: ${candidates.join(', ')}`,
+  );
   return null;
 }
 
