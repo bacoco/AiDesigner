@@ -21,7 +21,7 @@ Successfully implemented a **fully functional MCP-based invisible orchestrator**
    - Phase transition history
    - Requirements and decisions storage
    - Deliverables tracking
-   - JSON persistence to `.bmad-invisible/`
+   - JSON persistence to `.agilai/`
 
 3. **BMAD Integration Bridge** (`lib/bmad-bridge.js`) - **343 lines**
    - Agent loading and persona extraction
@@ -219,7 +219,7 @@ npm test
 ✅ **Integrates with existing BMAD CLI** - npm run bmad (with `npm run bmad:claude` / `npm run bmad:codex` for specific front-ends)
 ✅ **Generates real deliverables** - docs/ folder populated
 ✅ **Maintains invisible UX** - No methodology jargon
-✅ **Persists state** - .bmad-invisible/ folder
+✅ **Persists state** - .agilai/ folder
 ✅ **Uses MCP protocol** - Native Claude integration
 ✅ **Validates with user** - Checkpoints at phase transitions
 ✅ **Production code quality** - Error handling, logging, types

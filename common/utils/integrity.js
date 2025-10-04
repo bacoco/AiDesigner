@@ -28,7 +28,7 @@ const CRITICAL_PATHS = [
 
 const BASELINE_FILENAME = 'critical-hashes.json';
 
-const getBaselinePath = (rootDir) => path.join(rootDir, '.bmad-invisible', BASELINE_FILENAME);
+const getBaselinePath = (rootDir) => path.join(rootDir, '.agilai', BASELINE_FILENAME);
 
 const computeFileHash = (filePath) => {
   const hash = crypto.createHash('sha256');
