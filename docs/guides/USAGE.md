@@ -180,7 +180,7 @@ Assistant: Absolutely! Let me update the architecture...
 Agilai now records SHA-256 hashes for critical, user-modifiable resources.
 When you launch any CLI entry point (`agilai`, `agilai-codex`, or
 `npm run agilai:claude`), a quick pre-flight check compares the current files against the
-baseline stored in `.agilai/critical-hashes.json`.
+baseline stored in `.agilai-invisible/critical-hashes.json`.
 
 - ✅ Matching hashes: the CLI proceeds silently.
 - ⚠️ Diverging hashes: you receive a warning summarising which core files changed,
@@ -195,7 +195,7 @@ If you intentionally customise these resources, regenerate the baseline after
 your edits:
 
 ```bash
-node tools/update-critical-hashes.js
+node .dev/tools/update-critical-hashes.js
 ```
 
 The baseline is committed per project, so the warning helps catch accidental
