@@ -248,9 +248,9 @@ BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.jso
 BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files.
 
 - Two installation modes:
-  - Codex (local only): keeps `.bmad-core/` ignored for local dev.
+  - Codex (local only): keeps `.agilai-core/` ignored for local dev.
     - `npx agilai install -f -i codex -d .`
-  - Codex Web Enabled: ensures `.bmad-core/` is tracked so you can commit it for Codex Web.
+  - Codex Web Enabled: ensures `.agilai-core/` is tracked so you can commit it for Codex Web.
     - `npx agilai install -f -i codex-web -d .`
 
 - What gets generated:
