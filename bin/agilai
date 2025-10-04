@@ -1144,11 +1144,10 @@ const commands = {
       disabled: false,
     };
 
-    // Migrate from legacy key if it exists
-    if (mcpConfig.mcpServers[legacyOrchestratorKey] && !mcpConfig.mcpServers[orchestratorKey]) {
-      mcpConfig.mcpServers[orchestratorKey] = mcpConfig.mcpServers[legacyOrchestratorKey];
+    // Remove legacy key if present
+    if (mcpConfig.mcpServers[legacyOrchestratorKey]) {
       delete mcpConfig.mcpServers[legacyOrchestratorKey];
-      console.log('✅ Migrated Agilai MCP server to new name');
+      console.log('🗑️ Removed legacy Agilai orchestrator MCP server entry');
     }
 
     if (!mcpConfig.mcpServers[orchestratorKey]) {
