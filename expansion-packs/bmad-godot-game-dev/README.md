@@ -1,15 +1,16 @@
-# BMAD-Method BMAD Godot Expansion User Guide
+# Agilai Godot Game Development Expansion Pack Guide
 
-This guide will help you understand and effectively use the BMad Method Godot Expansion Pack for agile ai driven planning and development.
+The Agilai Godot Game Development expansion pack brings BMAD-METHOD™ multi-agent workflows directly into your game projects. It layers Godot-specific playbooks, tasks, and templates on top of the core Agilai orchestration so you can move from concept to implementation without leaving your IDE.
 
-## The BMad Plan and Execute Workflow
+> **Note on legacy naming:** The on-disk folders for this expansion still carry the historical `bmad-` prefix (for example `.bmad-godot-game-dev/`). These names remain in place for compatibility with existing agent bundles and CLI manifests. All usage guidance below assumes the current Agilai CLI while calling out the legacy paths when they are required verbatim.
 
-**We will be following the user-guide in most cases, and modifications will be made for expansion pack specific usage**
-First, here is the full standard Greenfield Planning + Execution Workflow.
+## Agilai Planning and Execution Workflow
 
-### The Planning Workflow (Web UI or Powerful IDE Agents)
+**We follow the standard Agilai plan → build loop, tailoring the steps to Godot development.** The diagrams below mirror the production workflow that ships with Agilai 1.3.x.
 
-Before development begins, BMad follows a structured planning workflow that's ideally done in web UI for cost efficiency:
+### Planning Workflow (Web UI or Agentic IDE)
+
+Before touching code, Agilai encourages a structured planning flow. Run it in the web UI for cost-efficient ideation, or inside an agentic IDE if you already have the expansion installed locally.
 
 ```mermaid
 graph TD
@@ -62,16 +63,16 @@ graph TD
 
 #### Web UI to IDE Transition
 
-**Critical Transition Point**: Once the PO confirms document alignment, you must switch from web UI to IDE to begin the development workflow:
+**Critical Transition Point:** Once the Product Owner confirms document alignment, switch from the web UI to your IDE to start development:
 
-1. **Copy Documents to Project**: Ensure `docs/gdd.md` and `docs/gamearchitecture.md` are in your project's docs folder (or a custom location you can specify during installation)
-2. **Switch to IDE**: Open your project in your preferred Agentic IDE
-3. **Document Sharding**: Use the Game-Designer to shard the GDD and then the game-architecht to shard the gamearchitecture
-4. **Begin Development**: Start the Core Development Cycle that follows
+1. **Copy Documents to Project:** Place `docs/gdd.md` and `docs/gamearchitecture.md` into your project docs folder (or specify a custom location during installation).
+2. **Switch to IDE:** Open the repository in your preferred agentic IDE.
+3. **Document Sharding:** Ask the Game Designer agent to shard the GDD, then instruct the Game Architect to shard `gamearchitecture.md`.
+4. **Begin Development:** Move into the core development cycle below.
 
-### The Core Development Cycle (IDE)
+### Core Development Cycle (IDE)
 
-Once planning is complete and documents are sharded, BMad follows a structured development workflow:
+Once planning is complete and the documents are sharded, Agilai follows a structured development workflow:
 
 ```mermaid
 graph TD
@@ -119,42 +120,60 @@ graph TD
 
 ## Installation
 
-### Optional
+### Optional: Preparing Web Bundles
 
-If you want to do the planning in the Web with Claude (Sonnet 4 or Opus), Gemini Gem (2.5 Pro), or Custom GPT's:
+If you prefer to run the planning flow in the browser using Claude, Gemini, or a Custom GPT:
 
-1. Navigate to `dist/expansion-packs/bmad-godot-game-dev/teams`
-2. Copy `godot-game-dev.txt` content
-3. Create new Gemini Gem or CustomGPT
-4. Upload file with instructions: "Your critical operating instructions are attached, do not break character as directed"
-5. Type `/help` to see available commands
+1. Navigate to `dist/expansion-packs/bmad-godot-game-dev/teams`.
+2. Copy the contents of `godot-game-dev.txt`.
+3. Create a new Gemini Gem or Custom GPT and upload the file with the instruction: "Your critical operating instructions are attached; stay in character as directed."
+4. Type `/help` in the web interface to see the available commands.
 
-### IDE Project Setup
+### IDE Project Setup with the Agilai CLI
+
+Use the production CLI to install Agilai and the Godot expansion pack locally. The recommended one-liner performs initialization, dependency installation, and assistant launch prompts:
 
 ```bash
 # Interactive installation (recommended)
-npx bmad-method install
+npx agilai@latest start
 ```
+
+If you are developing directly from a local checkout of this repository, you can run the same workflow without npm registry access:
+
+```bash
+node bin/agilai start
+```
+
+Both entry points were validated against Agilai CLI **v1.3.11**. The local command surfaces the same interactive assistant selection prompt as the published package.
 
 ## Special Agents
 
-There are two bmad agents - in the future they will be consolidated into the single bmad-master.
+The expansion packs ships with the full Godot game-delivery team plus a heavyweight orchestrator for web bundles.
 
-### BMad-Master
+### Agilai Orchestrator (legacy file name: `agents/bmad-orchestrator.md`)
 
-This agent can do any task or command that all other agents can do, aside from actual story implementation. Additionally, this agent can help explain the BMad Method when in the web by accessing the knowledge base and explaining anything to you about the process.
+- Acts as the web bundle conductor and can assume any specialized role on demand.
+- Uses larger context windows and should stay in the browser to avoid overwhelming IDE-based CLIs.
+- Keep this agent as the entry point for fully automated planning sessions.
 
-If you dont want to bother switching between different agents aside from the dev, this is the agent for you.
+### Core Game Team Agents
 
-### BMad-Orchestrator
+Within the IDE you will primarily collaborate with:
 
-This agent should NOT be used within the IDE, it is a heavy weight special purpose agent that utilizes a lot of context and can morph into any other agent. This exists solely to facilitate the team's within the web bundles. If you use a web bundle you will be greeted by the BMad Orchestrator.
+- `game-analyst` – research, discovery, competitor sweeps
+- `game-designer` – vision, GDD creation, quest/level design
+- `game-pm` / `game-po` – product planning, PRD creation, backlog validation
+- `game-architect` – architecture, technical spikes, sharding
+- `game-sm` – story slicing, sprint orchestration
+- `game-developer` – implementation guidance and task execution
+- `game-qa` – validation, refactoring, test reinforcement
+- `game-ux-expert` – UX heuristics, accessibility, usability reviews
 
-### How Agents Work
+Each markdown file in `agents/` defines persona, goals, and dependencies that the CLI loads dynamically.
 
-#### Dependencies System
+## How Agent Dependencies Work
 
-Each agent has a YAML section that defines its dependencies:
+Agents declare their supporting files in YAML to keep context lean while guaranteeing reproducible operations:
 
 ```yaml
 dependencies:
@@ -168,58 +187,52 @@ dependencies:
     - bmad-kb.md
 ```
 
-**Key Points:**
+**Key points:**
 
-- Agents only load resources they need (lean context)
-- Dependencies are automatically resolved during bundling
-- Resources are shared across agents to maintain consistency
+- Agents load only the resources they need when commands require them.
+- Dependencies are resolved automatically when you run commands via Agilai.
+- Resources are shared across agents to keep terminology consistent.
 
-#### Agent Interaction
+## Agent Interaction Patterns
 
-**In IDE:**
+### Inside Agentic IDEs
 
 ```bash
-# Some Ide's, like Cursor or Windsurf for example, utilize manual rules so interaction is done with the '@' symbol
+# Cursor, Windsurf, and similar IDEs use manual rules with the '@' prefix
 @game-designer Create a GDD for a task management app
 @game-architect Design the game architecture
 @game-developer Implement the user authentication
 
-# Some, like Claude Code use slash commands instead
+# Claude Code and other slash-based CLIs
 /game-sm Create user stories
 /game-developer Fix the login bug
 ```
 
-#### Interactive Modes
+### Interactive Modes
 
-- **Incremental Mode**: Step-by-step with user input
-- **YOLO Mode**: Rapid generation with minimal interaction
+- **Incremental Mode:** Step-by-step collaboration with frequent checkpoints.
+- **YOLO Mode:** Rapid generation with minimal prompts—best when you already trust the agent’s direction.
 
-## IDE Integration
+## IDE Integration Best Practices
 
-### IDE Best Practices
-
-- **Context Management**: Keep relevant files only in context, keep files as lean and focused as necessary
-- **Agent Selection**: Use appropriate agent for task
-- **Iterative Development**: Work in small, focused tasks
-- **File Organization**: Maintain clean project structure
+- **Context Management:** Keep only the most relevant files in the working set; trim documents aggressively after sharding.
+- **Agent Selection:** Pick the specialist that matches the current activity (designer vs. architect vs. dev, etc.).
+- **Iterative Delivery:** Break features into focused slices so validation cycles stay fast.
+- **File Organization:** Maintain a clean project structure to make sharding and always-load lists predictable.
 
 ## Technical Preferences System
 
-BMad includes a personalization system through the `technical-preferences.md` file located in `.bmad-godot-game-dev/data/` - this can help bias the PM and Architect to recommend your preferences for design patterns, technology selection, or anything else you would like to put in here.
+Personalize Agilai’s recommendations by editing `technical-preferences.md` under `.bmad-godot-game-dev/data/`. Although the directory retains the legacy prefix, the CLI automatically locates the file. Populate it with preferred design patterns, third-party services, or Godot-specific conventions.
 
-### Using with Web Bundles
-
-When creating custom web bundles or uploading to AI platforms, include your `technical-preferences.md` content to ensure agents have your preferences from the start of any conversation.
+When you build custom web bundles or upload instructions to hosted AI platforms, include the same content so your preferences influence every conversation from the first prompt.
 
 ## Core Configuration
 
-The `.agilai-core/core-config.yaml` and for this expansion-pack the `.bmad-godot-game-dev/config.yaml` files are a critical config that enables BMad to work seamlessly with differing project structures, more options will be made available in the future. Currently the most important is the devLoadAlwaysFiles list section in the yaml.
+Agilai stores shared configuration in `.agilai-core/core-config.yaml`. The Godot expansion also looks for `.bmad-godot-game-dev/config.yaml` (legacy name retained for compatibility). Copy the `core-config.yaml.example` shipped with the expansion into both locations, then update at least the `gameDimension` value to match your project.
 
-For the expansion pack ensure you either copy the core-config.yaml.example from the expansion pack directory to replace your .agilai-core/core-config.yaml and copy it to the .bmad-unit-game-dev/ expansion pack as core-config.yaml and at the very least update the gameDimension variable to the dimension your game will be in.
+### Developer Always-Load Context
 
-### Developer Context Files
-
-Define which files the dev agent should always load:
+Define the files the developer agent should always pull into context:
 
 ```yaml
 devLoadAlwaysFiles:
@@ -228,17 +241,22 @@ devLoadAlwaysFiles:
   - docs/architecture/##-godot-project-structure.md
 ```
 
-You will want to verify from sharding your architecture that these documents exist (replace ## with the prefix generated in sharding), that they are as lean as possible, and contain exactly the information you want your dev agent to ALWAYS load into it's context. These are the rules the agent will follow.
+Replace `##` with the prefix generated during sharding, and keep these documents lean so the developer agent receives concise, enforceable guidance.
 
-As your project grows and the code starts to build consistent patterns, coding standards should be reduced to just the items that the agent makes mistakes at still - must with the better models, they will look at surrounding code in files and not need a rule from that file to guide them.
+## Validation Status
+
+- ✅ `node bin/agilai help` confirms Agilai CLI v1.3.11 exposes the `start` command used above and documents the supported flags.
+- ✅ `node bin/agilai start` (interrupted after the assistant prompt) demonstrates the local workflow launches with the same assistant selection flow as the published package.
+
+These checks ensure the instructions above work end-to-end with the current Agilai CLI. Update screenshots or command snippets in your project documentation if the CLI output changes in future releases.
 
 ## Getting Help
 
-- **Discord Community**: [Join Discord](https://discord.gg/gk8jAdXWmj)
-- **GitHub Issues**: [Report bugs](https://github.com/bmadcode/bmad-method/issues)
-- **Documentation**: [Browse docs](https://github.com/bmadcode/bmad-method/docs)
-- **YouTube**: [BMadCode Channel](https://www.youtube.com/@BMadCode)
+- **Discord Community:** [Join the Agilai/BMAD community](https://discord.gg/gk8jAdXWmj) for real-time support.
+- **GitHub Issues:** [Report bugs](https://github.com/bmadcode/bmad-method/issues) and track fixes.
+- **Documentation:** [Browse the Agilai docs](https://github.com/bacoco/Agilai/tree/main/docs) for deeper architectural details.
+- **YouTube:** [BMadCode Channel](https://www.youtube.com/@BMadCode) for walkthroughs and release updates.
 
 ## Conclusion
 
-Remember: BMad is designed to enhance your development process, not replace your expertise. Use it as a powerful tool to accelerate your projects while maintaining control over design decisions and implementation details.
+Agilai’s Godot expansion accelerates your game delivery pipeline by pairing BMAD-METHOD™ best practices with domain expertise. Use it to orchestrate disciplined planning, keep execution aligned with your GDD, and maintain quality across every sprint—all while staying in natural conversation with specialized agents.
