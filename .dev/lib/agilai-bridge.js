@@ -1,6 +1,6 @@
 /**
  * Agilai Integration Bridge
- * Connects invisible orchestrator with BMAD core agents, tasks, and templates
+ * Connects invisible orchestrator with Agilai core agents, tasks, and templates
  */
 
 const fs = require('fs-extra');
@@ -51,8 +51,9 @@ function arrayify(value) {
 
 class AgilaiBridge {
   constructor(options = {}) {
-    this.bmadCorePath = options.bmadCorePath || path.join(__dirname, '..', 'bmad-core');
-    this.bmadV6Path = options.bmadV6Path || path.join(__dirname, '..', 'bmad');
+    // Support legacy options for backward compatibility
+    this.agilaiCorePath = options.agilaiCorePath || options.bmadCorePath || path.join(__dirname, '..', 'bmad-core');
+    this.agilaiV6Path = options.agilaiV6Path || options.bmadV6Path || path.join(__dirname, '..', 'bmad');
     this.llmClient = options.llmClient || new LLMClient();
     this.coreConfig = null;
     this.contextEnrichment = options.contextEnrichment || contextEnrichment;
@@ -65,26 +66,26 @@ class AgilaiBridge {
    * Initialize bridge and load core config
    */
   async initialize() {
-    const legacyCoreExists = await fs.pathExists(this.bmadCorePath);
+    const legacyCoreExists = await fs.pathExists(this.agilaiCorePath);
 
     if (legacyCoreExists) {
-      const configPath = path.join(this.bmadCorePath, 'core-config.yaml');
+      const configPath = path.join(this.agilaiCorePath, 'core-config.yaml');
       const configContent = await fs.readFile(configPath, 'utf8');
       this.coreConfig = yaml.load(configContent);
       this.environmentMode = 'legacy-core';
       this.environmentInfo = {
         mode: this.environmentMode,
-        root: this.bmadCorePath,
+        root: this.agilaiCorePath,
       };
       return this.coreConfig;
     }
 
-    const modulesRoot = path.join(this.bmadV6Path, 'src', 'modules');
+    const modulesRoot = path.join(this.agilaiV6Path, 'src', 'modules');
     const hasV6Modules = await fs.pathExists(modulesRoot);
 
     if (!hasV6Modules) {
       throw new Error(
-        `BMAD core not found at ${this.bmadCorePath} and no v6 modules located at ${modulesRoot}`,
+        `Agilai core not found at ${this.agilaiCorePath} and no v6 modules located at ${modulesRoot}`,
       );
     }
 
@@ -92,7 +93,7 @@ class AgilaiBridge {
     this.v6Loader = new V6ModuleLoader(modulesRoot);
     await this.v6Loader.initialize();
 
-    const v6ConfigPath = path.join(this.bmadV6Path, 'src', 'core', 'core-config.yaml');
+    const v6ConfigPath = path.join(this.agilaiV6Path, 'src', 'core', 'core-config.yaml');
 
     if (await fs.pathExists(v6ConfigPath)) {
       const v6ConfigContent = await fs.readFile(v6ConfigPath, 'utf8');
@@ -103,7 +104,7 @@ class AgilaiBridge {
 
     this.environmentInfo = {
       mode: this.environmentMode,
-      root: this.bmadV6Path,
+      root: this.agilaiV6Path,
       modulesRoot,
       catalog: this.v6Loader.getCatalogSummary(),
     };
@@ -112,7 +113,7 @@ class AgilaiBridge {
   }
 
   /**
-   * Load a BMAD agent definition
+   * Load an Agilai agent definition
    */
   async loadAgent(agentId) {
     if (this.environmentMode === 'v6-modules') {
@@ -136,7 +137,7 @@ class AgilaiBridge {
       };
     }
 
-    const agentPath = path.join(this.bmadCorePath, 'agents', `${agentId}.md`);
+    const agentPath = path.join(this.agilaiCorePath, 'agents', `${agentId}.md`);
 
     if (!(await fs.pathExists(agentPath))) {
       throw new Error(`Agent not found: ${agentId}`);
@@ -199,7 +200,7 @@ class AgilaiBridge {
     const persona = agent.persona || {};
     const agentInfo = agent.agent || {};
 
-    let prompt = `You are ${agentInfo.name || agentInfo.id}, a ${agentInfo.title || 'BMAD agent'}.\n\n`;
+    let prompt = `You are ${agentInfo.name || agentInfo.id}, a ${agentInfo.title || 'Agilai agent'}.\n\n`;
 
     if (persona.role) {
       prompt += `**Role**: ${persona.role}\n`;
@@ -382,7 +383,7 @@ class AgilaiBridge {
       return record.content;
     }
 
-    const taskPath = path.join(this.bmadCorePath, 'tasks', `${taskName}.md`);
+    const taskPath = path.join(this.agilaiCorePath, 'tasks', `${taskName}.md`);
 
     if (!(await fs.pathExists(taskPath))) {
       throw new Error(`Task not found: ${taskName}`);
@@ -411,7 +412,7 @@ class AgilaiBridge {
     }
 
     for (const ext of ['.yaml', '.md']) {
-      const templatePath = path.join(this.bmadCorePath, 'templates', `${templateName}${ext}`);
+      const templatePath = path.join(this.agilaiCorePath, 'templates', `${templateName}${ext}`);
 
       if (await fs.pathExists(templatePath)) {
         const content = await fs.readFile(templatePath, 'utf8');
@@ -440,7 +441,7 @@ class AgilaiBridge {
       return record.content;
     }
 
-    const checklistPath = path.join(this.bmadCorePath, 'checklists', `${checklistName}.md`);
+    const checklistPath = path.join(this.agilaiCorePath, 'checklists', `${checklistName}.md`);
 
     if (!(await fs.pathExists(checklistPath))) {
       throw new Error(`Checklist not found: ${checklistName}`);
@@ -590,13 +591,13 @@ class AgilaiBridge {
   }
 
   /**
-   * Describe which BMAD environment was detected
+   * Describe which Agilai environment was detected
    */
   getEnvironmentInfo() {
     return (
       this.environmentInfo || {
         mode: this.environmentMode,
-        root: this.environmentMode === 'legacy-core' ? this.bmadCorePath : this.bmadV6Path,
+        root: this.environmentMode === 'legacy-core' ? this.agilaiCorePath : this.agilaiV6Path,
       }
     );
   }
@@ -609,7 +610,7 @@ class AgilaiBridge {
       return this.v6Loader.listAgents().map((agent) => `${agent.moduleId}/${agent.agentId}`);
     }
 
-    const agentsDir = path.join(this.bmadCorePath, 'agents');
+    const agentsDir = path.join(this.agilaiCorePath, 'agents');
     const files = await fs.readdir(agentsDir);
 
     return files.filter((file) => file.endsWith('.md')).map((file) => file.replace('.md', ''));
@@ -623,7 +624,7 @@ class AgilaiBridge {
       return this.v6Loader.listTasks().map((task) => `${task.moduleId}/${task.name}`);
     }
 
-    const tasksDir = path.join(this.bmadCorePath, 'tasks');
+    const tasksDir = path.join(this.agilaiCorePath, 'tasks');
     const files = await fs.readdir(tasksDir);
 
     return files.filter((file) => file.endsWith('.md')).map((file) => file.replace('.md', ''));
@@ -639,7 +640,7 @@ class AgilaiBridge {
         .map((template) => `${template.moduleId}/${template.name}`);
     }
 
-    const templatesDir = path.join(this.bmadCorePath, 'templates');
+    const templatesDir = path.join(this.agilaiCorePath, 'templates');
     const files = await fs.readdir(templatesDir);
 
     return files
