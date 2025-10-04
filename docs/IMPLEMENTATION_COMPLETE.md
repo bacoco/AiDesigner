@@ -92,7 +92,7 @@ MCP Server (1agilai tools)
      ├→ list_agilai_agents
      └→ execute_agilai_workflow
     ↓
-BMAD Bridge → bmad-core agents
+BMAD Bridge → agilai-core agents
     ↓
 Deliverable Generator
     ↓

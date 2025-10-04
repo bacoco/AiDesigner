@@ -132,7 +132,7 @@ npx bmad-method install
 
 **Verify Game Development Installation**:
 
-- `.bmad-core/` folder created with all core agents
+- `.agilai-core/` folder created with all core agents
 - `.bmad-2d-unity-game-dev/` folder with game development agents
 - IDE-specific integration files created
 - Game development agents available with `/bmad2du` prefix (per config.yaml)
@@ -448,7 +448,7 @@ Use the `shard-doc` task or `@kayvan/markdown-tree-parser` tool for automatic ga
 | `game-sm`        | Game Scrum Master | Game story creation, sprint planning        | Game project management, workflow           |
 | `game-architect` | Game Architect    | Unity system design, technical architecture | Complex Unity systems, performance planning |
 
-**Note**: For QA and other roles, use the core BMad agents (e.g., `@qa` from bmad-core).
+**Note**: For QA and other roles, use the core BMad agents (e.g., `@qa` from agilai-core).
 
 ### Game Agent Interaction Commands
 

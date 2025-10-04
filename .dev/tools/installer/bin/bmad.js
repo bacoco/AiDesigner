@@ -46,7 +46,7 @@ program
   .command('install')
   .description('Install BMad Method agents and tools')
   .option('-f, --full', 'Install complete BMad Method')
-  .option('-x, --expansion-only', 'Install only expansion packs (no bmad-core)')
+  .option('-x, --expansion-only', 'Install only expansion packs (no agilai-core)')
   .option('-d, --directory <path>', 'Installation directory')
   .option(
     '-i, --ide <ide...>',
@@ -242,7 +242,7 @@ async function promptInstallation() {
   const choices = [];
 
   // Load core config to get short-title
-  const coreConfigPath = path.join(__dirname, '..', '..', '..', 'bmad-core', 'core-config.yaml');
+  const coreConfigPath = path.join(__dirname, '..', '..', '..', 'agilai-core', 'core-config.yaml');
   const coreConfig = yaml.load(await fs.readFile(coreConfigPath, 'utf8'));
   const coreShortTitle = coreConfig['short-title'] || 'BMad Agile Core System';
 
@@ -255,14 +255,14 @@ async function promptInstallation() {
       currentVersion === newVersion
         ? `(v${currentVersion} - reinstall)`
         : `(v${currentVersion} → v${newVersion})`;
-    bmadOptionText = `Update ${coreShortTitle} ${versionInfo} .bmad-core`;
+    bmadOptionText = `Update ${coreShortTitle} ${versionInfo} .agilai-core`;
   } else {
-    bmadOptionText = `${coreShortTitle} (v${version}) .bmad-core`;
+    bmadOptionText = `${coreShortTitle} (v${version}) .agilai-core`;
   }
 
   choices.push({
     name: bmadOptionText,
-    value: 'bmad-core',
+    value: 'agilai-core',
     checked: true,
   });
 
@@ -307,11 +307,11 @@ async function promptInstallation() {
   ]);
 
   // Process selections
-  answers.installType = selectedItems.includes('bmad-core') ? 'full' : 'expansion-only';
-  answers.expansionPacks = selectedItems.filter((item) => item !== 'bmad-core');
+  answers.installType = selectedItems.includes('agilai-core') ? 'full' : 'expansion-only';
+  answers.expansionPacks = selectedItems.filter((item) => item !== 'agilai-core');
 
   // Ask sharding questions if installing BMad core
-  if (selectedItems.includes('bmad-core')) {
+  if (selectedItems.includes('agilai-core')) {
     console.log(chalk.cyan('\n📋 Document Organization Settings'));
     console.log(chalk.dim('Configure how your project documentation should be organized.\n'));
 
@@ -511,7 +511,7 @@ async function promptInstallation() {
       },
       // pass previously selected packages so IDE setup only applies those
       selectedPackages: {
-        includeCore: selectedItems.includes('bmad-core'),
+        includeCore: selectedItems.includes('agilai-core'),
         packs: answers.expansionPacks || [],
       },
     };

@@ -107,7 +107,7 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 ### Breaking Changes
 
 1. **Complete Architecture Rewrite**:
-   - `bmad-core/` → `src/core/`, `src/modules/`
+   - `agilai-core/` → `src/core/`, `src/modules/`
    - Removes old agents/workflows/templates structure
    - Changes installer architecture completely
 
