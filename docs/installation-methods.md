@@ -261,11 +261,11 @@ autostart = true
   CODEX_METRICS_STDOUT = "true"
 ```
 
-See the full example in [`codex-config.toml.example`](../codex-config.toml.example).
+See the full example in [`codex-config.toml.example`](../.dev/config/codex-config.toml.example).
 
 ### Non-Interactive Environments
 
-CI environments skip the global config step. Review and customize [`codex-config.toml.example`](../codex-config.toml.example) for your use case.
+CI environments skip the global config step. Review and customize [`codex-config.toml.example`](../.dev/config/codex-config.toml.example) for your use case.
 
 ## MCP Configuration
 

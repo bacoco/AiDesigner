@@ -332,7 +332,7 @@ autostart = true
   CODEX_FAST_PROVIDER = "openai"
 ```
 
-See [`codex-config.toml.example`](../codex-config.toml.example) for a ready-to-copy configuration.
+See [`codex-config.toml.example`](../.dev/config/codex-config.toml.example) for a ready-to-copy configuration.
 
 ## Observability & Logging
 
