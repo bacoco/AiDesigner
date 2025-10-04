@@ -2257,6 +2257,66 @@ export async function runOrchestratorServer(
   }
 }
 
+/**
+ * Type definitions for MCP tool modules
+ */
+interface McpServerSearchResult {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  installType: string;
+  tags: string[];
+  envVars?: string[];
+}
+
+interface McpServerDetails {
+  id: string;
+  name: string;
+  installType: string;
+  command?: string;
+  args?: string[];
+  envVars?: string[];
+}
+
+interface McpConfig {
+  mcpServers?: Record<string, unknown>;
+}
+
+interface McpRegistryModule {
+  new (): {
+    search(query: string, options: Record<string, unknown>): Promise<McpServerSearchResult[]>;
+    getServer(idOrName: string): Promise<McpServerDetails | null>;
+  };
+}
+
+interface McpManagerModule {
+  new (options: { rootDir: string; profile: string }): {
+    loadClaudeConfig(profileName?: string | null): McpConfig;
+    saveClaudeConfig(config: McpConfig, profileName?: string | null): void;
+    loadAgilaiConfig(profileName?: string | null): McpConfig;
+    saveAgilaiConfig(config: McpConfig, profileName?: string | null): void;
+  };
+}
+
+/**
+ * Runs a smoke test for bundled MCP tools to verify they can be loaded and used.
+ *
+ * This test validates that:
+ * - MCP registry and manager modules can be successfully loaded from the bundle
+ * - Registry search functionality works correctly
+ * - Server installation and configuration can be performed
+ * - Both Claude and Agilai config files are properly generated
+ *
+ * The smoke test is enabled by setting AGILAI_MCP_SMOKE_TEST=1 environment variable.
+ * When enabled, the test runs at server startup and exits early (returns true) to
+ * prevent the server from continuing to run, making it suitable for CI/CD validation.
+ *
+ * @param ensureOperationAllowed - Security callback to validate operations
+ * @param logger - Structured logger for recording test results
+ * @returns true if smoke test was enabled and completed, false if disabled
+ * @throws Error if smoke test fails (module not found, search fails, etc.)
+ */
 async function runBundledToolsSmokeCheck({
   ensureOperationAllowed,
   logger,
@@ -2268,8 +2328,8 @@ async function runBundledToolsSmokeCheck({
     return false;
   }
 
-  const McpRegistry = requireLibModule<any>("../tools/mcp-registry.js");
-  const McpManager = requireLibModule<any>("../tools/mcp-manager.js");
+  const McpRegistry = requireLibModule<McpRegistryModule>("mcp-registry.js");
+  const McpManager = requireLibModule<McpManagerModule>("mcp-manager.js");
 
   const smokeRoot =
     process.env.AGILAI_MCP_SMOKE_ROOT ?? mkdtempSync(path.join(tmpdir(), "agilai-mcp-smoke-"));
@@ -2328,6 +2388,13 @@ async function runBundledToolsSmokeCheck({
     });
 
     return true;
+  } catch (error) {
+    logger.error("mcp_smoke_test_failed", {
+      operation: "smoke_test",
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    throw error;
   } finally {
     if (cleanupRoot) {
       rmSync(smokeRoot, { recursive: true, force: true });
