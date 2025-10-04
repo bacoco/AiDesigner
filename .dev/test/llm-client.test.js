@@ -381,6 +381,13 @@ describe('LLMClient', () => {
       expect(client.isMcpExecution).toBe(false);
     });
 
+    it('does not detect MCP execution for malicious paths as arguments', () => {
+      process.argv = ['node', 'app.js', 'malicious/dist/mcp/mcp/server.js'];
+      expect(() => new LLMClient({ provider: 'claude' })).toThrow(
+        'Missing API key for provider "claude"',
+      );
+    });
+
     it('handles non-array argv gracefully', () => {
       const originalArgv = process.argv;
       process.argv = null;
@@ -427,7 +434,7 @@ describe('LLMClient', () => {
 
       await expect(
         client.chatAnthropic([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
-      ).rejects.toThrow('Cannot call Anthropic API without an API key');
+      ).rejects.toThrow('Cannot call chat methods without an API key');
     });
 
     it('throws error when calling chatOpenAI() without API key in MCP mode', async () => {
@@ -436,7 +443,7 @@ describe('LLMClient', () => {
 
       await expect(
         client.chatOpenAI([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
-      ).rejects.toThrow('Cannot call OpenAI API without an API key');
+      ).rejects.toThrow('Cannot call chat methods without an API key');
     });
 
     it('throws error when calling chatGemini() without API key in MCP mode', async () => {
@@ -445,7 +452,7 @@ describe('LLMClient', () => {
 
       await expect(
         client.chatGemini([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
-      ).rejects.toThrow('Cannot call Gemini API without an API key');
+      ).rejects.toThrow('Cannot call chat methods without an API key');
     });
 
     it('throws error when calling chatGLM() without API key in MCP mode', async () => {
@@ -454,7 +461,7 @@ describe('LLMClient', () => {
 
       await expect(
         client.chatGLM([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
-      ).rejects.toThrow('Cannot call GLM API without an API key');
+      ).rejects.toThrow('Cannot call chat methods without an API key');
     });
   });
 });

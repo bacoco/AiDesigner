@@ -24,33 +24,33 @@ class LLMClient {
 
   /**
    * Detects if the current process is running as part of the MCP server.
-   * Checks process.argv for the MCP server entry points to allow bypassing API key validation.
+   * Checks process.argv[1] (the script being executed) for MCP server entry points
+   * to allow bypassing API key validation.
    * @returns {boolean} True if running in MCP server context, false otherwise
    */
   detectMcpExecution() {
     const { argv } = process;
-    if (!Array.isArray(argv)) {
+    if (!Array.isArray(argv) || argv.length < 2) {
       return false;
     }
 
-    return argv.some((arg) => {
-      if (typeof arg !== 'string') {
-        return false;
-      }
+    const scriptPath = argv[1];
+    if (typeof scriptPath !== 'string') {
+      return false;
+    }
 
-      // Normalize path separators for cross-platform compatibility (Windows uses backslashes)
-      const normalizedArg = arg.replace(/\\/g, '/');
+    // Normalize path separators for cross-platform compatibility (Windows uses backslashes)
+    const normalizedPath = scriptPath.replace(/\\/g, '/');
 
-      // Match the actual MCP server paths:
-      // - dist/mcp/mcp/server.js (published package, absolute or relative)
-      // - .dev/mcp/server.ts (development mode)
-      return (
-        normalizedArg.endsWith('/dist/mcp/mcp/server.js') ||
-        normalizedArg.endsWith('/.dev/mcp/server.ts') ||
-        normalizedArg === 'dist/mcp/mcp/server.js' ||
-        normalizedArg === '.dev/mcp/server.ts'
-      );
-    });
+    // Match the actual MCP server paths:
+    // - dist/mcp/mcp/server.js (published package, absolute or relative)
+    // - .dev/mcp/server.ts (development mode)
+    return (
+      normalizedPath.endsWith('/dist/mcp/mcp/server.js') ||
+      normalizedPath.endsWith('/.dev/mcp/server.ts') ||
+      normalizedPath === 'dist/mcp/mcp/server.js' ||
+      normalizedPath === '.dev/mcp/server.ts'
+    );
   }
 
   getApiKeyFromEnv() {
@@ -125,18 +125,27 @@ class LLMClient {
   }
 
   /**
-   * Main chat interface - send messages and get responses
-   * @param {Array} messages - Array of {role: 'user'|'assistant', content: string}
-   * @param {Object} options - Additional options
-   * @returns {Promise<string>} - LLM response
+   * Validates that an API key is present before making API calls.
+   * Throws a descriptive error if no API key is available.
+   * @throws {Error} When API key is missing
    */
-  async chat(messages, options = {}) {
+  validateApiKey() {
     if (!this.apiKey) {
       throw new Error(
         `Cannot call chat methods without an API key. Provider: "${this.provider}". ` +
           `Set the ${this.getApiKeyEnvVarName()} environment variable or provide an apiKey option.`,
       );
     }
+  }
+
+  /**
+   * Main chat interface - send messages and get responses
+   * @param {Array} messages - Array of {role: 'user'|'assistant', content: string}
+   * @param {Object} options - Additional options
+   * @returns {Promise<string>} - LLM response
+   */
+  async chat(messages, options = {}) {
+    this.validateApiKey();
 
     const systemPrompt = options.systemPrompt || '';
     const temperature = options.temperature || 0.7;
@@ -200,9 +209,7 @@ class LLMClient {
    * @returns {Promise<string>} - Response text from Claude
    */
   async chatAnthropic(messages, options) {
-    if (!this.apiKey) {
-      throw new Error('Cannot call Anthropic API without an API key.');
-    }
+    this.validateApiKey();
 
     const payload = {
       model: this.model,
@@ -238,9 +245,7 @@ class LLMClient {
   }
 
   async chatOpenAI(messages, options) {
-    if (!this.apiKey) {
-      throw new Error('Cannot call OpenAI API without an API key.');
-    }
+    this.validateApiKey();
 
     const apiMessages = messages.map((msg) => ({
       role: msg.role,
@@ -276,9 +281,7 @@ class LLMClient {
   }
 
   async chatGemini(messages, options) {
-    if (!this.apiKey) {
-      throw new Error('Cannot call Gemini API without an API key.');
-    }
+    this.validateApiKey();
 
     // Format messages for Gemini
     const contents = [];
@@ -327,9 +330,7 @@ class LLMClient {
   }
 
   async chatGLM(messages, options) {
-    if (!this.apiKey) {
-      throw new Error('Cannot call GLM API without an API key.');
-    }
+    this.validateApiKey();
 
     const apiMessages = messages.map((msg) => ({
       role: msg.role,
