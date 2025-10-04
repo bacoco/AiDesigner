@@ -25,8 +25,19 @@ const orchestratorPath = path.join(rootDir, 'agents', 'invisible-orchestrator.md
 // Check if files exist
 if (!fs.existsSync(mcpConfigPath)) {
   if (fs.existsSync(legacyMcpConfigPath)) {
-    usingLegacyMcpConfig = true;
-    mcpConfigPath = legacyMcpConfigPath;
+    // Validate legacy config has the expected structure
+    try {
+      const legacyConfig = JSON.parse(fs.readFileSync(legacyMcpConfigPath, 'utf8'));
+      if (!legacyConfig.mcpServers || typeof legacyConfig.mcpServers !== 'object') {
+        throw new Error('Invalid MCP config structure');
+      }
+      usingLegacyMcpConfig = true;
+      mcpConfigPath = legacyMcpConfigPath;
+    } catch (error) {
+      console.error(`Error: Legacy config file ${legacyMcpConfigPath} is invalid or corrupted.`);
+      console.error('Expected mcp/agilai-config.json. Run: npm run build:mcp');
+      process.exit(1);
+    }
   }
 }
 
