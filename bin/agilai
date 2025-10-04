@@ -1144,17 +1144,42 @@ const commands = {
       disabled: false,
     };
 
-    // Migrate from legacy key if it exists
-    if (mcpConfig.mcpServers[legacyOrchestratorKey] && !mcpConfig.mcpServers[orchestratorKey]) {
-      mcpConfig.mcpServers[orchestratorKey] = mcpConfig.mcpServers[legacyOrchestratorKey];
+    // Remove legacy key if present, preserving any custom configuration
+    if (mcpConfig.mcpServers[legacyOrchestratorKey]) {
+      const legacyConfig = mcpConfig.mcpServers[legacyOrchestratorKey];
+
+      // Check if the new key already exists
+      if (!mcpConfig.mcpServers[orchestratorKey]) {
+        // Preserve custom configuration from legacy key if it differs from defaults
+        const hasCustomConfig =
+          legacyConfig.disabled === true ||
+          legacyConfig.env !== undefined ||
+          (Array.isArray(legacyConfig.args) && !legacyOrchestratorArgs.has(legacyConfig.args[0]));
+
+        if (hasCustomConfig) {
+          // Preserve custom settings but update the args to new path
+          mcpConfig.mcpServers[orchestratorKey] = {
+            ...legacyConfig,
+            args: orchestratorArgs
+          };
+          console.log('🗑️ Removed legacy orchestrator entry and preserved custom configuration');
+        } else {
+          // Use default config
+          mcpConfig.mcpServers[orchestratorKey] = orchestratorConfig;
+          console.log('🗑️ Removed legacy orchestrator entry');
+        }
+      } else {
+        // New key already exists, just remove legacy
+        console.log('🗑️ Removed legacy orchestrator entry (new entry already exists)');
+      }
+
       delete mcpConfig.mcpServers[legacyOrchestratorKey];
-      console.log('✅ Migrated Agilai MCP server to new name');
     }
 
     if (!mcpConfig.mcpServers[orchestratorKey]) {
       mcpConfig.mcpServers[orchestratorKey] = orchestratorConfig;
       console.log('✅ Added Agilai orchestrator MCP server');
-    } else {
+    } else if (!mcpConfig.mcpServers[legacyOrchestratorKey]) {
       // Ensure orchestrator is enabled during re-init (user may have disabled it)
       const existing = mcpConfig.mcpServers[orchestratorKey];
       existing.disabled = false;
