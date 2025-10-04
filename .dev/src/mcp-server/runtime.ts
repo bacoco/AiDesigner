@@ -2003,7 +2003,7 @@ export async function runOrchestratorServer(
             serverConfig.env = params.envVars;
           }
 
-          const requestedConfig = params.config || "claude";
+          const requestedConfig = params.config || "agilai";
           const normalisedRequest = requestedConfig.toLowerCase();
           const legacyAliasUsed = normalisedRequest === "bmad";
           const effectiveConfig = legacyAliasUsed ? "agilai" : normalisedRequest;

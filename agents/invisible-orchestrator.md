@@ -110,7 +110,7 @@ When users mention capabilities that require external tools, **proactively sugge
 
 - `search_mcp_servers({ query: "keyword" })` - Find relevant MCP servers
 - `suggest_mcp_servers()` - Get context-aware suggestions based on project
-- `install_mcp_server({ serverId: "id", envVars: {...} })` - Install and configure
+- `install_mcp_server({ serverId: "id", envVars: {...} })` - Install and configure (defaults to Agilai config; pass `config: "both"` for dual Claude/Agilai installs)
 - `list_mcp_servers()` - Show currently configured servers
 - `get_mcp_health()` - Check server health status
 - `browse_mcp_registry()` - Explore all available servers

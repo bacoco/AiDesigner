@@ -1734,7 +1734,7 @@ async function runOrchestratorServer(options = {}) {
           if (params.envVars && Object.keys(params.envVars).length > 0) {
             serverConfig.env = params.envVars;
           }
-          const requestedConfig = params.config || 'claude';
+          const requestedConfig = params.config || 'agilai';
           const normalisedRequest = requestedConfig.toLowerCase();
           const legacyAliasUsed = normalisedRequest === 'bmad';
           const effectiveConfig = legacyAliasUsed ? 'agilai' : normalisedRequest;
