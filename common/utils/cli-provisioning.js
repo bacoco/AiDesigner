@@ -6,7 +6,7 @@ const { spawnSync, spawn } = require('node:child_process');
 const readline = require('node:readline');
 
 function ensureStateDir(rootDir) {
-  const stateDir = path.join(rootDir, '.bmad-invisible');
+  const stateDir = path.join(rootDir, '.agilai');
 
   // Try creating in rootDir first
   if (!fs.existsSync(stateDir)) {
@@ -16,7 +16,7 @@ function ensureStateDir(rootDir) {
     } catch (error) {
       // If rootDir is read-only (e.g., global npm install, CI artifact), fall back to user home
       if (error.code === 'EACCES' || error.code === 'EROFS' || error.code === 'EPERM') {
-        const fallbackDir = path.join(os.homedir(), '.bmad-invisible');
+        const fallbackDir = path.join(os.homedir(), '.agilai');
         if (!fs.existsSync(fallbackDir)) {
           try {
             fs.mkdirSync(fallbackDir, { recursive: true });

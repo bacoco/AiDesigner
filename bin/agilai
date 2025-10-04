@@ -891,11 +891,11 @@ const commands = {
       console.log('✅ Created package.json');
     }
 
-    // Create .bmad-invisible directory
-    const bmadDir = path.join(projectRoot, '.bmad-invisible');
-    if (!fs.existsSync(bmadDir)) {
-      fs.mkdirSync(bmadDir, { recursive: true });
-      console.log('✅ Created .bmad-invisible directory');
+    // Create .agilai directory
+    const agilaiDir = path.join(projectRoot, '.agilai');
+    if (!fs.existsSync(agilaiDir)) {
+      fs.mkdirSync(agilaiDir, { recursive: true });
+      console.log('✅ Created .agilai directory');
     }
 
     // Create .claude directory for MCP config
@@ -923,10 +923,10 @@ const commands = {
       }
     }
 
-    const orchestratorKey = 'bmad-invisible-orchestrator';
+    const orchestratorKey = 'agilai-orchestrator';
     const orchestratorConfig = {
       command: 'node',
-      args: ['${workspaceFolder}/node_modules/bmad-invisible/dist/mcp/mcp/server.js'],
+      args: ['${workspaceFolder}/node_modules/agilai/dist/mcp/mcp/server.js'],
       disabled: false,
     };
 
@@ -1032,12 +1032,12 @@ const commands = {
     packageJson.scripts = packageJson.scripts || {};
 
     const scriptsToAdd = {
-      bmad: 'bmad-invisible start',
-      codex: 'bmad-invisible codex',
-      'bmad:codex': 'bmad-invisible codex',
-      'bmad:claude': 'bmad-invisible chat',
-      'bmad:opencode': 'bmad-invisible opencode',
-      'bmad:build': 'bmad-invisible build',
+      agilai: 'agilai start',
+      codex: 'agilai codex',
+      'agilai:codex': 'agilai codex',
+      'agilai:claude': 'agilai chat',
+      'agilai:opencode': 'agilai opencode',
+      'agilai:build': 'agilai build',
     };
 
     let scriptsAdded = false;
@@ -1053,17 +1053,17 @@ const commands = {
       console.log('✅ Added npm scripts to package.json');
     }
 
-    // Add bmad-invisible as a dependency
+    // Add agilai as a dependency
     const desiredDependencyVersion = `^${currentVersion}`;
     const existingDependencyVersion =
-      packageJson.dependencies && packageJson.dependencies['bmad-invisible'];
+      packageJson.dependencies && packageJson.dependencies.agilai;
     const needsDependencyUpdate = existingDependencyVersion !== desiredDependencyVersion;
 
     if (needsDependencyUpdate) {
       packageJson.dependencies = packageJson.dependencies || {};
-      packageJson.dependencies['bmad-invisible'] = desiredDependencyVersion;
+      packageJson.dependencies.agilai = desiredDependencyVersion;
       fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
-      console.log(`✅ Ensured bmad-invisible@${desiredDependencyVersion} is listed in dependencies`);
+      console.log(`✅ Ensured agilai@${desiredDependencyVersion} is listed in dependencies`);
     }
 
     // Only create components.json if shadcn MCP server is enabled
@@ -1212,7 +1212,7 @@ Next steps:
      https://platform.openai.com/docs/guides/codex
 
   3. Start chatting:
-     npm run codex
+     npm run agilai:codex
 
 
 For detailed documentation, visit:
@@ -1223,10 +1223,10 @@ For detailed documentation, visit:
   codex: async () => {
     consumeLlmOptionsFromArgs();
 
-    const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
+    const localInstall = path.join(process.cwd(), 'node_modules', 'agilai');
     const codexScript = fs.existsSync(localInstall)
-      ? path.join(localInstall, 'bin', 'bmad-codex')
-      : path.join(__dirname, 'bmad-codex');
+      ? path.join(localInstall, 'bin', 'agilai-codex')
+      : path.join(__dirname, 'agilai-codex');
 
     if (!fs.existsSync(codexScript)) {
       console.error('❌ Agilai not found. Please run "npm install" first.');
@@ -1253,11 +1253,11 @@ For detailed documentation, visit:
   chat: async () => {
     consumeLlmOptionsFromArgs();
 
-    // Check if bmad-invisible is installed locally first
-    const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
+    // Check if agilai is installed locally first
+    const localInstall = path.join(process.cwd(), 'node_modules', 'agilai');
     const chatScript = fs.existsSync(localInstall)
-      ? path.join(localInstall, 'bin', 'bmad-claude')
-      : path.join(__dirname, 'bmad-claude');
+      ? path.join(localInstall, 'bin', 'agilai-claude')
+      : path.join(__dirname, 'agilai-claude');
 
     if (!fs.existsSync(chatScript)) {
       console.error('❌ Agilai not found. Please run "npm install" first.');
@@ -1317,7 +1317,7 @@ For detailed documentation, visit:
   install: async () => {
     console.log('📦 Installing Agilai globally...\n');
 
-    const child = spawn('npm', ['install', '-g', 'bmad-invisible'], {
+    const child = spawn('npm', ['install', '-g', 'agilai'], {
       stdio: 'inherit',
       shell: true,
     });
@@ -1335,7 +1335,7 @@ For detailed documentation, visit:
     console.log('🔨 Building MCP server...\n');
 
     // Check if running from local install or global/npx
-    const localInstall = path.join(process.cwd(), 'node_modules', 'bmad-invisible');
+    const localInstall = path.join(process.cwd(), 'node_modules', 'agilai');
     const rootDir = fs.existsSync(localInstall) ? localInstall : path.join(__dirname, '..');
 
     // The MCP server is already pre-built in dist/, but we'll check TypeScript is available
