@@ -83,7 +83,18 @@ function getPackageRoot() {
 function resolveFromPackageRoot(...segments) {
   return path.resolve(getPackageRoot(), ...segments);
 }
+const LIB_SEARCH_PATHS = [
+  ['dist', 'mcp', 'lib'],
+  ['.dev', 'dist', 'mcp', 'lib'],
+  ['.dev', 'lib'],
+];
 function resolveLibPath(moduleName) {
+  for (const segments of LIB_SEARCH_PATHS) {
+    const candidatePath = resolveFromPackageRoot(...segments, moduleName);
+    if ((0, node_fs_1.existsSync)(candidatePath)) {
+      return candidatePath;
+    }
+  }
   return resolveFromPackageRoot('lib', moduleName);
 }
 async function importLibModule(moduleName) {

@@ -32,7 +32,20 @@ export function resolveFromPackageRoot(...segments: string[]): string {
   return path.resolve(getPackageRoot(), ...segments);
 }
 
+const LIB_SEARCH_PATHS: string[][] = [
+  ["dist", "mcp", "lib"],
+  [".dev", "dist", "mcp", "lib"],
+  [".dev", "lib"],
+];
+
 export function resolveLibPath(moduleName: string): string {
+  for (const segments of LIB_SEARCH_PATHS) {
+    const candidatePath = resolveFromPackageRoot(...segments, moduleName);
+    if (existsSync(candidatePath)) {
+      return candidatePath;
+    }
+  }
+
   return resolveFromPackageRoot("lib", moduleName);
 }
 
