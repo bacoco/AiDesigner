@@ -189,7 +189,7 @@ baseline stored in `.agilai-invisible/critical-hashes.json`.
   - Agilai core checklists (`agilai-core/checklists/`)
   - Agilai core templates (`agilai-core/templates/`)
   - `expansion-packs/`
-  - `codex-config.toml.example`
+  - `.dev/config/codex-config.toml.example`
 
 If you intentionally customise these resources, regenerate the baseline after
 your edits:
@@ -252,7 +252,7 @@ When you include Codex CLI during installation, the wizard now also prepares you
   `auto_start = false`).
 - Sets default Codex preferences (`GPT-5-Codex`, medium reasoning, automatic approvals) without overwriting existing overrides.
 
-This step is skipped automatically in non-interactive environments. See [`codex-config.toml.example`](./codex-config.toml.example) for the full TOML structure you can tailor afterwards.
+This step is skipped automatically in non-interactive environments. See [`codex-config.toml.example`](../.dev/config/codex-config.toml.example) for the full TOML structure you can tailor afterwards.
 
 > Codex stores the MCP list in TOML tables (`[mcp_servers.<name>]`). Toggle the
 > optional helpers by switching `auto_start` to `true` once the external server

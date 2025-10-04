@@ -21,7 +21,8 @@ const CRITICAL_PATHS = [
     description: 'Expansion packs shipped with the distribution',
   },
   {
-    path: 'codex-config.toml.example',
+    path: '.dev/config/codex-config.toml.example',
+    legacyPaths: ['codex-config.toml.example'],
     description: 'Default Codex CLI configuration template',
   },
 ];
@@ -37,6 +38,15 @@ const resolveCriticalPath = (rootDir, target) => {
   const modernPath = path.join(rootDir, target.path);
   if (fs.existsSync(modernPath)) {
     return modernPath;
+  }
+
+  if (Array.isArray(target.legacyPaths)) {
+    for (const legacy of target.legacyPaths) {
+      const legacyPath = path.join(rootDir, legacy);
+      if (fs.existsSync(legacyPath)) {
+        return legacyPath;
+      }
+    }
   }
 
   return null;
