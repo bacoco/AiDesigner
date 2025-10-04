@@ -228,7 +228,7 @@ npm run build
 npm run mcp
 
 # Or with custom path
-node dist/mcp/mcp/server.js
+node -e "require('agilai/dist/mcp/mcp/server.js')"
 ```
 
 ### Using in IDEs
