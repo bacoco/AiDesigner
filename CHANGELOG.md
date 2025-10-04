@@ -1,3 +1,27 @@
+## [Unreleased]
+
+### Features
+
+**🚀 Enhanced Project Initialization** - Complete BMAD-aligned project setup
+
+- **Interactive project creation**: `npx agilai init` now prompts for project name and creates a new directory
+- **BMAD-compliant structure**: Auto-creates full directory hierarchy (`docs/prd/`, `docs/architecture/`, `docs/stories/`, `docs/qa/`)
+- **Comprehensive README**: Generated README.md includes complete BMAD workflow guide, agent descriptions, and commands
+- **Project metadata**: New `.agilai/project.json` file tracks project info and configuration
+- **Enhanced onboarding**: Updated success message with BMAD workflow quick reference and next steps
+
+**🎯 Improved LLM Provider Selection** - Streamlined provider configuration
+
+- **Interactive selection**: Arrow-key navigation for choosing LLM providers (Claude, GLM, OpenAI, Gemini)
+- **MCP multi-select**: Checkbox-based selection for optional MCP servers during init
+- **Better UX**: Clearer prompts and visual feedback during installation
+
+### Documentation
+
+- Updated installation-methods.md with detailed `init` command documentation
+- Updated QUICKSTART.md to reflect new project creation workflow
+- Added "What init Creates" section explaining generated structure
+
 ## [1.3.24](https://github.com/bacoco/Agilai/compare/v1.3.23...v1.3.24) (2025-10-04)
 
 ### Maintenance

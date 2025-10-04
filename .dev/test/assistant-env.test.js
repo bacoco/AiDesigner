@@ -1,4 +1,7 @@
-const { getAssistantProvider, buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
+const {
+  getAssistantProvider,
+  buildAssistantSpawnEnv,
+} = require('../../common/utils/assistant-env');
 
 const runCommandWithGlm = async (command) => {
   jest.resetModules();

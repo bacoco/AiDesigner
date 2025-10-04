@@ -66,8 +66,17 @@ During setup, you can opt-in to shadcn UI helpers. If enabled, the installer cre
 For more control over the installation process:
 
 ```bash
-# Initialize project structure
+# Initialize project structure (prompts for project name)
 npx agilai@latest init
+# Creates:
+#   - New directory with your project name
+#   - BMAD-compliant docs/ structure (prd/, architecture/, stories/, qa/)
+#   - Comprehensive README.md with BMAD workflow guide
+#   - .agilai/project.json metadata
+#   - .mcp.json MCP server configuration
+
+# Navigate into your new project
+cd your-project-name
 
 # Install dependencies
 npm install
@@ -82,6 +91,22 @@ npx agilai start --assistant=opencode     # OpenCode front-end
 npx agilai start --glm
 npx agilai start --assistant=claude --glm
 ```
+
+### What `init` Creates
+
+The `init` command now creates a complete BMAD-aligned project:
+
+- **Project directory**: Prompts for name, creates and enters new directory
+- **Documentation structure**: Full BMAD directory hierarchy
+  - `docs/prd/` - Product requirements (sharded by PO agent)
+  - `docs/architecture/` - System architecture (sharded by PO agent)
+  - `docs/stories/` - User stories (created by SM agent)
+  - `docs/qa/` - QA assessments and quality gates
+- **README.md**: Comprehensive guide to BMAD workflow, agents, and commands
+- **Project metadata**: `.agilai/project.json` with version info and configuration
+- **MCP configuration**: `.mcp.json` with recommended servers
+
+> **💡 Tip**: The README.md created by `init` provides a complete guide to the BMAD methodology and workflow. Start there!
 
 > **Legacy aliases**: Older `npm run bmad*` scripts remain available for backwards compatibility, but the examples above use the preferred `agilai` commands.
 

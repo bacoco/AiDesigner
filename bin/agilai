@@ -13,6 +13,7 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const inquirer = require('inquirer');
 const { runIntegrityPreflight } = require('../common/utils/integrity');
 const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
 
@@ -623,7 +624,8 @@ const buildSpawnEnv = () => {
         env.BMAD_GLM_AUTH_TOKEN = existingAuth;
       }
 
-      if (legacyZhipuKeyDetected && !env.ZHIPUAI_API_KEY && existingKey) {
+      // Always set ZHIPUAI_API_KEY for GLM mode if we have a key
+      if (existingKey && !env.ZHIPUAI_API_KEY) {
         env.ZHIPUAI_API_KEY = existingKey;
       }
     }
@@ -702,15 +704,15 @@ For more information: https://github.com/bacoco/Agilai
 const ASSISTANT_CHOICES = [
   {
     id: 'claude',
-    providers: ['anthropic', 'glm'],
+    providers: ['anthropic', 'glm', 'openai', 'gemini'],
   },
   {
     id: 'codex',
-    providers: ['anthropic'],
+    providers: ['anthropic', 'glm', 'openai', 'gemini'],
   },
   {
     id: 'opencode',
-    providers: ['anthropic'],
+    providers: ['anthropic', 'glm', 'openai', 'gemini'],
   },
 ];
 
@@ -830,100 +832,103 @@ const parseAssistantFromArgs = (currentArgs) => {
   };
 };
 
-const promptForAssistant = async () => {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+/**
+ * Prompts user to select an LLM provider using interactive list
+ * @returns {Promise<string>} Selected provider (anthropic, glm, openai, or gemini)
+ */
+const promptForLlmProvider = async () => {
+  if (!isInteractiveTerminal()) {
+    return undefined;
+  }
 
-  const askQuestion = (prompt) =>
-    new Promise((resolve, reject) => {
-      const handleError = (error) => {
-        rl.removeListener('error', handleError);
-        reject(error);
-      };
-
-      rl.once('error', handleError);
-      rl.question(prompt, (answer) => {
-        rl.removeListener('error', handleError);
-        resolve(answer);
-      });
-    });
+  const choices = [
+    {
+      name: 'Claude (Anthropic) - Advanced reasoning and coding',
+      value: 'anthropic',
+      short: 'Anthropic'
+    },
+    {
+      name: 'GLM (ZhipuAI) - Chinese language excellence',
+      value: 'glm',
+      short: 'GLM'
+    },
+    {
+      name: 'OpenAI (GPT) - General purpose AI',
+      value: 'openai',
+      short: 'OpenAI'
+    },
+    {
+      name: 'Gemini (Google) - Multimodal capabilities',
+      value: 'gemini',
+      short: 'Gemini'
+    }
+  ];
 
   try {
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const options = ASSISTANT_CHOICES.map((choice) => {
-        const providersLabel =
-          choice.providers.length > 1
-            ? ` (${choice.providers.join('/')})`
-            : '';
-        return `${formatAssistantName(choice.id)}${providersLabel}`;
-      }).join(' / ');
+    const { provider } = await inquirer.prompt([{
+      type: 'list',
+      name: 'provider',
+      message: 'Which LLM provider would you like to use?',
+      choices,
+      default: 'anthropic'
+    }]);
 
-      const answer = (await askQuestion(
-        `Which assistant should we launch? (${options}): `,
-      ))
-        .trim()
-        .toLowerCase();
+    return provider;
+  } catch (error) {
+    console.warn('⚠️ Provider selection cancelled or failed:', error.message || error);
+    return undefined;
+  }
+};
 
-      if (!answer) {
-        console.log('⚠️ No assistant selected. Please choose one.');
-        continue;
-      }
+const promptForAssistant = async () => {
+  if (!isInteractiveTerminal()) {
+    console.error('⚠️ Interactive mode requires a TTY terminal');
+    return undefined;
+  }
 
-      const { assistant: selectedAssistant, provider: embeddedProvider } =
-        splitAssistantAndProvider(answer);
-      const choice = findAssistantChoice(selectedAssistant);
+  try {
+    // Step 1: Select assistant type
+    const assistantChoices = ASSISTANT_CHOICES.map(choice => ({
+      name: formatAssistantName(choice.id),
+      value: choice.id,
+      short: formatAssistantName(choice.id)
+    }));
 
-      if (!choice) {
-        console.log('⚠️ Unrecognized selection. Please try again.');
-        continue;
-      }
+    const { assistant } = await inquirer.prompt([{
+      type: 'list',
+      name: 'assistant',
+      message: 'Which assistant would you like to launch?',
+      choices: assistantChoices,
+      default: 'claude'
+    }]);
 
-      let provider = embeddedProvider;
-      let providerExplicit = Boolean(embeddedProvider);
-
-      if (provider && !choice.providers.includes(provider)) {
-        console.log('⚠️ Unsupported provider for that assistant. Please try again.');
-        continue;
-      }
-
-      if (!provider) {
-        if (choice.providers.length === 1) {
-          provider = choice.providers[0];
-        } else {
-          const providerAnswer = (await askQuestion(
-            `Which provider should power ${formatAssistantName(choice.id)}? (${choice.providers.join(
-              '/',
-            )}): `,
-          ))
-            .trim()
-            .toLowerCase();
-
-          if (!providerAnswer) {
-            console.log('⚠️ No provider selected. Please try again.');
-            continue;
-          }
-
-          if (!choice.providers.includes(providerAnswer)) {
-            console.log('⚠️ Unsupported provider. Please try again.');
-            continue;
-          }
-
-          provider = providerAnswer;
-          providerExplicit = true;
-        }
-      }
-
-      return { assistant: choice.id, provider, providerExplicit };
+    const choice = findAssistantChoice(assistant);
+    if (!choice) {
+      console.error('⚠️ Invalid assistant selection');
+      return undefined;
     }
-  } finally {
-    try {
-      rl.close();
-    } catch {
-      // Ignore cleanup errors
+
+    // Step 2: Select provider using interactive list
+    const provider = await promptForLlmProvider();
+    if (!provider) {
+      console.error('⚠️ No provider selected');
+      return undefined;
     }
+
+    // Validate provider is supported by this assistant
+    if (!choice.providers.includes(provider)) {
+      console.error(`⚠️ Provider "${provider}" is not supported by ${assistant}`);
+      return undefined;
+    }
+
+    return {
+      assistant: choice.id,
+      provider,
+      providerExplicit: true
+    };
+  } catch (error) {
+    console.warn('⚠️ Assistant selection cancelled or failed:', error.message || error);
+    return undefined;
   }
 };
 
@@ -976,6 +981,38 @@ const determineAssistant = async (input = {}) => {
   }
 
   return promptForAssistant();
+};
+
+/**
+ * Prompts user to select MCP servers using interactive checkbox
+ * @returns {Promise<string[]>} Array of selected server IDs
+ */
+const promptForMcpServers = async () => {
+  if (!isInteractiveTerminal()) {
+    return [];
+  }
+
+  try {
+    const choices = OPTIONAL_MCP_SERVERS.map(server => ({
+      name: `${server.label} — ${server.description}`,
+      value: server.id,
+      short: server.label,
+      checked: server.recommended || false
+    }));
+
+    const { servers } = await inquirer.prompt([{
+      type: 'checkbox',
+      name: 'servers',
+      message: 'Select MCP servers to enable (Space to toggle, Enter to confirm):',
+      choices,
+      pageSize: 10
+    }]);
+
+    return servers;
+  } catch (error) {
+    console.warn('⚠️ MCP server selection cancelled or failed:', error.message || error);
+    return [];
+  }
 };
 
 // Command handlers
@@ -1077,14 +1114,69 @@ const commands = {
   init: async () => {
     console.log('🚀 Initializing Agilai...\n');
 
-    const projectRoot = process.cwd();
+    let projectName;
+    let projectRoot;
+
+    // Interactive project name prompt
+    if (isInteractiveTerminal()) {
+      const { name } = await inquirer.prompt([{
+        type: 'input',
+        name: 'name',
+        message: '📁 What is your project name?',
+        default: 'my-project',
+        validate: (input) => {
+          if (!input || input.trim() === '') {
+            return 'Project name cannot be empty';
+          }
+          if (!/^[a-zA-Z0-9-_]+$/.test(input)) {
+            return 'Project name can only contain letters, numbers, hyphens, and underscores';
+          }
+          return true;
+        }
+      }]);
+
+      projectName = name;
+      projectRoot = path.join(process.cwd(), projectName);
+    } else {
+      // Non-interactive: use current directory name
+      projectName = path.basename(process.cwd());
+      projectRoot = process.cwd();
+    }
+
+    console.log(`\n🎯 Initializing project: ${projectName}\n`);
+
+    // Create and enter project directory (interactive mode only)
+    if (isInteractiveTerminal() && projectRoot !== process.cwd()) {
+      if (fs.existsSync(projectRoot)) {
+        const { overwrite } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'overwrite',
+          message: `Directory "${projectName}" already exists. Initialize Agilai here?`,
+          default: true
+        }]);
+
+        if (!overwrite) {
+          console.log('❌ Initialization cancelled');
+          return;
+        }
+      } else {
+        fs.mkdirSync(projectRoot, { recursive: true });
+        console.log(`✅ Created project directory: ${projectName}`);
+      }
+
+      process.chdir(projectRoot);
+      console.log(`📂 Working in: ${projectRoot}\n`);
+    } else {
+      projectRoot = process.cwd();
+    }
+
     const packagePath = path.join(projectRoot, 'package.json');
 
     // Create package.json if it doesn't exist
     if (!fs.existsSync(packagePath)) {
       console.log('📦 Creating package.json...');
       const defaultPackage = {
-        name: path.basename(projectRoot),
+        name: projectName,
         version: '1.0.0',
         description: 'Project powered by Agilai',
         scripts: {},
@@ -1273,25 +1365,17 @@ const commands = {
       ({ id }) => !mcpConfig.mcpServers[id],
     );
 
+    let selectedServerIds = [];
+
     if (optionalServerPromptsNeeded.length > 0) {
       if (process.stdout.isTTY) {
-        const recommended = optionalServerPromptsNeeded.filter(s => s.recommended);
-        const additional = optionalServerPromptsNeeded.filter(s => !s.recommended);
+        // Use interactive multi-select
+        console.log('\n📦 Configure MCP servers for your project:\n');
+        selectedServerIds = await promptForMcpServers();
 
-        if (recommended.length > 0) {
-          console.log('\n✨ Recommended MCP servers:');
-          for (const server of recommended) {
-            console.log(`   • ${server.label} — ${server.description}`);
-          }
+        if (selectedServerIds.length === 0) {
+          console.log('⏭️ No MCP servers selected - you can add them later via .mcp.json');
         }
-
-        if (additional.length > 0) {
-          console.log('\n📦 Additional MCP servers available (optional):');
-          for (const server of additional) {
-            console.log(`   • ${server.label} — ${server.description}`);
-          }
-        }
-        console.log('');
       } else {
         console.log(
           'ℹ️ Optional MCP servers detected, but prompts are skipped in non-interactive mode.',
@@ -1299,57 +1383,43 @@ const commands = {
       }
     }
 
-    for (const optional of OPTIONAL_MCP_SERVERS) {
-      if (mcpConfig.mcpServers[optional.id]) {
+    // Configure selected servers
+    for (const serverId of selectedServerIds) {
+      const optional = OPTIONAL_MCP_SERVERS.find(s => s.id === serverId);
+      if (!optional || mcpConfig.mcpServers[optional.id]) {
         continue;
       }
 
-      let shouldAdd = false;
-      try {
-        const promptText = optional.recommended
-          ? `Enable ${optional.label}? (recommended)`
-          : `Enable ${optional.label}? (optional)`;
-        shouldAdd = await promptYesNo(promptText);
-      } catch (error) {
-        console.warn(
-          `⚠️ Skipping ${optional.label} prompt due to an input error: ${error.message || error}`,
-        );
-      }
+      const serverConfig = { ...optional.config };
 
-      if (shouldAdd) {
-        const serverConfig = { ...optional.config };
-
-        // Prompt for environment variables if needed
-        if (optional.needsEnvPrompt && optional.envKey && optional.envPrompt) {
-          try {
-            // Check if env var already exists in system environment
-            const existingValue = process.env[optional.envKey];
-            if (existingValue) {
-              console.log(`ℹ️  Using ${optional.envKey} from system environment`);
+      // Prompt for environment variables if needed
+      if (optional.needsEnvPrompt && optional.envKey && optional.envPrompt) {
+        try {
+          // Check if env var already exists in system environment
+          const existingValue = process.env[optional.envKey];
+          if (existingValue) {
+            console.log(`ℹ️  Using ${optional.envKey} from system environment`);
+            serverConfig.env = serverConfig.env || {};
+            serverConfig.env[optional.envKey] = existingValue;
+          } else {
+            const envValue = await promptInput(optional.envPrompt);
+            if (envValue) {
               serverConfig.env = serverConfig.env || {};
-              serverConfig.env[optional.envKey] = existingValue;
+              serverConfig.env[optional.envKey] = envValue;
+              console.log(`✅ Added ${optional.envKey} to ${optional.label} configuration`);
             } else {
-              const envValue = await promptInput(optional.envPrompt);
-              if (envValue) {
-                serverConfig.env = serverConfig.env || {};
-                serverConfig.env[optional.envKey] = envValue;
-                console.log(`✅ Added ${optional.envKey} to ${optional.label} configuration`);
-              } else {
-                console.log(`⚠️ Skipping ${optional.envKey} - you can add it manually to .mcp.json later`);
-              }
+              console.log(`⚠️ Skipping ${optional.envKey} - you can add it manually to .mcp.json later`);
             }
-          } catch (error) {
-            console.warn(
-              `⚠️ Failed to prompt for ${optional.envKey}: ${error.message || error}`,
-            );
           }
+        } catch (error) {
+          console.warn(
+            `⚠️ Failed to prompt for ${optional.envKey}: ${error.message || error}`,
+          );
         }
-
-        mcpConfig.mcpServers[optional.id] = serverConfig;
-        console.log(`✅ Added optional MCP server: ${optional.label}`);
-      } else {
-        console.log(`⏭️ Skipped optional MCP server: ${optional.label}`);
       }
+
+      mcpConfig.mcpServers[optional.id] = serverConfig;
+      console.log(`✅ Added MCP server: ${optional.label}`);
     }
 
     fs.writeFileSync(mcpConfigDest, JSON.stringify(mcpConfig, null, 2) + '\n');
@@ -1359,22 +1429,30 @@ const commands = {
         : '✅ Created MCP configuration',
     );
 
-    const claudeMdContent = `# CLAUDE.md
+    // Create BMAD-compliant directory structure
+    const directories = [
+      'docs',              // Root for all documentation
+      'docs/prd',          // Sharded PRD (created by PO)
+      'docs/architecture', // Sharded architecture (created by PO)
+      'docs/stories',      // User stories (created by SM)
+      'docs/qa',           // QA assessments and gates
+      'docs/qa/assessments',
+      'docs/qa/gates',
+    ];
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-`;
-    const claudeMdPath = path.join(projectRoot, 'CLAUDE.md');
-    if (!fs.existsSync(claudeMdPath)) {
-      fs.writeFileSync(claudeMdPath, claudeMdContent);
-      console.log('✅ Created CLAUDE.md guidance file');
+    for (const dir of directories) {
+      const dirPath = path.join(projectRoot, dir);
+      if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+      }
     }
 
-    // Create docs directory
-    const docsDir = path.join(projectRoot, 'docs');
-    if (!fs.existsSync(docsDir)) {
-      fs.mkdirSync(docsDir, { recursive: true });
-      console.log('✅ Created docs directory');
-    }
+    console.log('✅ Created BMAD directory structure');
+    console.log('   📁 docs/               (agent-generated documents)');
+    console.log('   📁 docs/prd/           (sharded PRD epics)');
+    console.log('   📁 docs/architecture/  (sharded architecture)');
+    console.log('   📁 docs/stories/       (user stories)');
+    console.log('   📁 docs/qa/            (QA assessments & gates)');
 
     // Add to package.json scripts
     const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
@@ -1549,23 +1627,247 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
       console.log('ℹ️ Skipped shadcn components.json creation (shadcn MCP server disabled).');
     }
 
-    console.log(`
-✨ Agilai initialized successfully!
+    // Create README.md with BMAD workflow guidance
+    const readmePath = path.join(projectRoot, 'README.md');
+    const readmeContent = `# ${projectName}
 
-Next steps:
+Welcome to your Agilai project! This project follows the **BMAD-METHOD™** (Breakthrough Method of Agile AI-driven Development) - a universal AI agent framework that orchestrates specialized AI agents through structured workflows.
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
+\`\`\`bash
+npm install
+\`\`\`
+
+### 2. Start Development
+\`\`\`bash
+# Launch Codex CLI for interactive development
+npm run agilai:codex
+
+# Or use Claude chat
+npm run agilai:claude
+\`\`\`
+
+## 📁 Project Structure
+
+\`\`\`
+${projectName}/
+├── docs/                    # Generated documentation
+│   ├── prd/                # Product requirements (sharded by PO agent)
+│   ├── architecture/       # System architecture (sharded by PO agent)
+│   ├── stories/            # User stories (created by SM agent)
+│   └── qa/                 # QA assessments and gates
+│       ├── assessments/
+│       └── gates/
+├── .agilai/                # Agilai metadata
+└── .mcp.json               # MCP server configuration
+\`\`\`
+
+## 🎯 BMAD Workflow
+
+The BMAD methodology follows a structured three-phase workflow:
+
+### Phase 1: Planning (Web UI Recommended)
+Use BMAD agents in web-based AI platforms (Gemini, ChatGPT) for comprehensive planning:
+
+1. **Analyst Agent** → Creates project brief and market research
+2. **PM Agent** → Generates \`docs/prd.md\` (Product Requirements Document)
+3. **Architect Agent** → Creates \`docs/architecture.md\` (System Architecture)
+4. **UX Expert Agent** (optional) → Frontend specifications
+5. **PO Agent** → Validates and "shards" documents into subdirectories
+
+### Phase 2: Transition to IDE
+Copy generated documents to your project:
+- \`docs/prd.md\` → sharded into \`docs/prd/epic-*.md\`
+- \`docs/architecture.md\` → sharded into \`docs/architecture/\`
+
+### Phase 3: Development (IDE)
+Use agents in your IDE (VS Code, Cursor, Claude Code) for implementation:
+
+1. **Scrum Master (SM)** → Creates detailed stories in \`docs/stories/\`
+2. **Dev Agent** → Implements features following architecture
+3. **QA Agent** → Reviews and validates code quality
+4. **Repeat** until epic is complete
+
+## 🤖 Available Agents
+
+BMAD provides specialized agents for different tasks:
+
+- **Analyst**: Market research, requirements gathering, brainstorming
+- **PM (Product Manager)**: PRD generation, epic/story breakdown
+- **Architect**: Technical architecture, design decisions
+- **UX Expert**: Frontend specs, UI/UX design
+- **PO (Product Owner)**: Validation, document sharding, alignment
+- **SM (Scrum Master)**: Story creation, sprint planning
+- **Dev**: Code implementation, feature development
+- **QA**: Code review, testing, quality gates
+
+## 📝 How Documents Are Generated
+
+**Important**: You don't manually fill out templates! BMAD agents generate all documentation using:
+
+- **YAML Templates** (in \`agilai-core/templates/\`): Define document structure
+- **Agent Intelligence**: Agents use these templates to create tailored docs
+- **MCP Tools**: Model Context Protocol enables agents to create/modify files
+
+### Example Agent Commands
+
+\`\`\`bash
+# In IDE with Agilai agent active:
+"Use PM agent to create a PRD for user authentication feature"
+"Use Architect agent to design the database schema"
+"Use SM agent to create stories for Epic 1"
+\`\`\`
+
+## 🛠️ Available Commands
+
+\`\`\`bash
+# Core Commands
+npm run agilai          # Start Agilai orchestrator
+npm run codex           # Launch Codex CLI
+npm run agilai:codex    # Same as above
+npm run agilai:claude   # Launch Claude chat
+npm run agilai:opencode # Open code interface
+npm run agilai:build    # Build Agilai bundles
+
+# Build & Development
+npm run build           # Build all agents and bundles
+npm run build:agents    # Build agent bundles only
+npm run build:mcp       # Build MCP server
+
+# Quality
+npm run lint            # Run linter
+npm run format          # Format code
+npm run test            # Run tests
+\`\`\`
+
+## 🔧 Configuration
+
+### MCP Server Configuration
+Your MCP servers are configured in \`.mcp.json\`. To modify:
+\`\`\`bash
+npx agilai init  # Re-run to update MCP configuration
+\`\`\`
+
+### LLM Provider Configuration
+Set your preferred LLM provider via environment variables:
+\`\`\`bash
+# Claude (Anthropic)
+export ANTHROPIC_API_KEY="your-key"
+
+# GLM (ZhipuAI)
+export GLM_API_KEY="your-key"
+export GLM_BASE_URL="https://open.bigmodel.cn/api/paas/v4"
+
+# OpenAI
+export OPENAI_API_KEY="your-key"
+
+# Gemini
+export GEMINI_API_KEY="your-key"
+\`\`\`
+
+## 📚 Documentation & Resources
+
+- **BMAD Methodology**: [Core Architecture](https://github.com/bacoco/agilai)
+- **User Guide**: Complete workflow walkthrough
+- **Expansion Packs**: Domain-specific extensions (game dev, creative writing, etc.)
+- **Community**: [Discord](https://discord.gg/agilai) for support and discussions
+
+## 🎓 Learning Path
+
+### New to BMAD?
+1. Read the [BMAD User Guide](https://github.com/bacoco/agilai/blob/main/docs/user-guide.md)
+2. Try the [Quick Start Tutorial](https://github.com/bacoco/agilai/blob/main/docs/quickstart.md)
+3. Explore [Example Projects](https://github.com/bacoco/agilai/tree/main/examples)
+
+### Next Steps
+1. ✅ Run \`npm install\` to install dependencies
+2. 🎯 Use **PM Agent** to create your first PRD
+3. 🏗️ Use **Architect Agent** to design your system
+4. 💻 Use **Dev Agent** to start building!
+
+---
+
+**Powered by Agilai** | BMAD-METHOD™ Framework
+`;
+
+    if (!fs.existsSync(readmePath)) {
+      fs.writeFileSync(readmePath, readmeContent);
+      console.log('✅ Created README.md with BMAD workflow guidance');
+    } else {
+      console.warn('⚠️ README.md already exists. Leaving existing content untouched.');
+    }
+
+    // Create .agilai/project.json metadata (.agilai directory already created earlier)
+    const projectMetadataPath = path.join(projectRoot, '.agilai', 'project.json');
+    const projectMetadata = {
+      name: projectName,
+      version: '1.0.0',
+      agilaiVersion: currentVersion,
+      createdAt: new Date().toISOString(),
+      config: {
+        mcpServers: Object.keys(mcpConfig.mcpServers || {}).filter(
+          (key) => !mcpConfig.mcpServers[key].disabled,
+        ),
+      },
+    };
+
+    if (!fs.existsSync(projectMetadataPath)) {
+      fs.writeFileSync(projectMetadataPath, JSON.stringify(projectMetadata, null, 2) + '\n');
+      console.log('✅ Created .agilai/project.json metadata');
+    }
+
+    console.log(`
+✨ Agilai initialized successfully in: ${projectName}/
+
+📋 Created Structure:
+   ✓ README.md - BMAD workflow guide
+   ✓ docs/ - Documentation directory with BMAD structure
+   ✓ .agilai/ - Project metadata
+   ✓ .mcp.json - MCP server configuration
+
+🎯 BMAD Workflow Quick Start:
+
+  Phase 1: Planning (Web UI Recommended)
+  ----------------------------------------
+  1. Use PM Agent to create PRD → docs/prd.md
+  2. Use Architect Agent to design system → docs/architecture.md
+  3. Use PO Agent to validate and shard documents
+
+  Phase 2: Transition to IDE
+  ---------------------------
+  4. Copy generated docs to your project
+  5. PO Agent shards into subdirectories
+
+  Phase 3: Development (IDE)
+  ---------------------------
+  6. Use SM Agent to create stories → docs/stories/
+  7. Use Dev Agent to implement features
+  8. Use QA Agent to review and validate
+
+📦 Next Steps:
+
   1. Install dependencies:
+     cd ${projectName}
      npm install
 
+  2. Read the README for detailed workflow:
+     cat README.md
 
-  2. Install Codex CLI if not already installed:
-     https://platform.openai.com/docs/guides/codex
+  3. Start development with your chosen agent:
+     npm run agilai:codex    # Codex CLI
+     npm run agilai:claude   # Claude chat
 
-  3. Start chatting:
-     npm run agilai:codex
+  4. Begin with PM Agent to create your PRD:
+     "Use PM agent to create a PRD for [your project idea]"
 
+📚 Resources:
+   • README.md - Full BMAD workflow guide (in ${projectName}/)
+   • https://github.com/bacoco/agilai - Complete documentation
+   • Discord: https://discord.gg/agilai - Community support
 
-For detailed documentation, visit:
-  https://github.com/bacoco/Agilai
+Happy building with BMAD! 🚀
 `);
   },
 

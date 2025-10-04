@@ -7,15 +7,15 @@
     },
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-chrome-devtools"]
+      "args": ["-y", "chrome-devtools-mcp"]
     },
     "shadcn": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-shadcn"]
+      "args": ["-y", "@jpisnice/shadcn-ui-mcp-server"]
     },
-    "gitmcp": {
+    "github": {
       "command": "npx",
-      "args": ["-y", "gitmcp"]
+      "args": ["-y", "@modelcontextprotocol/server-github"]
     }
   }
 }

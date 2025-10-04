@@ -23,12 +23,24 @@ class McpRegistry {
         tags: ['filesystem', 'files', 'io'],
       },
       {
+        id: 'chrome-devtools',
+        name: 'chrome-devtools-mcp',
+        category: 'Browser DevTools',
+        description: 'Interact with the Chrome DevTools Protocol (CDP) over STDIO',
+        installType: 'npx',
+        tags: ['chrome', 'cdp', 'devtools', 'browser'],
+        // If you run Chrome with --remote-debugging-port, you can set a WS endpoint
+        // Common env var used by several MCP browser servers
+        envVars: ['BROWSER_WS_ENDPOINT'],
+      },
+      {
         id: 'github',
         name: '@modelcontextprotocol/server-github',
         category: 'Development',
         description: 'Interact with GitHub repositories, issues, and pull requests',
         installType: 'npx',
         tags: ['github', 'git', 'development', 'vcs'],
+        envVars: ['GITHUB_TOKEN'],
       },
       {
         id: 'sqlite',
@@ -104,6 +116,14 @@ class McpRegistry {
         description: 'Browser automation and testing with Playwright',
         installType: 'npx',
         tags: ['browser', 'automation', 'testing', 'playwright'],
+      },
+      {
+        id: 'shadcn-ui',
+        name: '@jpisnice/shadcn-ui-mcp-server',
+        category: 'UI Components',
+        description: 'Explore shadcn/ui components, demos, and metadata',
+        installType: 'npx',
+        tags: ['ui', 'components', 'shadcn'],
       },
       {
         id: 'azure',

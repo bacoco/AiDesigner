@@ -166,6 +166,18 @@ const buildAssistantSpawnEnv = () => {
     env.BMAD_ASSISTANT_PROVIDER = 'glm';
   }
 
+  // Also set original GLM-specific keys for compatibility with tools expecting them
+  if (apiKey !== undefined) {
+    env.ZHIPUAI_API_KEY = apiKey;
+    env.GLM_API_KEY = apiKey;
+  }
+  if (baseUrl !== undefined) {
+    env.GLM_BASE_URL = baseUrl;
+  }
+  if (authToken !== undefined) {
+    env.GLM_AUTH_TOKEN = authToken;
+  }
+
   return { env, isGlm: true };
 };
 

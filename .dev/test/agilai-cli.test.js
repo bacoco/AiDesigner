@@ -7,8 +7,8 @@ jest.mock('child_process', () => ({
   spawn: (...args) => mockSpawn(...args),
 }));
 
-const cli = require('../bin/agilai');
-const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
+const cli = require('../../bin/agilai');
+const { buildAssistantSpawnEnv } = require('../../common/utils/assistant-env');
 
 const fs = require('node:fs');
 

@@ -43,15 +43,14 @@ configuration.
 ### Option 1b: NPX Step-by-Step
 
 ```bash
-# Navigate to your project directory
-cd your-project
-
-# Initialize Agilai
+# Initialize Agilai (prompts for project name)
 npx agilai@latest init
+
+# Navigate into your new project
+cd your-project-name
 
 # Install dependencies
 npm install
-
 
 # Start chatting (prompts for your choice)
 npx agilai start
@@ -61,8 +60,17 @@ npx agilai start
 # npx agilai start --assistant=claude    # respects --glm/--anthropic flags
 # npx agilai start --assistant=codex     # respects --glm/--anthropic flags
 # npx agilai start --assistant=opencode  # respects --glm/--anthropic flags
-
 ```
+
+**What `init` creates:**
+
+- New directory with your project name
+- Complete BMAD directory structure (`docs/prd/`, `docs/architecture/`, `docs/stories/`, `docs/qa/`)
+- Comprehensive `README.md` with BMAD workflow guide
+- Project metadata in `.agilai/project.json`
+- MCP configuration in `.mcp.json`
+
+> 💡 **Start by reading the generated README.md** - it provides a complete guide to the BMAD workflow and available agents!
 
 ### Option 2: Global Installation
 
