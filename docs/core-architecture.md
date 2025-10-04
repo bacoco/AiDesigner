@@ -12,13 +12,13 @@ The systems core module facilitates a full development lifecycle tailored to the
 
 ## 2. System Architecture Diagram
 
-The entire BMad-Method ecosystem is designed around the installed `bmad-core` directory, which acts as the brain of the operation. The `tools` directory provides the means to process and package this brain for different environments.
+The entire BMad-Method ecosystem is designed around the installed `agilai-core` directory, which acts as the brain of the operation. The `tools` directory provides the means to process and package this brain for different environments.
 
 ```mermaid
 graph TD
     subgraph BMad Method Project
         subgraph Core Framework
-            A["bmad-core"]
+            A["agilai-core"]
             A --> B["agents"]
             A --> C["agent-teams"]
             A --> D["workflows"]
@@ -61,9 +61,9 @@ graph TD
 
 ## 3. Core Components
 
-The `bmad-core` directory contains all the definitions and resources that give the agents their capabilities.
+The `agilai-core` directory contains all the definitions and resources that give the agents their capabilities.
 
-### 3.1. Agents (`bmad-core/agents/`)
+### 3.1. Agents (`agilai-core/agents/`)
 
 - **Purpose**: These are the foundational building blocks of the system. Each markdown file (e.g., `bmad-master.md`, `pm.md`, `dev.md`) defines the persona, capabilities, and dependencies of a single AI agent.
 - **Structure**: An agent file contains a YAML header that specifies its role, persona, dependencies, and startup instructions. These dependencies are lists of tasks, templates, checklists, and data files that the agent is allowed to use.
@@ -71,12 +71,12 @@ The `bmad-core` directory contains all the definitions and resources that give t
 - **Document Integration**: Agents can reference and load documents from the project's `docs/` folder as part of tasks, workflows, or startup sequences. Users can also drag documents directly into chat interfaces to provide additional context.
 - **Example**: The `bmad-master` agent lists its dependencies, which tells the build tool which files to include in a web bundle and informs the agent of its own capabilities.
 
-### 3.2. Agent Teams (`bmad-core/agent-teams/`)
+### 3.2. Agent Teams (`agilai-core/agent-teams/`)
 
 - **Purpose**: Team files (e.g., `team-all.yaml`) define collections of agents and workflows that are bundled together for a specific purpose, like "full-stack development" or "backend-only". This creates a larger, pre-packaged context for web UI environments.
 - **Structure**: A team file lists the agents to include. It can use wildcards, such as `"*"` to include all agents. This allows for the creation of comprehensive bundles like `team-all`.
 
-### 3.3. Workflows (`bmad-core/workflows/`)
+### 3.3. Workflows (`agilai-core/workflows/`)
 
 - **Purpose**: Workflows are YAML files (e.g., `greenfield-fullstack.yaml`) that define a prescribed sequence of steps and agent interactions for a specific project type. They act as a strategic guide for the user and the `bmad-orchestrator` agent.
 - **Structure**: A workflow defines sequences for both complex and simple projects, lists the agents involved at each step, the artifacts they create, and the conditions for moving from one step to the next. It often includes a Mermaid diagram for visualization.
@@ -95,17 +95,17 @@ A key architectural principle of BMad is that templates are self-contained and i
 
 The BMad framework employs a sophisticated template processing system orchestrated by three key components:
 
-- **`template-format.md`** (`bmad-core/utils/`): Defines the foundational markup language used throughout all BMad templates. This specification establishes syntax rules for variable substitution (`{{placeholders}}`), AI-only processing directives (`[[LLM: instructions]]`), and conditional logic blocks. Templates follow this format to ensure consistent processing across the system.
+- **`template-format.md`** (`agilai-core/utils/`): Defines the foundational markup language used throughout all BMad templates. This specification establishes syntax rules for variable substitution (`{{placeholders}}`), AI-only processing directives (`[[LLM: instructions]]`), and conditional logic blocks. Templates follow this format to ensure consistent processing across the system.
 
-- **`create-doc.md`** (`bmad-core/tasks/`): Acts as the orchestration engine that manages the entire document generation workflow. This task coordinates template selection, manages user interaction modes (incremental vs. rapid generation), enforces template-format processing rules, and handles validation. It serves as the primary interface between users and the template system.
+- **`create-doc.md`** (`agilai-core/tasks/`): Acts as the orchestration engine that manages the entire document generation workflow. This task coordinates template selection, manages user interaction modes (incremental vs. rapid generation), enforces template-format processing rules, and handles validation. It serves as the primary interface between users and the template system.
 
-- **`advanced-elicitation.md`** (`bmad-core/tasks/`): Provides an interactive refinement layer that can be embedded within templates through `[[LLM: instructions]]` blocks. This component offers 1agilai structured brainstorming actions, section-by-section review capabilities, and iterative improvement workflows to enhance content quality.
+- **`advanced-elicitation.md`** (`agilai-core/tasks/`): Provides an interactive refinement layer that can be embedded within templates through `[[LLM: instructions]]` blocks. This component offers 1agilai structured brainstorming actions, section-by-section review capabilities, and iterative improvement workflows to enhance content quality.
 
 The system maintains a clean separation of concerns: template markup is processed internally by AI agents but never exposed to users, while providing sophisticated AI processing capabilities through embedded intelligence within the templates themselves.
 
 #### 3.4.2. Technical Preferences System
 
-BMad includes a personalization layer through the `technical-preferences.md` file in `bmad-core/data/`. This file serves as a persistent technical profile that influences agent behavior across all projects.
+BMad includes a personalization layer through the `technical-preferences.md` file in `agilai-core/data/`. This file serves as a persistent technical profile that influences agent behavior across all projects.
 
 **Purpose and Benefits:**
 
@@ -142,7 +142,7 @@ The framework is designed for two primary environments: local IDEs and web-based
 
 ### 4.2. Environment-Specific Usage
 
-- **For IDEs**: Users interact with the agents directly via their markdown files in `bmad-core/agents/`. The IDE integration (for Cursor, Claude Code, etc.) knows how to call these agents.
+- **For IDEs**: Users interact with the agents directly via their markdown files in `agilai-core/agents/`. The IDE integration (for Cursor, Claude Code, etc.) knows how to call these agents.
 - **For Web UIs**: Users upload a pre-built bundle from `dist`. This single file provides the AI with the context of the entire team and all their required tools and knowledge.
 
 ## 5. BMad Workflows
