@@ -28,6 +28,7 @@ ensureDir(distMcpDir);
 
 copyDirectory(path.join(rootDir, '.dev', 'lib'), path.join(distMcpDir, 'lib'));
 copyDirectory(path.join(rootDir, 'hooks'), path.join(distMcpDir, 'hooks'));
+copyDirectory(path.join(rootDir, 'agents'), path.join(distMcpDir, 'agents'));
 copyToolModules();
 
 function copyToolModules() {

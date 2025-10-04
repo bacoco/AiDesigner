@@ -89,6 +89,7 @@ describe('postinstall-build-mcp script', () => {
       const libDir = path.join(distMcpDir, 'lib');
       const hooksDir = path.join(distMcpDir, 'hooks');
       const toolsDir = path.join(distMcpDir, 'tools');
+      const agentsDir = path.join(distMcpDir, 'agents');
 
       // Only check if source directories exist in the repo
       if (fs.existsSync(path.join(rootDir, '.dev', 'lib'))) {
@@ -97,6 +98,10 @@ describe('postinstall-build-mcp script', () => {
 
       if (fs.existsSync(path.join(rootDir, 'hooks'))) {
         expect(fs.existsSync(hooksDir)).toBe(true);
+      }
+
+      if (fs.existsSync(path.join(rootDir, 'agents'))) {
+        expect(fs.existsSync(agentsDir)).toBe(true);
       }
 
       expect(fs.existsSync(toolsDir)).toBe(true);
