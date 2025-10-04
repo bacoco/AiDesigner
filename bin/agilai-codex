@@ -78,7 +78,7 @@ async function main() {
 
   console.log('🎯 Starting Agilai Orchestrator with Codex...');
 
-  console.log('📡 MCP Server: bmad-invisible-orchestrator');
+  console.log('📡 MCP Server: agilai-orchestrator');
   console.log('🤖 Agent: Agilai Orchestrator');
   console.log('💬 Type your project idea to begin!\n');
 
