@@ -10,6 +10,64 @@ const { LLMClient } = require('./llm-client');
 const { V6ModuleLoader } = require('./v6-module-loader');
 const contextEnrichment = require('../hooks/context-enrichment');
 
+/**
+ * Searches upward from the current directory to find the nearest package.json.
+ * This function traverses parent directories until it finds a package.json file,
+ * which indicates the package root.
+ *
+ * @returns {string} Absolute path to the package root directory
+ * @throws {Error} If no package.json is found in any parent directory
+ */
+function resolvePackageRoot() {
+  let currentDir = __dirname;
+  const parsed = path.parse(currentDir);
+
+  while (currentDir && currentDir !== parsed.root) {
+    if (fs.pathExistsSync(path.join(currentDir, 'package.json'))) {
+      return currentDir;
+    }
+
+    currentDir = path.dirname(currentDir);
+  }
+
+  // Fallback: assume package root is two levels up from __dirname
+  const fallbackPath = path.resolve(__dirname, '..', '..');
+  console.warn(
+    `[AgilaiBridge] Warning: No package.json found in directory tree. Falling back to ${fallbackPath}`,
+  );
+  return fallbackPath;
+}
+
+/**
+ * Resolves the default V6 modules path by checking candidate directories.
+ * Searches for valid V6 module structures in priority order:
+ * 1. {root}/bmad/src/modules (development structure)
+ * 2. {root}/dist/mcp/src/modules (built/distributed structure)
+ *
+ * @param {string} rootDirectory - The package root directory to search from
+ * @returns {string|null} Absolute path to the V6 directory if found, null otherwise
+ */
+function resolveDefaultV6Path(rootDirectory) {
+  const candidates = [path.join(rootDirectory, 'bmad'), path.join(rootDirectory, 'dist', 'mcp')];
+
+  for (const candidate of candidates) {
+    const modulesPath = path.join(candidate, 'src', 'modules');
+
+    if (fs.pathExistsSync(modulesPath)) {
+      return candidate;
+    }
+  }
+
+  console.warn(
+    `[AgilaiBridge] Warning: No V6 modules found in candidates: ${candidates.join(', ')}`,
+  );
+  return null;
+}
+
+const PACKAGE_ROOT = resolvePackageRoot();
+const DEFAULT_CORE_PATH = path.join(PACKAGE_ROOT, 'agilai-core');
+const DEFAULT_V6_PATH = resolveDefaultV6Path(PACKAGE_ROOT);
+
 function deepMerge(target, source) {
   if (Array.isArray(target) && Array.isArray(source)) {
     return [...target, ...source];
@@ -51,8 +109,8 @@ function arrayify(value) {
 
 class AgilaiBridge {
   constructor(options = {}) {
-    this.agilaiCorePath = options.agilaiCorePath || path.join(__dirname, '..', 'agilai-core');
-    this.agilaiV6Path = options.agilaiV6Path || path.join(__dirname, '..', 'bmad');
+    this.agilaiCorePath = options.agilaiCorePath || DEFAULT_CORE_PATH;
+    this.agilaiV6Path = options.agilaiV6Path || DEFAULT_V6_PATH || path.join(PACKAGE_ROOT, 'bmad');
     this.llmClient = options.llmClient || new LLMClient();
     this.coreConfig = null;
     this.contextEnrichment = options.contextEnrichment || contextEnrichment;
