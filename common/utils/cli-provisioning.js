@@ -56,7 +56,7 @@ function ensureStateDir(rootDir) {
           }
 
           console.warn('Warning: unable to create state directory:', fallbackError.message);
-          return fallbackDir; // Return path anyway, saveState will handle write failures gracefully
+          // Don't return fallbackDir here - it doesn't exist. Fall through to verification below.
         }
       }
 

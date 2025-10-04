@@ -791,7 +791,7 @@ npm run mcp:profile:list
 ```bash
 # Daily development workflow
 npm run mcp:doctor              # Morning health check
-npm run bmad                    # Start development
+# ... development work ...
 npm run mcp:doctor              # End-of-day verification
 
 # Before deployment
