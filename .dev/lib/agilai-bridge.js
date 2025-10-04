@@ -67,6 +67,7 @@ function resolveDefaultV6Path(rootDirectory) {
 const PACKAGE_ROOT = resolvePackageRoot();
 const DEFAULT_CORE_PATH = path.join(PACKAGE_ROOT, 'agilai-core');
 const DEFAULT_V6_PATH = resolveDefaultV6Path(PACKAGE_ROOT);
+const DEFAULT_LEGACY_AGENT_FALLBACK = path.join(PACKAGE_ROOT, 'agents');
 
 function deepMerge(target, source) {
   if (Array.isArray(target) && Array.isArray(source)) {
@@ -108,6 +109,17 @@ function arrayify(value) {
 }
 
 class AgilaiBridge {
+  /**
+   * Creates a new AgilaiBridge instance
+   * @param {Object} options - Configuration options
+   * @param {string} [options.agilaiCorePath] - Path to agilai-core directory
+   * @param {string} [options.agilaiV6Path] - Path to v6 modules directory
+   * @param {Object} [options.llmClient] - LLM client instance
+   * @param {Object} [options.contextEnrichment] - Context enrichment module
+   * @param {Array} [options.contextEnrichers] - Additional context enricher functions
+   * @param {string|string[]} [options.agentSearchPaths] - Custom agent search paths (replaces default core path)
+   * @param {string|string[]} [options.extraAgentSearchPaths] - Additional agent search paths (appended to defaults)
+   */
   constructor(options = {}) {
     this.agilaiCorePath = options.agilaiCorePath || DEFAULT_CORE_PATH;
     this.agilaiV6Path = options.agilaiV6Path || DEFAULT_V6_PATH || path.join(PACKAGE_ROOT, 'bmad');
@@ -117,6 +129,8 @@ class AgilaiBridge {
     this.contextEnrichers = Array.isArray(options.contextEnrichers)
       ? [...options.contextEnrichers]
       : [];
+    // Note: buildAgentSearchPaths() depends on this.agilaiCorePath being set first
+    this.agentSearchPaths = this.buildAgentSearchPaths(options);
   }
 
   /**
@@ -194,13 +208,25 @@ class AgilaiBridge {
       };
     }
 
-    const agentPath = path.join(this.agilaiCorePath, 'agents', `${agentId}.md`);
+    let resolvedAgentPath = null;
 
-    if (!(await fs.pathExists(agentPath))) {
-      throw new Error(`Agent not found: ${agentId}`);
+    for (const basePath of this.agentSearchPaths) {
+      const candidatePath = path.join(basePath, `${agentId}.md`);
+
+      if (await fs.pathExists(candidatePath)) {
+        console.debug(`[AgilaiBridge] Found agent '${agentId}' at: ${candidatePath}`);
+        resolvedAgentPath = candidatePath;
+        break;
+      }
     }
 
-    const content = await fs.readFile(agentPath, 'utf8');
+    if (!resolvedAgentPath) {
+      throw new Error(
+        `Agent not found: ${agentId}. Searched paths: ${this.agentSearchPaths.join(', ')}`,
+      );
+    }
+
+    const content = await fs.readFile(resolvedAgentPath, 'utf8');
 
     // Parse YAML frontmatter/embedded config
     const yamlMatch = content.match(/```yaml\n([\s\S]*?)\n```/);
@@ -212,7 +238,7 @@ class AgilaiBridge {
 
     return {
       id: agentId,
-      path: agentPath,
+      path: resolvedAgentPath,
       content,
       config: agentConfig,
       persona: agentConfig.persona || {},
@@ -248,6 +274,63 @@ class AgilaiBridge {
       context: enrichment.context,
       enrichment,
     };
+  }
+
+  /**
+   * Build prioritized list of agent search paths with deduplication
+   *
+   * Resolution order:
+   * 1. Custom agentSearchPaths (if provided) OR default {agilaiCorePath}/agents
+   * 2. Additional extraAgentSearchPaths
+   * 3. Fallback to {packageRoot}/agents
+   *
+   * @param {Object} options - Configuration options
+   * @param {string|string[]} [options.agentSearchPaths] - Custom agent search paths (replaces default)
+   * @param {string|string[]} [options.extraAgentSearchPaths] - Additional paths to append
+   * @returns {string[]} Array of deduplicated, resolved absolute paths
+   */
+  buildAgentSearchPaths(options) {
+    const configuredPaths = arrayify(options.agentSearchPaths);
+    const extraPaths = arrayify(options.extraAgentSearchPaths);
+    const defaults = [];
+
+    if (configuredPaths.length > 0) {
+      defaults.push(...configuredPaths);
+    } else {
+      defaults.push(path.join(this.agilaiCorePath, 'agents'));
+    }
+
+    defaults.push(...extraPaths);
+
+    const normalizedFallback = path.resolve(DEFAULT_LEGACY_AGENT_FALLBACK);
+
+    if (!defaults.some((candidate) => path.resolve(candidate) === normalizedFallback)) {
+      defaults.push(DEFAULT_LEGACY_AGENT_FALLBACK);
+    }
+
+    const seen = new Set();
+
+    return defaults
+      .map((candidate) => {
+        try {
+          return path.resolve(candidate);
+        } catch (error) {
+          console.warn(`[AgilaiBridge] Skipping invalid agent search path: ${candidate}`, error);
+          return null;
+        }
+      })
+      .filter((candidate) => {
+        if (!candidate) {
+          return false;
+        }
+
+        if (seen.has(candidate)) {
+          return false;
+        }
+
+        seen.add(candidate);
+        return true;
+      });
   }
 
   /**
