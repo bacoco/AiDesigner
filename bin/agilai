@@ -1638,7 +1638,11 @@ const run = (argv = process.argv) => {
 // This ensures the CLI validates package integrity at runtime while allowing
 // tests to import and mock functions without triggering validation
 if (require.main === module) {
-  runIntegrityPreflight(packageRoot, { silentOnMatch: true });
+  // Skip integrity check during installation to avoid confusing warnings
+  const skipIntegrityCheck = process.argv.includes('start') || process.argv.includes('init');
+  if (!skipIntegrityCheck) {
+    runIntegrityPreflight(packageRoot, { silentOnMatch: true });
+  }
 
   run().catch((error) => {
     console.error('❌ Error:', error.message);
