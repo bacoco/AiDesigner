@@ -16,11 +16,24 @@
 - **MCP multi-select**: Checkbox-based selection for optional MCP servers during init
 - **Better UX**: Clearer prompts and visual feedback during installation
 
+### Bug Fixes
+
+**🔧 CLI-Provider Compatibility Enforcement** - Fixed invalid assistant-provider combinations
+
+- **Claude CLI**: Now correctly restricted to `anthropic` and `glm` providers only (removed invalid `openai`, `gemini` options)
+- **Codex CLI**: Now correctly restricted to `openai` provider only (removed invalid `anthropic`, `glm`, `gemini` options)
+- **OpenCode CLI**: Continues to support all providers (`anthropic`, `glm`, `openai`, `gemini`)
+- **Validation errors**: Improved messages now show which providers are supported for each CLI
+- **Help text**: Updated examples to show only valid CLI-provider combinations
+
+This prevents errors from attempting to use incompatible API formats (e.g., Claude CLI cannot speak OpenAI's API protocol).
+
 ### Documentation
 
 - Updated installation-methods.md with detailed `init` command documentation
 - Updated QUICKSTART.md to reflect new project creation workflow
 - Added "What init Creates" section explaining generated structure
+- Updated CLI-provider compatibility documentation with accurate supported combinations
 
 ## [1.3.24](https://github.com/bacoco/Agilai/compare/v1.3.23...v1.3.24) (2025-10-04)
 

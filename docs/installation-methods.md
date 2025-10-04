@@ -30,21 +30,34 @@ The fastest way to get started - one command does everything:
 npx agilai@latest start
 ```
 
+### CLI-Provider Compatibility
+
+Each CLI supports different LLM providers based on their API compatibility:
+
+| CLI              | Supported Providers                    | Notes                                               |
+| ---------------- | -------------------------------------- | --------------------------------------------------- |
+| **Claude CLI**   | `anthropic`, `glm`                     | Claude Code binary only speaks Anthropic API format |
+| **Codex CLI**    | `openai`                               | OpenAI's Codex CLI, GPT models only                 |
+| **OpenCode CLI** | `anthropic`, `glm`, `openai`, `gemini` | Universal CLI supporting all providers              |
+
 ### Customization Flags
 
 ```bash
-# Choose specific assistant (skip prompt)
+# Choose specific CLI (skip prompt)
 npx agilai@latest start --assistant=claude
 npx agilai@latest start --assistant=codex
 npx agilai@latest start --assistant=opencode
 
-# Use ZhipuAI GLM instead of Anthropic
-npx agilai@latest start --glm
-npx agilai@latest start --llm-provider=glm
+# Claude CLI examples (supports: anthropic, glm)
+npx agilai@latest start --assistant=claude --provider=glm
+npx agilai@latest start --assistant=claude --glm
 
-# Switch back to Anthropic
-npx agilai@latest start --anthropic
-npx agilai@latest start --llm-provider=claude
+# Codex CLI examples (supports: openai only)
+npx agilai@latest start --assistant=codex --provider=openai
+
+# OpenCode CLI examples (supports: all providers)
+npx agilai@latest start --assistant=opencode --provider=glm
+npx agilai@latest start --assistant=opencode --provider=gemini
 ```
 
 ### What It Does
