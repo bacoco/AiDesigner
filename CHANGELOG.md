@@ -16,6 +16,22 @@
 - **MCP multi-select**: Checkbox-based selection for optional MCP servers during init
 - **Better UX**: Clearer prompts and visual feedback during installation
 
+### Improvements
+
+**✨ Simplified Interactive Selection** - Single combined list for CLI and provider selection
+
+- **One-step selection**: Replaced two-step selection (assistant → provider) with single combined list
+- **Only valid combinations**: Shows 7 valid CLI-provider combinations in one prompt
+  - Claude CLI → Anthropic
+  - Claude CLI → GLM
+  - Codex CLI → OpenAI
+  - OpenCode CLI → Anthropic/GLM/OpenAI/Gemini
+- **Eliminated confusion**: Users can no longer select incompatible combinations
+- **Better UX**: Clear format shows both CLI and provider in each option
+- **No validation errors**: Impossible to pick invalid combinations
+
+This completely eliminates the confusing two-step flow where users could see incompatible providers.
+
 ### Bug Fixes
 
 **🔧 CLI-Provider Compatibility Enforcement** - Fixed invalid assistant-provider combinations

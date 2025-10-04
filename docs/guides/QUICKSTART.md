@@ -15,14 +15,14 @@ Agilai provides a **natural conversational interface** that guides you through p
 mkdir my-project && cd my-project
 ```
 
-You'll be prompted to choose between Claude, Codex, or OpenCode CLIs. Or pass
-`--assistant=claude`, `--assistant=codex`, or `--assistant=opencode` to skip the prompt.
+You'll be prompted with a **single combined list** showing all valid CLI-provider combinations:
 
-**CLI-Provider Compatibility:**
+- Claude CLI → Anthropic
+- Claude CLI → GLM
+- Codex CLI → OpenAI
+- OpenCode CLI → Anthropic/GLM/OpenAI/Gemini
 
-- **Claude CLI**: Supports `anthropic` and `glm` providers only
-- **Codex CLI**: Supports `openai` provider only (GPT models)
-- **OpenCode CLI**: Supports all providers (`anthropic`, `glm`, `openai`, `gemini`)
+Or pass `--assistant=<cli> --provider=<provider>` to skip the prompt (e.g., `--assistant=claude --provider=glm`)
 
 Need ZhipuAI's GLM? Add `--glm` / `--llm-provider=glm` (requires `AGILAI_GLM_API_KEY`
 or one of the legacy aliases like `ZHIPUAI_API_KEY` or `GLM_API_KEY`). Use

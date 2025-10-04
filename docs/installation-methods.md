@@ -30,9 +30,24 @@ The fastest way to get started - one command does everything:
 npx agilai@latest start
 ```
 
-### CLI-Provider Compatibility
+### Interactive Selection
 
-Each CLI supports different LLM providers based on their API compatibility:
+When you run `npx agilai@latest start` without flags, you'll see a **single combined list** showing all valid CLI-provider combinations:
+
+```
+? Select CLI and provider:
+  ❯ Claude CLI → Anthropic - Advanced reasoning and coding
+    Claude CLI → GLM - Chinese language excellence
+    Codex CLI → OpenAI - General purpose AI
+    OpenCode CLI → Anthropic - Advanced reasoning and coding
+    OpenCode CLI → GLM - Chinese language excellence
+    OpenCode CLI → OpenAI - General purpose AI
+    OpenCode CLI → Gemini - Multimodal capabilities
+```
+
+This eliminates confusion by showing only valid combinations - you can't accidentally select incompatible options.
+
+### CLI-Provider Compatibility Reference
 
 | CLI              | Supported Providers                    | Notes                                               |
 | ---------------- | -------------------------------------- | --------------------------------------------------- |
@@ -42,15 +57,13 @@ Each CLI supports different LLM providers based on their API compatibility:
 
 ### Customization Flags
 
-```bash
-# Choose specific CLI (skip prompt)
-npx agilai@latest start --assistant=claude
-npx agilai@latest start --assistant=codex
-npx agilai@latest start --assistant=opencode
+Skip the interactive prompt by passing CLI and provider explicitly:
 
+```bash
 # Claude CLI examples (supports: anthropic, glm)
+npx agilai@latest start --assistant=claude --provider=anthropic
 npx agilai@latest start --assistant=claude --provider=glm
-npx agilai@latest start --assistant=claude --glm
+npx agilai@latest start --assistant=claude --glm  # shorthand for --provider=glm
 
 # Codex CLI examples (supports: openai only)
 npx agilai@latest start --assistant=codex --provider=openai
@@ -65,7 +78,7 @@ npx agilai@latest start --assistant=opencode --provider=gemini
 1. Creates project structure
 2. Installs all dependencies
 3. Builds MCP server
-4. Prompts for assistant choice (if not specified)
+4. Shows combined CLI-provider selection list (if not specified via flags)
 5. Launches selected chat interface
 
 ### shadcn UI Integration
