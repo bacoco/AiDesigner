@@ -2,6 +2,8 @@
 
 Complete configuration reference for Agilai.
 
+> **Legacy aliases**: Existing `npm run bmad*` scripts continue to work, but new projects should prefer the `agilai` commands documented below.
+
 ## Table of Contents
 
 - [Environment Variables](#environment-variables)
@@ -39,11 +41,11 @@ Enable GLM (ZhipuAI) for the orchestrator:
 
 ```bash
 # Use GLM via flag
-npm run bmad -- --glm
+npm run agilai -- --glm
 npx agilai start --glm
 
 # Explicit provider specification
-npm run bmad -- --llm-provider=glm
+npm run agilai -- --llm-provider=glm
 npx agilai start --llm-provider=glm
 ```
 
@@ -107,16 +109,16 @@ export BMAD_ASSISTANT_PROVIDER=glm
 export BMAD_GLM_BASE_URL=https://your-glm-endpoint.com
 export BMAD_GLM_API_KEY=your-api-key
 
-# Start BMAD with GLM routing
-npm run bmad:claude
+# Start Agilai with GLM routing
+npm run agilai:claude
 # Output: 🌐 GLM mode active: routing Claude CLI through configured GLM endpoint.
 ```
 
 GLM routing works with all three assistant CLIs:
 
-- `npm run bmad:claude` - Routes Claude CLI through GLM
-- `npm run bmad:codex` - Routes Codex CLI through GLM
-- `npm run bmad:opencode` - Routes OpenCode CLI through GLM
+- `npm run agilai:claude` - Routes Claude CLI through GLM
+- `npm run agilai:codex` - Routes Codex CLI through GLM
+- `npm run agilai:opencode` - Routes OpenCode CLI through GLM
 
 ### Anthropic Provider (Default)
 
@@ -126,11 +128,11 @@ Using Anthropic's Claude (default behavior):
 
 ```bash
 # Use Anthropic (default)
-npm run bmad
-npm run bmad -- --anthropic
+npm run agilai
+npm run agilai -- --anthropic
 
 # Explicit provider
-npm run bmad -- --llm-provider=claude
+npm run agilai -- --llm-provider=claude
 ```
 
 #### Environment Variables
@@ -154,14 +156,14 @@ Switch providers anytime:
 
 ```bash
 # Start with GLM
-npm run bmad -- --glm
+npm run agilai -- --glm
 
 # Later, switch to Anthropic
-npm run bmad -- --anthropic
+npm run agilai -- --anthropic
 
 # Or change .env file
 echo "LLM_PROVIDER=claude" >> .env
-npm run bmad
+npm run agilai
 ```
 
 **Priority order:**
@@ -472,7 +474,7 @@ Validate your configuration:
 npm run mcp:doctor
 
 # Test LLM provider connection
-npm run bmad -- --test
+npm run agilai -- --test
 
 # Audit security settings
 npm run mcp:audit
@@ -532,7 +534,7 @@ If environment variables aren't being read:
 
 If using the wrong provider:
 
-1. Check CLI flag: `npm run bmad -- --glm`
+1. Check CLI flag: `npm run agilai -- --glm`
 2. Verify `.env` contents: `cat .env | grep LLM_PROVIDER`
 3. Check priority: CLI flags override environment variables
 

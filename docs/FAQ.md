@@ -2,6 +2,8 @@
 
 ## How It Works
 
+> **Legacy aliases**: Historical `npm run bmad*` scripts still function, but the answers below reference the preferred `agilai` commands.
+
 ### Where are documents generated?
 
 All project deliverables are automatically generated in your project's `docs/` folder:
@@ -148,7 +150,7 @@ npm install
 #### 2. Start conversation
 
 ```bash
-npm run bmad
+npm run agilai
 ```
 
 #### 3. Tell the orchestrator about existing work
@@ -215,7 +217,7 @@ The orchestrator intelligently handles existing docs:
 ```bash
 # Come back days/weeks later
 cd your-project
-npm run bmad
+npm run agilai
 
 # Orchestrator automatically loads state
 Orchestrator: "Welcome back! We were working on the team todo app.
@@ -502,7 +504,7 @@ ls -la dist/mcp/mcp/server.js
 ```bash
 # Reset state (backs up old state)
 rm .agilai/state.json
-npm run bmad
+npm run agilai
 # Orchestrator will start fresh
 ```
 

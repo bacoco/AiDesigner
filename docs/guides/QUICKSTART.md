@@ -53,13 +53,15 @@ npm install
 
 
 # Start chatting (prompts for your choice)
-npm run bmad
+npx agilai start
 # Force GLM for the orchestrator (requires ZHIPUAI_API_KEY or GLM_API_KEY)
-# npm run bmad -- --glm
+# npx agilai start --glm
 # OR use explicit commands:
-# npm run bmad:claude    # respects --glm/--anthropic flags
-# npm run bmad:codex     # respects --glm/--anthropic flags
-# npm run bmad:opencode  # respects --glm/--anthropic flags
+# npx agilai start --assistant=claude    # respects --glm/--anthropic flags
+# npx agilai start --assistant=codex     # respects --glm/--anthropic flags
+# npx agilai start --assistant=opencode  # respects --glm/--anthropic flags
+
+> **Legacy aliases**: `npm run bmad*` still routes to the same commands if you have existing scripts, but new projects should prefer the `agilai` equivalents shown above.
 
 ```
 
@@ -94,7 +96,7 @@ npm run build:mcp
 
 
 # Start conversation (prompts for choice)
-npm run bmad
+npm run agilai
 ```
 
 #### Choosing Your LLM Provider (GLM vs Anthropic)
@@ -212,23 +214,23 @@ AI: Found 23 TODOs across 8 files. Oldest is 3 months old.
 ### Quick Commands
 
 ```bash
-npx bmad-invisible@latest start # 🚀 One-command setup and launch (prompts for choice)
-npx bmad-invisible init         # Initialize in project
-npx bmad-invisible build        # Build MCP server
-npm run bmad                    # Start conversation (prompts for assistant choice)
-npm run bmad:claude             # Start Claude directly
-npm run bmad:codex              # Start Codex directly
-npm run bmad:opencode           # Start OpenCode directly
+npx agilai@latest start # 🚀 One-command setup and launch (prompts for choice)
+npx agilai@latest init         # Initialize in project
+npx agilai@latest build        # Build MCP server
+npm run agilai                 # Start conversation (prompts for assistant choice)
+npm run agilai:claude          # Start Claude directly
+npm run agilai:codex           # Start Codex directly
+npm run agilai:opencode        # Start OpenCode directly
 # Append -- --glm (or -- --anthropic) to any npm script to swap providers
 
-npx bmad-invisible test         # Run tests
-npx bmad-invisible validate     # Validate config
-npx bmad-invisible help         # Show all commands
+npx agilai@latest test         # Run tests
+npx agilai@latest validate     # Validate config
+npx agilai@latest help         # Show all commands
 ```
 
 ### Example Session
 
-Run `npm run bmad` and choose your assistant, or use direct commands (`npm run bmad:claude`, `npm run bmad:codex`, `npm run bmad:opencode`). You'll see an experience like this:
+Run `npm run agilai` and choose your assistant, or use direct commands (`npm run agilai:claude`, `npm run agilai:codex`, `npm run agilai:opencode`). You'll see an experience like this:
 
 ```
 🎯 Starting Agilai Orchestrator...
