@@ -56,7 +56,6 @@ async function runStoryContextValidation({
   projectState,
   createLLMClient,
   AgilaiBridge,
-  BMADBridge,
   lane = 'review',
   notes,
   trigger,
@@ -69,14 +68,12 @@ async function runStoryContextValidation({
   if (typeof createLLMClient !== 'function') {
     throw new TypeError('createLLMClient function is required');
   }
-  const BridgeConstructor = AgilaiBridge || BMADBridge;
-
-  if (typeof BridgeConstructor !== 'function') {
+  if (typeof AgilaiBridge !== 'function') {
     throw new TypeError('AgilaiBridge constructor is required');
   }
 
   const llmClient = await createLLMClient(lane);
-  const bridge = new BridgeConstructor({ llmClient });
+  const bridge = new AgilaiBridge({ llmClient });
 
   if (typeof bridge.initialize === 'function') {
     await bridge.initialize();

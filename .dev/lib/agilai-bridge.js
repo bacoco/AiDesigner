@@ -51,11 +51,8 @@ function arrayify(value) {
 
 class AgilaiBridge {
   constructor(options = {}) {
-    // Support legacy options for backward compatibility
-    this.agilaiCorePath =
-      options.agilaiCorePath || options.bmadCorePath || path.join(__dirname, '..', 'agilai-core');
-    this.agilaiV6Path =
-      options.agilaiV6Path || options.bmadV6Path || path.join(__dirname, '..', 'bmad');
+    this.agilaiCorePath = options.agilaiCorePath || path.join(__dirname, '..', 'agilai-core');
+    this.agilaiV6Path = options.agilaiV6Path || path.join(__dirname, '..', 'bmad');
     this.llmClient = options.llmClient || new LLMClient();
     this.coreConfig = null;
     this.contextEnrichment = options.contextEnrichment || contextEnrichment;
