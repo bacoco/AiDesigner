@@ -15,12 +15,23 @@ const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
 // Get paths
 const rootDir = path.join(__dirname, '..');
 runIntegrityPreflight(rootDir, { silentOnMatch: true });
-const mcpConfigPath = path.join(rootDir, 'mcp', 'bmad-config.json');
+const mcpConfigDir = path.join(rootDir, 'mcp');
+const newMcpConfigPath = path.join(mcpConfigDir, 'agilai-config.json');
+const legacyMcpConfigPath = path.join(mcpConfigDir, 'bmad-config.json');
+let mcpConfigPath = newMcpConfigPath;
+let usingLegacyMcpConfig = false;
 const orchestratorPath = path.join(rootDir, 'agents', 'invisible-orchestrator.md');
 
 // Check if files exist
 if (!fs.existsSync(mcpConfigPath)) {
-  console.error('Error: MCP config not found. Run: npm run build:mcp');
+  if (fs.existsSync(legacyMcpConfigPath)) {
+    usingLegacyMcpConfig = true;
+    mcpConfigPath = legacyMcpConfigPath;
+  }
+}
+
+if (!fs.existsSync(mcpConfigPath)) {
+  console.error('Error: MCP config not found. Expected mcp/agilai-config.json. Run: npm run build:mcp');
   process.exit(1);
 }
 
@@ -76,9 +87,13 @@ async function main() {
     ...userArgs,
   ];
 
+  if (usingLegacyMcpConfig) {
+    console.warn('⚠️  Using legacy MCP config mcp/bmad-config.json. Please migrate to mcp/agilai-config.json.');
+  }
+
   console.log('🎯 Starting Agilai Orchestrator with Codex...');
 
-  console.log('📡 MCP Server: bmad-invisible-orchestrator');
+  console.log('📡 MCP Server: agilai-invisible-orchestrator');
   console.log('🤖 Agent: Agilai Orchestrator');
   console.log('💬 Type your project idea to begin!\n');
 
