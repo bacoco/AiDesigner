@@ -12,7 +12,7 @@ const DEFAULT_SERVERS = [
   {
     name: SERVER_NAME,
     displayName: 'Agilai MCP',
-    description: 'Agilai MCP server for orchestrating BMAD agents.',
+    description: 'Agilai MCP server for orchestrating Agilai agents.',
     transport: 'stdio',
     command: 'npx',
     args: ['agilai', 'mcp'],

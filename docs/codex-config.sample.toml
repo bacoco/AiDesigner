@@ -14,7 +14,7 @@ autoStart = true
 command = "npx"
 description = "Agilai MCP server for orchestrating Agilai agents."
 displayName = "Agilai MCP"
-name = "bmad-mcp"
+name = "agilai-mcp"
 transport = "stdio"
 
 [[mcp.servers]]
