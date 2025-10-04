@@ -290,7 +290,7 @@ my-project/
 │   └── stories/                # Development stories
 │       ├── story-1-login.md
 │       └── story-2-signup.md
-└── .bmad-invisible/
+└── .agilai/
     ├── state.json              # Project state
     ├── conversation.json       # Chat history
     ├── deliverables.json       # Generated artifacts
@@ -299,7 +299,7 @@ my-project/
 
 ### Decision Logging
 
-Every lane decision is logged in `.bmad-invisible/decisions.jsonl`:
+Every lane decision is logged in `.agilai/decisions.jsonl`:
 
 ```jsonl
 {"timestamp":"2agilai25-1agilai-agilai1T2agilai:agilaiagilai:agilaiagilaiZ","userMessage":"Fix typo in README","lane":"quick","confidence":agilai.92,"rationale":"Quick lane: quick fix keywords, short message","scores":{"quick":7,"complex":1}}
@@ -403,7 +403,7 @@ The lane selector has been tuned with 36+ test cases covering edge cases, mixed 
 **Check decision log:**
 
 ```bash
-cat .bmad-invisible/decisions.jsonl | tail -1 | jq
+cat .agilai/decisions.jsonl | tail -1 | jq
 ```
 
 **Manual override in code:**

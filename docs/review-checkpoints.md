@@ -25,7 +25,7 @@ The invisible orchestrator now enforces three governance gates that run on a fre
    }
    ```
 3. The MCP server instantiates a dedicated `BMADBridge` wired to the `review` lane. Deliverables from the source phase plus the overall project snapshot are passed as context.
-4. The reviewer agent responds with JSON. Results are stored automatically via `ProjectState.recordReviewOutcome()` in `.bmad-invisible/reviews.json` for auditability.
+4. The reviewer agent responds with JSON. Results are stored automatically via `ProjectState.recordReviewOutcome()` in `.agilai/reviews.json` for auditability.
 5. If the reviewer returns `revise` or `block`, stay in the current phase, address the findings with the user, and re-run the checkpoint. When story-context validation is enabled, a `block` result prevents the developer transition automatically.
 
 ## Data Capture

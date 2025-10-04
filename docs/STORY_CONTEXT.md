@@ -57,7 +57,7 @@ This approach keeps the workflow silent for end users while achieving parity wit
     "arguments": { "validateStoryContext": true }
   }
   ```
-- When enabled, transitioning into the developer phase automatically calls `run_story_context_validation`. Any missing persona fragments, acceptance criteria, or definition of done entries will block the transition and capture a record in `.bmad-invisible/reviews.json` via `ProjectState.recordReviewOutcome()`.
+- When enabled, transitioning into the developer phase automatically calls `run_story_context_validation`. Any missing persona fragments, acceptance criteria, or definition of done entries will block the transition and capture a record in `.agilai/reviews.json` via `ProjectState.recordReviewOutcome()`.
 - Operators can also run the checkpoint manually to inspect the enriched packet:
   ```json
   {

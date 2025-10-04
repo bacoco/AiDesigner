@@ -302,7 +302,7 @@ npm run mcp:audit
 # File Permissions:
 #   ⚠ Warning: Master key file has permissions 644
 #     Expected: 6agilaiagilai
-#     Fix: chmod 6agilaiagilai ~/.bmad-invisible/secure/.master.key
+#     Fix: chmod 6agilaiagilai ~/.agilai/secure/.master.key
 #
 # Recommendations for 'prod' profile:
 #   🔒 Production should use secure credential storage

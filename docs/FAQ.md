@@ -24,7 +24,7 @@ your-project/
 │   └── qa/
 │       └── assessments/
 │           └── risk-assessment.md   # Test strategy
-└── .bmad-invisible/
+└── .agilai/
     ├── state.json                   # Current phase and project state
     ├── conversation.json            # Full conversation history
     └── deliverables.json            # Generated content references
@@ -304,7 +304,7 @@ Orchestrator: [Scans codebase]
 
 ### How does state tracking work?
 
-The orchestrator maintains complete project state in `.bmad-invisible/`:
+The orchestrator maintains complete project state in `.agilai/`:
 
 #### `state.json` - Current Project State
 
@@ -501,7 +501,7 @@ ls -la dist/mcp/mcp/server.js
 
 ```bash
 # Reset state (backs up old state)
-rm .bmad-invisible/state.json
+rm .agilai/state.json
 npm run bmad
 # Orchestrator will start fresh
 ```
