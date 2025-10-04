@@ -259,7 +259,7 @@ This step is skipped automatically in non-interactive environments. See [`codex-
 
 ### Automatic CLI Provisioning
 
-The Agilai Codex (`bin/bmad-codex`) and Agilai Claude (`bin/bmad-claude`) launchers now validate that the Codex and Claude CLIs are installed **before** spawning the orchestrator session. If a binary is missing, the script will:
+The Agilai Codex (`bin/agilai-codex`) and Agilai Claude (`bin/agilai-claude`) launchers now validate that the Codex and Claude CLIs are installed **before** spawning the orchestrator session. If a binary is missing, the script will:
 
 - Offer an interactive menu with installation helpers (for example `npm exec --yes @openai/codex-cli@latest -- codex --help`, Homebrew taps, and the official download docs).
 - Fall back to printing the same guidance when running in non-interactive contexts (CI, redirected stdin/stdout) so automation jobs fail fast but still surface the remediation steps.
@@ -293,10 +293,10 @@ npm run build:mcp
 ls -la dist/mcp/mcp/
 ```
 
-### Permission denied on Agilai Claude (`bin/bmad-claude`)
+### Permission denied on Agilai Claude (`bin/agilai-claude`)
 
 ```bash
-chmod +x bin/bmad-claude
+chmod +x bin/agilai-claude
 ```
 
 ### No deliverables generated
