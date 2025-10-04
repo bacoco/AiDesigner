@@ -36,7 +36,7 @@ npm run agilai:codex
 npm run agilai:claude
 # OpenCode front-end
 npm run agilai:opencode
-# Add -- --glm to any npm script invocation to switch providers
+# Add --glm to any Agilai invocation to switch providers
 ```
 
 > **UI Toolkit Opt-in**: When you include the optional shadcn UI helpers, the

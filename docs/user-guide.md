@@ -193,7 +193,7 @@ If you want to do the planning on the web with Claude (Sonnet 4 or Opus), Gemini
 
 ```bash
 # Interactive installation (recommended)
-npx bmad-method install
+npx agilai install
 ```
 
 ### OpenCode
@@ -201,7 +201,7 @@ npx bmad-method install
 BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.json` (JSON-only, no Markdown fallback).
 
 - Installation:
-  - Run `npx bmad-method install` and choose `OpenCode` in the IDE list.
+  - Run `npx agilai install` and choose `OpenCode` in the IDE list.
   - The installer will detect an existing `opencode.jsonc`/`opencode.json` or create a minimal `opencode.jsonc` if missing.
   - It will:
     - Ensure `instructions` includes `.bmad-core/core-config.yaml` (and each selected expansion pack’s `config.yaml`).
@@ -209,7 +209,7 @@ BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.jso
     - Preserve other top-level fields and user-defined entries.
 
 - Prefixes and collisions:
-  - You can opt-in to prefix agent keys with `bmad-` and command keys with `bmad:tasks:` to avoid name collisions.
+  - You can opt-in to prefix agent keys with `agilai-` and command keys with `/agilai:tasks:` to avoid name collisions.
   - If a key already exists and is not BMAD-managed, the installer will skip it and suggest enabling prefixes.
 
 - What gets added:
@@ -229,7 +229,7 @@ BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.jso
 - Refresh after changes:
   - Re-run:
     ```bash
-    npx bmad-method install -f -i opencode
+    npx agilai install -f -i opencode
     ```
   - The installer safely updates entries without duplication and preserves your custom fields and comments.
 
@@ -238,7 +238,7 @@ BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.jso
     ```json
     {
       "scripts": {
-        "bmad:opencode": "bmad-method install -f -i opencode"
+        "/agilai:opencode": "agilai install -f -i opencode"
       }
     }
     ```
@@ -249,9 +249,9 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
 
 - Two installation modes:
   - Codex (local only): keeps `.bmad-core/` ignored for local dev.
-    - `npx bmad-method install -f -i codex -d .`
+    - `npx agilai install -f -i codex -d .`
   - Codex Web Enabled: ensures `.bmad-core/` is tracked so you can commit it for Codex Web.
-    - `npx bmad-method install -f -i codex-web -d .`
+    - `npx agilai install -f -i codex-web -d .`
 
 - What gets generated:
   - `AGENTS.md` at the project root with a BMAD section containing
@@ -264,7 +264,7 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
     `shadcn` CLI can scaffold UI components without re-prompting you for
     preferences.
   - If a `package.json` exists, helpful scripts are added:
-    - `bmad:refresh`, `bmad:list`, `bmad:validate`
+    - `/agilai:refresh`, `/agilai:list`, `/agilai:validate`
   - Global Codex CLI defaults are merged into `~/.codex/config.toml` (skipped automatically in CI/non-interactive runs).
     - Ensures Agilai's MCP server is registered and Codex approvals run in fully automated mode by default.
     - Registers optional `chrome-devtools` and `shadcn` MCP helpers with
