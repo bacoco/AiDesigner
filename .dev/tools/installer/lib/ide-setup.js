@@ -924,10 +924,24 @@ class IdeSetup extends BaseIdeSetup {
         finalContent = existing.trimEnd() + `\n\n` + section;
       }
     } else {
-      // Create fresh AGENTS.md with a small header and BMAD block
-      finalContent += '# Project Agents\n\n';
-      finalContent += 'This file provides guidance and memory for Codex CLI.\n\n';
-      finalContent += section;
+      // Create fresh AGENTS.md: try to use template from docs/AGENTS.md
+      try {
+        const templatePath = path.join(__dirname, '..', '..', '..', 'docs', 'AGENTS.md');
+        if (await fileManager.pathExists(templatePath)) {
+          const templateContent = await fileManager.readFile(templatePath);
+          finalContent = templateContent.trimEnd() + '\n\n' + section;
+        } else {
+          // Fallback to minimal header if template not found
+          finalContent += '# Project Agents\n\n';
+          finalContent += 'This file provides guidance and memory for Codex CLI.\n\n';
+          finalContent += section;
+        }
+      } catch {
+        // Fallback to minimal header on error
+        finalContent += '# Project Agents\n\n';
+        finalContent += 'This file provides guidance and memory for Codex CLI.\n\n';
+        finalContent += section;
+      }
     }
 
     await fileManager.writeFile(filePath, finalContent);
@@ -1128,6 +1142,9 @@ class IdeSetup extends BaseIdeSetup {
         );
       }
     }
+
+    // Copy CLAUDE.md to project root for Claude Code
+    await this.copyAgentInstructionsFile(installDir, 'CLAUDE.md');
 
     return true;
   }
@@ -2580,6 +2597,33 @@ tools: ['changes', 'codebase', 'fetch', 'findTestFiles', 'githubRepo', 'problems
     }
 
     return true;
+  }
+
+  async copyAgentInstructionsFile(installDir, filename) {
+    try {
+      const sourceFile = path.join(__dirname, '..', '..', '..', 'docs', filename);
+      const targetFile = path.join(installDir, filename);
+
+      // Check if source file exists
+      if (!(await fileManager.pathExists(sourceFile))) {
+        console.log(chalk.yellow(`⚠ ${filename} template not found at ${sourceFile}`));
+        return false;
+      }
+
+      // Copy the file
+      await fs.copyFile(sourceFile, targetFile);
+      console.log(chalk.green(`✓ Copied ${filename} to project root`));
+      console.log(
+        chalk.dim(
+          `  This file provides project-specific instructions for ${filename === 'CLAUDE.md' ? 'Claude Code' : 'Codex CLI'}`,
+        ),
+      );
+
+      return true;
+    } catch (error) {
+      console.log(chalk.yellow(`⚠ Failed to copy ${filename}: ${error.message}`));
+      return false;
+    }
   }
 }
 
