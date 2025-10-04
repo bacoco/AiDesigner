@@ -76,6 +76,7 @@
     "mcp:search": "node .dev/tools/cli.js mcp search",
     "mcp:secure": "node .dev/tools/cli.js mcp secure",
     "mcp:suggest": "node .dev/tools/cli.js mcp suggest",
+    "prepack": "npm run build:mcp",
     "pre-release": "npm run validate && npm run format:check && npm run lint",
     "prepare": "husky",
     "preview:release": "node .dev/tools/preview-release-notes.js",

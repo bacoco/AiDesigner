@@ -1,61 +1,34 @@
 'use strict';
 
 /**
- * Postinstall script to build MCP (Model Context Protocol) assets.
- * This script compiles TypeScript and copies necessary files to dist/mcp.
- * It exits early if assets already exist (unless --force is used) and
- * gracefully handles missing TypeScript or compilation failures.
+ * Postinstall script to synchronise MCP (Model Context Protocol) assets.
+ *
+ * The primary build now happens during `prepack`/`prepublish` so this script
+ * only needs to ensure the runtime assets are present when the prebuilt files
+ * already exist. If no prebuilt server is found we skip the copy step and
+ * advise the user to run the MCP build manually.
  */
 
 const { existsSync, mkdirSync, readdirSync, copyFileSync } = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
 
 const rootDir = path.resolve(__dirname, '..');
 const distMcpDir = path.join(rootDir, 'dist', 'mcp');
+const serverEntry = path.join(distMcpDir, 'mcp', 'server.js');
 
 // Check for --force flag
 const forceRebuild = process.argv.includes('--force');
 
-/**
- * Checks if the MCP build is complete by verifying required files exist
- * @returns {boolean} True if all required MCP assets are present
- */
-function isMcpBuildComplete() {
-  const requiredPaths = [
-    path.join(distMcpDir, 'lib'),
-    path.join(distMcpDir, 'hooks'),
-    path.join(distMcpDir, 'mcp', 'server.js'), // Key output file from TypeScript compilation
-  ];
-  return requiredPaths.every((p) => existsSync(p));
+const hasPrebuiltServer = existsSync(serverEntry);
+
+if (!hasPrebuiltServer && !forceRebuild) {
+  console.warn('⚠️  Prebuilt MCP server not found at dist/mcp/mcp/server.js.');
+  console.warn('    Skipping MCP asset sync. Run "npm run build:mcp" to generate the build.');
+  process.exit(0);
 }
 
-if (existsSync(distMcpDir) && !forceRebuild) {
-  if (isMcpBuildComplete()) {
-    console.log('✓ MCP assets already exist in dist/mcp, skipping rebuild.');
-    console.log('  (Use --force to rebuild anyway)');
-    process.exit(0);
-  } else {
-    console.warn('⚠ Incomplete MCP build detected; rebuilding...');
-  }
-}
-
-const tscBin = findTscBinary();
-let hadCompilationErrors = false;
-
-if (tscBin) {
-  hadCompilationErrors =
-    !runTsc(tscBin, path.join(rootDir, '.dev', 'mcp', 'tsconfig.json')) || hadCompilationErrors;
-  hadCompilationErrors =
-    !runTsc(tscBin, path.join(rootDir, '.dev', 'config', 'tsconfig.codex.json')) ||
-    hadCompilationErrors;
-
-  if (hadCompilationErrors) {
-    console.warn('\n⚠️  Some TypeScript compilation issues occurred during postinstall.');
-    console.warn('   Run "npm run build:mcp" to see detailed errors.\n');
-  }
-} else {
-  console.warn('TypeScript is not installed; skipping MCP TypeScript build.');
+if (!hasPrebuiltServer && forceRebuild) {
+  console.warn('⚠️  --force supplied but no MCP server present; continuing with asset copy.');
 }
 
 ensureDir(distMcpDir);
@@ -83,46 +56,6 @@ function copyToolModules() {
 
     copyFileSync(sourcePath, destinationPath);
   }
-}
-
-/**
- * Attempts to locate the TypeScript compiler binary
- * @returns {string|null} Path to tsc binary, or null if not found
- */
-function findTscBinary() {
-  try {
-    return require.resolve('typescript/bin/tsc', { paths: [rootDir] });
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Runs the TypeScript compiler on a specific project configuration
- * @param {string} tscPath - Path to the TypeScript compiler binary
- * @param {string} projectPath - Path to the tsconfig.json file
- * @returns {boolean} True if compilation succeeded, false otherwise
- */
-function runTsc(tscPath, projectPath) {
-  console.log(`Running TypeScript compiler for ${projectPath}`);
-  const result = spawnSync(process.execPath, [tscPath, '-p', projectPath], {
-    stdio: 'inherit',
-    cwd: rootDir,
-  });
-
-  if (result.error) {
-    console.warn(`TypeScript compilation error for ${projectPath}:`, result.error.message);
-    console.warn('Continuing with postinstall despite compilation error...');
-    return false;
-  }
-
-  if (result.status !== 0) {
-    console.warn(`TypeScript compilation failed for ${projectPath} (exit code ${result.status})`);
-    console.warn('Continuing with postinstall, but you may need to run: npm run build:mcp');
-    return false;
-  }
-
-  return true;
 }
 
 /**
