@@ -1359,6 +1359,16 @@ const commands = {
         : '✅ Created MCP configuration',
     );
 
+    const claudeMdContent = `# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+`;
+    const claudeMdPath = path.join(projectRoot, 'CLAUDE.md');
+    if (!fs.existsSync(claudeMdPath)) {
+      fs.writeFileSync(claudeMdPath, claudeMdContent);
+      console.log('✅ Created CLAUDE.md guidance file');
+    }
+
     // Create docs directory
     const docsDir = path.join(projectRoot, 'docs');
     if (!fs.existsSync(docsDir)) {
