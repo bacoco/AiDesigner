@@ -39,8 +39,8 @@ npm run flatten                # Create XML codebase snapshot for AI analysis
 
 ### Installation & Setup
 ```bash
-npm run install:bmad           # Install/upgrade BMAD in target project
-npx bmad-method install        # Same as above (npx wrapper)
+npm run install:agilai         # Install/upgrade Agilai in target project
+npx agilai install             # Same as above (npx wrapper)
 npm run setup:hooks            # Setup git hooks for validation
 ```
 
@@ -266,7 +266,7 @@ npm run mcp         # Run MCP server
 Creates AI-optimized XML snapshots of codebases:
 
 ```bash
-npx bmad-method flatten -i /path/to/source -o output.xml
+npx agilai flatten -i /path/to/source -o output.xml
 ```
 
 - Respects `.gitignore` and `.bmad-flattenignore`
