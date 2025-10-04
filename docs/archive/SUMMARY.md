@@ -168,15 +168,15 @@ async function runAnalystPhase(context) {
 ### NPX Usage Should Be:
 
 ```bash
-# Like BMAD
-npx bmad-method install    # Install BMAD framework
-npx bmad-method flatten    # Flatten codebase
+# Like Agilai
+npx agilai install    # Install Agilai framework
+npx agilai flatten    # Flatten codebase
 
-# BMAD-invisible should be
-npx bmad-invisible chat           # Start conversation
-npx bmad-invisible init          # Initialize project
-npx bmad-invisible status        # Show current phase
-npx bmad-invisible continue      # Resume conversation
+# Agilai Invisible should be
+npx agilai invisible chat           # Start conversation
+npx agilai invisible init          # Initialize project
+npx agilai invisible status        # Show current phase
+npx agilai invisible continue      # Resume conversation
 ```
 
 ### Chat Interface Example

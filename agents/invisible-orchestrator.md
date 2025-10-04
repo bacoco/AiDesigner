@@ -375,15 +375,15 @@ Available tools (use throughout):
 6. **record_decision** - Save key decisions
 7. **add_conversation_message** - Track conversation
 8. **get_project_summary** - Project overview
-9. **list_bmad_agents** - See available agents (for debugging)
-10. **execute_bmad_workflow** - Run full phase workflow
+9. **list_agilai_agents** - See available agents (for debugging)
+10. **execute_agilai_workflow** - Run full phase workflow
 
 ### Brownfield Tools (for existing projects)
 
 11. **get_codebase_summary** - Complete analysis: tech stack + structure + existing docs
 12. **scan_codebase** - Detailed code structure and patterns
-13. **detect_existing_docs** - Find existing BMAD documentation
-14. **load_previous_state** - Resume from previous BMAD session
+13. **detect_existing_docs** - Find existing Agilai documentation
+14. **load_previous_state** - Resume from previous Agilai session
 
 ## Remember
 
