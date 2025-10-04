@@ -16,7 +16,7 @@ This inventory captures the invisible-first features that must be preserved duri
   - Approval-mode safety guardrails that gate sensitive operations (auto command execution, deliverable persistence, etc.).
   - Bootstraps the orchestrator runtime with lane-aware LLM clients and logs MCP availability for Codex integration.
 - **`runtime.ts`**
-- Lazily loads Agilai core services (`ProjectState`, `BMADBridge`, deliverable generator, brownfield analyzer) and hooks modules dynamically.
+- Lazily loads Agilai core services (`ProjectState`, `AgilaiBridge`, deliverable generator, brownfield analyzer) and hooks modules dynamically.
   - Exposes a rich tool surface (phase detection, lane selection, deliverable generation, workflow execution) via MCP handlers.
   - Implements dual-lane execution (`quick` vs. `complex`) with explicit approval hooks and project state updates.
   - Persists lane decisions, conversation history, and deliverables through shared project state utilities.
@@ -78,11 +78,11 @@ This inventory captures the invisible-first features that must be preserved duri
 ## Summary Checklist for Migration Effort
 
 - [ ] Recreate MCP server entrypoints inside V6 module registration without losing lane routing or approval controls.
-- [ ] Provide filesystem abstraction or adapter so `BMADBridge` can resolve agents/templates within V6’s module directories.
+- [ ] Provide filesystem abstraction or adapter so `AgilaiBridge` can resolve agents/templates within V6’s module directories.
 - [ ] Reconcile persona tool invocations with V6 command set while maintaining invisible conversational contract.
 - [ ] Port supporting hooks (phase transition, context preservation, lane selector, auto commands) into V6 lifecycle.
 - [ ] Validate deliverable outputs remain in `docs/` and maintain naming conventions for downstream tooling.
 
 ### Legacy Compatibility Notes
 
-Until the V6 refactor ships, maintainers should continue shipping the legacy `.bmad-core/` tree and `npm run bmad*` scripts alongside the new Agilai tooling. Document any custom hooks or environment expectations that rely on those legacy assets so they can be rewritten or replaced before the compatibility layer is eventually removed.
+Until the V6 refactor ships, maintainers should continue shipping the legacy `.agilai-core/` tree and `npm run bmad*` scripts alongside the new Agilai tooling. Document any custom hooks or environment expectations that rely on those legacy assets so they can be rewritten or replaced before the compatibility layer is eventually removed.

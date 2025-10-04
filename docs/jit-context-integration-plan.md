@@ -9,7 +9,7 @@
 ## Invisible Orchestrator Adaptation Strategy
 
 1. **Context Injector Pipeline**
-   - Extend `BMADBridge` with a pluggable context injector registry so runtime components can contribute targeted sections before a prompt is sent to any agent.
+   - Extend `AgilaiBridge` with a pluggable context injector registry so runtime components can contribute targeted sections before a prompt is sent to any agent.
    - Each injector receives the agent id and current execution context and can return structured sections (`title`, `body`, `priority`) that are merged into the user message for the LLM.【F:lib/bmad-bridge.js†L12-L23】【F:lib/bmad-bridge.js†L101-L171】
 
 2. **Developer Story Context Injector**

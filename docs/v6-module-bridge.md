@@ -16,11 +16,11 @@ The new `V6ModuleLoader` scans `bmad/src/modules/*` and recursively indexes agen
 
 ## 3. Bridge Integration
 
-`BMADBridge` now auto-detects whether the legacy `agilai-core/` tree or the new v6 modules are installed. When it finds `bmad/src/modules`, it instantiates the module loader, exposes environment metadata, and routes agent/resource lookups through the v6 indexes while keeping the existing method signatures unchanged.【F:lib/bmad-bridge.js†L1-L451】 Listing helpers (`listAgents`, `listTasks`, `listTemplates`) now return module-qualified identifiers to reflect v6 packaging.【F:lib/bmad-bridge.js†L382-L451】
+`AgilaiBridge` now auto-detects whether the legacy `agilai-core/` tree or the new v6 modules are installed. When it finds `bmad/src/modules`, it instantiates the module loader, exposes environment metadata, and routes agent/resource lookups through the v6 indexes while keeping the existing method signatures unchanged.【F:lib/bmad-bridge.js†L1-L451】 Listing helpers (`listAgents`, `listTasks`, `listTemplates`) now return module-qualified identifiers to reflect v6 packaging.【F:lib/bmad-bridge.js†L382-L451】
 
 ## 4. Entry-Point Hook
 
-The MCP runtime still calls `BMADBridge` lazily, but it now logs whenever the bridge reports a v6 module environment so operators know the orchestrator bound to the new layout. This keeps the entry point compatible with both directory structures while documenting the detection in the server logs.【F:src/mcp-server/runtime.ts†L100-L138】
+The MCP runtime still calls `AgilaiBridge` lazily, but it now logs whenever the bridge reports a v6 module environment so operators know the orchestrator bound to the new layout. This keeps the entry point compatible with both directory structures while documenting the detection in the server logs.【F:src/mcp-server/runtime.ts†L100-L138】
 
 ## 5. Agent Manifest Prototype
 
