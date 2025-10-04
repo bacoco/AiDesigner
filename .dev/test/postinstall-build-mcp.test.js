@@ -147,7 +147,6 @@ describe('postinstall-build-mcp script', () => {
     });
   });
 
-
   describe('no TypeScript compilation', () => {
     test('does not compile TypeScript in postinstall', () => {
       const scriptContent = fs.readFileSync(postinstallScript, 'utf8');

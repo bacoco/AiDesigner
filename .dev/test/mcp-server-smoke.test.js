@@ -47,9 +47,7 @@ describe('MCP server bundle smoke test', () => {
     });
   });
 
-  test(
-    'bundled MCP tools support search and install operations',
-    async () => {
+  test('bundled MCP tools support search and install operations', async () => {
     if (!fs.existsSync(serverEntry)) {
       throw new Error(
         'Expected dist/mcp/mcp/server.js to exist. Run the MCP build before executing tests.',

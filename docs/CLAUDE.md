@@ -34,6 +34,7 @@ Everything is markdown/YAML - no code in core framework. Code exists only in too
 npm run build                  # Build all agents, teams, and expansion packs
 npm run build:agents           # Build only agent bundles
 npm run build:teams            # Build only team bundles
+npm run build:mcp              # Build MCP server (TypeScript → dist/mcp/)
 npm run flatten                # Create XML codebase snapshot for AI analysis
 ```
 
@@ -256,10 +257,28 @@ Each expansion pack mirrors the core structure (agents/, workflows/, templates/,
 - **State persistence**: MCP server maintains project state
 
 ### MCP Integration
+
+**CRITICAL**: The MCP server must be built BEFORE publishing to npm.
+
 ```bash
-npm run build:mcp   # Build TypeScript MCP server
-npm run mcp         # Run MCP server
+npm run build:mcp   # Build TypeScript MCP server (MUST run before publish)
+npm run mcp         # Run MCP server locally for testing
 ```
+
+**MCP Server Architecture**:
+- **Source**: `.dev/mcp/server.ts` (TypeScript entry point)
+- **Compiled Output**: `dist/mcp/mcp/server.js` (published to npm)
+- **Runtime**: `.dev/src/mcp-server/runtime.ts` → `dist/mcp/src/mcp-server/runtime.js`
+- **Build Config**: `.dev/mcp/tsconfig.json` (outputs to `dist/mcp/`)
+
+**Publishing Checklist**:
+1. Run `npm run build:mcp` to compile TypeScript
+2. Verify `dist/mcp/mcp/server.js` exists
+3. Test with `node dist/mcp/mcp/server.js`
+4. Check package contents: `npm pack --dry-run | grep "dist/mcp"`
+5. Only then run `npm publish`
+
+**Known Issue**: The MCP server `.js` files were missing from published packages in versions 1.3.17-1.3.21. The postinstall script builds them, but this creates timing issues with Claude Code CLI trying to connect before build completes. The `dist/mcp/mcp/server.js` file MUST be pre-built and included in the published package.
 
 ## Flattener Tool
 
@@ -274,6 +293,46 @@ npx agilai flatten -i /path/to/source -o output.xml
 - XML format with CDATA sections for safe content embedding
 - Token estimation and comprehensive statistics
 
+## Publishing & Release
+
+### Pre-Publish Checklist
+```bash
+# 1. Build everything
+npm run build        # Builds agents, teams, expansion packs
+npm run build:mcp    # CRITICAL: Builds MCP server TypeScript
+
+# 2. Verify MCP server exists
+ls dist/mcp/mcp/server.js  # Must exist!
+
+# 3. Test MCP server
+node dist/mcp/mcp/server.js  # Should start without errors
+
+# 4. Validate package contents
+npm pack --dry-run | grep "dist/mcp/mcp/server.js"  # Must appear in list
+
+# 5. Run pre-release checks
+npm run pre-release  # validate + format:check + lint
+
+# 6. Version bump (if needed)
+npm run version:patch   # or minor/major
+
+# 7. Publish
+npm publish
+```
+
+### MCP Server Integration (.mcp.json)
+```json
+{
+  "mcpServers": {
+    "agilai": {
+      "command": "node",
+      "args": ["node_modules/agilai/dist/mcp/mcp/server.js"],
+      "disabled": false
+    }
+  }
+}
+```
+
 ## Contributing Guidelines
 
 1. **Read first**: `CONTRIBUTING.md` and `docs/GUIDING-PRINCIPLES.md`
@@ -282,6 +341,7 @@ npx agilai flatten -i /path/to/source -o output.xml
 4. **Validation**: Run `npm run pre-release` before submitting
 5. **Alignment**: Ensure changes match guiding principles
 6. **Natural language**: Core framework changes must be markdown/YAML only
+7. **MCP changes**: Always test MCP server build before committing
 
 ## Key Architectural Documents
 
