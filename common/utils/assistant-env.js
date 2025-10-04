@@ -14,9 +14,10 @@ const normalizeProvider = (value) => (typeof value === 'string' ? value.trim().t
  * Determines the active assistant provider with fallback logic.
  *
  * Precedence:
- * 1. BMAD_ASSISTANT_PROVIDER (if not 'anthropic')
- * 2. LLM_PROVIDER (fallback when BMAD_ASSISTANT_PROVIDER is unset or 'anthropic')
- * 3. BMAD_ASSISTANT_PROVIDER value (if it was 'anthropic')
+ * 1. AGILAI_ASSISTANT_PROVIDER (if not 'anthropic')
+ * 2. BMAD_ASSISTANT_PROVIDER (legacy, if not 'anthropic')
+ * 3. LLM_PROVIDER (fallback when direct provider is unset or 'anthropic')
+ * 4. Direct provider value (even if 'anthropic')
  *
  * This allows GLM credentials to propagate via LLM_PROVIDER when the assistant
  * provider is explicitly set to 'anthropic' or left unset, enabling --glm flag

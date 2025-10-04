@@ -988,9 +988,13 @@ const commands = {
       return;
     }
 
-    const { assistant, provider, providerExplicit } = selection;
-    const choice = findAssistantChoice(assistant);
-    let resolvedProvider = provider;
+      const {
+        assistant,
+        provider,
+        providerExplicit: providerWasExplicit,
+      } = selection;
+      const choice = findAssistantChoice(assistant);
+      let resolvedProvider = provider;
 
     // Override provider to GLM when --glm flag is used, the assistant supports GLM,
     // and the user didn't explicitly select a different provider via --provider flag
@@ -998,10 +1002,10 @@ const commands = {
       runtimeOptions.llmProvider === 'glm' &&
       choice?.providers.includes('glm') &&
       resolvedProvider !== 'glm' &&
-      !providerExplicit
-    ) {
-      resolvedProvider = 'glm';
-    }
+        !providerWasExplicit
+      ) {
+        resolvedProvider = 'glm';
+      }
 
     process.env.AGILAI_ASSISTANT_PROVIDER = resolvedProvider;
     if (process.env.BMAD_ASSISTANT_PROVIDER) {

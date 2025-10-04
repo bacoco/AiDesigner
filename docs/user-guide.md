@@ -193,7 +193,7 @@ If you want to do the planning on the web with Claude (Sonnet 4 or Opus), Gemini
 
 ```bash
 # Interactive installation (recommended)
-npx bmad-method install
+npx agilai install
 ```
 
 ### OpenCode
@@ -201,26 +201,26 @@ npx bmad-method install
 BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.json` (JSON-only, no Markdown fallback).
 
 - Installation:
-  - Run `npx bmad-method install` and choose `OpenCode` in the IDE list.
+  - Run `npx agilai install` and choose `OpenCode` in the IDE list.
   - The installer will detect an existing `opencode.jsonc`/`opencode.json` or create a minimal `opencode.jsonc` if missing.
   - It will:
-    - Ensure `instructions` includes `.bmad-core/core-config.yaml` (and each selected expansion pack’s `config.yaml`).
-    - Merge BMAD agents and commands using file references (`{file:./.bmad-core/...}`), idempotently.
+    - Ensure `instructions` includes `.agilai-core/core-config.yaml` (and each selected expansion pack’s `config.yaml`).
+    - Merge BMAD agents and commands using file references (`{file:./.agilai-core/...}`), idempotently.
     - Preserve other top-level fields and user-defined entries.
 
 - Prefixes and collisions:
-  - You can opt-in to prefix agent keys with `bmad-` and command keys with `bmad:tasks:` to avoid name collisions.
+  - You can opt-in to prefix agent keys with `agilai-` and command keys with `/agilai:tasks:` to avoid name collisions.
   - If a key already exists and is not BMAD-managed, the installer will skip it and suggest enabling prefixes.
 
 - What gets added:
-  - `instructions`: `.bmad-core/core-config.yaml` plus any selected expansion pack `config.yaml` files.
+  - `instructions`: `.agilai-core/core-config.yaml` plus any selected expansion pack `config.yaml` files.
   - `agent`: BMAD agents from core and selected packs.
-    - `prompt`: `{file:./.bmad-core/agents/<id>.md}` (or pack path)
+    - `prompt`: `{file:./.agilai-core/agents/<id>.md}` (or pack path)
     - `mode`: `primary` for orchestrators, otherwise `all`
     - `tools`: `{ write: true, edit: true, bash: true }`
     - `description`: extracted from the agent’s `whenToUse`
   - `command`: BMAD tasks from core and selected packs.
-    - `template`: `{file:./.bmad-core/tasks/<id>.md}` (or pack path)
+    - `template`: `{file:./.agilai-core/tasks/<id>.md}` (or pack path)
     - `description`: extracted from the task’s “Purpose” section
 
 - Selected Packages Only:
@@ -229,7 +229,7 @@ BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.jso
 - Refresh after changes:
   - Re-run:
     ```bash
-    npx bmad-method install -f -i opencode
+    npx agilai install -f -i opencode
     ```
   - The installer safely updates entries without duplication and preserves your custom fields and comments.
 
@@ -238,7 +238,7 @@ BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.jso
     ```json
     {
       "scripts": {
-        "bmad:opencode": "bmad-method install -f -i opencode"
+        "/agilai:opencode": "agilai install -f -i opencode"
       }
     }
     ```
@@ -249,9 +249,9 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
 
 - Two installation modes:
   - Codex (local only): keeps `.bmad-core/` ignored for local dev.
-    - `npx bmad-method install -f -i codex -d .`
+    - `npx agilai install -f -i codex -d .`
   - Codex Web Enabled: ensures `.bmad-core/` is tracked so you can commit it for Codex Web.
-    - `npx bmad-method install -f -i codex-web -d .`
+    - `npx agilai install -f -i codex-web -d .`
 
 - What gets generated:
   - `AGENTS.md` at the project root with a BMAD section containing
@@ -264,7 +264,7 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
     `shadcn` CLI can scaffold UI components without re-prompting you for
     preferences.
   - If a `package.json` exists, helpful scripts are added:
-    - `bmad:refresh`, `bmad:list`, `bmad:validate`
+    - `/agilai:refresh`, `/agilai:list`, `/agilai:validate`
   - Global Codex CLI defaults are merged into `~/.codex/config.toml` (skipped automatically in CI/non-interactive runs).
     - Ensures Agilai's MCP server is registered and Codex approvals run in fully automated mode by default.
     - Registers optional `chrome-devtools` and `shadcn` MCP helpers with
@@ -318,7 +318,7 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
 
 - Using Codex:
   - CLI: run `codex` in the project root and prompt naturally, e.g., “As dev, implement …”.
-  - Web: commit `.bmad-core/` and `AGENTS.md`, then open the repo in Codex and prompt the same way.
+  - Web: commit `.agilai-core/` and `AGENTS.md`, then open the repo in Codex and prompt the same way.
 
 - Refresh after changes:
   - Re-run the appropriate install mode (`codex` or `codex-web`) to update the BMAD block in `AGENTS.md`.
@@ -603,7 +603,7 @@ Quick reference for where Test Architect outputs are stored:
 
 ## Technical Preferences System
 
-BMad includes a personalization system through the `technical-preferences.md` file located in `.bmad-core/data/` - this can help bias the PM and Architect to recommend your preferences for design patterns, technology selection, or anything else you would like to put in here.
+BMad includes a personalization system through the `technical-preferences.md` file located in `.agilai-core/data/` - this can help bias the PM and Architect to recommend your preferences for design patterns, technology selection, or anything else you would like to put in here.
 
 ### Using with Web Bundles
 
@@ -611,7 +611,7 @@ When creating custom web bundles or uploading to AI platforms, include your `tec
 
 ## Core Configuration
 
-The `.bmad-core/core-config.yaml` file is a critical config that enables BMad to work seamlessly with differing project structures, more options will be made available in the future. Currently the most important is the devLoadAlwaysFiles list section in the yaml.
+The `.agilai-core/core-config.yaml` file is a critical config that enables BMad to work seamlessly with differing project structures, more options will be made available in the future. Currently the most important is the devLoadAlwaysFiles list section in the yaml.
 
 ### Developer Context Files
 
