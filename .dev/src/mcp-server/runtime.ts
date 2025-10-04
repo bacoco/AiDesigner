@@ -2003,8 +2003,17 @@ export async function runOrchestratorServer(
             serverConfig.env = params.envVars;
           }
 
-          const requestedConfig = params.config || "claude";
+          const requestedConfig = params.config || "agilai";
           const normalisedRequest = requestedConfig.toLowerCase();
+
+          // Validate config parameter
+          const validConfigs = ["agilai", "claude", "both", "bmad"];
+          if (!validConfigs.includes(normalisedRequest)) {
+            throw new Error(
+              `Invalid config parameter: "${params.config}". Valid options are: "agilai" (default), "claude", "both", or "bmad" (legacy alias for "agilai")`
+            );
+          }
+
           const legacyAliasUsed = normalisedRequest === "bmad";
           const effectiveConfig = legacyAliasUsed ? "agilai" : normalisedRequest;
           const applyClaudeConfig =
