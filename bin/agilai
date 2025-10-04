@@ -36,6 +36,12 @@ const GLM_AUTH_TOKEN_ENV_KEYS = ['AGILAI_GLM_AUTH_TOKEN', 'BMAD_GLM_AUTH_TOKEN',
 
 const hasOwn = (source, key) => Boolean(source && Object.prototype.hasOwnProperty.call(source, key));
 
+/**
+ * Resolves environment variable value from a prioritized list of keys
+ * @param {Object} source - Environment object to search (e.g., process.env or parsed .env file)
+ * @param {string[]} keys - Array of keys in priority order (first match wins)
+ * @returns {{key: string|undefined, value: string|undefined}} The matched key and its trimmed value
+ */
 const resolveEnvValue = (source, keys) => {
   for (const key of keys) {
     const value = source?.[key];
@@ -47,6 +53,13 @@ const resolveEnvValue = (source, keys) => {
   return { key: undefined, value: undefined };
 };
 
+/**
+ * Chooses which environment variable key to use for writing
+ * Returns the first existing key from the source, or the first key if none exist
+ * @param {Object} source - Environment object to check (e.g., parsed .env file)
+ * @param {string[]} keys - Array of keys in priority order
+ * @returns {string} The key to use for writing
+ */
 const chooseWriteKey = (source, keys) => {
   for (const key of keys) {
     if (hasOwn(source, key)) {
@@ -57,8 +70,13 @@ const chooseWriteKey = (source, keys) => {
   return keys[0];
 };
 
+/**
+ * Sets a process environment variable only if it's not already set or is empty/whitespace
+ * @param {string} key - The environment variable name
+ * @param {string|undefined} value - The value to set (ignored if falsy or whitespace-only)
+ */
 const setProcessEnvIfMissing = (key, value) => {
-  if (!value) {
+  if (!value || (typeof value === 'string' && value.trim() === '')) {
     return;
   }
 

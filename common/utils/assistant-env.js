@@ -4,8 +4,9 @@
  */
 
 /**
- * Get the configured assistant provider from environment
- * @returns {string} Provider name (normalized to lowercase)
+ * Normalizes a provider string value to lowercase
+ * @param {string|undefined} value - The provider value to normalize
+ * @returns {string} Provider name (normalized to lowercase, empty string if invalid)
  */
 const normalizeProvider = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
 
