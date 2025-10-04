@@ -411,5 +411,50 @@ describe('LLMClient', () => {
         'Missing API key for provider "claude". Set the ANTHROPIC_API_KEY environment variable or provide an apiKey option.',
       );
     });
+
+    it('throws error when calling chat() without API key in MCP mode', async () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'claude' });
+
+      await expect(client.chat([{ role: 'user', content: 'Hello' }])).rejects.toThrow(
+        'Cannot call chat methods without an API key',
+      );
+    });
+
+    it('throws error when calling chatAnthropic() without API key in MCP mode', async () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'claude' });
+
+      await expect(
+        client.chatAnthropic([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
+      ).rejects.toThrow('Cannot call Anthropic API without an API key');
+    });
+
+    it('throws error when calling chatOpenAI() without API key in MCP mode', async () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'openai' });
+
+      await expect(
+        client.chatOpenAI([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
+      ).rejects.toThrow('Cannot call OpenAI API without an API key');
+    });
+
+    it('throws error when calling chatGemini() without API key in MCP mode', async () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'gemini' });
+
+      await expect(
+        client.chatGemini([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
+      ).rejects.toThrow('Cannot call Gemini API without an API key');
+    });
+
+    it('throws error when calling chatGLM() without API key in MCP mode', async () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'glm' });
+
+      await expect(
+        client.chatGLM([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
+      ).rejects.toThrow('Cannot call GLM API without an API key');
+    });
   });
 });

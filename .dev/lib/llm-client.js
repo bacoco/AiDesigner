@@ -131,6 +131,13 @@ class LLMClient {
    * @returns {Promise<string>} - LLM response
    */
   async chat(messages, options = {}) {
+    if (!this.apiKey) {
+      throw new Error(
+        `Cannot call chat methods without an API key. Provider: "${this.provider}". ` +
+          `Set the ${this.getApiKeyEnvVarName()} environment variable or provide an apiKey option.`,
+      );
+    }
+
     const systemPrompt = options.systemPrompt || '';
     const temperature = options.temperature || 0.7;
     const maxTokens = options.maxTokens || 4096;
@@ -193,6 +200,10 @@ class LLMClient {
    * @returns {Promise<string>} - Response text from Claude
    */
   async chatAnthropic(messages, options) {
+    if (!this.apiKey) {
+      throw new Error('Cannot call Anthropic API without an API key.');
+    }
+
     const payload = {
       model: this.model,
       max_tokens: options.maxTokens,
@@ -227,6 +238,10 @@ class LLMClient {
   }
 
   async chatOpenAI(messages, options) {
+    if (!this.apiKey) {
+      throw new Error('Cannot call OpenAI API without an API key.');
+    }
+
     const apiMessages = messages.map((msg) => ({
       role: msg.role,
       content: msg.content,
@@ -261,6 +276,10 @@ class LLMClient {
   }
 
   async chatGemini(messages, options) {
+    if (!this.apiKey) {
+      throw new Error('Cannot call Gemini API without an API key.');
+    }
+
     // Format messages for Gemini
     const contents = [];
 
@@ -308,6 +327,10 @@ class LLMClient {
   }
 
   async chatGLM(messages, options) {
+    if (!this.apiKey) {
+      throw new Error('Cannot call GLM API without an API key.');
+    }
+
     const apiMessages = messages.map((msg) => ({
       role: msg.role,
       content: msg.content,
