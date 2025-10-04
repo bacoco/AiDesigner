@@ -24,6 +24,8 @@ let updateProjectState = unboundUpdateProjectState;
 let saveDeliverable = unboundSaveDeliverable;
 let loadPhaseContext = unboundLoadPhaseContext;
 
+const GATED_PHASES = new Set(['pm', 'architect', 'sm', 'dev', 'qa', 'ux', 'po']);
+
 /**
  * Type guard to check if a result is an AgentTriggerParseError.
  *
@@ -118,6 +120,42 @@ async function executeTransition(fromPhase, toPhase, context) {
   };
 }
 
+async function handleTransition(projectState, toPhase, context = {}, userValidated = false) {
+  if (!projectState || typeof projectState !== 'object') {
+    throw new Error('A valid projectState instance is required to handle transitions');
+  }
+
+  if (typeof projectState.transitionPhase !== 'function') {
+    throw new TypeError('projectState.transitionPhase must be a function');
+  }
+
+  if (!toPhase) {
+    throw new Error('toPhase is required for a phase transition');
+  }
+
+  if (GATED_PHASES.has(toPhase) && !userValidated) {
+    throw new Error(`Phase transition to ${toPhase} requires user validation`);
+  }
+
+  const currentPhase =
+    typeof projectState.getState === 'function'
+      ? projectState.getState()?.currentPhase
+      : projectState.state?.currentPhase;
+
+  if (!currentPhase) {
+    throw new Error('Unable to determine current project phase for transition');
+  }
+
+  const transitionResult = await executeTransition(currentPhase, toPhase, context);
+
+  if (transitionResult) {
+    const historyContext = transitionResult.context ?? context ?? {};
+    await projectState.transitionPhase(toPhase, historyContext);
+  }
+
+  return transitionResult;
+}
+
 async function checkTransition(conversationContext, userMessage, currentPhase) {
   const detected = await triggerAgent('phase-detector', {
     context: conversationContext,
@@ -141,4 +179,4 @@ async function checkTransition(conversationContext, userMessage, currentPhase) {
   return executeTransition(currentPhase, detected.detected_phase, conversationContext);
 }
 
-module.exports = { bindDependencies, checkTransition, executeTransition };
+module.exports = { bindDependencies, checkTransition, executeTransition, handleTransition };
