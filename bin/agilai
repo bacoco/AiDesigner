@@ -1126,7 +1126,8 @@ const commands = {
       }
     }
 
-    const orchestratorKey = 'agilai-invisible-orchestrator';
+    const orchestratorKey = 'agilai';
+    const legacyOrchestratorKey = 'agilai-invisible-orchestrator';
     const orchestratorArgs = ['-e', "require('agilai/dist/mcp/mcp/server.js')"];
     const legacyOrchestratorArgs = new Set([
       'dist/mcp/mcp/server.js',
@@ -1137,6 +1138,13 @@ const commands = {
       args: ['-e', "require(require('path').resolve(__dirname, '..', 'dist','mcp','mcp','server.js'))"],
       disabled: false,
     };
+
+    // Migrate from legacy key if it exists
+    if (mcpConfig.mcpServers[legacyOrchestratorKey] && !mcpConfig.mcpServers[orchestratorKey]) {
+      mcpConfig.mcpServers[orchestratorKey] = mcpConfig.mcpServers[legacyOrchestratorKey];
+      delete mcpConfig.mcpServers[legacyOrchestratorKey];
+      console.log('✅ Migrated Agilai MCP server to new name');
+    }
 
     if (!mcpConfig.mcpServers[orchestratorKey]) {
       mcpConfig.mcpServers[orchestratorKey] = orchestratorConfig;
