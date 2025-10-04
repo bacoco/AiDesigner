@@ -70,19 +70,21 @@ GLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4/chat/completions
 
 When GLM mode is active, variables are resolved in this order:
 
-| Variable               | Priority | Description                              |
-| ---------------------- | -------- | ---------------------------------------- |
-| `BMAD_GLM_BASE_URL`    | 1        | GLM API base URL (BMAD-specific)         |
-| `GLM_BASE_URL`         | 2        | GLM API base URL (standard)              |
-| `ANTHROPIC_BASE_URL`   | 3        | Anthropic base URL (fallback)            |
-| `BMAD_GLM_AUTH_TOKEN`  | 1        | GLM authentication token (BMAD-specific) |
-| `GLM_AUTH_TOKEN`       | 2        | GLM authentication token (standard)      |
-| `ANTHROPIC_AUTH_TOKEN` | 3        | Anthropic auth token (fallback)          |
-| `BMAD_GLM_API_KEY`     | 1        | GLM API key (BMAD-specific)              |
-| `GLM_API_KEY`          | 2        | GLM API key (standard)                   |
-| `ANTHROPIC_API_KEY`    | 3        | Anthropic API key (fallback)             |
+| Variable               | Priority | Description                            |
+| ---------------------- | -------- | -------------------------------------- |
+| `BMAD_GLM_BASE_URL`    | 1        | GLM API base URL (legacy BMAD name)    |
+| `GLM_BASE_URL`         | 2        | GLM API base URL (standard)            |
+| `ANTHROPIC_BASE_URL`   | 3        | Anthropic base URL (fallback)          |
+| `BMAD_GLM_AUTH_TOKEN`  | 1        | GLM authentication token (legacy name) |
+| `GLM_AUTH_TOKEN`       | 2        | GLM authentication token (standard)    |
+| `ANTHROPIC_AUTH_TOKEN` | 3        | Anthropic auth token (fallback)        |
+| `BMAD_GLM_API_KEY`     | 1        | GLM API key (legacy name)              |
+| `GLM_API_KEY`          | 2        | GLM API key (standard)                 |
+| `ANTHROPIC_API_KEY`    | 3        | Anthropic API key (fallback)           |
 
 **Note:** At least one of `*_BASE_URL` or `*_API_KEY` must be set when using GLM mode.
+
+> ℹ️ **Agilai naming update**: The runtime still reads the legacy `BMAD_*` environment variables for GLM routing. You can safely define `AGILAI_*` aliases in your own tooling, but keep exporting the `BMAD_*` names until the CLI adds first-class Agilai prefixes.
 
 #### Custom Endpoints
 
@@ -274,7 +276,7 @@ CODEX_APPROVED_OPERATIONS=generate_deliverable:prd,execute_quick_lane
 - `generate_deliverable:story` - Generate user stories
 - `execute_quick_lane` - Run Quick Lane workflow
 - `execute_complex_lane` - Run Complex Lane workflow
-- `transition_phase` - Move to next BMAD phase
+- `transition_phase` - Move to next Agilai phase
 
 ### Model Overrides
 
@@ -334,7 +336,7 @@ Agilai emits structured JSON logs to `stderr`:
   "ts": "2024-07-16T12:34:56.789Z",
   "level": "info",
   "msg": "lane_selection_completed",
-  "service": "bmad-codex",
+  "service": "agilai-codex",
   "component": "mcp-orchestrator",
   "operation": "execute_workflow",
   "lane": "quick",

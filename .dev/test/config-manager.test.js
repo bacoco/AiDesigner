@@ -4,7 +4,7 @@ const path = require('node:path');
 
 const { ensureCodexConfig } = require('../lib/codex/config-manager.js');
 
-const DEFAULT_SERVER_NAMES = ['bmad-mcp', 'chrome-devtools', 'shadcn'];
+const DEFAULT_SERVER_NAMES = ['agilai-mcp', 'chrome-devtools', 'shadcn'];
 
 function normaliseServerName(server) {
   const value = server?.name ?? server?.id ?? '';
@@ -39,9 +39,9 @@ require_manual_approval = true
 auto_approve = false
 
 [[mcp.servers]]
-name = "bmad-mcp"
+name = "agilai-mcp"
 command = "/custom/path/to/npx"
-args = ["bmad-invisible", "mcp"]
+args = ["agilai", "mcp"]
 autoStart = false
 autoApprove = false
 
@@ -69,11 +69,12 @@ args = ["--flag"]
       expect(nameCounts.get(expectedName)).toBe(1);
     }
 
-    const orchestrator = servers.find((server) => normaliseServerName(server) === 'bmad-mcp');
+    const orchestrator = servers.find((server) => normaliseServerName(server) === 'agilai-mcp');
     expect(orchestrator).toBeDefined();
     expect(orchestrator.autoStart).toBe(false);
     expect(orchestrator.autoApprove).toBe(false);
     expect(orchestrator.command).toBe('/custom/path/to/npx');
+    expect(orchestrator.args).toEqual(['agilai', 'mcp']);
 
     const chrome = servers.find((server) => normaliseServerName(server) === 'chrome-devtools');
     expect(chrome).toBeDefined();

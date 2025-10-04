@@ -57,7 +57,7 @@ describe('setupOpenCode model defaults', () => {
       expect(parsed.model).toBe(DEFAULT_MODEL);
       const instructions = [...(parsed.instructions || [])];
       expect(instructions).toEqual(
-        expect.arrayContaining(['./custom/instructions.yaml', '.bmad-core/core-config.yaml']),
+        expect.arrayContaining(['./custom/instructions.yaml', '.agilai-core/core-config.yaml']),
       );
       expect(parsed.fallbackModels).toEqual(['custom/provider-model', ...DEFAULT_FALLBACKS]);
     } finally {
