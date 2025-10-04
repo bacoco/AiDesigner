@@ -1128,14 +1128,15 @@ const commands = {
 
     const orchestratorKey = 'agilai';
     const legacyOrchestratorKey = 'agilai-invisible-orchestrator';
-    const orchestratorArgs = ['-e', "require('agilai/dist/mcp/mcp/server.js')"];
+    const orchestratorArgs = ['-e', "require('agilai/.dev/dist/mcp/mcp/server.js')"];
     const legacyOrchestratorArgs = new Set([
       'dist/mcp/mcp/server.js',
       './node_modules/agilai/dist/mcp/mcp/server.js',
+      "require('agilai/dist/mcp/mcp/server.js')",
     ]);
     const orchestratorConfig = {
       command: 'node',
-      args: ['-e', "require(require('path').resolve(__dirname, '..', 'dist','mcp','mcp','server.js'))"],
+      args: ['-e', "require('agilai/.dev/dist/mcp/mcp/server.js')"],
       disabled: false,
     };
 
@@ -1155,14 +1156,16 @@ const commands = {
       existing.disabled = false;
       existing.command = 'node';
 
-      if (!Array.isArray(existing.args) || existing.args.length === 0) {
+      // Check if we need to update args to new format
+      const needsUpdate =
+        !Array.isArray(existing.args) ||
+        existing.args.length === 0 ||
+        (existing.args.length === 1 && legacyOrchestratorArgs.has(existing.args[0])) ||
+        (existing.args.length === 2 && existing.args[0] === '-e' && existing.args[1] !== orchestratorArgs[1]);
+
+      if (needsUpdate) {
         existing.args = [...orchestratorArgs];
-      } else if (
-        existing.args.length === 1 &&
-        typeof existing.args[0] === 'string' &&
-        legacyOrchestratorArgs.has(existing.args[0])
-      ) {
-        existing.args = [...orchestratorArgs];
+        console.log('✅ Updated Agilai MCP server to latest path');
       }
     }
 
