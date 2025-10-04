@@ -1131,7 +1131,7 @@ const commands = {
     ]);
     const orchestratorConfig = {
       command: 'node',
-      args: [...orchestratorArgs],
+      args: ['-e', "require(require('path').resolve(__dirname, '..', 'dist','mcp','mcp','server.js'))"],
       disabled: false,
     };
 
