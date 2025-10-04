@@ -1,6 +1,6 @@
 {
-  "version": "1.3.11",
-  "generatedAt": "2025-10-04T04:31:31.238Z",
+  "version": "1.3.26",
+  "generatedAt": "2025-10-04T14:41:33.592Z",
   "criticalPaths": [
     {
       "path": "agilai-core/core-config.yaml",
@@ -194,7 +194,7 @@
     "expansion-packs/bmad-godot-game-dev/data/development-guidelines.md": "e723589af9ede1bb1d698352ab86e02040203788dd220c4468e92818aacb32c9",
     "expansion-packs/bmad-godot-game-dev/data/elicitation-methods.md": "8c3ca9b84c8784c9e695e3a3f9584e7fa9c3ee20d5c2ad07c723c4c0437f079c",
     "expansion-packs/bmad-godot-game-dev/data/technical-preferences.md": "6530bed845540b0dc79313eef1f15f3461595ce2a05a76f08cc5ba287b9af12c",
-    "expansion-packs/bmad-godot-game-dev/README.md": "2ca0c7e77fc838a39d3b837c2a07fd9e0fab579c7e837266c184266bd19a9df9",
+    "expansion-packs/bmad-godot-game-dev/README.md": "975d773d9ab9a2b7ca09b674f80dd1b7c00e1a265090c96c4e17fc16d555f134",
     "expansion-packs/bmad-godot-game-dev/tasks/advanced-elicitation.md": "08c3b9daf4425e5bbcecadb2e5629d088118f0e4b5bf2e641a151bdf26bfd21a",
     "expansion-packs/bmad-godot-game-dev/tasks/apply-qa-fixes.md": "acb30dcbe0323f3210c6adea88168610f26523900323f3030f004fcf57bcc39d",
     "expansion-packs/bmad-godot-game-dev/tasks/brownfield-create-epic.md": "7b95c09793f16e1a3abc9297ba8bafa5a5a30e6d47594f9359aac4ea3f3a6320",
