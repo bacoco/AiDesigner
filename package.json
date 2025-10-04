@@ -58,7 +58,7 @@
     "lint": "eslint --config .dev/config/eslint.config.mjs . --ext .js,.cjs,.mjs,.yaml --max-warnings=0",
     "lint:fix": "eslint --config .dev/config/eslint.config.mjs . --ext .js,.cjs,.mjs,.yaml --fix",
     "list:agents": "node .dev/tools/cli.js list:agents",
-    "mcp": "node -e \"require('agilai/dist/mcp/mcp/server.js')\"",
+    "mcp": "node dist/mcp/mcp/server.js",
     "mcp:add": "node .dev/tools/cli.js mcp add",
     "mcp:audit": "node .dev/tools/cli.js mcp audit",
     "mcp:browse": "node .dev/tools/cli.js mcp browse",
