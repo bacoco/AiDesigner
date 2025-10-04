@@ -76,7 +76,7 @@ node tools/install-expansion-pack.js infrastructure
 
 This will:
 
-1. Copy all files to their appropriate locations in `.bmad-core/`
+1. Copy all files to their appropriate locations in `.agilai-core/`
 2. Update any necessary configurations
 3. Make the DevOps agent available in teams
 

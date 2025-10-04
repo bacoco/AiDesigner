@@ -20,7 +20,7 @@ class ProjectState {
       projectId: null,
       projectName: null,
       currentPhase: 'analyst',
-      currentLane: null, // 'bmad' or 'spec_kit'
+      currentLane: null, // 'agilai' or 'spec_kit'
       phaseHistory: [],
       laneHistory: [], // Track lane decisions
       requirements: {},
@@ -643,7 +643,7 @@ class ProjectState {
    * Get current lane
    */
   getCurrentLane() {
-    return this.state.currentLane || 'bmad';
+    return this.state.currentLane || 'agilai';
   }
 
   /**
@@ -688,7 +688,7 @@ class ProjectState {
    * Generate unique project ID
    */
   generateProjectId() {
-    return `bmad-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    return `agilai-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   }
 }
 
