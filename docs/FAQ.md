@@ -488,8 +488,8 @@ Both produce the same `docs/` structure, so you can switch between them!
 # Rebuild MCP server
 npm run build:mcp
 
-# Verify it exists
-ls -la dist/mcp/mcp/server.js
+# Verify it loads
+node -e "require('agilai/dist/mcp/mcp/server.js')"
 ```
 
 ### "Command not found: claude"

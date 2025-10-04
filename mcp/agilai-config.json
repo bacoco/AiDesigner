@@ -2,7 +2,7 @@
   "mcpServers": {
     "agilai-invisible-orchestrator": {
       "command": "node",
-      "args": ["dist/mcp/mcp/server.js"]
+      "args": ["-e", "require('agilai/dist/mcp/mcp/server.js')"]
     },
     "chrome-devtools": {
       "command": "npx",

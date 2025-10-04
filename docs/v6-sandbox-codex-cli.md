@@ -58,7 +58,7 @@ These checks give parity coverage without depending on the live Codex service wh
 ## 4. Troubleshooting Notes
 
 - **`codex` command not found** – re-run the CLI installer inside the sandbox and verify `$PATH` includes the install location.
-- **`dist/mcp/mcp/server.js` missing** – execute `npm run build:mcp` to refresh compiled MCP assets.
+- **`require('agilai/dist/mcp/mcp/server.js')` failing** – execute `npm run build:mcp` to refresh compiled MCP assets.
 - **Configuration not updating** – delete `~/.codex/config.toml` and rerun the `ensureCodexConfig` snippet to regenerate with the new defaults.
 
 ## 5. Outcome

@@ -1126,7 +1126,7 @@ const commands = {
     const orchestratorKey = 'agilai-invisible-orchestrator';
     const orchestratorConfig = {
       command: 'node',
-      args: ['./node_modules/agilai/dist/mcp/mcp/server.js'],
+      args: ['-e', "require('agilai/dist/mcp/mcp/server.js')"],
       disabled: false,
     };
 
