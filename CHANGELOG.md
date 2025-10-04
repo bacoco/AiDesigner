@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+### Breaking Changes
+
+**⚠️ MCP Server Installation Default Changed** - Default configuration target updated
+
+- **New default**: MCP servers now install to Agilai configuration by default (previously defaulted to Claude Desktop configuration)
+- **Migration**: Existing code that relied on the implicit default will now target Agilai config instead of Claude config
+- **Workaround**: Explicitly specify `config: "claude"` to install to Claude Desktop configuration
+- **Options**: Use `config: "both"` to install to both configurations simultaneously
+- **Legacy alias**: `config: "bmad"` continues to work as an alias for `"agilai"`
+
 ### Features
 
 **🚀 Enhanced Project Initialization** - Complete BMAD-aligned project setup

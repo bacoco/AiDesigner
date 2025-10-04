@@ -56,6 +56,28 @@ The installer will:
 3. Add to your active profile
 4. Verify the installation
 
+#### Configuration Targets
+
+By default, MCP servers are installed to the **Agilai configuration**. You can specify a different target using the `config` parameter when using the `install_mcp_server` tool:
+
+- **`config: "agilai"`** - Install to Agilai config only (default)
+- **`config: "claude"`** - Install to Claude Desktop config only
+- **`config: "both"`** - Install to both Agilai and Claude Desktop configs
+- **`config: "bmad"`** - Legacy alias for "agilai"
+
+**Example usage in agent tools:**
+
+```javascript
+// Default - installs to Agilai config
+install_mcp_server({ serverId: 'filesystem' })
+
+// Install to Claude Desktop config only
+install_mcp_server({ serverId: 'filesystem', config: 'claude' })
+
+// Install to both configs (dual-write)
+install_mcp_server({ serverId: 'filesystem', config: 'both' })
+```
+
 ### Search for Servers
 
 ```bash
