@@ -6,6 +6,7 @@
 const path = require('node:path');
 const fs = require('fs-extra');
 const moduleManager = require('./module-manager');
+const { CORE_DIR_CANDIDATES, PRIMARY_CORE_DIR } = require('../../lib/core-paths');
 
 class ResourceLocator {
   constructor() {
@@ -16,11 +17,21 @@ class ResourceLocator {
   }
 
   /**
-   * Get the base path for bmad-core
+   * Get the base path for agilai-core
    */
   getBmadCorePath() {
     if (!this._bmadCorePath) {
-      this._bmadCorePath = path.join(__dirname, '../../../bmad-core');
+      for (const dir of CORE_DIR_CANDIDATES) {
+        const candidate = path.join(__dirname, '../../../', dir);
+        if (fs.existsSync(candidate)) {
+          this._bmadCorePath = candidate;
+          break;
+        }
+      }
+
+      if (!this._bmadCorePath) {
+        this._bmadCorePath = path.join(__dirname, '../../../', PRIMARY_CORE_DIR);
+      }
     }
     return this._bmadCorePath;
   }
@@ -70,7 +81,7 @@ class ResourceLocator {
       return this._pathCache.get(cacheKey);
     }
 
-    // Check in bmad-core
+    // Check in agilai-core
     let agentPath = path.join(this.getBmadCorePath(), 'agents', `${agentId}.md`);
     if (await fs.pathExists(agentPath)) {
       this._pathCache.set(cacheKey, agentPath);
@@ -105,7 +116,7 @@ class ResourceLocator {
     const yaml = require('js-yaml');
     const { extractYamlFromAgent } = require('../../lib/yaml-utils');
 
-    // Get agents from bmad-core
+    // Get agents from agilai-core
     const coreAgents = await this.findFiles('agents/*.md', {
       cwd: this.getBmadCorePath(),
     });
@@ -251,7 +262,7 @@ class ResourceLocator {
         if (Array.isArray(deps)) {
           byType[type] = deps;
           for (const dep of deps) {
-            allDeps.push(`.bmad-core/${type}/${dep}`);
+            allDeps.push(`.agilai-core/${type}/${dep}`);
           }
         }
       }

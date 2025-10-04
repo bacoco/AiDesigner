@@ -15,6 +15,7 @@ When you need to reference a resource mentioned in your instructions:
 
 - Look for the corresponding START/END tags
 - The format is always the full path with dot prefix (e.g., `.bmad-godot-game-dev/personas/analyst.md`, `.bmad-godot-game-dev/tasks/create-story.md`)
+- Legacy bundles may still reference `.bmad-core` paths. Treat them the same as the current root prefix described above.
 - If a section is specified (e.g., `{root}/tasks/create-story.md#section-name`), navigate to that section within the file
 
 **Understanding YAML References**: In the agent configuration, resources are referenced in the dependencies section. For example:
@@ -304,7 +305,7 @@ npx bmad-method install
 
 **Verify Game Development Installation**:
 
-- `.bmad-core/` folder created with all core agents
+- `.agilai-core/` folder created with all core agents
 - `.bmad-godot-game-dev/` folder with game development agents
 - IDE-specific integration files created
 - Game development agents available with `/BmadG` prefix
@@ -1272,7 +1273,7 @@ When this task is invoked:
 
 ## Critical: Template Discovery
 
-If a YAML Template has not been provided, list all templates from .bmad-core/templates or ask the user to provide another.
+If a YAML Template has not been provided, list all templates from .agilai-core/templates or ask the user to provide another.
 
 ## CRITICAL: Mandatory Elicitation Format
 

@@ -6,6 +6,7 @@ const chalk = require('chalk');
 const { createReadStream, createWriteStream, promises: fsPromises } = require('node:fs');
 const { pipeline } = require('node:stream/promises');
 const resourceLocator = require('./resource-locator');
+const { DOT_CORE_DIR_CANDIDATES, DOT_PRIMARY_CORE_DIR } = require('../../lib/core-paths');
 
 class FileManager {
   constructor() {}
@@ -272,7 +273,18 @@ class FileManager {
   }
 
   async modifyCoreConfig(installDir, config) {
-    const coreConfigPath = path.join(installDir, '.bmad-core', 'core-config.yaml');
+    let coreConfigPath = null;
+    for (const dotDir of DOT_CORE_DIR_CANDIDATES) {
+      const candidate = path.join(installDir, dotDir, 'core-config.yaml');
+      if (await fs.pathExists(candidate)) {
+        coreConfigPath = candidate;
+        break;
+      }
+    }
+
+    if (!coreConfigPath) {
+      coreConfigPath = path.join(installDir, DOT_PRIMARY_CORE_DIR, 'core-config.yaml');
+    }
 
     try {
       // Read the existing core-config.yaml
@@ -382,7 +394,7 @@ class FileManager {
       return false;
     }
   }
-  manifestDir = '.bmad-core';
+  manifestDir = DOT_PRIMARY_CORE_DIR;
   manifestFile = 'install-manifest.yaml';
 }
 

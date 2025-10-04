@@ -2,11 +2,17 @@ const fs = require('fs-extra');
 const path = require('node:path');
 const yaml = require('js-yaml');
 const { extractYamlFromAgent } = require('../../lib/yaml-utils');
+const {
+  CORE_DIR_CANDIDATES,
+  PRIMARY_CORE_DIR,
+  DOT_PRIMARY_CORE_DIR,
+} = require('../../lib/core-paths');
 
 class ConfigLoader {
   constructor() {
     this.configPath = path.join(__dirname, '..', 'config', 'install.config.yaml');
     this.config = null;
+    this._corePath = null;
   }
 
   async load() {
@@ -50,7 +56,7 @@ class ConfigLoader {
               agents.push({
                 id: agentId,
                 name: agentConfig.title || agentConfig.name || agentId,
-                file: `bmad-core/agents/${entry.name}`,
+                file: `${PRIMARY_CORE_DIR}/agents/${entry.name}`,
                 description: agentConfig.whenToUse || 'No description available',
               });
             }
@@ -148,7 +154,7 @@ class ConfigLoader {
 
     // Add all resolved resources
     for (const resource of agentDeps.resources) {
-      const filePath = `.bmad-core/${resource.type}/${resource.id}.md`;
+      const filePath = `${DOT_PRIMARY_CORE_DIR}/${resource.type}/${resource.id}.md`;
       if (!depPaths.includes(filePath)) {
         depPaths.push(filePath);
       }
@@ -164,8 +170,21 @@ class ConfigLoader {
   }
 
   getBmadCorePath() {
-    // Get the path to bmad-core relative to the installer (now under tools)
-    return path.join(__dirname, '..', '..', '..', 'bmad-core');
+    if (!this._corePath) {
+      for (const dir of CORE_DIR_CANDIDATES) {
+        const candidate = path.join(__dirname, '..', '..', '..', dir);
+        if (fs.pathExistsSync(candidate)) {
+          this._corePath = candidate;
+          break;
+        }
+      }
+
+      if (!this._corePath) {
+        this._corePath = path.join(__dirname, '..', '..', '..', PRIMARY_CORE_DIR);
+      }
+    }
+
+    return this._corePath;
   }
 
   getDistPath() {
@@ -229,11 +248,11 @@ class ConfigLoader {
       const depPaths = [];
 
       // Add team config file
-      depPaths.push(`.bmad-core/agent-teams/${teamId}.yaml`);
+      depPaths.push(`.agilai-core/agent-teams/${teamId}.yaml`);
 
       // Add all agents
       for (const agent of teamDeps.agents) {
-        const filePath = `.bmad-core/agents/${agent.id}.md`;
+        const filePath = `.agilai-core/agents/${agent.id}.md`;
         if (!depPaths.includes(filePath)) {
           depPaths.push(filePath);
         }
@@ -241,7 +260,7 @@ class ConfigLoader {
 
       // Add all resolved resources
       for (const resource of teamDeps.resources) {
-        const filePath = `.bmad-core/${resource.type}/${resource.id}.${resource.type === 'workflows' ? 'yaml' : 'md'}`;
+        const filePath = `.agilai-core/${resource.type}/${resource.id}.${resource.type === 'workflows' ? 'yaml' : 'md'}`;
         if (!depPaths.includes(filePath)) {
           depPaths.push(filePath);
         }

@@ -2,18 +2,57 @@ const fs = require('node:fs').promises;
 const path = require('node:path');
 const yaml = require('js-yaml');
 const { extractYamlFromAgent } = require('./yaml-utils');
+const { CORE_DIR_CANDIDATES, LEGACY_CORE_DIR } = require('./core-paths');
+
+const CORE_DIRECTORIES = CORE_DIR_CANDIDATES.map((label) => ({
+  label,
+  pathSuffix: label,
+}));
 
 class DependencyResolver {
   constructor(rootDir) {
     this.rootDir = rootDir;
-    this.bmadCore = path.join(rootDir, 'bmad-core');
+    this.coreDirectories = CORE_DIRECTORIES.map((entry) => ({
+      label: entry.label,
+      path: path.join(rootDir, entry.pathSuffix),
+    }));
     this.common = path.join(rootDir, 'common');
     this.cache = new Map();
+    this.legacyNotices = new Set();
+  }
+
+  warnIfLegacy(label) {
+    if (label === LEGACY_CORE_DIR && !this.legacyNotices.has(label)) {
+      this.legacyNotices.add(label);
+      console.warn(
+        `⚠️  Agilai compatibility: falling back to legacy ${LEGACY_CORE_DIR} directory. Rename to agilai-core to stay current.`,
+      );
+    }
+  }
+
+  async tryReadCoreFile(...segments) {
+    for (const entry of this.coreDirectories) {
+      const candidate = path.join(entry.path, ...segments);
+      try {
+        const content = await fs.readFile(candidate, 'utf8');
+        this.warnIfLegacy(entry.label);
+        return { content, path: candidate };
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error;
+        }
+      }
+    }
+    return null;
   }
 
   async resolveAgentDependencies(agentId) {
-    const agentPath = path.join(this.bmadCore, 'agents', `${agentId}.md`);
-    const agentContent = await fs.readFile(agentPath, 'utf8');
+    const agentFile = await this.tryReadCoreFile('agents', `${agentId}.md`);
+    if (!agentFile) {
+      throw new Error(`Agent not found in agilai-core: agents/${agentId}.md`);
+    }
+
+    const { content: agentContent, path: agentPath } = agentFile;
 
     // Extract YAML from markdown content with command cleaning
     const yamlContent = extractYamlFromAgent(agentContent, true);
@@ -49,8 +88,12 @@ class DependencyResolver {
   }
 
   async resolveTeamDependencies(teamId) {
-    const teamPath = path.join(this.bmadCore, 'agent-teams', `${teamId}.yaml`);
-    const teamContent = await fs.readFile(teamPath, 'utf8');
+    const teamFile = await this.tryReadCoreFile('agent-teams', `${teamId}.yaml`);
+    if (!teamFile) {
+      throw new Error(`Team not found in agilai-core: agent-teams/${teamId}.yaml`);
+    }
+
+    const { content: teamContent, path: teamPath } = teamFile;
     const teamConfig = yaml.load(teamContent);
 
     const dependencies = {
@@ -119,12 +162,10 @@ class DependencyResolver {
       let content = null;
       let filePath = null;
 
-      // First try bmad-core
-      try {
-        filePath = path.join(this.bmadCore, type, id);
-        content = await fs.readFile(filePath, 'utf8');
-      } catch {
-        // If not found in bmad-core, try common folder
+      const coreResource = await this.tryReadCoreFile(type, id);
+      if (coreResource) {
+        ({ path: filePath, content } = coreResource);
+      } else {
         try {
           filePath = path.join(this.common, type, id);
           content = await fs.readFile(filePath, 'utf8');
@@ -155,8 +196,16 @@ class DependencyResolver {
 
   async listAgents() {
     try {
-      const files = await fs.readdir(path.join(this.bmadCore, 'agents'));
-      return files.filter((f) => f.endsWith('.md')).map((f) => f.replace('.md', ''));
+      for (const entry of this.coreDirectories) {
+        try {
+          const files = await fs.readdir(path.join(entry.path, 'agents'));
+          if (files.length) this.warnIfLegacy(entry.label);
+          return files.filter((f) => f.endsWith('.md')).map((f) => f.replace('.md', ''));
+        } catch (error) {
+          if (error.code && error.code !== 'ENOENT') throw error;
+        }
+      }
+      return [];
     } catch {
       return [];
     }
@@ -164,8 +213,16 @@ class DependencyResolver {
 
   async listTeams() {
     try {
-      const files = await fs.readdir(path.join(this.bmadCore, 'agent-teams'));
-      return files.filter((f) => f.endsWith('.yaml')).map((f) => f.replace('.yaml', ''));
+      for (const entry of this.coreDirectories) {
+        try {
+          const files = await fs.readdir(path.join(entry.path, 'agent-teams'));
+          if (files.length) this.warnIfLegacy(entry.label);
+          return files.filter((f) => f.endsWith('.yaml')).map((f) => f.replace('.yaml', ''));
+        } catch (error) {
+          if (error.code && error.code !== 'ENOENT') throw error;
+        }
+      }
+      return [];
     } catch {
       return [];
     }

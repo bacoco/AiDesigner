@@ -10,6 +10,11 @@ const chalk = require('chalk').default || require('chalk');
 const fileManager = require('./file-manager');
 const resourceLocator = require('./resource-locator');
 const { extractYamlFromAgent } = require('../../lib/yaml-utils');
+const {
+  CORE_DIR_CANDIDATES,
+  DOT_CORE_DIR_CANDIDATES,
+  DOT_PRIMARY_CORE_DIR,
+} = require('../../lib/core-paths');
 
 class BaseIdeSetup {
   constructor() {
@@ -50,8 +55,8 @@ class BaseIdeSetup {
   async getCoreAgentIds(installDir) {
     const coreAgents = [];
     const corePaths = [
-      path.join(installDir, '.bmad-core', 'agents'),
-      path.join(installDir, 'bmad-core', 'agents'),
+      ...DOT_CORE_DIR_CANDIDATES.map((dir) => path.join(installDir, dir, 'agents')),
+      ...CORE_DIR_CANDIDATES.map((dir) => path.join(installDir, dir, 'agents')),
     ];
 
     for (const agentsDir of corePaths) {
@@ -80,8 +85,10 @@ class BaseIdeSetup {
     if (!agentPath) {
       // Check installation-specific paths
       const possiblePaths = [
-        path.join(installDir, '.bmad-core', 'agents', `${agentId}.md`),
-        path.join(installDir, 'bmad-core', 'agents', `${agentId}.md`),
+        ...DOT_CORE_DIR_CANDIDATES.map((dir) =>
+          path.join(installDir, dir, 'agents', `${agentId}.md`),
+        ),
+        ...CORE_DIR_CANDIDATES.map((dir) => path.join(installDir, dir, 'agents', `${agentId}.md`)),
         path.join(installDir, 'common', 'agents', `${agentId}.md`),
       ];
 
@@ -134,7 +141,7 @@ class BaseIdeSetup {
     const dotExpansions = await resourceLocator.findFiles('.bmad-*', { cwd: installDir });
 
     for (const dotExpansion of dotExpansions) {
-      if (dotExpansion !== '.bmad-core') {
+      if (!DOT_CORE_DIR_CANDIDATES.includes(dotExpansion)) {
         const packPath = path.join(installDir, dotExpansion);
         const packName = dotExpansion.slice(1); // remove the dot
         expansionPacks.push({
@@ -147,7 +154,7 @@ class BaseIdeSetup {
     // Check other dot folders that have config.yaml
     const allDotFolders = await resourceLocator.findFiles('.*', { cwd: installDir });
     for (const folder of allDotFolders) {
-      if (!folder.startsWith('.bmad-') && folder !== '.bmad-core') {
+      if (!folder.startsWith('.bmad-') && !DOT_CORE_DIR_CANDIDATES.includes(folder)) {
         const packPath = path.join(installDir, folder);
         const configPath = path.join(packPath, 'config.yaml');
         if (await fileManager.pathExists(configPath)) {

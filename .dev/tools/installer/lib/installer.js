@@ -8,6 +8,14 @@ const configLoader = require('./config-loader');
 const ideSetup = require('./ide-setup');
 const { extractYamlFromAgent } = require('../../lib/yaml-utils');
 const resourceLocator = require('./resource-locator');
+const {
+  CORE_DIR_CANDIDATES,
+  DOT_CORE_DIR_CANDIDATES,
+  PRIMARY_CORE_DIR,
+  LEGACY_CORE_DIR,
+  DOT_PRIMARY_CORE_DIR,
+  DOT_LEGACY_CORE_DIR,
+} = require('../../lib/core-paths');
 
 class Installer {
   async getCoreVersion() {
@@ -34,8 +42,8 @@ class Installer {
         ? config.directory
         : path.resolve(originalCwd, config.directory);
 
-      if (path.basename(installDir) === '.bmad-core') {
-        // If user points directly to .bmad-core, treat its parent as the project root
+      if (DOT_CORE_DIR_CANDIDATES.includes(path.basename(installDir))) {
+        // If user points directly to a core directory, treat its parent as the project root
         installDir = path.dirname(installDir);
       }
 
@@ -166,6 +174,8 @@ class Installer {
       hasOtherFiles: false,
       manifest: null,
       expansionPacks: {},
+      dotCoreDir: null,
+      coreDir: null,
     };
 
     // Check if directory exists
@@ -173,16 +183,21 @@ class Installer {
       return state; // clean install
     }
 
-    // Check for V4 installation (has .bmad-core with manifest)
-    const bmadCorePath = path.join(installDir, '.bmad-core');
-    const manifestPath = path.join(bmadCorePath, 'install-manifest.yaml');
+    // Check for V4 installation (has .agilai-core/.bmad-core with manifest)
+    for (const dotCoreDir of DOT_CORE_DIR_CANDIDATES) {
+      const corePath = path.join(installDir, dotCoreDir);
+      const manifestPath = path.join(corePath, 'install-manifest.yaml');
 
-    if (await fileManager.pathExists(manifestPath)) {
-      state.type = 'v4_existing';
-      state.hasV4Manifest = true;
-      state.hasBmadCore = true;
-      state.manifest = await fileManager.readManifest(installDir);
-      return state;
+      if (await fileManager.pathExists(manifestPath)) {
+        state.type = 'v4_existing';
+        state.hasV4Manifest = true;
+        state.hasBmadCore = true;
+        state.dotCoreDir = dotCoreDir;
+        state.coreDir = dotCoreDir.slice(1);
+        fileManager.manifestDir = dotCoreDir;
+        state.manifest = await fileManager.readManifest(installDir);
+        return state;
+      }
     }
 
     // Check for V3 installation (has bmad-agent directory)
@@ -193,11 +208,17 @@ class Installer {
       return state;
     }
 
-    // Check for .bmad-core without manifest (broken V4 or manual copy)
-    if (await fileManager.pathExists(bmadCorePath)) {
-      state.type = 'unknown_existing';
-      state.hasBmadCore = true;
-      return state;
+    // Check for core directory without manifest (broken V4 or manual copy)
+    for (const dotCoreDir of DOT_CORE_DIR_CANDIDATES) {
+      const candidatePath = path.join(installDir, dotCoreDir);
+      if (await fileManager.pathExists(candidatePath)) {
+        state.type = 'unknown_existing';
+        state.hasBmadCore = true;
+        state.dotCoreDir = dotCoreDir;
+        state.coreDir = dotCoreDir.slice(1);
+        fileManager.manifestDir = dotCoreDir;
+        return state;
+      }
     }
 
     // Check if directory has other files
@@ -217,41 +238,63 @@ class Installer {
     const expansionPacks = await this.detectExpansionPacks(installDir);
     state.expansionPacks = expansionPacks;
 
+    fileManager.manifestDir = DOT_PRIMARY_CORE_DIR;
     return state; // clean install
   }
 
   async performFreshInstall(config, installDir, spinner, options = {}) {
     spinner.text = 'Installing BMad Method...';
 
+    const targetDotCoreDir = options.targetDotCoreDir || DOT_PRIMARY_CORE_DIR;
+    fileManager.manifestDir = targetDotCoreDir;
+
+    const normalizeTargetDep = (value) => {
+      for (const candidate of DOT_CORE_DIR_CANDIDATES) {
+        if (value.startsWith(`${candidate}/`)) {
+          return `${targetDotCoreDir}/${value.slice(candidate.length + 1)}`;
+        }
+      }
+      return value;
+    };
+
+    const stripCorePrefix = (value) => {
+      for (const candidate of DOT_CORE_DIR_CANDIDATES) {
+        if (value.startsWith(`${candidate}/`)) {
+          return value.slice(candidate.length + 1);
+        }
+      }
+      return value.replace(`.${PRIMARY_CORE_DIR}/`, '').replace(`.${LEGACY_CORE_DIR}/`, '');
+    };
+
     let files = [];
 
     switch (config.installType) {
       case 'full': {
-        // Full installation - copy entire .bmad-core folder as a subdirectory
-        spinner.text = 'Copying complete .bmad-core folder...';
+        // Full installation - copy entire core folder as a subdirectory
+        spinner.text = `Copying complete ${targetDotCoreDir} folder...`;
         const sourceDir = resourceLocator.getBmadCorePath();
-        const bmadCoreDestDir = path.join(installDir, '.bmad-core');
+        const coreDestDir = path.join(installDir, targetDotCoreDir);
         await fileManager.copyDirectoryWithRootReplacement(
           sourceDir,
-          bmadCoreDestDir,
-          '.bmad-core',
+          coreDestDir,
+          targetDotCoreDir,
         );
 
-        // Copy common/ items to .bmad-core
+        // Copy common/ items to the core directory
         spinner.text = 'Copying common utilities...';
-        await this.copyCommonItems(installDir, '.bmad-core', spinner);
+        await this.copyCommonItems(installDir, targetDotCoreDir, spinner);
 
-        // Copy documentation files from docs/ to .bmad-core
+        // Copy documentation files from docs/ to the core directory
         spinner.text = 'Copying documentation files...';
-        await this.copyDocsItems(installDir, '.bmad-core', spinner);
+        await this.copyDocsItems(installDir, targetDotCoreDir, spinner);
 
         // Get list of all files for manifest
         const foundFiles = await resourceLocator.findFiles('**/*', {
-          cwd: bmadCoreDestDir,
+          cwd: coreDestDir,
           nodir: true,
           ignore: ['**/.git/**', '**/node_modules/**'],
         });
-        files = foundFiles.map((file) => path.join('.bmad-core', file));
+        files = foundFiles.map((file) => path.join(targetDotCoreDir, file));
 
         break;
       }
@@ -263,16 +306,16 @@ class Installer {
         const agentPath = configLoader.getAgentPath(config.agent);
         const destinationAgentPath = path.join(
           installDir,
-          '.bmad-core',
+          targetDotCoreDir,
           'agents',
           `${config.agent}.md`,
         );
         await fileManager.copyFileWithRootReplacement(
           agentPath,
           destinationAgentPath,
-          '.bmad-core',
+          targetDotCoreDir,
         );
-        files.push(`.bmad-core/agents/${config.agent}.md`);
+        files.push(`${targetDotCoreDir}/agents/${config.agent}.md`);
 
         // Copy dependencies
         const { all: dependencies } = await resourceLocator.getAgentDependencies(config.agent);
@@ -281,42 +324,49 @@ class Installer {
         for (const dep of dependencies) {
           spinner.text = `Copying dependency: ${dep}`;
 
-          if (dep.includes('*')) {
+          const normalizedDep = normalizeTargetDep(dep);
+          if (normalizedDep.includes('*')) {
             // Handle glob patterns with {root} replacement
             const copiedFiles = await fileManager.copyGlobPattern(
-              dep.replace('.bmad-core/', ''),
+              stripCorePrefix(normalizedDep),
               sourceBase,
-              path.join(installDir, '.bmad-core'),
-              '.bmad-core',
+              path.join(installDir, targetDotCoreDir),
+              targetDotCoreDir,
             );
-            files.push(...copiedFiles.map((f) => `.bmad-core/${f}`));
+            files.push(...copiedFiles.map((f) => `${targetDotCoreDir}/${f}`));
           } else {
             // Handle single files with {root} replacement if needed
-            const sourcePath = path.join(sourceBase, dep.replace('.bmad-core/', ''));
-            const destinationPath = path.join(installDir, dep);
+            const sourcePath = path.join(sourceBase, stripCorePrefix(normalizedDep));
+            const destinationPath = path.join(installDir, normalizedDep);
 
             const needsRootReplacement =
-              dep.endsWith('.md') || dep.endsWith('.yaml') || dep.endsWith('.yml');
+              normalizedDep.endsWith('.md') ||
+              normalizedDep.endsWith('.yaml') ||
+              normalizedDep.endsWith('.yml');
             let success = false;
 
             success = await (needsRootReplacement
-              ? fileManager.copyFileWithRootReplacement(sourcePath, destinationPath, '.bmad-core')
+              ? fileManager.copyFileWithRootReplacement(
+                  sourcePath,
+                  destinationPath,
+                  targetDotCoreDir,
+                )
               : fileManager.copyFile(sourcePath, destinationPath));
 
             if (success) {
-              files.push(dep);
+              files.push(normalizedDep);
             }
           }
         }
 
-        // Copy common/ items to .bmad-core
+        // Copy common/ items to the core directory
         spinner.text = 'Copying common utilities...';
-        const commonFiles = await this.copyCommonItems(installDir, '.bmad-core', spinner);
+        const commonFiles = await this.copyCommonItems(installDir, targetDotCoreDir, spinner);
         files.push(...commonFiles);
 
-        // Copy documentation files from docs/ to .bmad-core
+        // Copy documentation files from docs/ to the core directory
         spinner.text = 'Copying documentation files...';
-        const documentFiles = await this.copyDocsItems(installDir, '.bmad-core', spinner);
+        const documentFiles = await this.copyDocsItems(installDir, targetDotCoreDir, spinner);
         files.push(...documentFiles);
 
         break;
@@ -333,48 +383,55 @@ class Installer {
         for (const dep of teamDependencies) {
           spinner.text = `Copying team dependency: ${dep}`;
 
-          if (dep.includes('*')) {
+          const normalizedDep = normalizeTargetDep(dep);
+          if (normalizedDep.includes('*')) {
             // Handle glob patterns with {root} replacement
             const copiedFiles = await fileManager.copyGlobPattern(
-              dep.replace('.bmad-core/', ''),
+              stripCorePrefix(normalizedDep),
               sourceBase,
-              path.join(installDir, '.bmad-core'),
-              '.bmad-core',
+              path.join(installDir, targetDotCoreDir),
+              targetDotCoreDir,
             );
-            files.push(...copiedFiles.map((f) => `.bmad-core/${f}`));
+            files.push(...copiedFiles.map((f) => `${targetDotCoreDir}/${f}`));
           } else {
             // Handle single files with {root} replacement if needed
-            const sourcePath = path.join(sourceBase, dep.replace('.bmad-core/', ''));
-            const destinationPath = path.join(installDir, dep);
+            const sourcePath = path.join(sourceBase, stripCorePrefix(normalizedDep));
+            const destinationPath = path.join(installDir, normalizedDep);
 
             const needsRootReplacement =
-              dep.endsWith('.md') || dep.endsWith('.yaml') || dep.endsWith('.yml');
+              normalizedDep.endsWith('.md') ||
+              normalizedDep.endsWith('.yaml') ||
+              normalizedDep.endsWith('.yml');
             let success = false;
 
             success = await (needsRootReplacement
-              ? fileManager.copyFileWithRootReplacement(sourcePath, destinationPath, '.bmad-core')
+              ? fileManager.copyFileWithRootReplacement(
+                  sourcePath,
+                  destinationPath,
+                  targetDotCoreDir,
+                )
               : fileManager.copyFile(sourcePath, destinationPath));
 
             if (success) {
-              files.push(dep);
+              files.push(normalizedDep);
             }
           }
         }
 
-        // Copy common/ items to .bmad-core
+        // Copy common/ items to the core directory
         spinner.text = 'Copying common utilities...';
-        const commonFiles = await this.copyCommonItems(installDir, '.bmad-core', spinner);
+        const commonFiles = await this.copyCommonItems(installDir, targetDotCoreDir, spinner);
         files.push(...commonFiles);
 
-        // Copy documentation files from docs/ to .bmad-core
+        // Copy documentation files from docs/ to the core directory
         spinner.text = 'Copying documentation files...';
-        const documentFiles = await this.copyDocsItems(installDir, '.bmad-core', spinner);
+        const documentFiles = await this.copyDocsItems(installDir, targetDotCoreDir, spinner);
         files.push(...documentFiles);
 
         break;
       }
       case 'expansion-only': {
-        // Expansion-only installation - DO NOT create .bmad-core
+        // Expansion-only installation - DO NOT create the core directory
         // Only install expansion packs
         spinner.text = 'Installing expansion packs only...';
 
@@ -651,7 +708,8 @@ class Installer {
     console.log(`   Directory: ${installDir}`);
 
     if (state.hasBmadCore) {
-      console.log('   Found: .bmad-core directory (but no manifest)');
+      const detectedDir = state.dotCoreDir || DOT_PRIMARY_CORE_DIR;
+      console.log(`   Found: ${detectedDir} directory (but no manifest)`);
     }
     if (state.hasOtherFiles) {
       console.log('   Found: Other files in directory');
@@ -753,7 +811,10 @@ class Installer {
         ides: newConfig?.ides || manifest.ides_setup || [],
       };
 
-      await this.performFreshInstall(config, installDir, spinner, { isUpdate: true });
+      await this.performFreshInstall(config, installDir, spinner, {
+        isUpdate: true,
+        targetDotCoreDir: fileManager.manifestDir || DOT_PRIMARY_CORE_DIR,
+      });
 
       // Clean up .yml files that now have .yaml counterparts
       spinner.text = 'Cleaning up legacy .yml files...';
@@ -768,6 +829,16 @@ class Installer {
     spinner.start('Preparing to repair installation...');
 
     try {
+      const manifestCoreDir = fileManager.manifestDir || DOT_PRIMARY_CORE_DIR;
+      const stripCorePrefix = (value) => {
+        for (const candidate of DOT_CORE_DIR_CANDIDATES) {
+          if (value.startsWith(`${candidate}/`)) {
+            return value.slice(candidate.length + 1);
+          }
+        }
+        return value;
+      };
+
       // Back up modified files
       if (integrity.modified.length > 0) {
         spinner.text = 'Backing up modified files...';
@@ -789,7 +860,7 @@ class Installer {
         // Skip the manifest file itself
         if (file.endsWith('install-manifest.yaml')) continue;
 
-        const relativePath = file.replace('.bmad-core/', '');
+        const relativePath = stripCorePrefix(file);
         const destinationPath = path.join(installDir, file);
 
         // Check if this is a common/ file that needs special processing
@@ -800,12 +871,12 @@ class Installer {
           // This is a common/ file - needs template processing
           const fs = require('node:fs').promises;
           const content = await fs.readFile(commonSourcePath, 'utf8');
-          const updatedContent = content.replaceAll('{root}', '.bmad-core');
+          const updatedContent = content.replaceAll('{root}', manifestCoreDir);
           await fileManager.ensureDirectory(path.dirname(destinationPath));
           await fs.writeFile(destinationPath, updatedContent, 'utf8');
           spinner.text = `Restored: ${file}`;
         } else {
-          // Regular file from bmad-core
+          // Regular file from agilai-core
           const sourcePath = path.join(sourceBase, relativePath);
           if (await fileManager.pathExists(sourcePath)) {
             await fileManager.copyFile(sourcePath, destinationPath);
@@ -863,15 +934,20 @@ class Installer {
   async performReinstall(config, installDir, spinner) {
     spinner.start('Preparing to reinstall BMad Method...');
 
-    // Remove existing .bmad-core
-    const bmadCorePath = path.join(installDir, '.bmad-core');
-    if (await fileManager.pathExists(bmadCorePath)) {
-      spinner.text = 'Removing existing installation...';
-      await fileManager.removeDirectory(bmadCorePath);
+    // Remove existing core directories
+    for (const dotCoreDir of DOT_CORE_DIR_CANDIDATES) {
+      const corePath = path.join(installDir, dotCoreDir);
+      if (await fileManager.pathExists(corePath)) {
+        spinner.text = 'Removing existing installation...';
+        await fileManager.removeDirectory(corePath);
+      }
     }
 
     spinner.text = 'Installing fresh copy...';
-    const result = await this.performFreshInstall(config, installDir, spinner, { isUpdate: true });
+    const result = await this.performFreshInstall(config, installDir, spinner, {
+      isUpdate: true,
+      targetDotCoreDir: fileManager.manifestDir || DOT_PRIMARY_CORE_DIR,
+    });
 
     // Clean up .yml files that now have .yaml counterparts
     spinner.text = 'Cleaning up legacy .yml files...';
@@ -882,6 +958,8 @@ class Installer {
 
   showSuccessMessage(config, installDir, options = {}) {
     console.log(chalk.green('\n✓ BMad Method installed successfully!\n'));
+
+    const installedCoreDir = fileManager.manifestDir || DOT_PRIMARY_CORE_DIR;
 
     const ides = config.ides || (config.ide ? [config.ide] : []);
     if (ides.length > 0) {
@@ -900,7 +978,9 @@ class Installer {
     // Information about installation components
     console.log(chalk.bold('\n🎯 Installation Summary:'));
     if (config.installType !== 'expansion-only') {
-      console.log(chalk.green('✓ .bmad-core framework installed with all agents and workflows'));
+      console.log(
+        chalk.green(`✓ ${installedCoreDir} framework installed with all agents and workflows`),
+      );
     }
 
     if (config.expansionPacks && config.expansionPacks.length > 0) {
@@ -959,7 +1039,7 @@ class Installer {
     // Important notice to read the user guide
     console.log(
       chalk.red.bold(
-        '\n📖 IMPORTANT: Please read the user guide at docs/user-guide.md (also installed at .bmad-core/user-guide.md)',
+        `\n📖 IMPORTANT: Please read the user guide at docs/user-guide.md (also installed at ${installedCoreDir}/user-guide.md)`,
       ),
     );
     console.log(
@@ -1803,9 +1883,14 @@ class Installer {
     const glob = require('glob');
 
     // Find all dot folders that might be expansion packs
+    const ignore = ['.git', '.git/**'];
+    for (const dotCoreDir of DOT_CORE_DIR_CANDIDATES) {
+      ignore.push(dotCoreDir, `${dotCoreDir}/**`);
+    }
+
     const dotFolders = glob.sync('.*', {
       cwd: installDir,
-      ignore: ['.git', '.git/**', '.bmad-core', '.bmad-core/**'],
+      ignore,
     });
 
     for (const folder of dotFolders) {
@@ -1962,24 +2047,28 @@ class Installer {
   }
 
   async findInstallation() {
-    // Look for .bmad-core in current directory or parent directories
+    // Look for core directory in current directory or parent directories
     let currentDir = process.cwd();
 
     while (currentDir !== path.dirname(currentDir)) {
-      const bmadDir = path.join(currentDir, '.bmad-core');
-      const manifestPath = path.join(bmadDir, 'install-manifest.yaml');
+      for (const dotCoreDir of DOT_CORE_DIR_CANDIDATES) {
+        const coreDirPath = path.join(currentDir, dotCoreDir);
+        const manifestPath = path.join(coreDirPath, 'install-manifest.yaml');
 
-      if (await fileManager.pathExists(manifestPath)) {
-        return currentDir; // Return parent directory, not .bmad-core itself
+        if (await fileManager.pathExists(manifestPath)) {
+          fileManager.manifestDir = dotCoreDir;
+          return currentDir; // Return parent directory, not core directory itself
+        }
       }
 
       currentDir = path.dirname(currentDir);
     }
 
-    // Also check if we're inside a .bmad-core directory
-    if (path.basename(process.cwd()) === '.bmad-core') {
+    // Also check if we're inside a core directory
+    if (DOT_CORE_DIR_CANDIDATES.includes(path.basename(process.cwd()))) {
       const manifestPath = path.join(process.cwd(), 'install-manifest.yaml');
       if (await fileManager.pathExists(manifestPath)) {
+        fileManager.manifestDir = path.basename(process.cwd());
         return path.dirname(process.cwd()); // Return parent directory
       }
     }

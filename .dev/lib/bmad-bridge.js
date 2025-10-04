@@ -51,7 +51,7 @@ function arrayify(value) {
 
 class BMADBridge {
   constructor(options = {}) {
-    this.bmadCorePath = options.bmadCorePath || path.join(__dirname, '..', 'bmad-core');
+    this.bmadCorePath = options.bmadCorePath || path.join(__dirname, '..', 'agilai-core');
     this.bmadV6Path = options.bmadV6Path || path.join(__dirname, '..', 'bmad');
     this.llmClient = options.llmClient || new LLMClient();
     this.coreConfig = null;

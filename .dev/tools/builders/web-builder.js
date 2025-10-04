@@ -2,6 +2,10 @@ const fs = require('node:fs').promises;
 const path = require('node:path');
 const DependencyResolver = require('../lib/dependency-resolver');
 const yamlUtilities = require('../lib/yaml-utils');
+const { PRIMARY_CORE_DIR, LEGACY_CORE_DIR } = require('../lib/core-paths');
+
+const PRIMARY_BUNDLE_ROOT = PRIMARY_CORE_DIR;
+const LEGACY_BUNDLE_ROOT = LEGACY_CORE_DIR;
 
 class WebBuilder {
   constructor(options = {}) {
@@ -21,7 +25,7 @@ class WebBuilder {
     return yaml.load(content);
   }
 
-  convertToWebPath(filePath, bundleRoot = 'bmad-core') {
+  convertToWebPath(filePath, bundleRoot = PRIMARY_BUNDLE_ROOT) {
     // Convert absolute paths to web bundle paths with dot prefix
     // All resources get installed under the bundle root, so use that path
     const relativePath = path.relative(this.rootDir, filePath);
@@ -32,7 +36,7 @@ class WebBuilder {
       // For expansion packs, remove 'expansion-packs/packname' and use the rest
       resourcePath = pathParts.slice(2).join('/');
     } else {
-      // For bmad-core, common, etc., remove the first part
+      // For agilai-core, common, etc., remove the first part
       resourcePath = pathParts.slice(1).join('/');
     }
 
@@ -41,22 +45,22 @@ class WebBuilder {
 
   generateWebInstructions(bundleType, packName = null) {
     // Generate dynamic web instructions based on bundle type
-    const rootExample = packName ? `.${packName}` : '.bmad-core';
+    const rootExample = packName ? `.${packName}` : `.${PRIMARY_BUNDLE_ROOT}`;
     const examplePath = packName
       ? `.${packName}/folder/filename.md`
-      : '.bmad-core/folder/filename.md';
+      : `.${PRIMARY_BUNDLE_ROOT}/folder/filename.md`;
     const personasExample = packName
       ? `.${packName}/personas/analyst.md`
-      : '.bmad-core/personas/analyst.md';
+      : `.${PRIMARY_BUNDLE_ROOT}/personas/analyst.md`;
     const tasksExample = packName
       ? `.${packName}/tasks/create-story.md`
-      : '.bmad-core/tasks/create-story.md';
+      : `.${PRIMARY_BUNDLE_ROOT}/tasks/create-story.md`;
     const utilitiesExample = packName
       ? `.${packName}/utils/template-format.md`
-      : '.bmad-core/utils/template-format.md';
+      : `.${PRIMARY_BUNDLE_ROOT}/utils/template-format.md`;
     const tasksReference = packName
       ? `.${packName}/tasks/create-story.md`
-      : '.bmad-core/tasks/create-story.md';
+      : `.${PRIMARY_BUNDLE_ROOT}/tasks/create-story.md`;
 
     return `# Web Agent Bundle Instructions
 
@@ -75,6 +79,7 @@ When you need to reference a resource mentioned in your instructions:
 
 - Look for the corresponding START/END tags
 - The format is always the full path with dot prefix (e.g., \`${personasExample}\`, \`${tasksExample}\`)
+- Legacy bundles may still reference \`.bmad-core\` paths. Treat them the same as the current root prefix described above.
 - If a section is specified (e.g., \`{root}/tasks/create-story.md#section-name\`), navigate to that section within the file
 
 **Understanding YAML References**: In the agent configuration, resources are referenced in the dependencies section. For example:
@@ -158,13 +163,13 @@ These references map directly to bundle sections:
     const sections = [template];
 
     // Add agent configuration
-    const agentPath = this.convertToWebPath(dependencies.agent.path, 'bmad-core');
-    sections.push(this.formatSection(agentPath, dependencies.agent.content, 'bmad-core'));
+    const agentPath = this.convertToWebPath(dependencies.agent.path, PRIMARY_BUNDLE_ROOT);
+    sections.push(this.formatSection(agentPath, dependencies.agent.content, PRIMARY_BUNDLE_ROOT));
 
     // Add all dependencies
     for (const resource of dependencies.resources) {
-      const resourcePath = this.convertToWebPath(resource.path, 'bmad-core');
-      sections.push(this.formatSection(resourcePath, resource.content, 'bmad-core'));
+      const resourcePath = this.convertToWebPath(resource.path, PRIMARY_BUNDLE_ROOT);
+      sections.push(this.formatSection(resourcePath, resource.content, PRIMARY_BUNDLE_ROOT));
     }
 
     return sections.join('\n');
@@ -177,19 +182,19 @@ These references map directly to bundle sections:
     const sections = [template];
 
     // Add team configuration
-    const teamPath = this.convertToWebPath(dependencies.team.path, 'bmad-core');
-    sections.push(this.formatSection(teamPath, dependencies.team.content, 'bmad-core'));
+    const teamPath = this.convertToWebPath(dependencies.team.path, PRIMARY_BUNDLE_ROOT);
+    sections.push(this.formatSection(teamPath, dependencies.team.content, PRIMARY_BUNDLE_ROOT));
 
     // Add all agents
     for (const agent of dependencies.agents) {
-      const agentPath = this.convertToWebPath(agent.path, 'bmad-core');
-      sections.push(this.formatSection(agentPath, agent.content, 'bmad-core'));
+      const agentPath = this.convertToWebPath(agent.path, PRIMARY_BUNDLE_ROOT);
+      sections.push(this.formatSection(agentPath, agent.content, PRIMARY_BUNDLE_ROOT));
     }
 
     // Add all deduplicated resources
     for (const resource of dependencies.resources) {
-      const resourcePath = this.convertToWebPath(resource.path, 'bmad-core');
-      sections.push(this.formatSection(resourcePath, resource.content, 'bmad-core'));
+      const resourcePath = this.convertToWebPath(resource.path, PRIMARY_BUNDLE_ROOT);
+      sections.push(this.formatSection(resourcePath, resource.content, PRIMARY_BUNDLE_ROOT));
     }
 
     return sections.join('\n');
@@ -247,7 +252,7 @@ These references map directly to bundle sections:
     }
   }
 
-  formatSection(path, content, bundleRoot = 'bmad-core') {
+  formatSection(path, content, bundleRoot = PRIMARY_BUNDLE_ROOT) {
     const separator = '====================';
 
     // Process agent content if this is an agent file
@@ -418,14 +423,14 @@ These references map directly to bundle sections:
 
                 // If not found in expansion pack, try core
                 if (!found) {
-                  const corePath = path.join(this.rootDir, 'bmad-core', resourceType, resourceName);
-                  try {
-                    const coreContent = await fs.readFile(corePath, 'utf8');
-                    const coreWebPath = this.convertToWebPath(corePath, packName);
-                    sections.push(this.formatSection(coreWebPath, coreContent, packName));
+                  const coreResource = await this.resolver.tryReadCoreFile(
+                    resourceType,
+                    resourceName,
+                  );
+                  if (coreResource) {
+                    const coreWebPath = this.convertToWebPath(coreResource.path, packName);
+                    sections.push(this.formatSection(coreWebPath, coreResource.content, packName));
                     found = true;
-                  } catch {
-                    // Not in core either, continue
                   }
                 }
 
@@ -543,15 +548,14 @@ These references map directly to bundle sections:
           }
         }
       } else {
-        // Use core BMad version
-        try {
-          const coreAgentPath = path.join(this.rootDir, 'bmad-core', 'agents', `${agentId}.md`);
-          const coreAgentContent = await fs.readFile(coreAgentPath, 'utf8');
-          const coreAgentWebPath = this.convertToWebPath(coreAgentPath, packName);
-          sections.push(this.formatSection(coreAgentWebPath, coreAgentContent, packName));
+        // Use core Agilai version with legacy fallback support
+        const coreAgent = await this.resolver.tryReadCoreFile('agents', `${agentId}.md`);
+        if (coreAgent) {
+          const coreAgentWebPath = this.convertToWebPath(coreAgent.path, packName);
+          sections.push(this.formatSection(coreAgentWebPath, coreAgent.content, packName));
 
           // Parse and collect dependencies from core agent
-          const yamlContent = yamlUtilities.extractYamlFromAgent(coreAgentContent, true);
+          const yamlContent = yamlUtilities.extractYamlFromAgent(coreAgent.content, true);
           if (yamlContent) {
             try {
               const agentConfig = this.parseYaml(yamlContent);
@@ -571,7 +575,7 @@ These references map directly to bundle sections:
               console.debug(`Failed to parse agent YAML for ${agentId}:`, error.message);
             }
           }
-        } catch {
+        } else {
           console.warn(`    ⚠ Agent ${agentId} not found in core or expansion pack`);
         }
       }
@@ -599,14 +603,11 @@ These references map directly to bundle sections:
 
       // If not found in expansion pack (or doesn't exist there), try core
       if (!found) {
-        const corePath = path.join(this.rootDir, 'bmad-core', dep.type, dep.name);
-        try {
-          const content = await fs.readFile(corePath, 'utf8');
-          const coreWebPath = this.convertToWebPath(corePath, packName);
-          sections.push(this.formatSection(coreWebPath, content, packName));
+        const coreResource = await this.resolver.tryReadCoreFile(dep.type, dep.name);
+        if (coreResource) {
+          const coreWebPath = this.convertToWebPath(coreResource.path, packName);
+          sections.push(this.formatSection(coreWebPath, coreResource.content, packName));
           found = true;
-        } catch {
-          // Not in core either, continue
         }
       }
 

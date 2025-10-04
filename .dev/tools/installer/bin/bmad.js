@@ -8,6 +8,14 @@ const chalk = require('chalk').default || require('chalk');
 const inquirer = require('inquirer').default || require('inquirer');
 const semver = require('semver');
 const https = require('node:https');
+const {
+  CORE_DIR_CANDIDATES,
+  DOT_CORE_DIR_CANDIDATES,
+  DOT_PRIMARY_CORE_DIR,
+  DOT_LEGACY_CORE_DIR,
+  PRIMARY_CORE_DIR,
+  LEGACY_CORE_DIR,
+} = require('../lib/core-paths');
 
 // Handle both execution contexts (from root via npx or from installer directory)
 let version;
@@ -46,7 +54,7 @@ program
   .command('install')
   .description('Install BMad Method agents and tools')
   .option('-f, --full', 'Install complete BMad Method')
-  .option('-x, --expansion-only', 'Install only expansion packs (no bmad-core)')
+  .option('-x, --expansion-only', `Install only expansion packs (no ${PRIMARY_CORE_DIR})`)
   .option('-d, --directory <path>', 'Installation directory')
   .option(
     '-i, --ide <ide...>',
@@ -242,11 +250,30 @@ async function promptInstallation() {
   const choices = [];
 
   // Load core config to get short-title
-  const coreConfigPath = path.join(__dirname, '..', '..', '..', 'bmad-core', 'core-config.yaml');
+  let coreConfigPath = null;
+  for (const dir of CORE_DIR_CANDIDATES) {
+    const candidate = path.join(__dirname, '..', '..', '..', dir, 'core-config.yaml');
+    try {
+      await fs.access(candidate);
+      coreConfigPath = candidate;
+      break;
+    } catch {
+      // continue searching
+    }
+  }
+
+  if (!coreConfigPath) {
+    coreConfigPath = path.join(__dirname, '..', '..', '..', PRIMARY_CORE_DIR, 'core-config.yaml');
+  }
+
   const coreConfig = yaml.load(await fs.readFile(coreConfigPath, 'utf8'));
   const coreShortTitle = coreConfig['short-title'] || 'BMad Agile Core System';
 
   // Add BMad core option
+  const existingDotCoreDir = state.dotCoreDir;
+  const legacyDetected = existingDotCoreDir === DOT_LEGACY_CORE_DIR;
+  const coreChoiceValue = PRIMARY_CORE_DIR;
+  const displayDotCoreDir = DOT_PRIMARY_CORE_DIR;
   let bmadOptionText;
   if (state.type === 'v4_existing') {
     const currentVersion = state.manifest?.version || 'unknown';
@@ -255,14 +282,15 @@ async function promptInstallation() {
       currentVersion === newVersion
         ? `(v${currentVersion} - reinstall)`
         : `(v${currentVersion} → v${newVersion})`;
-    bmadOptionText = `Update ${coreShortTitle} ${versionInfo} .bmad-core`;
+    const migrationNote = legacyDetected ? ` (will migrate from ${DOT_LEGACY_CORE_DIR})` : '';
+    bmadOptionText = `Update ${coreShortTitle} ${versionInfo} ${displayDotCoreDir}${migrationNote}`;
   } else {
-    bmadOptionText = `${coreShortTitle} (v${version}) .bmad-core`;
+    bmadOptionText = `${coreShortTitle} (v${version}) ${displayDotCoreDir}`;
   }
 
   choices.push({
     name: bmadOptionText,
-    value: 'bmad-core',
+    value: coreChoiceValue,
     checked: true,
   });
 
@@ -307,11 +335,11 @@ async function promptInstallation() {
   ]);
 
   // Process selections
-  answers.installType = selectedItems.includes('bmad-core') ? 'full' : 'expansion-only';
-  answers.expansionPacks = selectedItems.filter((item) => item !== 'bmad-core');
+  answers.installType = selectedItems.includes(coreChoiceValue) ? 'full' : 'expansion-only';
+  answers.expansionPacks = selectedItems.filter((item) => item !== coreChoiceValue);
 
   // Ask sharding questions if installing BMad core
-  if (selectedItems.includes('bmad-core')) {
+  if (selectedItems.includes(coreChoiceValue)) {
     console.log(chalk.cyan('\n📋 Document Organization Settings'));
     console.log(chalk.dim('Configure how your project documentation should be organized.\n'));
 
@@ -511,7 +539,7 @@ async function promptInstallation() {
       },
       // pass previously selected packages so IDE setup only applies those
       selectedPackages: {
-        includeCore: selectedItems.includes('bmad-core'),
+        includeCore: selectedItems.includes(coreChoiceValue),
         packs: answers.expansionPacks || [],
       },
     };

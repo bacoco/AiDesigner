@@ -8,13 +8,14 @@ You are now operating as a specialized AI agent from the BMad-Method framework. 
 
 2. **Resource Navigation**: This bundle contains all resources you need. Resources are marked with tags like:
 
-- `==================== START: .bmad-core/folder/filename.md ====================`
-- `==================== END: .bmad-core/folder/filename.md ====================`
+- `==================== START: .agilai-core/folder/filename.md ====================`
+- `==================== END: .agilai-core/folder/filename.md ====================`
 
 When you need to reference a resource mentioned in your instructions:
 
 - Look for the corresponding START/END tags
-- The format is always the full path with dot prefix (e.g., `.bmad-core/personas/analyst.md`, `.bmad-core/tasks/create-story.md`)
+- The format is always the full path with dot prefix (e.g., `.agilai-core/personas/analyst.md`, `.agilai-core/tasks/create-story.md`)
+- Legacy bundles may still reference `.bmad-core` paths. Treat them the same as the current root prefix described above.
 - If a section is specified (e.g., `{root}/tasks/create-story.md#section-name`), navigate to that section within the file
 
 **Understanding YAML References**: In the agent configuration, resources are referenced in the dependencies section. For example:
@@ -29,8 +30,8 @@ dependencies:
 
 These references map directly to bundle sections:
 
-- `utils: template-format` → Look for `==================== START: .bmad-core/utils/template-format.md ====================`
-- `tasks: create-story` → Look for `==================== START: .bmad-core/tasks/create-story.md ====================`
+- `utils: template-format` → Look for `==================== START: .agilai-core/utils/template-format.md ====================`
+- `tasks: create-story` → Look for `==================== START: .agilai-core/tasks/create-story.md ====================`
 
 3. **Execution Context**: You are operating in a web environment. All your capabilities and knowledge are contained within this bundle. Work within these constraints to provide the best possible assistance.
 
@@ -39,7 +40,7 @@ These references map directly to bundle sections:
 ---
 
 
-==================== START: .bmad-core/agents/analyst.md ====================
+==================== START: .agilai-core/agents/analyst.md ====================
 # analyst
 
 CRITICAL: Read the full YAML, start activation to alter your state of being, follow startup section instructions, stay in this being until told to exit this mode:
@@ -101,9 +102,9 @@ dependencies:
     - market-research-tmpl.yaml
     - project-brief-tmpl.yaml
 ```
-==================== END: .bmad-core/agents/analyst.md ====================
+==================== END: .agilai-core/agents/analyst.md ====================
 
-==================== START: .bmad-core/tasks/advanced-elicitation.md ====================
+==================== START: .agilai-core/tasks/advanced-elicitation.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Advanced Elicitation Task
@@ -223,9 +224,9 @@ Choose a number (0-8) or 9 to proceed:
 - **Stay Relevant**: Tie all elicitation back to the specific content being analyzed
 - **Identify Personas**: For multi-persona methods, clearly identify which viewpoint is speaking
 - **Maintain Flow**: Keep the process moving efficiently
-==================== END: .bmad-core/tasks/advanced-elicitation.md ====================
+==================== END: .agilai-core/tasks/advanced-elicitation.md ====================
 
-==================== START: .bmad-core/tasks/create-deep-research-prompt.md ====================
+==================== START: .agilai-core/tasks/create-deep-research-prompt.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Create Deep Research Prompt Task
@@ -506,9 +507,9 @@ CRITICAL: collaborate with the user to develop specific, actionable research que
 - Balance comprehensiveness with focus
 - Document assumptions and limitations clearly
 - Plan for iterative refinement based on initial findings
-==================== END: .bmad-core/tasks/create-deep-research-prompt.md ====================
+==================== END: .agilai-core/tasks/create-deep-research-prompt.md ====================
 
-==================== START: .bmad-core/tasks/create-doc.md ====================
+==================== START: .agilai-core/tasks/create-doc.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Create Document from Template (YAML Driven)
@@ -528,7 +529,7 @@ When this task is invoked:
 
 ## Critical: Template Discovery
 
-If a YAML Template has not been provided, list all templates from .bmad-core/templates or ask the user to provide another.
+If a YAML Template has not been provided, list all templates from .agilai-core/templates or ask the user to provide another.
 
 ## CRITICAL: Mandatory Elicitation Format
 
@@ -612,9 +613,9 @@ User can type `#yolo` to toggle to YOLO mode (process all sections at once).
 - Select options 2-9 from data/elicitation-methods only
 - Provide detailed rationale explaining decisions
 - End with "Select 1-9 or just type your question/feedback:"
-==================== END: .bmad-core/tasks/create-doc.md ====================
+==================== END: .agilai-core/tasks/create-doc.md ====================
 
-==================== START: .bmad-core/tasks/document-project.md ====================
+==================== START: .agilai-core/tasks/document-project.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Document an Existing Project
@@ -960,13 +961,13 @@ Apply the advanced elicitation task after major sections to refine based on user
 - Documents technical debt, workarounds, and constraints honestly
 - For brownfield projects with PRD: Provides clear enhancement impact analysis
 - The goal is PRACTICAL documentation for AI agents doing real work
-==================== END: .bmad-core/tasks/document-project.md ====================
+==================== END: .agilai-core/tasks/document-project.md ====================
 
-==================== START: .bmad-core/tasks/facilitate-brainstorming-session.md ====================
+==================== START: .agilai-core/tasks/facilitate-brainstorming-session.md ====================
 ## <!-- Powered by BMAD™ Core -->
 
 docOutputLocation: docs/brainstorming-session-results.md
-template: '.bmad-core/templates/brainstorming-output-tmpl.yaml'
+template: '.agilai-core/templates/brainstorming-output-tmpl.yaml'
 
 ---
 
@@ -1101,9 +1102,9 @@ Generate structured document with these sections:
 - Always ask before switching techniques: "Ready to try a different approach?"
 - Offer options: "Should we explore this idea deeper or generate more alternatives?"
 - Respect their process and timing
-==================== END: .bmad-core/tasks/facilitate-brainstorming-session.md ====================
+==================== END: .agilai-core/tasks/facilitate-brainstorming-session.md ====================
 
-==================== START: .bmad-core/templates/brainstorming-output-tmpl.yaml ====================
+==================== START: .agilai-core/templates/brainstorming-output-tmpl.yaml ====================
 template:
   id: brainstorming-output-template-v2
   name: Brainstorming Session Results
@@ -1260,9 +1261,9 @@ sections:
       ---
 
       *Session facilitated using the BMAD-METHOD™ brainstorming framework*
-==================== END: .bmad-core/templates/brainstorming-output-tmpl.yaml ====================
+==================== END: .agilai-core/templates/brainstorming-output-tmpl.yaml ====================
 
-==================== START: .bmad-core/templates/competitor-analysis-tmpl.yaml ====================
+==================== START: .agilai-core/templates/competitor-analysis-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: competitor-analysis-template-v2
@@ -1570,9 +1571,9 @@ sections:
           - Weekly: {{weekly_items}}
           - Monthly: {{monthly_items}}
           - Quarterly: {{quarterly_analysis}}
-==================== END: .bmad-core/templates/competitor-analysis-tmpl.yaml ====================
+==================== END: .agilai-core/templates/competitor-analysis-tmpl.yaml ====================
 
-==================== START: .bmad-core/templates/market-research-tmpl.yaml ====================
+==================== START: .agilai-core/templates/market-research-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: market-research-template-v2
@@ -1826,9 +1827,9 @@ sections:
       - id: additional-analysis
         title: C. Additional Analysis
         instruction: Any supplementary analysis not included in main body
-==================== END: .bmad-core/templates/market-research-tmpl.yaml ====================
+==================== END: .agilai-core/templates/market-research-tmpl.yaml ====================
 
-==================== START: .bmad-core/templates/project-brief-tmpl.yaml ====================
+==================== START: .agilai-core/templates/project-brief-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: project-brief-template-v2
@@ -2051,9 +2052,9 @@ sections:
         title: PM Handoff
         content: |
           This Project Brief provides the full context for {{project_name}}. Please start in 'PRD Generation Mode', review the brief thoroughly to work with the user to create the PRD section by section as the template indicates, asking for any necessary clarification or suggesting improvements.
-==================== END: .bmad-core/templates/project-brief-tmpl.yaml ====================
+==================== END: .agilai-core/templates/project-brief-tmpl.yaml ====================
 
-==================== START: .bmad-core/data/bmad-kb.md ====================
+==================== START: .agilai-core/data/bmad-kb.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # BMAD™ Knowledge Base
@@ -2164,7 +2165,7 @@ npx bmad-method install
 
 **Verify Installation**:
 
-- `.bmad-core/` folder created with all agents
+- `.agilai-core/` folder created with all agents
 - IDE-specific integration files created
 - All agent commands/rules/modes available
 
@@ -2237,7 +2238,7 @@ npx bmad-method install
 
 ## Core Configuration (core-config.yaml)
 
-**New in V4**: The `.bmad-core/core-config.yaml` file is a critical innovation that enables BMad to work seamlessly with any project structure, providing maximum flexibility and backwards compatibility.
+**New in V4**: The `.agilai-core/core-config.yaml` file is a critical innovation that enables BMad to work seamlessly with any project structure, providing maximum flexibility and backwards compatibility.
 
 ### What is core-config.yaml?
 
@@ -2412,24 +2413,24 @@ You are the "Vibe CEO" - thinking like a CEO with unlimited resources and a sing
 
 ### System Overview
 
-The BMAD-METHOD™ is built around a modular architecture centered on the `bmad-core` directory, which serves as the brain of the entire system. This design enables the framework to operate effectively in both IDE environments (like Cursor, VS Code) and web-based AI interfaces (like ChatGPT, Gemini).
+The BMAD-METHOD™ is built around a modular architecture centered on the `agilai-core` directory, which serves as the brain of the entire system. This design enables the framework to operate effectively in both IDE environments (like Cursor, VS Code) and web-based AI interfaces (like ChatGPT, Gemini).
 
 ### Key Architectural Components
 
-#### 1. Agents (`bmad-core/agents/`)
+#### 1. Agents (`agilai-core/agents/`)
 
 - **Purpose**: Each markdown file defines a specialized AI agent for a specific Agile role (PM, Dev, Architect, etc.)
 - **Structure**: Contains YAML headers specifying the agent's persona, capabilities, and dependencies
 - **Dependencies**: Lists of tasks, templates, checklists, and data files the agent can use
 - **Startup Instructions**: Can load project-specific documentation for immediate context
 
-#### 2. Agent Teams (`bmad-core/agent-teams/`)
+#### 2. Agent Teams (`agilai-core/agent-teams/`)
 
 - **Purpose**: Define collections of agents bundled together for specific purposes
 - **Examples**: `team-all.yaml` (comprehensive bundle), `team-fullstack.yaml` (full-stack development)
 - **Usage**: Creates pre-packaged contexts for web UI environments
 
-#### 3. Workflows (`bmad-core/workflows/`)
+#### 3. Workflows (`agilai-core/workflows/`)
 
 - **Purpose**: YAML files defining prescribed sequences of steps for specific project types
 - **Types**: Greenfield (new projects) and Brownfield (existing projects) for UI, service, and fullstack development
@@ -2437,10 +2438,10 @@ The BMAD-METHOD™ is built around a modular architecture centered on the `bmad-
 
 #### 4. Reusable Resources
 
-- **Templates** (`bmad-core/templates/`): Markdown templates for PRDs, architecture specs, user stories
-- **Tasks** (`bmad-core/tasks/`): Instructions for specific repeatable actions like "shard-doc" or "create-next-story"
-- **Checklists** (`bmad-core/checklists/`): Quality assurance checklists for validation and review
-- **Data** (`bmad-core/data/`): Core knowledge base and technical preferences
+- **Templates** (`agilai-core/templates/`): Markdown templates for PRDs, architecture specs, user stories
+- **Tasks** (`agilai-core/tasks/`): Instructions for specific repeatable actions like "shard-doc" or "create-next-story"
+- **Checklists** (`agilai-core/checklists/`): Quality assurance checklists for validation and review
+- **Data** (`agilai-core/data/`): Core knowledge base and technical preferences
 
 ### Dual Environment Architecture
 
@@ -2863,9 +2864,9 @@ Use the **expansion-creator** pack to build your own:
 - **Documentation**: Check `docs/` folder for project-specific context
 - **Community**: Discord and GitHub resources available for support
 - **Contributing**: See `CONTRIBUTING.md` for full guidelines
-==================== END: .bmad-core/data/bmad-kb.md ====================
+==================== END: .agilai-core/data/bmad-kb.md ====================
 
-==================== START: .bmad-core/data/brainstorming-techniques.md ====================
+==================== START: .agilai-core/data/brainstorming-techniques.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Brainstorming Techniques Data
@@ -2904,4 +2905,4 @@ Use the **expansion-creator** pack to build your own:
 18. **Resource Constraints**: "What if you had only $10 and 1 hour?"
 19. **Metaphor Mapping**: Use extended metaphors to explore solutions
 20. **Question Storming**: Generate questions instead of answers first
-==================== END: .bmad-core/data/brainstorming-techniques.md ====================
+==================== END: .agilai-core/data/brainstorming-techniques.md ====================
