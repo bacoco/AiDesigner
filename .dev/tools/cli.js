@@ -4,6 +4,7 @@ const V3ToV4Upgrader = require('./upgraders/v3-to-v4-upgrader');
 const IdeSetup = require('./installer/lib/ide-setup');
 const McpManager = require('./mcp-manager');
 const path = require('node:path');
+const { normalizeConfigTarget } = require('./shared/mcp-config');
 
 const program = new Command();
 
@@ -197,10 +198,19 @@ mcp
 mcp
   .command('install <server>')
   .description('Install an MCP server from the registry')
-  .option('--config <type>', 'Target config (claude, bmad, or both)', 'claude')
+  .option(
+    '--config <type>',
+    'Target config (claude, agilai, or both; bmad is a legacy alias)',
+    'claude',
+  )
   .action(async (server, options) => {
     const manager = new McpManager({ rootDir: process.cwd() });
-    await manager.install(server, options);
+    const normalizedOptions = {
+      ...options,
+      config: normalizeConfigTarget(options.config),
+    };
+
+    await manager.install(server, normalizedOptions);
   });
 
 mcp
@@ -261,10 +271,15 @@ profile
 profile
   .command('diff <profile1> <profile2>')
   .description('Compare two profiles')
-  .option('-t, --type <type>', 'Config type (claude or bmad)', 'claude')
+  .option('-t, --type <type>', 'Config type (claude or agilai; bmad is a legacy alias)', 'claude')
   .action(async (profile1, profile2, options) => {
     const manager = new McpManager({ rootDir: process.cwd() });
-    await manager.manageProfiles('diff', profile1, profile2, options);
+    const normalizedOptions = {
+      ...options,
+      type: normalizeConfigTarget(options.type),
+    };
+
+    await manager.manageProfiles('diff', profile1, profile2, normalizedOptions);
   });
 
 profile
