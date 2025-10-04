@@ -7,18 +7,50 @@ const https = require('node:https');
 
 class LLMClient {
   constructor(options = {}) {
+    this.isMcpExecution = this.detectMcpExecution();
     this.provider = options.provider || process.env.LLM_PROVIDER || 'claude';
     this.apiKey = options.apiKey || this.getApiKeyFromEnv();
     this.model = options.model || this.getDefaultModel();
     this.maxRetries = options.maxRetries || 3;
     this.retryDelay = options.retryDelay || 1000;
 
-    if (!this.apiKey) {
+    if (!this.apiKey && !this.isMcpExecution) {
       const envVar = this.getApiKeyEnvVarName();
       throw new Error(
         `Missing API key for provider "${this.provider}". Set the ${envVar} environment variable or provide an apiKey option.`,
       );
     }
+  }
+
+  /**
+   * Detects if the current process is running as part of the MCP server.
+   * Checks process.argv[1] (the script being executed) for MCP server entry points
+   * to allow bypassing API key validation.
+   * @returns {boolean} True if running in MCP server context, false otherwise
+   */
+  detectMcpExecution() {
+    const { argv } = process;
+    if (!Array.isArray(argv) || argv.length < 2) {
+      return false;
+    }
+
+    const scriptPath = argv[1];
+    if (typeof scriptPath !== 'string') {
+      return false;
+    }
+
+    // Normalize path separators for cross-platform compatibility (Windows uses backslashes)
+    const normalizedPath = scriptPath.replace(/\\/g, '/');
+
+    // Match the actual MCP server paths:
+    // - dist/mcp/mcp/server.js (published package, absolute or relative)
+    // - .dev/mcp/server.ts (development mode)
+    return (
+      normalizedPath.endsWith('/dist/mcp/mcp/server.js') ||
+      normalizedPath.endsWith('/.dev/mcp/server.ts') ||
+      normalizedPath === 'dist/mcp/mcp/server.js' ||
+      normalizedPath === '.dev/mcp/server.ts'
+    );
   }
 
   getApiKeyFromEnv() {
@@ -93,12 +125,28 @@ class LLMClient {
   }
 
   /**
+   * Validates that an API key is present before making API calls.
+   * Throws a descriptive error if no API key is available.
+   * @throws {Error} When API key is missing
+   */
+  validateApiKey() {
+    if (!this.apiKey) {
+      throw new Error(
+        `Cannot call chat methods without an API key. Provider: "${this.provider}". ` +
+          `Set the ${this.getApiKeyEnvVarName()} environment variable or provide an apiKey option.`,
+      );
+    }
+  }
+
+  /**
    * Main chat interface - send messages and get responses
    * @param {Array} messages - Array of {role: 'user'|'assistant', content: string}
    * @param {Object} options - Additional options
    * @returns {Promise<string>} - LLM response
    */
   async chat(messages, options = {}) {
+    this.validateApiKey();
+
     const systemPrompt = options.systemPrompt || '';
     const temperature = options.temperature || 0.7;
     const maxTokens = options.maxTokens || 4096;
@@ -161,6 +209,8 @@ class LLMClient {
    * @returns {Promise<string>} - Response text from Claude
    */
   async chatAnthropic(messages, options) {
+    this.validateApiKey();
+
     const payload = {
       model: this.model,
       max_tokens: options.maxTokens,
@@ -195,6 +245,8 @@ class LLMClient {
   }
 
   async chatOpenAI(messages, options) {
+    this.validateApiKey();
+
     const apiMessages = messages.map((msg) => ({
       role: msg.role,
       content: msg.content,
@@ -229,6 +281,8 @@ class LLMClient {
   }
 
   async chatGemini(messages, options) {
+    this.validateApiKey();
+
     // Format messages for Gemini
     const contents = [];
 
@@ -276,6 +330,8 @@ class LLMClient {
   }
 
   async chatGLM(messages, options) {
+    this.validateApiKey();
+
     const apiMessages = messages.map((msg) => ({
       role: msg.role,
       content: msg.content,

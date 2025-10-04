@@ -7,6 +7,7 @@ const { LLMClient } = require('../lib/llm-client');
 
 describe('LLMClient', () => {
   const originalEnv = process.env;
+  const originalArgv = process.argv;
 
   beforeEach(() => {
     process.env = { ...originalEnv };
@@ -22,6 +23,7 @@ describe('LLMClient', () => {
   });
 
   afterEach(() => {
+    process.argv = originalArgv;
     jest.restoreAllMocks();
   });
 
@@ -340,5 +342,126 @@ describe('LLMClient', () => {
         maxTokens: 32,
       }),
     ).rejects.toThrow(/Invalid GLM base URL/);
+  });
+
+  describe('MCP Server Detection', () => {
+    it('detects MCP execution with published package path (Unix)', () => {
+      process.argv = ['node', 'node_modules/agilai/dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'claude' });
+      expect(client.isMcpExecution).toBe(true);
+    });
+
+    it('detects MCP execution with published package path (Windows)', () => {
+      process.argv = ['node', 'C:\\projects\\myapp\\node_modules\\agilai\\dist\\mcp\\mcp\\server.js'];
+      const client = new LLMClient({ provider: 'claude' });
+      expect(client.isMcpExecution).toBe(true);
+    });
+
+    it('detects MCP execution with relative path', () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'claude' });
+      expect(client.isMcpExecution).toBe(true);
+    });
+
+    it('detects MCP execution in development mode', () => {
+      process.argv = ['ts-node', '.dev/mcp/server.ts'];
+      const client = new LLMClient({ provider: 'claude' });
+      expect(client.isMcpExecution).toBe(true);
+    });
+
+    it('does not detect MCP execution for similar but different paths', () => {
+      process.argv = ['node', 'backup-mcp/server.js'];
+      const client = new LLMClient({ provider: 'claude', apiKey: 'test-key' });
+      expect(client.isMcpExecution).toBe(false);
+    });
+
+    it('does not detect MCP execution for unrelated arguments', () => {
+      process.argv = ['node', 'app.js', '--config=mcp/server.json'];
+      const client = new LLMClient({ provider: 'claude', apiKey: 'test-key' });
+      expect(client.isMcpExecution).toBe(false);
+    });
+
+    it('does not detect MCP execution for malicious paths as arguments', () => {
+      process.argv = ['node', 'app.js', 'malicious/dist/mcp/mcp/server.js'];
+      expect(() => new LLMClient({ provider: 'claude' })).toThrow(
+        'Missing API key for provider "claude"',
+      );
+    });
+
+    it('handles non-array argv gracefully', () => {
+      const originalArgv = process.argv;
+      process.argv = null;
+      const client = new LLMClient({ provider: 'claude', apiKey: 'test-key' });
+      expect(client.isMcpExecution).toBe(false);
+      process.argv = originalArgv;
+    });
+
+    it('handles non-string arguments in argv', () => {
+      process.argv = ['node', 123, null, 'app.js'];
+      const client = new LLMClient({ provider: 'claude', apiKey: 'test-key' });
+      expect(client.isMcpExecution).toBe(false);
+    });
+
+    it('allows client initialization without API key in MCP mode', () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      let client;
+      expect(() => {
+        client = new LLMClient({ provider: 'claude' });
+      }).not.toThrow();
+      expect(client.isMcpExecution).toBe(true);
+      expect(client.apiKey).toBeUndefined();
+    });
+
+    it('still requires API key in non-MCP mode', () => {
+      process.argv = ['node', 'app.js'];
+      expect(() => new LLMClient({ provider: 'claude' })).toThrow(
+        'Missing API key for provider "claude". Set the ANTHROPIC_API_KEY environment variable or provide an apiKey option.',
+      );
+    });
+
+    it('throws error when calling chat() without API key in MCP mode', async () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'claude' });
+
+      await expect(client.chat([{ role: 'user', content: 'Hello' }])).rejects.toThrow(
+        'Cannot call chat methods without an API key',
+      );
+    });
+
+    it('throws error when calling chatAnthropic() without API key in MCP mode', async () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'claude' });
+
+      await expect(
+        client.chatAnthropic([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
+      ).rejects.toThrow('Cannot call chat methods without an API key');
+    });
+
+    it('throws error when calling chatOpenAI() without API key in MCP mode', async () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'openai' });
+
+      await expect(
+        client.chatOpenAI([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
+      ).rejects.toThrow('Cannot call chat methods without an API key');
+    });
+
+    it('throws error when calling chatGemini() without API key in MCP mode', async () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'gemini' });
+
+      await expect(
+        client.chatGemini([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
+      ).rejects.toThrow('Cannot call chat methods without an API key');
+    });
+
+    it('throws error when calling chatGLM() without API key in MCP mode', async () => {
+      process.argv = ['node', 'dist/mcp/mcp/server.js'];
+      const client = new LLMClient({ provider: 'glm' });
+
+      await expect(
+        client.chatGLM([{ role: 'user', content: 'Hello' }], { maxTokens: 100 }),
+      ).rejects.toThrow('Cannot call chat methods without an API key');
+    });
   });
 });
