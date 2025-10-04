@@ -118,6 +118,8 @@ docs/prd.md, architecture.md, etc.
 
 ## How to Use
 
+> **Legacy aliases**: Historical `npm run bmad*` scripts still route to these commands, but the steps below use the modern `agilai` scripts.
+
 ```bash
 # One-time setup
 npm install

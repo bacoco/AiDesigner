@@ -17,8 +17,9 @@ mkdir my-project && cd my-project
 
 You'll be prompted to choose between Claude, Codex, or OpenCode. Or pass
 `--assistant=claude`, `--assistant=codex`, or `--assistant=opencode` to skip the prompt.
-Need ZhipuAI's GLM? Add `--glm` / `--llm-provider=glm` (requires `ZHIPUAI_API_KEY`
-or `GLM_API_KEY`). Use `--anthropic` when you want to switch back to Claude.
+Need ZhipuAI's GLM? Add `--glm` / `--llm-provider=glm` (requires `AGILAI_GLM_API_KEY`
+or one of the legacy aliases like `ZHIPUAI_API_KEY` or `GLM_API_KEY`). Use
+`--anthropic` when you want to switch back to Claude.
 
 ```bash
 # Run this ONE command - it does everything!
@@ -100,14 +101,15 @@ npx agilai start
 #### Choosing Your LLM Provider (GLM vs Anthropic)
 
 - Pass `--glm` (alias `--llm-provider=glm`) with any command to run on ZhipuAI's
-  GLM. Provide `ZHIPUAI_API_KEY` or `GLM_API_KEY` in your environment.
+  GLM. Provide `AGILAI_GLM_API_KEY` (or a legacy alias such as `ZHIPUAI_API_KEY`
+  or `GLM_API_KEY`) in your environment.
 - Override the model via `--llm-model=<model>` or `LLM_MODEL`.
 - Persist defaults by committing a `.env` file alongside your project:
 
   ```bash
   # .env
   LLM_PROVIDER=glm
-  ZHIPUAI_API_KEY=sk-...
+  AGILAI_GLM_API_KEY=sk-...
   LLM_MODEL=glm-4-plus
   ```
 

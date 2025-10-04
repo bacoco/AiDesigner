@@ -2,6 +2,8 @@
 
 This guide provides detailed examples of using Agilai for real-world projects.
 
+> **Legacy aliases**: If you still have `npm run bmad*` scripts in your project, they'll continue to work, but the examples below use the updated `agilai` commands.
+
 ## Table of Contents
 
 - [Starting a New Project](#starting-a-new-project)
