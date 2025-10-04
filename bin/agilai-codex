@@ -103,22 +103,67 @@ async function main() {
     process.exit(codexCheck.exitCode ?? 1);
   }
 
-  // Build Codex command
+  // Codex CLI uses global MCP server configuration, not file-based config
+  // We need to ensure the Agilai MCP server is registered
+  const mcpServerName = 'agilai';
+
+  // Check if MCP server is already registered
+  const checkResult = await new Promise((resolve) => {
+    const check = spawn(codexCheck.binaryPath || 'codex', ['mcp', 'list'], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let output = '';
+    check.stdout.on('data', (data) => { output += data; });
+    check.stderr.on('data', (data) => { output += data; });
+
+    check.on('close', (code) => {
+      const isRegistered = output.includes(mcpServerName);
+      resolve({ registered: isRegistered, output });
+    });
+  });
+
+  if (!checkResult.registered) {
+    console.log('📡 Registering Agilai MCP server with Codex...');
+
+    // Register the MCP server
+    const mcpServerPath = path.join(rootDir, 'dist', 'mcp', 'mcp', 'server.js');
+    await new Promise((resolve, reject) => {
+      const add = spawn(
+        codexCheck.binaryPath || 'codex',
+        ['mcp', 'add', mcpServerName, '--', 'node', mcpServerPath],
+        { stdio: 'inherit' }
+      );
+
+      add.on('close', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Failed to register MCP server (exit code ${code})`));
+        }
+      });
+    });
+  }
+
+  // Codex doesn't support --append-system-prompt
+  // We prepend the orchestrator instructions to the user's prompt instead
+  let initialPrompt = orchestratorContent;
+  if (userArgs.length > 0 && !userArgs[0].startsWith('-')) {
+    initialPrompt += '\n\n' + userArgs[0];
+    userArgs = userArgs.slice(1);
+  }
+
   const codexArgs = [
-    '--config',
-    mcpConfigPath,
-    '--append-system-prompt',
-    orchestratorContent,
+    initialPrompt,
     ...userArgs,
   ];
 
   if (usingLegacyMcpConfig) {
-    console.warn('⚠️  Using legacy MCP config mcp/bmad-config.json. Please migrate to mcp/agilai-config.json.');
+    console.warn('⚠️  Using legacy MCP config mcp/bmad-config.json. Note: Codex uses global MCP server configuration.');
   }
 
   console.log('🎯 Starting Agilai Orchestrator with Codex...');
-
-  console.log('📡 MCP Server: agilai-orchestrator');
+  console.log('📡 MCP Server: agilai (registered globally)');
   console.log('🤖 Agent: Agilai Orchestrator');
   console.log('💬 Type your project idea to begin!\n');
 
