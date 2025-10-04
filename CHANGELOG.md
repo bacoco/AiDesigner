@@ -1,3 +1,9 @@
+## [1.3.24](https://github.com/bacoco/Agilai/compare/v1.3.23...v1.3.24) (2025-10-04)
+
+### Maintenance
+
+- Bump package version to 1.3.24 to prepare the next release.
+
 ## [1.3.11](https://github.com/bacoco/Agilai/compare/v1.3.10...v1.3.11) (2025-01-03)
 
 ### Improvements
