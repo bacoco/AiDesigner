@@ -1,7 +1,7 @@
 {
-  "name": "agilai-install",
+  "name": "agilai",
   "version": "4.43.0",
-  "description": "Agilai installer - AI-powered agile development framework",
+  "description": "Agilai installer - AI-powered Agile development framework",
   "keywords": [
     "agilai",
     "agile",
@@ -11,20 +11,20 @@
     "installer",
     "agents"
   ],
-  "homepage": "https://github.com/agilai-team/agilai#readme",
+  "homepage": "https://github.com/bacoco/Agilai#readme",
   "bugs": {
-    "url": "https://github.com/agilai-team/agilai/issues"
+    "url": "https://github.com/bacoco/Agilai/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/agilai-team/agilai.git"
+    "url": "https://github.com/bacoco/Agilai.git"
   },
   "license": "MIT",
-  "author": "Agilai Team",
+  "author": "Loic Bacoco",
   "main": "lib/installer.js",
   "bin": {
-    "agilai": "./bin/bmad.js",
-    "agilai-install": "./bin/bmad.js"
+    "agilai": "./bin/agilai.js",
+    "bmad": "./bin/agilai.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

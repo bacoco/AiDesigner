@@ -40,13 +40,13 @@ try {
 
 program
   .version(version)
-  .description('Agilai Method installer - Universal AI agent framework for any domain');
+  .description('Agilai installer - Universal AI agent framework for any domain');
 
 program
   .command('install')
-  .description('Install Agilai Method agents and tools')
-  .option('-f, --full', 'Install complete Agilai Method')
-  .option('-x, --expansion-only', 'Install only expansion packs (no agilai-core)')
+  .description('Install Agilai agents and tools')
+  .option('-f, --full', 'Install complete Agilai experience')
+  .option('-x, --expansion-only', 'Install only expansion packs (no core bundle)')
   .option('-d, --directory <path>', 'Installation directory')
   .option(
     '-i, --ide <ide...>',
@@ -102,7 +102,7 @@ program
 // Command to check if updates are available
 program
   .command('update-check')
-  .description('Check for Agilai Update')
+  .description('Check for Agilai update')
   .action(async () => {
     console.log('Checking for updates...');
 
@@ -197,12 +197,12 @@ async function promptInstallation() {
   // Display ASCII logo
   console.log(
     chalk.bold.cyan(`
-   █████╗     ██████╗    ██╗ ██╗      ██╗   █████╗     ██╗ 
-  ██╔══██╗   ██╔════╝    ██║ ██║      ██║  ██╔══██╗    ██║ 
-  ███████║   ██║  ███╗   ██║ ██║      ██║  ███████║    ██║ 
-  ██╔══██║   ██║   ██║   ██║ ██║      ██║  ██╔══██║    ██║ 
-  ██║  ██║   ╚██████╔╝   ██║ ███████╗ ██║  ██║  ██║    ██║ 
-  ╚═╝  ╚═╝    ╚═════╝    ╚═╝ ╚══════╝ ╚═╝  ╚═╝  ╚═╝    ╚═╝ 
+ █████╗   ██████╗ ██╗██╗      ██╗       █████╗ ██╗
+██╔══██╗ ██╔════╝ ██║██║      ██║      ██╔══██╗██║
+███████║ ██║  ███╗██║██║      ██║      ███████║██║
+██╔══██║ ██║   ██║██║██║      ██║      ██╔══██║██║
+██║  ██║ ╚██████╔╝██║███████╗ ███████╗ ██║  ██║███████╗
+╚═╝  ╚═╝  ╚═════╝ ╚═╝╚══════╝ ╚══════╝ ╚═╝  ╚═╝╚══════╝
   `),
   );
 
@@ -242,18 +242,12 @@ async function promptInstallation() {
   const choices = [];
 
   // Load core config to get short-title
-  const repoRoot = path.join(__dirname, '..', '..', '..');
-  let coreConfigPath = path.join(repoRoot, 'agilai-core', 'core-config.yaml');
-  try {
-    await fs.access(coreConfigPath);
-  } catch {
-    coreConfigPath = path.join(repoRoot, 'bmad-core', 'core-config.yaml');
-  }
+  const coreConfigPath = path.join(__dirname, '..', '..', '..', 'bmad-core', 'core-config.yaml');
   const coreConfig = yaml.load(await fs.readFile(coreConfigPath, 'utf8'));
-  const coreShortTitle = coreConfig['short-title'] || 'Agilai Agile Core System';
+  const coreShortTitle = coreConfig['short-title'] || 'Agilai Core System';
 
   // Add Agilai core option
-  let agilaiOptionText;
+  let coreOptionText;
   if (state.type === 'v4_existing') {
     const currentVersion = state.manifest?.version || 'unknown';
     const newVersion = version; // Always use package.json version
@@ -261,14 +255,14 @@ async function promptInstallation() {
       currentVersion === newVersion
         ? `(v${currentVersion} - reinstall)`
         : `(v${currentVersion} → v${newVersion})`;
-    agilaiOptionText = `Update ${coreShortTitle} ${versionInfo} .agilai-core`;
+    coreOptionText = `Update ${coreShortTitle} ${versionInfo} (.bmad-core)`;
   } else {
-    agilaiOptionText = `${coreShortTitle} (v${version}) .agilai-core`;
+    coreOptionText = `${coreShortTitle} (v${version}) (.bmad-core)`;
   }
 
   choices.push({
-    name: agilaiOptionText,
-    value: 'agilai-core',
+    name: coreOptionText,
+    value: 'bmad-core',
     checked: true,
   });
 
@@ -313,11 +307,11 @@ async function promptInstallation() {
   ]);
 
   // Process selections
-  answers.installType = selectedItems.includes('agilai-core') ? 'full' : 'expansion-only';
-  answers.expansionPacks = selectedItems.filter((item) => item !== 'agilai-core');
+  answers.installType = selectedItems.includes('bmad-core') ? 'full' : 'expansion-only';
+  answers.expansionPacks = selectedItems.filter((item) => item !== 'bmad-core');
 
   // Ask sharding questions if installing Agilai core
-  if (selectedItems.includes('agilai-core')) {
+  if (selectedItems.includes('bmad-core')) {
     console.log(chalk.cyan('\n📋 Document Organization Settings'));
     console.log(chalk.dim('Configure how your project documentation should be organized.\n'));
 
@@ -517,7 +511,7 @@ async function promptInstallation() {
       },
       // pass previously selected packages so IDE setup only applies those
       selectedPackages: {
-        includeCore: selectedItems.includes('agilai-core'),
+        includeCore: selectedItems.includes('bmad-core'),
         packs: answers.expansionPacks || [],
       },
     };

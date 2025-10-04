@@ -11,12 +11,12 @@ BMAD-METHOD™ (Breakthrough Method of Agile AI-driven Development) is a univers
 ## Key Architecture Principles
 
 ### Three-Layer System
-1. **agilai-core/**: Foundation framework with agents, workflows, templates, tasks, checklists, and knowledge base
-2. **tools/**: Build system that packages agilai-core for different environments (IDE vs Web UI)
+1. **bmad-core/**: Foundation framework with agents, workflows, templates, tasks, checklists, and knowledge base
+2. **tools/**: Build system that packages bmad-core for different environments (IDE vs Web UI)
 3. **dist/**: Generated bundles ready for web-based AI platforms (Gemini, ChatGPT)
 
 ### Agent Dependencies
-- Agents (`.md` files in `agilai-core/agents/`) define persona, role, and dependencies via YAML frontmatter
+- Agents (`.md` files in `bmad-core/agents/`) define persona, role, and dependencies via YAML frontmatter
 - Dependencies reference templates, tasks, checklists, and data files that agents need
 - The build system resolves these dependencies and bundles them for web deployment
 
@@ -39,8 +39,8 @@ npm run flatten                # Create XML codebase snapshot for AI analysis
 
 ### Installation & Setup
 ```bash
-npm run install:bmad           # Install/upgrade BMAD in target project
-npx agilai install            # Preferred NPX wrapper for installs/upgrades
+npm run install:agilai         # Install/upgrade Agilai in target project
+npx agilai install             # Same as above (npx wrapper)
 npm run setup:hooks            # Setup git hooks for validation
 ```
 
@@ -76,13 +76,13 @@ npm run validate               # Validate agent/team configurations
 ## Critical File Locations
 
 ### Core Framework
-- **Agents**: `agilai-core/agents/*.md` - Agent persona definitions with YAML frontmatter
-- **Workflows**: `agilai-core/workflows/*.yaml` - Multi-phase orchestration sequences
-- **Templates**: `agilai-core/templates/*.yaml` - Document generation templates (PRD, architecture, stories)
-- **Tasks**: `agilai-core/tasks/*.md` - Reusable task instructions for agents
-- **Checklists**: `agilai-core/checklists/*.md` - Quality assurance and validation checklists
-- **Knowledge Base**: `agilai-core/data/bmad-kb.md` - Core BMAD methodology documentation
-- **Technical Preferences**: `agilai-core/data/technical-preferences.md` - User's tech stack preferences
+- **Agents**: `bmad-core/agents/*.md` - Agent persona definitions with YAML frontmatter
+- **Workflows**: `bmad-core/workflows/*.yaml` - Multi-phase orchestration sequences
+- **Templates**: `bmad-core/templates/*.yaml` - Document generation templates (PRD, architecture, stories)
+- **Tasks**: `bmad-core/tasks/*.md` - Reusable task instructions for agents
+- **Checklists**: `bmad-core/checklists/*.md` - Quality assurance and validation checklists
+- **Knowledge Base**: `bmad-core/data/bmad-kb.md` - Core BMAD methodology documentation
+- **Technical Preferences**: `bmad-core/data/technical-preferences.md` - User's tech stack preferences
 
 ### Invisible Orchestrator (New Feature)
 - **Orchestrator Agent**: `agents/invisible-orchestrator.md` - User-facing conversational interface
@@ -94,11 +94,11 @@ npm run validate               # Validate agent/team configurations
 ### Build System
 - **Web Builder**: `tools/builders/web-builder.js` - Creates .txt bundles for web UIs
 - **CLI**: `tools/cli.js` - Main CLI orchestrator
-- **Installer**: `tools/installer/bin/bmad.js` - Installation/upgrade system
+- **Installer**: `tools/installer/bin/agilai.js` - Installation/upgrade system
 - **Flattener**: `tools/flattener/main.js` - XML codebase aggregator for AI consumption
 
 ### Configuration
-- **Core Config**: `agilai-core/core-config.yaml` - Project structure and path conventions
+- **Core Config**: `bmad-core/core-config.yaml` - Project structure and path conventions
 - **Agent Config**: `tools/installer/config/ide-agent-config.yaml` - IDE integration settings
 - **Install Config**: `tools/installer/config/install.config.yaml` - Installation behavior
 
@@ -227,7 +227,7 @@ Each expansion pack mirrors the core structure (agents/, workflows/, templates/,
 ## Important Constraints
 
 ### Natural Language Only
-- Core framework (`agilai-core/`, `expansion-packs/`) contains NO code - only markdown/YAML
+- Core framework (`bmad-core/`, `expansion-packs/`) contains NO code - only markdown/YAML
 - All logic, persona, and instructions are natural language prompts
 - Code exists only in `tools/` for build/install automation
 
@@ -296,7 +296,7 @@ npx agilai flatten -i /path/to/source -o output.xml
 ## Common Patterns
 
 ### Adding a New Agent
-1. Create `agilai-core/agents/agent-name.md` with YAML frontmatter
+1. Create `bmad-core/agents/agent-name.md` with YAML frontmatter
 2. Define dependencies (templates, tasks, checklists, data)
 3. Write natural language persona and instructions
 4. Run `npm run build:agents` to generate web bundle
