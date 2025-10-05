@@ -1,9 +1,9 @@
 {
-  "name": "agilai",
+  "name": "aidesigner",
   "version": "4.43.0",
-  "description": "Agilai installer - AI-powered Agile development framework",
+  "description": "aidesigner installer - AI-powered Agile development framework",
   "keywords": [
-    "agilai",
+    "aidesigner",
     "agile",
     "ai",
     "development",
@@ -11,20 +11,20 @@
     "installer",
     "agents"
   ],
-  "homepage": "https://github.com/bacoco/Agilai#readme",
+  "homepage": "https://github.com/bacoco/aidesigner#readme",
   "bugs": {
-    "url": "https://github.com/bacoco/Agilai/issues"
+    "url": "https://github.com/bacoco/aidesigner/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/bacoco/Agilai.git"
+    "url": "https://github.com/bacoco/aidesigner.git"
   },
   "license": "MIT",
   "author": "Loic Bacoco",
   "main": "lib/installer.js",
   "bin": {
-    "agilai": "./bin/agilai.js",
-    "bmad": "./bin/agilai.js"
+    "aidesigner": "./bin/aidesigner.js",
+    "bmad": "./bin/aidesigner.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

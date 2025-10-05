@@ -1,6 +1,6 @@
 /**
- * Agilai Integration Bridge
- * Connects invisible orchestrator with Agilai core agents, tasks, and templates
+ * aidesigner Integration Bridge
+ * Connects invisible orchestrator with aidesigner core agents, tasks, and templates
  */
 
 const fs = require('fs-extra');
@@ -33,7 +33,7 @@ function resolvePackageRoot() {
   // Fallback: assume package root is two levels up from __dirname
   const fallbackPath = path.resolve(__dirname, '..', '..');
   console.warn(
-    `[AgilaiBridge] Warning: No package.json found in directory tree. Falling back to ${fallbackPath}`,
+    `[aidesignerBridge] Warning: No package.json found in directory tree. Falling back to ${fallbackPath}`,
   );
   return fallbackPath;
 }
@@ -59,13 +59,13 @@ function resolveDefaultV6Path(rootDirectory) {
   }
 
   console.warn(
-    `[AgilaiBridge] Warning: No V6 modules found in candidates: ${candidates.join(', ')}`,
+    `[aidesignerBridge] Warning: No V6 modules found in candidates: ${candidates.join(', ')}`,
   );
   return null;
 }
 
 const PACKAGE_ROOT = resolvePackageRoot();
-const DEFAULT_CORE_PATH = path.join(PACKAGE_ROOT, 'agilai-core');
+const DEFAULT_CORE_PATH = path.join(PACKAGE_ROOT, 'aidesigner-core');
 const DEFAULT_V6_PATH = resolveDefaultV6Path(PACKAGE_ROOT);
 const DEFAULT_LEGACY_AGENT_FALLBACK = path.join(PACKAGE_ROOT, 'agents');
 
@@ -108,12 +108,12 @@ function arrayify(value) {
   return [value];
 }
 
-class AgilaiBridge {
+class aidesignerBridge {
   /**
-   * Creates a new AgilaiBridge instance
+   * Creates a new aidesignerBridge instance
    * @param {Object} options - Configuration options
-   * @param {string} [options.agilaiCorePath] - Path to agilai-core directory
-   * @param {string} [options.agilaiV6Path] - Path to v6 modules directory
+   * @param {string} [options.aidesignerCorePath] - Path to aidesigner-core directory
+   * @param {string} [options.aidesignerV6Path] - Path to v6 modules directory
    * @param {Object} [options.llmClient] - LLM client instance
    * @param {Object} [options.contextEnrichment] - Context enrichment module
    * @param {Array} [options.contextEnrichers] - Additional context enricher functions
@@ -121,15 +121,16 @@ class AgilaiBridge {
    * @param {string|string[]} [options.extraAgentSearchPaths] - Additional agent search paths (appended to defaults)
    */
   constructor(options = {}) {
-    this.agilaiCorePath = options.agilaiCorePath || DEFAULT_CORE_PATH;
-    this.agilaiV6Path = options.agilaiV6Path || DEFAULT_V6_PATH || path.join(PACKAGE_ROOT, 'bmad');
+    this.aidesignerCorePath = options.aidesignerCorePath || DEFAULT_CORE_PATH;
+    this.aidesignerV6Path =
+      options.aidesignerV6Path || DEFAULT_V6_PATH || path.join(PACKAGE_ROOT, 'bmad');
     this.llmClient = options.llmClient || new LLMClient();
     this.coreConfig = null;
     this.contextEnrichment = options.contextEnrichment || contextEnrichment;
     this.contextEnrichers = Array.isArray(options.contextEnrichers)
       ? [...options.contextEnrichers]
       : [];
-    // Note: buildAgentSearchPaths() depends on this.agilaiCorePath being set first
+    // Note: buildAgentSearchPaths() depends on this.aidesignerCorePath being set first
     this.agentSearchPaths = this.buildAgentSearchPaths(options);
   }
 
@@ -137,26 +138,26 @@ class AgilaiBridge {
    * Initialize bridge and load core config
    */
   async initialize() {
-    const legacyCoreExists = await fs.pathExists(this.agilaiCorePath);
+    const legacyCoreExists = await fs.pathExists(this.aidesignerCorePath);
 
     if (legacyCoreExists) {
-      const configPath = path.join(this.agilaiCorePath, 'core-config.yaml');
+      const configPath = path.join(this.aidesignerCorePath, 'core-config.yaml');
       const configContent = await fs.readFile(configPath, 'utf8');
       this.coreConfig = yaml.load(configContent);
       this.environmentMode = 'legacy-core';
       this.environmentInfo = {
         mode: this.environmentMode,
-        root: this.agilaiCorePath,
+        root: this.aidesignerCorePath,
       };
       return this.coreConfig;
     }
 
-    const modulesRoot = path.join(this.agilaiV6Path, 'src', 'modules');
+    const modulesRoot = path.join(this.aidesignerV6Path, 'src', 'modules');
     const hasV6Modules = await fs.pathExists(modulesRoot);
 
     if (!hasV6Modules) {
       throw new Error(
-        `Agilai core not found at ${this.agilaiCorePath} and no v6 modules located at ${modulesRoot}`,
+        `aidesigner core not found at ${this.aidesignerCorePath} and no v6 modules located at ${modulesRoot}`,
       );
     }
 
@@ -164,7 +165,7 @@ class AgilaiBridge {
     this.v6Loader = new V6ModuleLoader(modulesRoot);
     await this.v6Loader.initialize();
 
-    const v6ConfigPath = path.join(this.agilaiV6Path, 'src', 'core', 'core-config.yaml');
+    const v6ConfigPath = path.join(this.aidesignerV6Path, 'src', 'core', 'core-config.yaml');
 
     if (await fs.pathExists(v6ConfigPath)) {
       const v6ConfigContent = await fs.readFile(v6ConfigPath, 'utf8');
@@ -175,7 +176,7 @@ class AgilaiBridge {
 
     this.environmentInfo = {
       mode: this.environmentMode,
-      root: this.agilaiV6Path,
+      root: this.aidesignerV6Path,
       modulesRoot,
       catalog: this.v6Loader.getCatalogSummary(),
     };
@@ -184,7 +185,7 @@ class AgilaiBridge {
   }
 
   /**
-   * Load an Agilai agent definition
+   * Load an aidesigner agent definition
    */
   async loadAgent(agentId) {
     if (this.environmentMode === 'v6-modules') {
@@ -214,7 +215,7 @@ class AgilaiBridge {
       const candidatePath = path.join(basePath, `${agentId}.md`);
 
       if (await fs.pathExists(candidatePath)) {
-        console.debug(`[AgilaiBridge] Found agent '${agentId}' at: ${candidatePath}`);
+        console.debug(`[aidesignerBridge] Found agent '${agentId}' at: ${candidatePath}`);
         resolvedAgentPath = candidatePath;
         break;
       }
@@ -280,7 +281,7 @@ class AgilaiBridge {
    * Build prioritized list of agent search paths with deduplication
    *
    * Resolution order:
-   * 1. Custom agentSearchPaths (if provided) OR default {agilaiCorePath}/agents
+   * 1. Custom agentSearchPaths (if provided) OR default {aidesignerCorePath}/agents
    * 2. Additional extraAgentSearchPaths
    * 3. Fallback to {packageRoot}/agents
    *
@@ -297,7 +298,7 @@ class AgilaiBridge {
     if (configuredPaths.length > 0) {
       defaults.push(...configuredPaths);
     } else {
-      defaults.push(path.join(this.agilaiCorePath, 'agents'));
+      defaults.push(path.join(this.aidesignerCorePath, 'agents'));
     }
 
     defaults.push(...extraPaths);
@@ -315,7 +316,10 @@ class AgilaiBridge {
         try {
           return path.resolve(candidate);
         } catch (error) {
-          console.warn(`[AgilaiBridge] Skipping invalid agent search path: ${candidate}`, error);
+          console.warn(
+            `[aidesignerBridge] Skipping invalid agent search path: ${candidate}`,
+            error,
+          );
           return null;
         }
       })
@@ -340,7 +344,7 @@ class AgilaiBridge {
     const persona = agent.persona || {};
     const agentInfo = agent.agent || {};
 
-    let prompt = `You are ${agentInfo.name || agentInfo.id}, a ${agentInfo.title || 'Agilai agent'}.\n\n`;
+    let prompt = `You are ${agentInfo.name || agentInfo.id}, a ${agentInfo.title || 'aidesigner agent'}.\n\n`;
 
     if (persona.role) {
       prompt += `**Role**: ${persona.role}\n`;
@@ -523,7 +527,7 @@ class AgilaiBridge {
       return record.content;
     }
 
-    const taskPath = path.join(this.agilaiCorePath, 'tasks', `${taskName}.md`);
+    const taskPath = path.join(this.aidesignerCorePath, 'tasks', `${taskName}.md`);
 
     if (!(await fs.pathExists(taskPath))) {
       throw new Error(`Task not found: ${taskName}`);
@@ -552,7 +556,7 @@ class AgilaiBridge {
     }
 
     for (const ext of ['.yaml', '.md']) {
-      const templatePath = path.join(this.agilaiCorePath, 'templates', `${templateName}${ext}`);
+      const templatePath = path.join(this.aidesignerCorePath, 'templates', `${templateName}${ext}`);
 
       if (await fs.pathExists(templatePath)) {
         const content = await fs.readFile(templatePath, 'utf8');
@@ -581,7 +585,7 @@ class AgilaiBridge {
       return record.content;
     }
 
-    const checklistPath = path.join(this.agilaiCorePath, 'checklists', `${checklistName}.md`);
+    const checklistPath = path.join(this.aidesignerCorePath, 'checklists', `${checklistName}.md`);
 
     if (!(await fs.pathExists(checklistPath))) {
       throw new Error(`Checklist not found: ${checklistName}`);
@@ -731,13 +735,14 @@ class AgilaiBridge {
   }
 
   /**
-   * Describe which Agilai environment was detected
+   * Describe which aidesigner environment was detected
    */
   getEnvironmentInfo() {
     return (
       this.environmentInfo || {
         mode: this.environmentMode,
-        root: this.environmentMode === 'legacy-core' ? this.agilaiCorePath : this.agilaiV6Path,
+        root:
+          this.environmentMode === 'legacy-core' ? this.aidesignerCorePath : this.aidesignerV6Path,
       }
     );
   }
@@ -750,7 +755,7 @@ class AgilaiBridge {
       return this.v6Loader.listAgents().map((agent) => `${agent.moduleId}/${agent.agentId}`);
     }
 
-    const agentsDir = path.join(this.agilaiCorePath, 'agents');
+    const agentsDir = path.join(this.aidesignerCorePath, 'agents');
     const files = await fs.readdir(agentsDir);
 
     return files.filter((file) => file.endsWith('.md')).map((file) => file.replace('.md', ''));
@@ -764,7 +769,7 @@ class AgilaiBridge {
       return this.v6Loader.listTasks().map((task) => `${task.moduleId}/${task.name}`);
     }
 
-    const tasksDir = path.join(this.agilaiCorePath, 'tasks');
+    const tasksDir = path.join(this.aidesignerCorePath, 'tasks');
     const files = await fs.readdir(tasksDir);
 
     return files.filter((file) => file.endsWith('.md')).map((file) => file.replace('.md', ''));
@@ -780,7 +785,7 @@ class AgilaiBridge {
         .map((template) => `${template.moduleId}/${template.name}`);
     }
 
-    const templatesDir = path.join(this.agilaiCorePath, 'templates');
+    const templatesDir = path.join(this.aidesignerCorePath, 'templates');
     const files = await fs.readdir(templatesDir);
 
     return files
@@ -789,4 +794,4 @@ class AgilaiBridge {
   }
 }
 
-module.exports = { AgilaiBridge };
+module.exports = { aidesignerBridge };

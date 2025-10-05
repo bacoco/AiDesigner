@@ -32,7 +32,7 @@ If you have just completed an MVP with BMad, and you want to continue with post-
 Starting in the Web Option (potentially save some cost but a potentially more frustrating experience):
 
 1. **Follow the [<ins>User Guide - Installation</ins>](user-guide.md#installation) steps to setup your agent in the web.**
-2. **Generate a 'flattened' single file of your entire codebase** run: `npx agilai flatten`
+2. **Generate a 'flattened' single file of your entire codebase** run: `npx aidesigner flatten`
 
 Starting in an IDE with large context and good models (Its important to use quality models for this process for the best results)
 

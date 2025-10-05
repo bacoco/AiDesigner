@@ -122,7 +122,7 @@ When this task is invoked:
 
 ## Critical: Template Discovery
 
-If a YAML Template has not been provided, list all templates from .agilai-core/templates or ask the user to provide another.
+If a YAML Template has not been provided, list all templates from .aidesigner-core/templates or ask the user to provide another.
 
 ## CRITICAL: Mandatory Elicitation Format
 
@@ -3391,7 +3391,7 @@ npx bmad-method install
 
 **Verify Game Development Installation**:
 
-- `.agilai-core/` folder created with all core agents
+- `.aidesigner-core/` folder created with all core agents
 - `.bmad-2d-unity-game-dev/` folder with game development agents
 - IDE-specific integration files created
 - Game development agents available with `/bmad2du` prefix (per config.yaml)
@@ -3707,7 +3707,7 @@ Use the `shard-doc` task or `@kayvan/markdown-tree-parser` tool for automatic ga
 | `game-sm`        | Game Scrum Master | Game story creation, sprint planning        | Game project management, workflow           |
 | `game-architect` | Game Architect    | Unity system design, technical architecture | Complex Unity systems, performance planning |
 
-**Note**: For QA and other roles, use the core BMad agents (e.g., `@qa` from agilai-core).
+**Note**: For QA and other roles, use the core BMad agents (e.g., `@qa` from aidesigner-core).
 
 ### Game Agent Interaction Commands
 

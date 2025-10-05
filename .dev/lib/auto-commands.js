@@ -38,7 +38,7 @@ async function executeAutoCommand(command, context, bridge) {
   const phase = resolveAutoCommandPhase(command);
 
   if (!bridge || typeof bridge.executePhaseWorkflow !== 'function') {
-    throw new Error('Agilai bridge is not initialized');
+    throw new Error('aidesigner bridge is not initialized');
   }
 
   return bridge.executePhaseWorkflow(phase, context);

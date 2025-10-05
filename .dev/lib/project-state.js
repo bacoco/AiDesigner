@@ -9,7 +9,7 @@ const path = require('node:path');
 class ProjectState {
   constructor(projectPath = process.cwd()) {
     this.projectPath = projectPath;
-    this.stateDir = path.join(projectPath, '.agilai');
+    this.stateDir = path.join(projectPath, '.aidesigner');
     this.stateFile = path.join(this.stateDir, 'state.json');
     this.conversationFile = path.join(this.stateDir, 'conversation.json');
     this.deliverablesFile = path.join(this.stateDir, 'deliverables.json');
@@ -20,7 +20,7 @@ class ProjectState {
       projectId: null,
       projectName: null,
       currentPhase: 'analyst',
-      currentLane: null, // 'agilai' or 'spec_kit'
+      currentLane: null, // 'aidesigner' or 'spec_kit'
       phaseHistory: [],
       laneHistory: [], // Track lane decisions
       requirements: {},
@@ -643,7 +643,7 @@ class ProjectState {
    * Get current lane
    */
   getCurrentLane() {
-    return this.state.currentLane || 'agilai';
+    return this.state.currentLane || 'aidesigner';
   }
 
   /**
@@ -688,7 +688,7 @@ class ProjectState {
    * Generate unique project ID
    */
   generateProjectId() {
-    return `agilai-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    return `aidesigner-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   }
 }
 

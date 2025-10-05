@@ -34,8 +34,8 @@ class Installer {
         ? config.directory
         : path.resolve(originalCwd, config.directory);
 
-      if (path.basename(installDir) === '.agilai-core') {
-        // If user points directly to .agilai-core, treat its parent as the project root
+      if (path.basename(installDir) === '.aidesigner-core') {
+        // If user points directly to .aidesigner-core, treat its parent as the project root
         installDir = path.dirname(installDir);
       }
 
@@ -173,8 +173,8 @@ class Installer {
       return state; // clean install
     }
 
-    // Check for V4 installation (has .agilai-core with manifest)
-    const bmadCorePath = path.join(installDir, '.agilai-core');
+    // Check for V4 installation (has .aidesigner-core with manifest)
+    const bmadCorePath = path.join(installDir, '.aidesigner-core');
     const manifestPath = path.join(bmadCorePath, 'install-manifest.yaml');
 
     if (await fileManager.pathExists(manifestPath)) {
@@ -193,7 +193,7 @@ class Installer {
       return state;
     }
 
-    // Check for .agilai-core without manifest (broken V4 or manual copy)
+    // Check for .aidesigner-core without manifest (broken V4 or manual copy)
     if (await fileManager.pathExists(bmadCorePath)) {
       state.type = 'unknown_existing';
       state.hasBmadCore = true;
@@ -227,23 +227,23 @@ class Installer {
 
     switch (config.installType) {
       case 'full': {
-        // Full installation - copy entire .agilai-core folder as a subdirectory
-        spinner.text = 'Copying complete .agilai-core folder...';
+        // Full installation - copy entire .aidesigner-core folder as a subdirectory
+        spinner.text = 'Copying complete .aidesigner-core folder...';
         const sourceDir = resourceLocator.getBmadCorePath();
-        const bmadCoreDestDir = path.join(installDir, '.agilai-core');
+        const bmadCoreDestDir = path.join(installDir, '.aidesigner-core');
         await fileManager.copyDirectoryWithRootReplacement(
           sourceDir,
           bmadCoreDestDir,
-          '.agilai-core',
+          '.aidesigner-core',
         );
 
-        // Copy common/ items to .agilai-core
+        // Copy common/ items to .aidesigner-core
         spinner.text = 'Copying common utilities...';
-        await this.copyCommonItems(installDir, '.agilai-core', spinner);
+        await this.copyCommonItems(installDir, '.aidesigner-core', spinner);
 
-        // Copy documentation files from docs/ to .agilai-core
+        // Copy documentation files from docs/ to .aidesigner-core
         spinner.text = 'Copying documentation files...';
-        await this.copyDocsItems(installDir, '.agilai-core', spinner);
+        await this.copyDocsItems(installDir, '.aidesigner-core', spinner);
 
         // Get list of all files for manifest
         const foundFiles = await resourceLocator.findFiles('**/*', {
@@ -251,7 +251,7 @@ class Installer {
           nodir: true,
           ignore: ['**/.git/**', '**/node_modules/**'],
         });
-        files = foundFiles.map((file) => path.join('.agilai-core', file));
+        files = foundFiles.map((file) => path.join('.aidesigner-core', file));
 
         break;
       }
@@ -263,16 +263,16 @@ class Installer {
         const agentPath = configLoader.getAgentPath(config.agent);
         const destinationAgentPath = path.join(
           installDir,
-          '.agilai-core',
+          '.aidesigner-core',
           'agents',
           `${config.agent}.md`,
         );
         await fileManager.copyFileWithRootReplacement(
           agentPath,
           destinationAgentPath,
-          '.agilai-core',
+          '.aidesigner-core',
         );
-        files.push(`.agilai-core/agents/${config.agent}.md`);
+        files.push(`.aidesigner-core/agents/${config.agent}.md`);
 
         // Copy dependencies
         const { all: dependencies } = await resourceLocator.getAgentDependencies(config.agent);
@@ -284,15 +284,15 @@ class Installer {
           if (dep.includes('*')) {
             // Handle glob patterns with {root} replacement
             const copiedFiles = await fileManager.copyGlobPattern(
-              dep.replace('.agilai-core/', ''),
+              dep.replace('.aidesigner-core/', ''),
               sourceBase,
-              path.join(installDir, '.agilai-core'),
-              '.agilai-core',
+              path.join(installDir, '.aidesigner-core'),
+              '.aidesigner-core',
             );
-            files.push(...copiedFiles.map((f) => `.agilai-core/${f}`));
+            files.push(...copiedFiles.map((f) => `.aidesigner-core/${f}`));
           } else {
             // Handle single files with {root} replacement if needed
-            const sourcePath = path.join(sourceBase, dep.replace('.agilai-core/', ''));
+            const sourcePath = path.join(sourceBase, dep.replace('.aidesigner-core/', ''));
             const destinationPath = path.join(installDir, dep);
 
             const needsRootReplacement =
@@ -300,7 +300,11 @@ class Installer {
             let success = false;
 
             success = await (needsRootReplacement
-              ? fileManager.copyFileWithRootReplacement(sourcePath, destinationPath, '.agilai-core')
+              ? fileManager.copyFileWithRootReplacement(
+                  sourcePath,
+                  destinationPath,
+                  '.aidesigner-core',
+                )
               : fileManager.copyFile(sourcePath, destinationPath));
 
             if (success) {
@@ -309,14 +313,14 @@ class Installer {
           }
         }
 
-        // Copy common/ items to .agilai-core
+        // Copy common/ items to .aidesigner-core
         spinner.text = 'Copying common utilities...';
-        const commonFiles = await this.copyCommonItems(installDir, '.agilai-core', spinner);
+        const commonFiles = await this.copyCommonItems(installDir, '.aidesigner-core', spinner);
         files.push(...commonFiles);
 
-        // Copy documentation files from docs/ to .agilai-core
+        // Copy documentation files from docs/ to .aidesigner-core
         spinner.text = 'Copying documentation files...';
-        const documentFiles = await this.copyDocsItems(installDir, '.agilai-core', spinner);
+        const documentFiles = await this.copyDocsItems(installDir, '.aidesigner-core', spinner);
         files.push(...documentFiles);
 
         break;
@@ -336,15 +340,15 @@ class Installer {
           if (dep.includes('*')) {
             // Handle glob patterns with {root} replacement
             const copiedFiles = await fileManager.copyGlobPattern(
-              dep.replace('.agilai-core/', ''),
+              dep.replace('.aidesigner-core/', ''),
               sourceBase,
-              path.join(installDir, '.agilai-core'),
-              '.agilai-core',
+              path.join(installDir, '.aidesigner-core'),
+              '.aidesigner-core',
             );
-            files.push(...copiedFiles.map((f) => `.agilai-core/${f}`));
+            files.push(...copiedFiles.map((f) => `.aidesigner-core/${f}`));
           } else {
             // Handle single files with {root} replacement if needed
-            const sourcePath = path.join(sourceBase, dep.replace('.agilai-core/', ''));
+            const sourcePath = path.join(sourceBase, dep.replace('.aidesigner-core/', ''));
             const destinationPath = path.join(installDir, dep);
 
             const needsRootReplacement =
@@ -352,7 +356,11 @@ class Installer {
             let success = false;
 
             success = await (needsRootReplacement
-              ? fileManager.copyFileWithRootReplacement(sourcePath, destinationPath, '.agilai-core')
+              ? fileManager.copyFileWithRootReplacement(
+                  sourcePath,
+                  destinationPath,
+                  '.aidesigner-core',
+                )
               : fileManager.copyFile(sourcePath, destinationPath));
 
             if (success) {
@@ -361,20 +369,20 @@ class Installer {
           }
         }
 
-        // Copy common/ items to .agilai-core
+        // Copy common/ items to .aidesigner-core
         spinner.text = 'Copying common utilities...';
-        const commonFiles = await this.copyCommonItems(installDir, '.agilai-core', spinner);
+        const commonFiles = await this.copyCommonItems(installDir, '.aidesigner-core', spinner);
         files.push(...commonFiles);
 
-        // Copy documentation files from docs/ to .agilai-core
+        // Copy documentation files from docs/ to .aidesigner-core
         spinner.text = 'Copying documentation files...';
-        const documentFiles = await this.copyDocsItems(installDir, '.agilai-core', spinner);
+        const documentFiles = await this.copyDocsItems(installDir, '.aidesigner-core', spinner);
         files.push(...documentFiles);
 
         break;
       }
       case 'expansion-only': {
-        // Expansion-only installation - DO NOT create .agilai-core
+        // Expansion-only installation - DO NOT create .aidesigner-core
         // Only install expansion packs
         spinner.text = 'Installing expansion packs only...';
 
@@ -651,7 +659,7 @@ class Installer {
     console.log(`   Directory: ${installDir}`);
 
     if (state.hasBmadCore) {
-      console.log('   Found: .agilai-core directory (but no manifest)');
+      console.log('   Found: .aidesigner-core directory (but no manifest)');
     }
     if (state.hasOtherFiles) {
       console.log('   Found: Other files in directory');
@@ -789,7 +797,7 @@ class Installer {
         // Skip the manifest file itself
         if (file.endsWith('install-manifest.yaml')) continue;
 
-        const relativePath = file.replace('.agilai-core/', '');
+        const relativePath = file.replace('.aidesigner-core/', '');
         const destinationPath = path.join(installDir, file);
 
         // Check if this is a common/ file that needs special processing
@@ -800,12 +808,12 @@ class Installer {
           // This is a common/ file - needs template processing
           const fs = require('node:fs').promises;
           const content = await fs.readFile(commonSourcePath, 'utf8');
-          const updatedContent = content.replaceAll('{root}', '.agilai-core');
+          const updatedContent = content.replaceAll('{root}', '.aidesigner-core');
           await fileManager.ensureDirectory(path.dirname(destinationPath));
           await fs.writeFile(destinationPath, updatedContent, 'utf8');
           spinner.text = `Restored: ${file}`;
         } else {
-          // Regular file from agilai-core
+          // Regular file from aidesigner-core
           const sourcePath = path.join(sourceBase, relativePath);
           if (await fileManager.pathExists(sourcePath)) {
             await fileManager.copyFile(sourcePath, destinationPath);
@@ -863,8 +871,8 @@ class Installer {
   async performReinstall(config, installDir, spinner) {
     spinner.start('Preparing to reinstall BMad Method...');
 
-    // Remove existing .agilai-core
-    const bmadCorePath = path.join(installDir, '.agilai-core');
+    // Remove existing .aidesigner-core
+    const bmadCorePath = path.join(installDir, '.aidesigner-core');
     if (await fileManager.pathExists(bmadCorePath)) {
       spinner.text = 'Removing existing installation...';
       await fileManager.removeDirectory(bmadCorePath);
@@ -900,7 +908,9 @@ class Installer {
     // Information about installation components
     console.log(chalk.bold('\n🎯 Installation Summary:'));
     if (config.installType !== 'expansion-only') {
-      console.log(chalk.green('✓ .agilai-core framework installed with all agents and workflows'));
+      console.log(
+        chalk.green('✓ .aidesigner-core framework installed with all agents and workflows'),
+      );
     }
 
     if (config.expansionPacks && config.expansionPacks.length > 0) {
@@ -959,7 +969,7 @@ class Installer {
     // Important notice to read the user guide
     console.log(
       chalk.red.bold(
-        '\n📖 IMPORTANT: Please read the user guide at docs/user-guide.md (also installed at .agilai-core/user-guide.md)',
+        '\n📖 IMPORTANT: Please read the user guide at docs/user-guide.md (also installed at .aidesigner-core/user-guide.md)',
       ),
     );
     console.log(
@@ -1805,7 +1815,7 @@ class Installer {
     // Find all dot folders that might be expansion packs
     const dotFolders = glob.sync('.*', {
       cwd: installDir,
-      ignore: ['.git', '.git/**', '.agilai-core', '.agilai-core/**'],
+      ignore: ['.git', '.git/**', '.aidesigner-core', '.aidesigner-core/**'],
     });
 
     for (const folder of dotFolders) {
@@ -1962,22 +1972,22 @@ class Installer {
   }
 
   async findInstallation() {
-    // Look for .agilai-core in current directory or parent directories
+    // Look for .aidesigner-core in current directory or parent directories
     let currentDir = process.cwd();
 
     while (currentDir !== path.dirname(currentDir)) {
-      const bmadDir = path.join(currentDir, '.agilai-core');
+      const bmadDir = path.join(currentDir, '.aidesigner-core');
       const manifestPath = path.join(bmadDir, 'install-manifest.yaml');
 
       if (await fileManager.pathExists(manifestPath)) {
-        return currentDir; // Return parent directory, not .agilai-core itself
+        return currentDir; // Return parent directory, not .aidesigner-core itself
       }
 
       currentDir = path.dirname(currentDir);
     }
 
-    // Also check if we're inside a .agilai-core directory
-    if (path.basename(process.cwd()) === '.agilai-core') {
+    // Also check if we're inside a .aidesigner-core directory
+    if (path.basename(process.cwd()) === '.aidesigner-core') {
       const manifestPath = path.join(process.cwd(), 'install-manifest.yaml');
       if (await fileManager.pathExists(manifestPath)) {
         return path.dirname(process.cwd()); // Return parent directory

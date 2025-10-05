@@ -9,7 +9,7 @@ class McpProfiles {
   constructor(options = {}) {
     this.rootDir = options.rootDir || process.cwd();
     this.claudeDir = path.join(this.rootDir, '.claude');
-    this.agilaiDir = path.join(this.rootDir, 'mcp');
+    this.aidesignerDir = path.join(this.rootDir, 'mcp');
     this.profilesMetaFile = path.join(this.claudeDir, '.mcp-profiles.json');
   }
 
@@ -17,8 +17,8 @@ class McpProfiles {
    * Get config file path for a profile
    */
   getConfigPath(type, profile = null) {
-    const baseDir = type === 'claude' ? this.claudeDir : this.agilaiDir;
-    const baseName = type === 'claude' ? 'mcp-config' : 'agilai-config';
+    const baseDir = type === 'claude' ? this.claudeDir : this.aidesignerDir;
+    const baseName = type === 'claude' ? 'mcp-config' : 'aidesigner-config';
 
     if (!profile || profile === 'default') {
       return path.join(baseDir, `${baseName}.json`);
@@ -149,18 +149,21 @@ class McpProfiles {
         fs.copyFileSync(claudeSource, claudeTarget);
       }
 
-      // Copy Agilai config
-      const agilaiSource = this.getConfigPath('agilai', sourceProfile);
-      const agilaiTarget = this.getConfigPath('agilai', name);
-      if (fs.existsSync(agilaiSource)) {
-        fs.copyFileSync(agilaiSource, agilaiTarget);
+      // Copy aidesigner config
+      const aidesignerSource = this.getConfigPath('aidesigner', sourceProfile);
+      const aidesignerTarget = this.getConfigPath('aidesigner', name);
+      if (fs.existsSync(aidesignerSource)) {
+        fs.copyFileSync(aidesignerSource, aidesignerTarget);
       }
     } else {
       // Create empty configs
       const emptyConfig = { mcpServers: {} };
 
       fs.writeFileSync(this.getConfigPath('claude', name), JSON.stringify(emptyConfig, null, 2));
-      fs.writeFileSync(this.getConfigPath('agilai', name), JSON.stringify(emptyConfig, null, 2));
+      fs.writeFileSync(
+        this.getConfigPath('aidesigner', name),
+        JSON.stringify(emptyConfig, null, 2),
+      );
     }
 
     return meta.profiles[name];
@@ -182,13 +185,13 @@ class McpProfiles {
 
     // Delete config files
     const claudeConfig = this.getConfigPath('claude', name);
-    const agilaiConfig = this.getConfigPath('agilai', name);
+    const aidesignerConfig = this.getConfigPath('aidesigner', name);
 
     if (fs.existsSync(claudeConfig)) {
       fs.unlinkSync(claudeConfig);
     }
-    if (fs.existsSync(agilaiConfig)) {
-      fs.unlinkSync(agilaiConfig);
+    if (fs.existsSync(aidesignerConfig)) {
+      fs.unlinkSync(aidesignerConfig);
     }
 
     // Remove from metadata
@@ -213,7 +216,7 @@ class McpProfiles {
       ...profile,
       active: profile.name === activeProfile,
       hasClaudeConfig: fs.existsSync(this.getConfigPath('claude', profile.name)),
-      hasAgilaiConfig: fs.existsSync(this.getConfigPath('agilai', profile.name)),
+      hasaidesignerConfig: fs.existsSync(this.getConfigPath('aidesigner', profile.name)),
     }));
   }
 
@@ -354,7 +357,7 @@ class McpProfiles {
     const exportData = {
       profile,
       claudeConfig: this.loadConfig('claude', profileName),
-      agilaiConfig: this.loadConfig('agilai', profileName),
+      aidesignerConfig: this.loadConfig('aidesigner', profileName),
       exported: new Date().toISOString(),
       version: '1.0.0',
     };
@@ -380,7 +383,7 @@ class McpProfiles {
 
     // Save configs
     this.saveConfig('claude', exportData.claudeConfig, profileName);
-    this.saveConfig('agilai', exportData.agilaiConfig, profileName);
+    this.saveConfig('aidesigner', exportData.aidesignerConfig, profileName);
 
     return profileName;
   }

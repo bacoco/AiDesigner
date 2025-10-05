@@ -1,5 +1,5 @@
 // hooks/context-enrichment.js
-// Assemble lightweight just-in-time story context for Agilai.
+// Assemble lightweight just-in-time story context for aidesigner.
 
 const fs = require('fs-extra');
 const path = require('node:path');

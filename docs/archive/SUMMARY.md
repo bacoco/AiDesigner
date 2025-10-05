@@ -1,6 +1,6 @@
 # Implementation Summary - BMAD-invisible
 
-> **⚠️ HISTORICAL DOCUMENT**: This file describes the early prototype phase from 2agilai24. BMAD-invisible is now fully functional (v1.2.agilai). See README.md and DUAL_LANE_ORCHESTRATION.md for current status.
+> **⚠️ HISTORICAL DOCUMENT**: This file describes the early prototype phase from 2aidesigner24. BMAD-invisible is now fully functional (v1.2.aidesigner). See README.md and DUAL_LANE_ORCHESTRATION.md for current status.
 
 ## ✅ Completed Tasks
 
@@ -15,7 +15,7 @@
 
 - **Works**: Conceptual design, agent structure, safety patterns
 - **Needs Work**: LLM integration, BMAD core connection, CLI interface
-- **Critical Issue**: MCP SDK dependency (was `^agilai.1.agilai`, now `^1.18.2`)
+- **Critical Issue**: MCP SDK dependency (was `^aidesigner.1.aidesigner`, now `^1.18.2`)
 
 ### 3. Documentation Created ✓
 
@@ -42,7 +42,7 @@ Complete overhaul with:
 
 ### 4. Dependencies Fixed ✓
 
-- Updated `@modelcontextprotocol/sdk` from `^agilai.1.agilai` to `^1.18.2`
+- Updated `@modelcontextprotocol/sdk` from `^aidesigner.1.aidesigner` to `^1.18.2`
 - All other dependencies already correct
 
 ### 5. Code Pushed ✓
@@ -168,15 +168,15 @@ async function runAnalystPhase(context) {
 ### NPX Usage Should Be:
 
 ```bash
-# Like Agilai
-npx agilai install    # Install Agilai framework
-npx agilai flatten    # Flatten codebase
+# Like aidesigner
+npx aidesigner install    # Install aidesigner framework
+npx aidesigner flatten    # Flatten codebase
 
-# Agilai Invisible should be
-npx agilai invisible chat           # Start conversation
-npx agilai invisible init          # Initialize project
-npx agilai invisible status        # Show current phase
-npx agilai invisible continue      # Resume conversation
+# aidesigner Invisible should be
+npx aidesigner invisible chat           # Start conversation
+npx aidesigner invisible init          # Initialize project
+npx aidesigner invisible status        # Show current phase
+npx aidesigner invisible continue      # Resume conversation
 ```
 
 ### Chat Interface Example
@@ -230,7 +230,7 @@ async function chat() {
 
 ### Medium Term (Week 5-8)
 
-1agilai. Comprehensive testing 11. Error handling 12. Polish conversation flow 13. Community feedback 14. Release v1.agilai
+1aidesigner. Comprehensive testing 11. Error handling 12. Polish conversation flow 13. Community feedback 14. Release v1.aidesigner
 
 ## 🎉 Summary
 
@@ -259,4 +259,4 @@ All without users needing to learn BMAD terminology!
 
 **Status**: 🚧 Prototype with complete documentation and roadmap
 **Next**: Implement the analysis to make it functional
-**Timeline**: 4-8 weeks to production-ready v1.agilai
+**Timeline**: 4-8 weeks to production-ready v1.aidesigner

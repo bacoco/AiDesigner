@@ -1,8 +1,8 @@
-# Agilai FAQ
+# aidesigner FAQ
 
 ## How It Works
 
-> **Legacy aliases**: Historical `npm run bmad*` scripts still function, but the answers below reference the preferred `agilai` commands.
+> **Legacy aliases**: Historical `npm run bmad*` scripts still function, but the answers below reference the preferred `aidesigner` commands.
 
 ### Where are documents generated?
 
@@ -26,7 +26,7 @@ your-project/
 │   └── qa/
 │       └── assessments/
 │           └── risk-assessment.md   # Test strategy
-└── .agilai/
+└── .aidesigner/
     ├── state.json                   # Current phase and project state
     ├── conversation.json            # Full conversation history
     └── deliverables.json            # Generated content references
@@ -130,7 +130,7 @@ No - validation is a **safety checkpoint**. The orchestrator will not proceed to
 
 ## Working with Existing Projects
 
-### Will it work for projects NOT started with Agilai?
+### Will it work for projects NOT started with aidesigner?
 
 **YES!** The orchestrator handles both:
 
@@ -143,14 +143,14 @@ No - validation is a **safety checkpoint**. The orchestrator will not proceed to
 
 ```bash
 cd your-existing-project
-npx agilai@latest init
+npx aidesigner@latest init
 npm install
 ```
 
 #### 2. Start conversation
 
 ```bash
-npx agilai start
+npx aidesigner start
 ```
 
 #### 3. Tell the orchestrator about existing work
@@ -198,7 +198,7 @@ The orchestrator intelligently handles existing docs:
 **If you have docs from previous sessions:**
 
 - Detects them automatically
-- Loads prior state from `.agilai/state.json`
+- Loads prior state from `.aidesigner/state.json`
 - Asks: `"I see we left off at the Architecture phase. Want to continue from there?"`
 
 ### Can I resume after stopping?
@@ -206,7 +206,7 @@ The orchestrator intelligently handles existing docs:
 **YES!** Project state persists:
 
 ```
-.agilai/
+.aidesigner/
 ├── state.json              # Current phase, context, decisions
 ├── conversation.json       # Full conversation history
 └── deliverables.json       # Generated files tracking
@@ -217,7 +217,7 @@ The orchestrator intelligently handles existing docs:
 ```bash
 # Come back days/weeks later
 cd your-project
-npx agilai start
+npx aidesigner start
 
 # Orchestrator automatically loads state
 Orchestrator: "Welcome back! We were working on the team todo app.
@@ -306,7 +306,7 @@ Orchestrator: [Scans codebase]
 
 ### How does state tracking work?
 
-The orchestrator maintains complete project state in `.agilai/`:
+The orchestrator maintains complete project state in `.aidesigner/`:
 
 #### `state.json` - Current Project State
 
@@ -378,7 +378,7 @@ The orchestrator maintains complete project state in `.agilai/`:
 
 ```bash
 # View current state
-cat .agilai/state.json
+cat .aidesigner/state.json
 
 # Edit (use carefully!)
 # The orchestrator will detect changes on next run
@@ -410,7 +410,7 @@ The orchestrator uses **Claude Sonnet 4.5** via Claude Code CLI:
 
 1. **Orchestrator prompt** (`agents/invisible-orchestrator.md`) - Instructions on how to behave
 2. **Your responses** - Adapts to what you say
-3. **Project state** - Loads context from `.agilai/`
+3. **Project state** - Loads context from `.aidesigner/`
 4. **Phase context** - Internally loads appropriate agent expertise
 5. **Proven methodology** - Follows proven workflow behind the scenes
 
@@ -441,7 +441,7 @@ This happens automatically when you mention "existing project" or "current codeb
 You can still:
 
 - ✅ Access all generated docs in `docs/`
-- ✅ View project state in `.agilai/`
+- ✅ View project state in `.aidesigner/`
 - ✅ Continue development using existing docs
 - ❌ Can't start new conversations until service is back
 
@@ -451,7 +451,7 @@ You can still:
 
 ### How is this different from regular BMAD?
 
-| Feature               | Traditional BMAD                         | Agilai                                  |
+| Feature               | Traditional BMAD                         | aidesigner                              |
 | --------------------- | ---------------------------------------- | --------------------------------------- |
 | **User Experience**   | Must learn agent names, phases, commands | Natural conversation, no learning curve |
 | **Agent Interaction** | Explicitly invoke agents                 | Agents loaded invisibly behind scenes   |
@@ -464,15 +464,15 @@ You can still:
 
 ### Can I still use traditional BMAD?
 
-**YES!** Agilai is a wrapper, not a replacement:
+**YES!** aidesigner is a wrapper, not a replacement:
 
 ```bash
 # Traditional BMAD (IDE-based)
-npx agilai install
+npx aidesigner install
 # Use agents directly in VS Code/Cursor/Claude Code
 
-# Agilai (conversational)
-npx agilai@latest start
+# aidesigner (conversational)
+npx aidesigner@latest start
 # Chat naturally, get same deliverables
 ```
 
@@ -489,7 +489,7 @@ Both produce the same `docs/` structure, so you can switch between them!
 npm run build:mcp
 
 # Verify it loads
-node -e "require('agilai/dist/mcp/mcp/server.js')"
+node -e "require('aidesigner/dist/mcp/mcp/server.js')"
 ```
 
 ### "Command not found: claude"
@@ -503,8 +503,8 @@ node -e "require('agilai/dist/mcp/mcp/server.js')"
 
 ```bash
 # Reset state (backs up old state)
-rm .agilai/state.json
-npx agilai start
+rm .aidesigner/state.json
+npx aidesigner start
 # Orchestrator will start fresh
 ```
 
@@ -517,11 +517,11 @@ Check that you confirmed at validation checkpoints:
 
 ### "Can't resume previous session"
 
-Check if `.agilai/state.json` exists:
+Check if `.aidesigner/state.json` exists:
 
 ```bash
 # View state
-cat .agilai/state.json
+cat .aidesigner/state.json
 
 # If missing, state was cleared
 # Start new session - orchestrator will ask context questions
@@ -531,7 +531,7 @@ cat .agilai/state.json
 
 ## Best Practices
 
-### Getting the Most from Agilai
+### Getting the Most from aidesigner
 
 #### 1. Be Specific During Discovery
 
@@ -565,7 +565,7 @@ Don't assume it's only for greenfield - brownfield works great!
 #### 6. Commit State Files
 
 ```bash
-git add .agilai/ docs/
+git add .aidesigner/ docs/
 git commit -m "Add project state and docs"
 ```
 
@@ -592,7 +592,7 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for how to help!
 
 ## Support
 
-- **Issues**: https://github.com/bacoco/agilai/issues
+- **Issues**: https://github.com/bacoco/aidesigner/issues
 - **Docs**: See [README.md](../README.md) and [USAGE.md](../USAGE.md)
 - **Base BMAD**: https://github.com/bacoco/BMAD-METHOD
 

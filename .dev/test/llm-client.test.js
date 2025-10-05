@@ -346,7 +346,7 @@ describe('LLMClient', () => {
 
   describe('MCP Server Detection', () => {
     it('detects MCP execution with published package path (Unix)', () => {
-      process.argv = ['node', 'node_modules/agilai/dist/mcp/mcp/server.js'];
+      process.argv = ['node', 'node_modules/aidesigner/dist/mcp/mcp/server.js'];
       const client = new LLMClient({ provider: 'claude' });
       expect(client.isMcpExecution).toBe(true);
     });
@@ -354,7 +354,7 @@ describe('LLMClient', () => {
     it('detects MCP execution with published package path (Windows)', () => {
       process.argv = [
         'node',
-        'C:\\projects\\myapp\\node_modules\\agilai\\dist\\mcp\\mcp\\server.js',
+        'C:\\projects\\myapp\\node_modules\\aidesigner\\dist\\mcp\\mcp\\server.js',
       ];
       const client = new LLMClient({ provider: 'claude' });
       expect(client.isMcpExecution).toBe(true);

@@ -4,14 +4,14 @@ Project-specific instructions for Codex CLI when working with this repository.
 
 ## Project
 
-**Agilai** - Universal AI agent framework orchestrating specialized AI agents through structured workflows. Natural language first approach with invisible orchestrator layer.
+**aidesigner** - Universal AI agent framework orchestrating specialized AI agents through structured workflows. Natural language first approach with invisible orchestrator layer.
 
 **Key Innovation**: Zero-knowledge interface - users interact naturally without learning methodology jargon.
 
 ## Architecture
 
 ```
-agilai-core/     → Framework (agents, workflows, templates, tasks)
+aidesigner-core/     → Framework (agents, workflows, templates, tasks)
 tools/           → Build system
 dist/            → Generated bundles (web/IDE)
 ```
@@ -44,7 +44,7 @@ npm test                       # Run tests
 ## Critical Files
 
 ```
-agilai-core/
+aidesigner-core/
   agents/*.md          → Agent definitions (YAML frontmatter)
   workflows/*.yaml     → Multi-phase workflows
   templates/*.yaml     → PRD/architecture templates
@@ -57,9 +57,9 @@ agents/
   phase-detector.md          → Phase inference
 
 bin/
-  agilai               → Main CLI entry
-  agilai-claude        → Claude CLI wrapper
-  agilai-codex         → Codex CLI wrapper
+  aidesigner               → Main CLI entry
+  aidesigner-claude        → Claude CLI wrapper
+  aidesigner-codex         → Codex CLI wrapper
 
 dist/mcp/
   mcp/server.js        → MCP server (must be built)
@@ -118,7 +118,7 @@ Three CLI options available:
 - **Codex CLI**: Uses `AGENTS.md` (this file)
 - **Opencode CLI**: Standard approach
 
-Configuration in `bin/agilai`, `bin/agilai-claude`, `bin/agilai-codex`
+Configuration in `bin/aidesigner`, `bin/aidesigner-claude`, `bin/aidesigner-codex`
 
 ## Publishing Checklist
 

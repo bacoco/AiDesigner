@@ -18,16 +18,16 @@ describe('ProjectState defaults', () => {
     }
   });
 
-  it('generates agilai-prefixed IDs and lane defaults for new projects', async () => {
+  it('generates aidesigner-prefixed IDs and lane defaults for new projects', async () => {
     const projectState = new ProjectState(tempDir);
     const state = await projectState.initialize();
 
-    expect(state.projectId).toMatch(/^agilai-/);
-    expect(projectState.getCurrentLane()).toBe('agilai');
+    expect(state.projectId).toMatch(/^aidesigner-/);
+    expect(projectState.getCurrentLane()).toBe('aidesigner');
   });
 
   it('preserves legacy bmad values when loading saved state', async () => {
-    const stateDir = path.join(tempDir, '.agilai');
+    const stateDir = path.join(tempDir, '.aidesigner');
     await fs.ensureDir(stateDir);
     await fs.writeJson(
       path.join(stateDir, 'state.json'),

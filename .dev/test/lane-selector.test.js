@@ -384,7 +384,7 @@ describe('Lane decision logging', () => {
 
       await logDecision(tempDir, decision, 'Test message');
 
-      const logPath = path.join(tempDir, '.agilai', 'decisions.jsonl');
+      const logPath = path.join(tempDir, '.aidesigner', 'decisions.jsonl');
       const content = await fs.readFile(logPath, 'utf8');
       const lines = content.trim().split('\n');
       const entry = JSON.parse(lines.at(-1));

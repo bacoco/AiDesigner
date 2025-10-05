@@ -20,7 +20,7 @@ const runCommandWithGlm = async (command) => {
 
   jest.doMock('child_process', () => ({ spawn: spawnMock }));
 
-  const cli = require('../bin/agilai');
+  const cli = require('../bin/aidesigner');
   cli.setRuntimeContext(command, ['--glm']);
 
   delete process.env.BMAD_ASSISTANT_PROVIDER;
@@ -269,7 +269,7 @@ describe('assistant-env', () => {
     });
   });
 
-  describe('agilai CLI GLM flags', () => {
+  describe('aidesigner CLI GLM flags', () => {
     afterEach(() => {
       jest.dontMock('child_process');
       jest.resetModules();

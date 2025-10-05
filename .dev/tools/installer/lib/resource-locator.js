@@ -16,11 +16,11 @@ class ResourceLocator {
   }
 
   /**
-   * Get the base path for agilai-core
+   * Get the base path for aidesigner-core
    */
   getBmadCorePath() {
     if (!this._bmadCorePath) {
-      this._bmadCorePath = path.join(__dirname, '../../../agilai-core');
+      this._bmadCorePath = path.join(__dirname, '../../../aidesigner-core');
     }
     return this._bmadCorePath;
   }
@@ -70,7 +70,7 @@ class ResourceLocator {
       return this._pathCache.get(cacheKey);
     }
 
-    // Check in agilai-core
+    // Check in aidesigner-core
     let agentPath = path.join(this.getBmadCorePath(), 'agents', `${agentId}.md`);
     if (await fs.pathExists(agentPath)) {
       this._pathCache.set(cacheKey, agentPath);
@@ -105,7 +105,7 @@ class ResourceLocator {
     const yaml = require('js-yaml');
     const { extractYamlFromAgent } = require('../../lib/yaml-utils');
 
-    // Get agents from agilai-core
+    // Get agents from aidesigner-core
     const coreAgents = await this.findFiles('agents/*.md', {
       cwd: this.getBmadCorePath(),
     });
@@ -251,7 +251,7 @@ class ResourceLocator {
         if (Array.isArray(deps)) {
           byType[type] = deps;
           for (const dep of deps) {
-            allDeps.push(`.agilai-core/${type}/${dep}`);
+            allDeps.push(`.aidesigner-core/${type}/${dep}`);
           }
         }
       }

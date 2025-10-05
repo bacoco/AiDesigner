@@ -304,7 +304,7 @@ npx bmad-method install
 
 **Verify Game Development Installation**:
 
-- `.agilai-core/` folder created with all core agents
+- `.aidesigner-core/` folder created with all core agents
 - `.bmad-godot-game-dev/` folder with game development agents
 - IDE-specific integration files created
 - Game development agents available with `/BmadG` prefix
@@ -1272,7 +1272,7 @@ When this task is invoked:
 
 ## Critical: Template Discovery
 
-If a YAML Template has not been provided, list all templates from .agilai-core/templates or ask the user to provide another.
+If a YAML Template has not been provided, list all templates from .aidesigner-core/templates or ask the user to provide another.
 
 ## CRITICAL: Mandatory Elicitation Format
 

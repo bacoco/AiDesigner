@@ -4,10 +4,10 @@ const path = require('node:path');
 
 jest.mock('../hooks/context-enrichment', () => ({}), { virtual: true });
 
-const { AgilaiBridge } = require('../lib/agilai-bridge.js');
+const { aidesignerBridge } = require('../lib/aidesigner-bridge.js');
 
 async function createV6Workspace() {
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'agilai-v6-workspace-'));
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'aidesigner-v6-workspace-'));
   const moduleRoot = path.join(tempRoot, 'src', 'modules', 'alpha');
 
   await fs.ensureDir(path.join(moduleRoot, 'agents'));
@@ -26,7 +26,7 @@ async function createV6Workspace() {
   return tempRoot;
 }
 
-describe('AgilaiBridge V6 module detection', () => {
+describe('aidesignerBridge V6 module detection', () => {
   let tempRoot;
   let pathExistsSpy;
   let readFileSpy;
@@ -72,9 +72,9 @@ describe('AgilaiBridge V6 module detection', () => {
       throw new Error(`Unexpected readFile access during test: ${targetPath}`);
     });
 
-    const bridge = new AgilaiBridge({
-      agilaiCorePath: path.join(tempRoot, 'missing-core'),
-      agilaiV6Path: tempRoot,
+    const bridge = new aidesignerBridge({
+      aidesignerCorePath: path.join(tempRoot, 'missing-core'),
+      aidesignerV6Path: tempRoot,
       llmClient: { chat: jest.fn() },
     });
 

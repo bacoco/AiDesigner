@@ -1,5 +1,5 @@
 /**
- * Lane Selector for Agilai
+ * Lane Selector for aidesigner
  * Intelligently routes tasks between complex (multi-agent) and quick (template-based) lanes
  */
 
@@ -530,7 +530,7 @@ function buildScaleRationale(scaleAssessment) {
  * Log lane decision to decisions.jsonl
  */
 async function logDecision(projectPath, decision, userMessage) {
-  const decisionsFile = path.join(projectPath, '.agilai', 'decisions.jsonl');
+  const decisionsFile = path.join(projectPath, '.aidesigner', 'decisions.jsonl');
 
   await fs.ensureDir(path.dirname(decisionsFile));
 
@@ -565,7 +565,7 @@ async function selectLaneWithLog(userMessage, context = {}, projectPath = proces
  * Read decision history
  */
 async function getDecisionHistory(projectPath = process.cwd(), limit = 10) {
-  const decisionsFile = path.join(projectPath, '.agilai', 'decisions.jsonl');
+  const decisionsFile = path.join(projectPath, '.aidesigner', 'decisions.jsonl');
 
   if (!(await fs.pathExists(decisionsFile))) {
     return [];

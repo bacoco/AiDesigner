@@ -1,6 +1,6 @@
 # Installation Methods
 
-This guide covers all installation options for Agilai. For quick setup, see the [Quick Start Guide](guides/QUICKSTART.md).
+This guide covers all installation options for aidesigner. For quick setup, see the [Quick Start Guide](guides/QUICKSTART.md).
 
 ## Table of Contents
 
@@ -27,12 +27,12 @@ This guide covers all installation options for Agilai. For quick setup, see the 
 The fastest way to get started - one command does everything:
 
 ```bash
-npx agilai@latest start
+npx aidesigner@latest start
 ```
 
 ### Interactive Selection
 
-When you run `npx agilai@latest start` without flags, you'll see a **single combined list** showing all valid CLI-provider combinations:
+When you run `npx aidesigner@latest start` without flags, you'll see a **single combined list** showing all valid CLI-provider combinations:
 
 ```
 ? Select CLI and provider:
@@ -61,16 +61,16 @@ Skip the interactive prompt by passing CLI and provider explicitly:
 
 ```bash
 # Claude CLI examples (supports: anthropic, glm)
-npx agilai@latest start --assistant=claude --provider=anthropic
-npx agilai@latest start --assistant=claude --provider=glm
-npx agilai@latest start --assistant=claude --glm  # shorthand for --provider=glm
+npx aidesigner@latest start --assistant=claude --provider=anthropic
+npx aidesigner@latest start --assistant=claude --provider=glm
+npx aidesigner@latest start --assistant=claude --glm  # shorthand for --provider=glm
 
 # Codex CLI examples (supports: openai only)
-npx agilai@latest start --assistant=codex --provider=openai
+npx aidesigner@latest start --assistant=codex --provider=openai
 
 # OpenCode CLI examples (supports: all providers)
-npx agilai@latest start --assistant=opencode --provider=glm
-npx agilai@latest start --assistant=opencode --provider=gemini
+npx aidesigner@latest start --assistant=opencode --provider=glm
+npx aidesigner@latest start --assistant=opencode --provider=gemini
 ```
 
 ### What It Does
@@ -93,12 +93,12 @@ For more control over the installation process:
 
 ```bash
 # Initialize project structure (prompts for project name)
-npx agilai@latest init
+npx aidesigner@latest init
 # Creates:
 #   - New directory with your project name
 #   - BMAD-compliant docs/ structure (prd/, architecture/, stories/, qa/)
 #   - Comprehensive README.md with BMAD workflow guide
-#   - .agilai/project.json metadata
+#   - .aidesigner/project.json metadata
 #   - .mcp.json MCP server configuration
 
 # Navigate into your new project
@@ -108,14 +108,14 @@ cd your-project-name
 npm install
 
 # Start chatting
-npx agilai start              # Prompts for assistant choice
-npx agilai start --assistant=claude       # Claude front-end
-npx agilai start --assistant=codex        # Codex front-end
-npx agilai start --assistant=opencode     # OpenCode front-end
+npx aidesigner start              # Prompts for assistant choice
+npx aidesigner start --assistant=claude       # Claude front-end
+npx aidesigner start --assistant=codex        # Codex front-end
+npx aidesigner start --assistant=opencode     # OpenCode front-end
 
 # Use GLM provider
-npx agilai start --glm
-npx agilai start --assistant=claude --glm
+npx aidesigner start --glm
+npx aidesigner start --assistant=claude --glm
 ```
 
 ### What `init` Creates
@@ -129,12 +129,12 @@ The `init` command now creates a complete BMAD-aligned project:
   - `docs/stories/` - User stories (created by SM agent)
   - `docs/qa/` - QA assessments and quality gates
 - **README.md**: Comprehensive guide to BMAD workflow, agents, and commands
-- **Project metadata**: `.agilai/project.json` with version info and configuration
+- **Project metadata**: `.aidesigner/project.json` with version info and configuration
 - **MCP configuration**: `.mcp.json` with recommended servers
 
 > **💡 Tip**: The README.md created by `init` provides a complete guide to the BMAD methodology and workflow. Start there!
 
-> **Legacy aliases**: Older `npm run bmad*` scripts remain available for backwards compatibility, but the examples above use the preferred `agilai` commands.
+> **Legacy aliases**: Older `npm run bmad*` scripts remain available for backwards compatibility, but the examples above use the preferred `aidesigner` commands.
 
 ## Option 3: Global Installation
 
@@ -142,23 +142,23 @@ Install globally for use across multiple projects:
 
 ```bash
 # Install globally
-npm install -g agilai
+npm install -g aidesigner
 
 # Navigate to any project
 cd my-project
 
 # Initialize
-agilai init
+aidesigner init
 
 # Build
-agilai build
+aidesigner build
 
 # Start (prompts for assistant)
-agilai start
+aidesigner start
 
 # Or specify assistant
-agilai start --assistant=claude
-agilai start --glm
+aidesigner start --assistant=claude
+aidesigner start --glm
 ```
 
 ## Option 4: Local Development
@@ -167,8 +167,8 @@ For contributors and advanced users:
 
 ```bash
 # Clone repository
-git clone https://github.com/bacoco/Agilai.git
-cd Agilai
+git clone https://github.com/bacoco/aidesigner.git
+cd aidesigner
 
 # Install dependencies
 npm install
@@ -177,10 +177,10 @@ npm install
 npm run build:mcp
 
 # Start conversational interface
-npx agilai start                # Prompts for choice
-npx agilai start --assistant=claude         # Claude CLI
-npx agilai start --assistant=codex          # Codex CLI
-npx agilai start --assistant=opencode       # OpenCode CLI
+npx aidesigner start                # Prompts for choice
+npx aidesigner start --assistant=claude         # Claude CLI
+npx aidesigner start --assistant=codex          # Codex CLI
+npx aidesigner start --assistant=opencode       # OpenCode CLI
 ```
 
 ### Development Commands
@@ -209,7 +209,7 @@ npm run format
 
 ## LLM Provider Selection
 
-Agilai supports multiple LLM providers for the orchestrator:
+aidesigner supports multiple LLM providers for the orchestrator:
 
 ### ZhipuAI GLM
 
@@ -217,11 +217,11 @@ Use ZhipuAI's GLM models with the `--glm` flag:
 
 ```bash
 # CLI flag
-npx agilai start --glm
-npx agilai@latest start --glm
+npx aidesigner start --glm
+npx aidesigner@latest start --glm
 
 # Or explicit provider
-npx agilai start --llm-provider=glm
+npx aidesigner start --llm-provider=glm
 ```
 
 **Required environment variables:**
@@ -245,11 +245,11 @@ Use Anthropic's Claude models (default behavior):
 
 ```bash
 # CLI flag
-npx agilai start --anthropic
-npx agilai@latest start --anthropic
+npx aidesigner start --anthropic
+npx aidesigner@latest start --anthropic
 
 # Or explicit provider
-npx agilai start --llm-provider=claude
+npx aidesigner start --llm-provider=claude
 ```
 
 **Environment variables:**
@@ -268,10 +268,10 @@ Switch providers anytime with CLI flags:
 
 ```bash
 # Start with GLM
-npx agilai start --glm
+npx aidesigner start --glm
 
 # Later, switch to Anthropic
-npx agilai start --anthropic
+npx aidesigner start --anthropic
 ```
 
 Environment variable changes take effect on next launch. CLI flags override environment variables.
@@ -284,7 +284,7 @@ Interactive installs automatically configure Codex CLI for immediate use:
 
 1. **`AGENTS.md`**: Generated/updated with BMAD agent context for Codex memory
 2. **`~/.codex/config.toml`**: Updated with:
-   - `agilai` MCP server entry
+   - `aidesigner` MCP server entry
    - Optional helper entries for `chrome-devtools` and `shadcn` (disabled by default)
    - Sensible defaults (GPT-5-Codex model, medium reasoning, automatic approvals)
 
@@ -293,9 +293,9 @@ Interactive installs automatically configure Codex CLI for immediate use:
 ```toml
 # ~/.codex/config.toml
 [[mcp]]
-id = "agilai-codex"
+id = "aidesigner-codex"
 command = "npx"
-args = ["agilai-codex"]
+args = ["aidesigner-codex"]
 autostart = true
 
   [mcp.env]
@@ -328,9 +328,9 @@ Different CLIs use different MCP configuration formats:
 
 ```json
 {
-  "agilai": {
+  "aidesigner": {
     "command": "npx",
-    "args": ["agilai-codex"],
+    "args": ["aidesigner-codex"],
     "disabled": false
   },
   "chrome-devtools": {
@@ -345,9 +345,9 @@ Different CLIs use different MCP configuration formats:
 
 ```toml
 [[mcp]]
-id = "agilai"
+id = "aidesigner"
 command = "npx"
-args = ["agilai-codex"]
+args = ["aidesigner-codex"]
 auto_start = true
 
 [[mcp]]
@@ -398,7 +398,7 @@ If using the wrong LLM provider:
 
 1. Check environment variables: `echo $LLM_PROVIDER`
 2. Verify `.env` file contents
-3. Use explicit CLI flag: `npx agilai start --glm` or `--anthropic`
+3. Use explicit CLI flag: `npx aidesigner start --glm` or `--anthropic`
 
 ### Permission Errors
 
@@ -406,10 +406,10 @@ If encountering permission errors:
 
 ```bash
 # Linux/macOS
-sudo npm install -g agilai
+sudo npm install -g aidesigner
 
 # Or use npx (no global install needed)
-npx agilai@latest start
+npx aidesigner@latest start
 ```
 
 ## Next Steps

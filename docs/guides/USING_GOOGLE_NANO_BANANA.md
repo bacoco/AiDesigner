@@ -2,7 +2,7 @@
 
 ## Overview
 
-Google Nano Banana (Gemini 2.5 Flash Image) is a multimodal AI model optimized for visual content generation. Agilai integrates Nano Banana into both Quick Lane and Complex Lane workflows to help teams explore multiple visual directions before committing to implementation.
+Google Nano Banana (Gemini 2.5 Flash Image) is a multimodal AI model optimized for visual content generation. aidesigner integrates Nano Banana into both Quick Lane and Complex Lane workflows to help teams explore multiple visual directions before committing to implementation.
 
 ### Why Visual Concept Exploration Matters
 
@@ -11,7 +11,7 @@ Google Nano Banana (Gemini 2.5 Flash Image) is a multimodal AI model optimized f
 - **Captures Intent**: Documents visual decisions for architecture and development
 - **Empowers Choice**: Stakeholders pick from real options, not abstract descriptions
 
-### How Agilai Integrates Nano Banana
+### How aidesigner Integrates Nano Banana
 
 **Quick Lane**: Automatically generates `docs/ui/nano-banana-brief.md` with ready-to-use prompt
 **Complex Lane**: Optional Nano Banana Liaison agent (`@nano-banana-liaison`) orchestrates prompt creation and selection logging
@@ -27,8 +27,8 @@ Both lanes treat Nano Banana artifacts as **first-class shared outputs** alongsi
 Run Quick Lane as normal:
 
 ```bash
-npx agilai@latest start
-# Or in your Agilai chat session
+npx aidesigner@latest start
+# Or in your aidesigner chat session
 "I want to build a task management app for remote teams"
 ```
 
@@ -88,7 +88,7 @@ Review for:
 Use the Nano Banana Liaison agent to formally record your decision:
 
 ```bash
-# In Agilai chat
+# In aidesigner chat
 @nano-banana-liaison
 *log-nano-selection
 ```
@@ -104,7 +104,7 @@ This creates `docs/ui/nano-banana-explorations.md` and records the decision in p
 Start a Complex Lane workflow:
 
 ```bash
-# In Agilai chat
+# In aidesigner chat
 "I need a comprehensive specification for a collaborative design tool"
 ```
 
@@ -328,7 +328,7 @@ and clearest path to accessible implementation.
 
 ### Project State Decision
 
-Additionally, the `ui_concept` decision is recorded in `.agilai/state.json`:
+Additionally, the `ui_concept` decision is recorded in `.aidesigner/state.json`:
 
 ```json
 {
@@ -398,7 +398,7 @@ This allows all downstream agents and Quick Lane templates to reference the sele
 
 ---
 
-## Integration with Agilai Workflows
+## Integration with aidesigner Workflows
 
 ### Quick Lane
 
@@ -530,7 +530,7 @@ Nano Banana generates **visual concepts** (images), while v0/Lovable generate **
 
 ## Conclusion
 
-Google Nano Banana integration in Agilai brings visual exploration into your standard workflow without additional tooling or methodology overhead. Both Quick Lane and Complex Lane emit the same Nano Banana artifacts, ensuring design intent is captured early and propagated through architecture and development.
+Google Nano Banana integration in aidesigner brings visual exploration into your standard workflow without additional tooling or methodology overhead. Both Quick Lane and Complex Lane emit the same Nano Banana artifacts, ensuring design intent is captured early and propagated through architecture and development.
 
 **Key Takeaways**:
 
@@ -543,8 +543,8 @@ Google Nano Banana integration in Agilai brings visual exploration into your sta
 For more information:
 
 - [Dual-Lane Orchestration Guide](../DUAL_LANE_ORCHESTRATION.md)
-- [Greenfield UI Workflow](../../agilai-core/workflows/greenfield-ui.yaml)
-- [Nano Banana Liaison Agent](../../agilai-core/agents/nano-banana-liaison.md)
+- [Greenfield UI Workflow](../../aidesigner-core/workflows/greenfield-ui.yaml)
+- [Nano Banana Liaison Agent](../../aidesigner-core/agents/nano-banana-liaison.md)
 - [Google AI Studio](https://aistudio.google.com)
 
 ---

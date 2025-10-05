@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "agilai": {
+    "aidesigner": {
       "command": "node",
       "args": ["dist/mcp/mcp/server.js"]
     },

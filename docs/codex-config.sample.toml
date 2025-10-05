@@ -8,13 +8,13 @@ auto_approve = true
 require_manual_approval = false
 
 [[mcp.servers]]
-args = ["agilai", "mcp"]
+args = ["aidesigner", "mcp"]
 autoApprove = true
 autoStart = true
 command = "npx"
-description = "Agilai MCP server for orchestrating Agilai agents."
-displayName = "Agilai MCP"
-name = "agilai-mcp"
+description = "aidesigner MCP server for orchestrating aidesigner agents."
+displayName = "aidesigner MCP"
+name = "aidesigner-mcp"
 transport = "stdio"
 
 [[mcp.servers]]

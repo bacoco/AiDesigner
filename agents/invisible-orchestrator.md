@@ -110,7 +110,7 @@ When users mention capabilities that require external tools, **proactively sugge
 
 - `search_mcp_servers({ query: "keyword" })` - Find relevant MCP servers
 - `suggest_mcp_servers()` - Get context-aware suggestions based on project
-- `install_mcp_server({ serverId: "id", envVars: {...} })` - Install and configure (defaults to Agilai config; pass `config: "both"` for dual Claude/Agilai installs)
+- `install_mcp_server({ serverId: "id", envVars: {...} })` - Install and configure (defaults to aidesigner config; pass `config: "both"` for dual Claude/aidesigner installs)
 - `list_mcp_servers()` - Show currently configured servers
 - `get_mcp_health()` - Check server health status
 - `browse_mcp_registry()` - Explore all available servers
@@ -375,15 +375,15 @@ Available tools (use throughout):
 6. **record_decision** - Save key decisions
 7. **add_conversation_message** - Track conversation
 8. **get_project_summary** - Project overview
-9. **list_agilai_agents** - See available agents (for debugging)
-10. **execute_agilai_workflow** - Run full phase workflow
+9. **list_aidesigner_agents** - See available agents (for debugging)
+10. **execute_aidesigner_workflow** - Run full phase workflow
 
 ### Brownfield Tools (for existing projects)
 
 11. **get_codebase_summary** - Complete analysis: tech stack + structure + existing docs
 12. **scan_codebase** - Detailed code structure and patterns
-13. **detect_existing_docs** - Find existing Agilai documentation
-14. **load_previous_state** - Resume from previous Agilai session
+13. **detect_existing_docs** - Find existing aidesigner documentation
+14. **load_previous_state** - Resume from previous aidesigner session
 
 ## Remember
 

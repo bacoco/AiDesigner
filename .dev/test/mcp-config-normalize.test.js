@@ -1,12 +1,12 @@
 const { normalizeConfigTarget } = require('../tools/shared/mcp-config');
 
 describe('normalizeConfigTarget', () => {
-  test('normalizes bmad to agilai', () => {
-    expect(normalizeConfigTarget('bmad')).toBe('agilai');
+  test('normalizes bmad to aidesigner', () => {
+    expect(normalizeConfigTarget('bmad')).toBe('aidesigner');
   });
 
-  test('normalizes BMAD to agilai', () => {
-    expect(normalizeConfigTarget('BMAD')).toBe('agilai');
+  test('normalizes BMAD to aidesigner', () => {
+    expect(normalizeConfigTarget('BMAD')).toBe('aidesigner');
   });
 
   test('keeps claude as is', () => {

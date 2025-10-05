@@ -1,9 +1,9 @@
-# Agilai
+# aidesigner
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.10.0-brightgreen)](https://nodejs.org)
-[![npm version](https://img.shields.io/npm/v/agilai.svg?style=flat)](https://www.npmjs.com/package/agilai)
-[![Package Size](https://img.shields.io/badge/size-2.6MB-success)](https://www.npmjs.com/package/agilai)
+[![npm version](https://img.shields.io/npm/v/aidesigner.svg?style=flat)](https://www.npmjs.com/package/aidesigner)
+[![Package Size](https://img.shields.io/badge/size-2.6MB-success)](https://www.npmjs.com/package/aidesigner)
 
 <div align="center">
 
@@ -34,7 +34,7 @@ AI tools today? **Hours of prompt engineering just to get structured output.**
 
 **There has to be a better way.**
 
-## The Agilai Way: Talk Naturally. Ship Professionally.
+## The aidesigner Way: Talk Naturally. Ship Professionally.
 
 Imagine describing your project idea in plain English and getting back:
 
@@ -68,17 +68,17 @@ Just conversation → professional deliverables → ready to build.
 - Generate per-screen visual prompts for Google Nano Banana
 - Capture decisions with journey context and CSS specifications
 
-### What Makes Agilai Different
+### What Makes aidesigner Different
 
 🎯 **Zero Prompt Engineering**
 
 > Other tools: "Act as a senior product manager with 10 years experience in SaaS..."
-> Agilai: "I want to build a task management app"
+> aidesigner: "I want to build a task management app"
 
 🎨 **Visual-First Development**
 
 > Traditional: Write specs → Hire designer → Wait for mockups → Start coding
-> Agilai: Describe idea → Get visual concepts in minutes → Architecture adapts automatically
+> aidesigner: Describe idea → Get visual concepts in minutes → Architecture adapts automatically
 
 🏃 **Two Speeds, One System**
 
@@ -116,10 +116,10 @@ Just conversation → professional deliverables → ready to build.
 
 ```bash
 # One command does everything
-npx agilai@latest start
+npx aidesigner@latest start
 
 # Optional: Specify assistant and provider
-npx agilai@latest start --assistant=claude --glm
+npx aidesigner@latest start --assistant=claude --glm
 ```
 
 That's it! This command:
@@ -154,7 +154,7 @@ AI: "📋 Here's what I understand:
      Is this correct? (y/n)"
 ```
 
-Behind the scenes, Agilai generates:
+Behind the scenes, aidesigner generates:
 
 - Project brief (analyst phase)
 - Product requirements document (PM phase)
@@ -178,7 +178,7 @@ All organized in `docs/` folder, ready to use.
 4. **Define visual language** - "Let's lock in your palette, typography, and layout system"
 5. **Generate concepts** - "Here are tailored prompts for each screen with all the context"
 
-**Agilai's UI Designer Liaison does exactly this.**
+**aidesigner's UI Designer Liaison does exactly this.**
 
 ### Quick Lane (Auto Mode)
 
@@ -356,29 +356,29 @@ Nana: "Perfect! I'll log:
 🚀 **10x Faster Than Traditional Design**
 
 > Traditional: Designer creates mockups (days) → Revisions (days) → Developer handoff
-> Agilai: Conversation (10 min) → Concepts (minutes) → CSS tokens included
+> aidesigner: Conversation (10 min) → Concepts (minutes) → CSS tokens included
 
 🎯 **Context-Aware Prompts**
 
 > Generic tools: Single prompt for entire app
-> Agilai: Tailored prompt per screen with journey context
+> aidesigner: Tailored prompt per screen with journey context
 
 🔧 **Developer-Ready Output**
 
 > Other tools: Images only
-> Agilai: Images + CSS tokens + design system documentation
+> aidesigner: Images + CSS tokens + design system documentation
 
 💡 **Inspiration Made Actionable**
 
 > Copy visual elements: Manual color picking from screenshots
-> Agilai: Automatic CSS extraction with Chrome DevTools MCP
+> aidesigner: Automatic CSS extraction with Chrome DevTools MCP
 
 ### Try It Now
 
 **Quick Lane (Auto):**
 
 ```bash
-npx agilai@latest start
+npx aidesigner@latest start
 # Describe your UI project
 # Get visual prompts automatically
 ```
@@ -386,7 +386,7 @@ npx agilai@latest start
 **Complex Lane (Conversational):**
 
 ```bash
-npx agilai@latest start
+npx aidesigner@latest start
 # Activate: @ui-designer-liaison
 # Run: *discover-journey
 # Full 6-stage designer conversation
@@ -454,7 +454,7 @@ User: "I want to build an app"
 
 ### Dual-Lane Orchestration
 
-Agilai automatically steers every request through the right mix of speed and depth. You never toggle a switch—the system senses complexity and elevates the workflow the moment your project needs more than a quick brief.
+aidesigner automatically steers every request through the right mix of speed and depth. You never toggle a switch—the system senses complexity and elevates the workflow the moment your project needs more than a quick brief.
 
 #### Quick Lane: 3-minute briefs
 
@@ -466,7 +466,7 @@ When scope grows, the complex lane inherits everything the quick lane has alread
 
 #### Seamless hand-off, consistent outcomes
 
-Because both lanes converge on the exact same deliverables, you can trust that every project—simple or sophisticated—arrives with the same professional PRD, architecture, and story set. The automatic hand-off means you stay in flow while Agilai keeps your `docs/` assets synchronized and production-ready.
+Because both lanes converge on the exact same deliverables, you can trust that every project—simple or sophisticated—arrives with the same professional PRD, architecture, and story set. The automatic hand-off means you stay in flow while aidesigner keeps your `docs/` assets synchronized and production-ready.
 
 ```mermaid
 flowchart LR
@@ -491,10 +491,10 @@ Choose your provider during installation:
 
 ```bash
 # Use ZhipuAI GLM
-npx agilai@latest start --glm
+npx aidesigner@latest start --glm
 
 # Use Anthropic Claude (default)
-npx agilai@latest start --anthropic
+npx aidesigner@latest start --anthropic
 ```
 
 → **[Configuration Guide](docs/configuration.md)** - Complete configuration reference
@@ -539,7 +539,7 @@ my-project/
 │   └── ui/
 │       ├── nano-banana-brief.md        # Google Nano Banana visual concept prompt
 │       └── nano-banana-explorations.md # Logged visual concept selections
-└── .agilai/
+└── .aidesigner/
     ├── state.json                      # Current phase
     └── conversation.log                # Full history
 ```
@@ -575,7 +575,7 @@ BMAD™ and BMAD-METHOD™ are trademarks of BMad Code, LLC.
 
 **Current Version**: v1.4.0 - Production Ready ✅
 
-**Get Started**: `npx agilai@latest start`
+**Get Started**: `npx aidesigner@latest start`
 
 **Questions?** Open an issue or check the [BMAD repository](https://github.com/bmadcode/bmad-method).
 

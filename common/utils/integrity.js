@@ -5,15 +5,15 @@ const crypto = require('node:crypto');
 
 const CRITICAL_PATHS = [
   {
-    path: 'agilai-core/core-config.yaml',
-    description: 'Core configuration that routes tasks to Agilai lanes',
+    path: 'aidesigner-core/core-config.yaml',
+    description: 'Core configuration that routes tasks to aidesigner lanes',
   },
   {
-    path: 'agilai-core/checklists',
+    path: 'aidesigner-core/checklists',
     description: 'Safety and quality checklists used across workflows',
   },
   {
-    path: 'agilai-core/templates',
+    path: 'aidesigner-core/templates',
     description: 'Primary document and task templates',
   },
   {
@@ -28,7 +28,7 @@ const CRITICAL_PATHS = [
 ];
 
 const BASELINE_FILENAME = 'critical-hashes.json';
-const BASELINE_DIRNAME = '.agilai-invisible';
+const BASELINE_DIRNAME = '.aidesigner-invisible';
 
 const getBaselinePath = (rootDir) => {
   return path.join(rootDir, BASELINE_DIRNAME, BASELINE_FILENAME);
@@ -231,7 +231,7 @@ const runIntegrityPreflight = (rootDir, { logger = console, silentOnMatch = true
 
   if (report.status === 'missing-baseline') {
     logger.warn(
-      `⚠️  Agilai safeguard: baseline hashes missing at ${path.relative(rootDir, report.baselinePath)}. ` +
+      `⚠️  aidesigner safeguard: baseline hashes missing at ${path.relative(rootDir, report.baselinePath)}. ` +
         'Re-run after generating the baseline with `node .dev/tools/update-critical-hashes.js`.',
     );
     return report;
@@ -239,7 +239,7 @@ const runIntegrityPreflight = (rootDir, { logger = console, silentOnMatch = true
 
   if (report.status === 'invalid-baseline') {
     logger.warn(
-      `⚠️  Agilai safeguard: could not read baseline hash file at ${path.relative(rootDir, report.baselinePath)}.`,
+      `⚠️  aidesigner safeguard: could not read baseline hash file at ${path.relative(rootDir, report.baselinePath)}.`,
     );
     logger.warn(
       '    Resolve JSON errors or regenerate with `node .dev/tools/update-critical-hashes.js`.',
@@ -259,14 +259,14 @@ const runIntegrityPreflight = (rootDir, { logger = console, silentOnMatch = true
       messages.push(`new: ${summariseDifferences(report.unexpected)}`);
     }
 
-    logger.warn('⚠️  Agilai safeguard: critical resources diverged from recorded baseline.');
+    logger.warn('⚠️  aidesigner safeguard: critical resources diverged from recorded baseline.');
     logger.warn(`    ${messages.join(' | ')}`);
     logger.warn(
       `    Baseline: ${path.relative(rootDir, report.baselinePath)} (update via \`node .dev/tools/update-critical-hashes.js\`).`,
     );
     logger.warn('    Review intentional customisations before proceeding.');
   } else if (!silentOnMatch) {
-    logger.log('✅ Agilai safeguard: critical resources match recorded baseline.');
+    logger.log('✅ aidesigner safeguard: critical resources match recorded baseline.');
   }
 
   return report;

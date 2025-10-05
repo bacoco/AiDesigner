@@ -29,7 +29,7 @@ class V3ToV4Upgrader {
       console.log('This tool will help you upgrade your BMad-Method V3 project to V4.\n');
       console.log(chalk.cyan('What this tool does:'));
       console.log('- Creates a backup of your V3 files (.bmad-v3-backup/)');
-      console.log('- Installs the new V4 .agilai-core structure');
+      console.log('- Installs the new V4 .aidesigner-core structure');
       console.log('- Preserves your PRD, Architecture, and Stories in the new format\n');
       console.log(chalk.yellow('What this tool does NOT do:'));
       console.log('- Modify your document content (use doc-migration-task after upgrade)');
@@ -334,14 +334,14 @@ class V3ToV4Upgrader {
     const spinner = ora('Installing V4 structure...').start();
 
     try {
-      // Get the source agilai-core directory (without dot prefix)
-      const sourcePath = path.join(__dirname, '..', '..', 'agilai-core');
-      const destinationPath = path.join(projectPath, '.agilai-core');
+      // Get the source aidesigner-core directory (without dot prefix)
+      const sourcePath = path.join(__dirname, '..', '..', 'aidesigner-core');
+      const destinationPath = path.join(projectPath, '.aidesigner-core');
 
-      // Copy .agilai-core
+      // Copy .aidesigner-core
       await this.copyDirectory(sourcePath, destinationPath);
-      spinner.text = '✓ Copied fresh .agilai-core/ directory from V4';
-      console.log(chalk.green('\n✓ Copied fresh .agilai-core/ directory from V4'));
+      spinner.text = '✓ Copied fresh .aidesigner-core/ directory from V4';
+      console.log(chalk.green('\n✓ Copied fresh .aidesigner-core/ directory from V4'));
 
       // Create docs directory
       const docsPath = path.join(projectPath, 'docs');
@@ -517,7 +517,7 @@ class V3ToV4Upgrader {
     console.log(chalk.bold.green('\n✓ Upgrade Complete!\n'));
     console.log(chalk.bold('Summary:'));
     console.log(`- V3 files backed up to: .bmad-v3-backup/`);
-    console.log(`- V4 structure installed: .agilai-core/ (fresh from V4)`);
+    console.log(`- V4 structure installed: .aidesigner-core/ (fresh from V4)`);
 
     const totalDocs =
       (analysis.prdFile ? 1 : 0) +
@@ -649,16 +649,16 @@ class V3ToV4Upgrader {
     const fileManager = require('../installer/lib/file-manager');
     const { glob } = require('glob');
 
-    // Get all files in .agilai-core for the manifest
-    const bmadCorePath = path.join(projectPath, '.agilai-core');
+    // Get all files in .aidesigner-core for the manifest
+    const bmadCorePath = path.join(projectPath, '.aidesigner-core');
     const files = await glob('**/*', {
       cwd: bmadCorePath,
       nodir: true,
       ignore: ['**/.git/**', '**/node_modules/**'],
     });
 
-    // Prepend .agilai-core/ to file paths for manifest
-    const manifestFiles = files.map((file) => path.join('.agilai-core', file));
+    // Prepend .aidesigner-core/ to file paths for manifest
+    const manifestFiles = files.map((file) => path.join('.aidesigner-core', file));
 
     const config = {
       installType: 'full',

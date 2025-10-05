@@ -317,7 +317,7 @@ async function main(): Promise<void> {
 
   const options: OrchestratorServerOptions = {
     serverInfo: {
-      name: "agilai-codex",
+      name: "aidesigner-codex",
       version: "1.0.0",
     },
     createLLMClient: (lane) => codexClient.createLLMClient(lane),

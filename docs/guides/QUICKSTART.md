@@ -1,8 +1,8 @@
-# Agilai Quick Start Guide
+# aidesigner Quick Start Guide
 
 ## What You Get
 
-Agilai provides a **natural conversational interface** that guides you through project development using the proven BMAD methodology - without you needing to learn any methodology jargon.
+aidesigner provides a **natural conversational interface** that guides you through project development using the proven BMAD methodology - without you needing to learn any methodology jargon.
 
 **You talk naturally. It generates professional deliverables.**
 
@@ -24,13 +24,13 @@ You'll be prompted with a **single combined list** showing all valid CLI-provide
 
 Or pass `--assistant=<cli> --provider=<provider>` to skip the prompt (e.g., `--assistant=claude --provider=glm`)
 
-Need ZhipuAI's GLM? Add `--glm` / `--llm-provider=glm` (requires `AGILAI_GLM_API_KEY`
+Need ZhipuAI's GLM? Add `--glm` / `--llm-provider=glm` (requires `aidesigner_GLM_API_KEY`
 or one of the legacy aliases like `ZHIPUAI_API_KEY` or `GLM_API_KEY`). Use
 `--anthropic` when you want to switch back to Claude.
 
 ```bash
 # Run this ONE command - it does everything!
-npx agilai@latest start
+npx aidesigner@latest start
 ```
 
 Done! The command automatically:
@@ -50,8 +50,8 @@ configuration.
 ### Option 1b: NPX Step-by-Step
 
 ```bash
-# Initialize Agilai (prompts for project name)
-npx agilai@latest init
+# Initialize aidesigner (prompts for project name)
+npx aidesigner@latest init
 
 # Navigate into your new project
 cd your-project-name
@@ -60,13 +60,13 @@ cd your-project-name
 npm install
 
 # Start chatting (prompts for your choice)
-npx agilai start
+npx aidesigner start
 # Force GLM for the orchestrator (requires ZHIPUAI_API_KEY or GLM_API_KEY)
-# npx agilai start --glm
+# npx aidesigner start --glm
 # OR use explicit commands:
-# npx agilai start --assistant=claude    # respects --glm/--anthropic flags
-# npx agilai start --assistant=codex     # respects --glm/--anthropic flags
-# npx agilai start --assistant=opencode  # respects --glm/--anthropic flags
+# npx aidesigner start --assistant=claude    # respects --glm/--anthropic flags
+# npx aidesigner start --assistant=codex     # respects --glm/--anthropic flags
+# npx aidesigner start --assistant=opencode  # respects --glm/--anthropic flags
 ```
 
 **What `init` creates:**
@@ -74,7 +74,7 @@ npx agilai start
 - New directory with your project name
 - Complete BMAD directory structure (`docs/prd/`, `docs/architecture/`, `docs/stories/`, `docs/qa/`)
 - Comprehensive `README.md` with BMAD workflow guide
-- Project metadata in `.agilai/project.json`
+- Project metadata in `.aidesigner/project.json`
 - MCP configuration in `.mcp.json`
 
 > 💡 **Start by reading the generated README.md** - it provides a complete guide to the BMAD workflow and available agents!
@@ -83,15 +83,15 @@ npx agilai start
 
 ```bash
 # Install globally once
-npm install -g agilai
+npm install -g aidesigner
 
 # Use anywhere
 cd your-project
-agilai init
-agilai build
+aidesigner init
+aidesigner build
 
 # Add --glm / --llm-provider=glm to default to GLM
-agilai start
+aidesigner start
 
 ```
 
@@ -99,8 +99,8 @@ agilai start
 
 ```bash
 # Clone the repository
-git clone https://github.com/bacoco/Agilai.git
-cd Agilai
+git clone https://github.com/bacoco/aidesigner.git
+cd aidesigner
 
 # Install dependencies
 npm install
@@ -110,13 +110,13 @@ npm run build:mcp
 
 
 # Start conversation (prompts for choice)
-npx agilai start
+npx aidesigner start
 ```
 
 #### Choosing Your LLM Provider (GLM vs Anthropic)
 
 - Pass `--glm` (alias `--llm-provider=glm`) with any command to run on ZhipuAI's
-  GLM. Provide `AGILAI_GLM_API_KEY` (or a legacy alias such as `ZHIPUAI_API_KEY`
+  GLM. Provide `aidesigner_GLM_API_KEY` (or a legacy alias such as `ZHIPUAI_API_KEY`
   or `GLM_API_KEY`) in your environment.
 - Override the model via `--llm-model=<model>` or `LLM_MODEL`.
 - Persist defaults by committing a `.env` file alongside your project:
@@ -124,7 +124,7 @@ npx agilai start
   ```bash
   # .env
   LLM_PROVIDER=glm
-  AGILAI_GLM_API_KEY=sk-...
+  aidesigner_GLM_API_KEY=sk-...
   LLM_MODEL=glm-4-plus
   ```
 
@@ -229,28 +229,28 @@ AI: Found 23 TODOs across 8 files. Oldest is 3 months old.
 ### Quick Commands
 
 ```bash
-npx agilai@latest invisible start # 🚀 One-command setup and launch (prompts for choice)
-npx agilai invisible init         # Initialize in project
-npx agilai invisible build        # Build MCP server
-npx agilai start                    # Start conversation (prompts for assistant choice)
-npx agilai start --assistant=claude             # Start Claude directly
-npx agilai start --assistant=codex              # Start Codex directly
-npx agilai start --assistant=opencode           # Start OpenCode directly
-# Append --glm (or --anthropic) to any Agilai command to swap providers
+npx aidesigner@latest invisible start # 🚀 One-command setup and launch (prompts for choice)
+npx aidesigner invisible init         # Initialize in project
+npx aidesigner invisible build        # Build MCP server
+npx aidesigner start                    # Start conversation (prompts for assistant choice)
+npx aidesigner start --assistant=claude             # Start Claude directly
+npx aidesigner start --assistant=codex              # Start Codex directly
+npx aidesigner start --assistant=opencode           # Start OpenCode directly
+# Append --glm (or --anthropic) to any aidesigner command to swap providers
 
-npx agilai invisible test         # Run tests
-npx agilai invisible validate     # Validate config
-npx agilai invisible help         # Show all commands
+npx aidesigner invisible test         # Run tests
+npx aidesigner invisible validate     # Validate config
+npx aidesigner invisible help         # Show all commands
 ```
 
 ### Example Session
 
-Run `npx agilai start` and choose your assistant, or use direct commands (`npx agilai start --assistant=claude`, `npx agilai start --assistant=codex`, `npx agilai start --assistant=opencode`). You'll see an experience like this:
+Run `npx aidesigner start` and choose your assistant, or use direct commands (`npx aidesigner start --assistant=claude`, `npx aidesigner start --assistant=codex`, `npx aidesigner start --assistant=opencode`). You'll see an experience like this:
 
 ```
-🎯 Starting Agilai Orchestrator...
-📡 MCP Server: agilai-orchestrator
-🤖 Agent: Agilai Orchestrator
+🎯 Starting aidesigner Orchestrator...
+📡 MCP Server: aidesigner-orchestrator
+🤖 Agent: aidesigner Orchestrator
 💬 Type your project idea to begin!
 
 You: Help me build a family chore management app

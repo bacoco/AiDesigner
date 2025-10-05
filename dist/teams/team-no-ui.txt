@@ -8,13 +8,13 @@ You are now operating as a specialized AI agent from the BMad-Method framework. 
 
 2. **Resource Navigation**: This bundle contains all resources you need. Resources are marked with tags like:
 
-- `==================== START: .agilai-core/folder/filename.md ====================`
-- `==================== END: .agilai-core/folder/filename.md ====================`
+- `==================== START: .aidesigner-core/folder/filename.md ====================`
+- `==================== END: .aidesigner-core/folder/filename.md ====================`
 
 When you need to reference a resource mentioned in your instructions:
 
 - Look for the corresponding START/END tags
-- The format is always the full path with dot prefix (e.g., `.agilai-core/personas/analyst.md`, `.agilai-core/tasks/create-story.md`)
+- The format is always the full path with dot prefix (e.g., `.aidesigner-core/personas/analyst.md`, `.aidesigner-core/tasks/create-story.md`)
 - If a section is specified (e.g., `{root}/tasks/create-story.md#section-name`), navigate to that section within the file
 
 **Understanding YAML References**: In the agent configuration, resources are referenced in the dependencies section. For example:
@@ -29,8 +29,8 @@ dependencies:
 
 These references map directly to bundle sections:
 
-- `utils: template-format` → Look for `==================== START: .agilai-core/utils/template-format.md ====================`
-- `tasks: create-story` → Look for `==================== START: .agilai-core/tasks/create-story.md ====================`
+- `utils: template-format` → Look for `==================== START: .aidesigner-core/utils/template-format.md ====================`
+- `tasks: create-story` → Look for `==================== START: .aidesigner-core/tasks/create-story.md ====================`
 
 3. **Execution Context**: You are operating in a web environment. All your capabilities and knowledge are contained within this bundle. Work within these constraints to provide the best possible assistance.
 
@@ -39,7 +39,7 @@ These references map directly to bundle sections:
 ---
 
 
-==================== START: .agilai-core/agent-teams/team-no-ui.yaml ====================
+==================== START: .aidesigner-core/agent-teams/team-no-ui.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 bundle:
   name: Team No UI
@@ -54,9 +54,9 @@ agents:
 workflows:
   - greenfield-service.yaml
   - brownfield-service.yaml
-==================== END: .agilai-core/agent-teams/team-no-ui.yaml ====================
+==================== END: .aidesigner-core/agent-teams/team-no-ui.yaml ====================
 
-==================== START: .agilai-core/agents/bmad-orchestrator.md ====================
+==================== START: .aidesigner-core/agents/bmad-orchestrator.md ====================
 # bmad-orchestrator
 
 CRITICAL: Read the full YAML, start activation to alter your state of being, follow startup section instructions, stay in this being until told to exit this mode:
@@ -181,9 +181,9 @@ dependencies:
   utils:
     - workflow-management.md
 ```
-==================== END: .agilai-core/agents/bmad-orchestrator.md ====================
+==================== END: .aidesigner-core/agents/bmad-orchestrator.md ====================
 
-==================== START: .agilai-core/agents/analyst.md ====================
+==================== START: .aidesigner-core/agents/analyst.md ====================
 # analyst
 
 CRITICAL: Read the full YAML, start activation to alter your state of being, follow startup section instructions, stay in this being until told to exit this mode:
@@ -245,9 +245,9 @@ dependencies:
     - market-research-tmpl.yaml
     - project-brief-tmpl.yaml
 ```
-==================== END: .agilai-core/agents/analyst.md ====================
+==================== END: .aidesigner-core/agents/analyst.md ====================
 
-==================== START: .agilai-core/agents/pm.md ====================
+==================== START: .aidesigner-core/agents/pm.md ====================
 # pm
 
 CRITICAL: Read the full YAML, start activation to alter your state of being, follow startup section instructions, stay in this being until told to exit this mode:
@@ -309,9 +309,9 @@ dependencies:
     - brownfield-prd-tmpl.yaml
     - prd-tmpl.yaml
 ```
-==================== END: .agilai-core/agents/pm.md ====================
+==================== END: .aidesigner-core/agents/pm.md ====================
 
-==================== START: .agilai-core/agents/architect.md ====================
+==================== START: .aidesigner-core/agents/architect.md ====================
 # architect
 
 CRITICAL: Read the full YAML, start activation to alter your state of being, follow startup section instructions, stay in this being until told to exit this mode:
@@ -374,9 +374,9 @@ dependencies:
     - front-end-architecture-tmpl.yaml
     - fullstack-architecture-tmpl.yaml
 ```
-==================== END: .agilai-core/agents/architect.md ====================
+==================== END: .aidesigner-core/agents/architect.md ====================
 
-==================== START: .agilai-core/agents/po.md ====================
+==================== START: .aidesigner-core/agents/po.md ====================
 # po
 
 CRITICAL: Read the full YAML, start activation to alter your state of being, follow startup section instructions, stay in this being until told to exit this mode:
@@ -433,9 +433,9 @@ dependencies:
   templates:
     - story-tmpl.yaml
 ```
-==================== END: .agilai-core/agents/po.md ====================
+==================== END: .aidesigner-core/agents/po.md ====================
 
-==================== START: .agilai-core/tasks/advanced-elicitation.md ====================
+==================== START: .aidesigner-core/tasks/advanced-elicitation.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Advanced Elicitation Task
@@ -555,9 +555,9 @@ Choose a number (0-8) or 9 to proceed:
 - **Stay Relevant**: Tie all elicitation back to the specific content being analyzed
 - **Identify Personas**: For multi-persona methods, clearly identify which viewpoint is speaking
 - **Maintain Flow**: Keep the process moving efficiently
-==================== END: .agilai-core/tasks/advanced-elicitation.md ====================
+==================== END: .aidesigner-core/tasks/advanced-elicitation.md ====================
 
-==================== START: .agilai-core/tasks/create-doc.md ====================
+==================== START: .aidesigner-core/tasks/create-doc.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Create Document from Template (YAML Driven)
@@ -577,7 +577,7 @@ When this task is invoked:
 
 ## Critical: Template Discovery
 
-If a YAML Template has not been provided, list all templates from .agilai-core/templates or ask the user to provide another.
+If a YAML Template has not been provided, list all templates from .aidesigner-core/templates or ask the user to provide another.
 
 ## CRITICAL: Mandatory Elicitation Format
 
@@ -661,9 +661,9 @@ User can type `#yolo` to toggle to YOLO mode (process all sections at once).
 - Select options 2-9 from data/elicitation-methods only
 - Provide detailed rationale explaining decisions
 - End with "Select 1-9 or just type your question/feedback:"
-==================== END: .agilai-core/tasks/create-doc.md ====================
+==================== END: .aidesigner-core/tasks/create-doc.md ====================
 
-==================== START: .agilai-core/tasks/kb-mode-interaction.md ====================
+==================== START: .aidesigner-core/tasks/kb-mode-interaction.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # KB Mode Interaction Task
@@ -741,9 +741,9 @@ Or ask me about anything else related to BMad-Method!
 **User**: Tell me about workflows
 
 **Assistant**: [Provides focused information about workflows from the KB, then offers to explore specific workflow types or related topics]
-==================== END: .agilai-core/tasks/kb-mode-interaction.md ====================
+==================== END: .aidesigner-core/tasks/kb-mode-interaction.md ====================
 
-==================== START: .agilai-core/data/bmad-kb.md ====================
+==================== START: .aidesigner-core/data/bmad-kb.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # BMAD™ Knowledge Base
@@ -854,7 +854,7 @@ npx bmad-method install
 
 **Verify Installation**:
 
-- `.agilai-core/` folder created with all agents
+- `.aidesigner-core/` folder created with all agents
 - IDE-specific integration files created
 - All agent commands/rules/modes available
 
@@ -927,7 +927,7 @@ npx bmad-method install
 
 ## Core Configuration (core-config.yaml)
 
-**New in V4**: The `.agilai-core/core-config.yaml` file is a critical innovation that enables BMad to work seamlessly with any project structure, providing maximum flexibility and backwards compatibility.
+**New in V4**: The `.aidesigner-core/core-config.yaml` file is a critical innovation that enables BMad to work seamlessly with any project structure, providing maximum flexibility and backwards compatibility.
 
 ### What is core-config.yaml?
 
@@ -1102,24 +1102,24 @@ You are the "Vibe CEO" - thinking like a CEO with unlimited resources and a sing
 
 ### System Overview
 
-The BMAD-METHOD™ is built around a modular architecture centered on the `agilai-core` directory, which serves as the brain of the entire system. This design enables the framework to operate effectively in both IDE environments (like Cursor, VS Code) and web-based AI interfaces (like ChatGPT, Gemini).
+The BMAD-METHOD™ is built around a modular architecture centered on the `aidesigner-core` directory, which serves as the brain of the entire system. This design enables the framework to operate effectively in both IDE environments (like Cursor, VS Code) and web-based AI interfaces (like ChatGPT, Gemini).
 
 ### Key Architectural Components
 
-#### 1. Agents (`agilai-core/agents/`)
+#### 1. Agents (`aidesigner-core/agents/`)
 
 - **Purpose**: Each markdown file defines a specialized AI agent for a specific Agile role (PM, Dev, Architect, etc.)
 - **Structure**: Contains YAML headers specifying the agent's persona, capabilities, and dependencies
 - **Dependencies**: Lists of tasks, templates, checklists, and data files the agent can use
 - **Startup Instructions**: Can load project-specific documentation for immediate context
 
-#### 2. Agent Teams (`agilai-core/agent-teams/`)
+#### 2. Agent Teams (`aidesigner-core/agent-teams/`)
 
 - **Purpose**: Define collections of agents bundled together for specific purposes
 - **Examples**: `team-all.yaml` (comprehensive bundle), `team-fullstack.yaml` (full-stack development)
 - **Usage**: Creates pre-packaged contexts for web UI environments
 
-#### 3. Workflows (`agilai-core/workflows/`)
+#### 3. Workflows (`aidesigner-core/workflows/`)
 
 - **Purpose**: YAML files defining prescribed sequences of steps for specific project types
 - **Types**: Greenfield (new projects) and Brownfield (existing projects) for UI, service, and fullstack development
@@ -1127,10 +1127,10 @@ The BMAD-METHOD™ is built around a modular architecture centered on the `agila
 
 #### 4. Reusable Resources
 
-- **Templates** (`agilai-core/templates/`): Markdown templates for PRDs, architecture specs, user stories
-- **Tasks** (`agilai-core/tasks/`): Instructions for specific repeatable actions like "shard-doc" or "create-next-story"
-- **Checklists** (`agilai-core/checklists/`): Quality assurance checklists for validation and review
-- **Data** (`agilai-core/data/`): Core knowledge base and technical preferences
+- **Templates** (`aidesigner-core/templates/`): Markdown templates for PRDs, architecture specs, user stories
+- **Tasks** (`aidesigner-core/tasks/`): Instructions for specific repeatable actions like "shard-doc" or "create-next-story"
+- **Checklists** (`aidesigner-core/checklists/`): Quality assurance checklists for validation and review
+- **Data** (`aidesigner-core/data/`): Core knowledge base and technical preferences
 
 ### Dual Environment Architecture
 
@@ -1553,9 +1553,9 @@ Use the **expansion-creator** pack to build your own:
 - **Documentation**: Check `docs/` folder for project-specific context
 - **Community**: Discord and GitHub resources available for support
 - **Contributing**: See `CONTRIBUTING.md` for full guidelines
-==================== END: .agilai-core/data/bmad-kb.md ====================
+==================== END: .aidesigner-core/data/bmad-kb.md ====================
 
-==================== START: .agilai-core/data/elicitation-methods.md ====================
+==================== START: .aidesigner-core/data/elicitation-methods.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Elicitation Methods Data
@@ -1712,9 +1712,9 @@ Use the **expansion-creator** pack to build your own:
 - Acknowledge choice to finalize current work
 - Accept output as-is or move to next step
 - Prepare to continue without additional elicitation
-==================== END: .agilai-core/data/elicitation-methods.md ====================
+==================== END: .aidesigner-core/data/elicitation-methods.md ====================
 
-==================== START: .agilai-core/utils/workflow-management.md ====================
+==================== START: .aidesigner-core/utils/workflow-management.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Workflow Management
@@ -1786,9 +1786,9 @@ Handle conditional paths by asking clarifying questions when needed.
 ## Agent Integration
 
 Agents should be workflow-aware: know active workflow, their role, access artifacts, understand expected outputs.
-==================== END: .agilai-core/utils/workflow-management.md ====================
+==================== END: .aidesigner-core/utils/workflow-management.md ====================
 
-==================== START: .agilai-core/tasks/create-deep-research-prompt.md ====================
+==================== START: .aidesigner-core/tasks/create-deep-research-prompt.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Create Deep Research Prompt Task
@@ -2069,9 +2069,9 @@ CRITICAL: collaborate with the user to develop specific, actionable research que
 - Balance comprehensiveness with focus
 - Document assumptions and limitations clearly
 - Plan for iterative refinement based on initial findings
-==================== END: .agilai-core/tasks/create-deep-research-prompt.md ====================
+==================== END: .aidesigner-core/tasks/create-deep-research-prompt.md ====================
 
-==================== START: .agilai-core/tasks/document-project.md ====================
+==================== START: .aidesigner-core/tasks/document-project.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Document an Existing Project
@@ -2417,13 +2417,13 @@ Apply the advanced elicitation task after major sections to refine based on user
 - Documents technical debt, workarounds, and constraints honestly
 - For brownfield projects with PRD: Provides clear enhancement impact analysis
 - The goal is PRACTICAL documentation for AI agents doing real work
-==================== END: .agilai-core/tasks/document-project.md ====================
+==================== END: .aidesigner-core/tasks/document-project.md ====================
 
-==================== START: .agilai-core/tasks/facilitate-brainstorming-session.md ====================
+==================== START: .aidesigner-core/tasks/facilitate-brainstorming-session.md ====================
 ## <!-- Powered by BMAD™ Core -->
 
 docOutputLocation: docs/brainstorming-session-results.md
-template: '.agilai-core/templates/brainstorming-output-tmpl.yaml'
+template: '.aidesigner-core/templates/brainstorming-output-tmpl.yaml'
 
 ---
 
@@ -2558,9 +2558,9 @@ Generate structured document with these sections:
 - Always ask before switching techniques: "Ready to try a different approach?"
 - Offer options: "Should we explore this idea deeper or generate more alternatives?"
 - Respect their process and timing
-==================== END: .agilai-core/tasks/facilitate-brainstorming-session.md ====================
+==================== END: .aidesigner-core/tasks/facilitate-brainstorming-session.md ====================
 
-==================== START: .agilai-core/templates/brainstorming-output-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/brainstorming-output-tmpl.yaml ====================
 template:
   id: brainstorming-output-template-v2
   name: Brainstorming Session Results
@@ -2717,9 +2717,9 @@ sections:
       ---
 
       *Session facilitated using the BMAD-METHOD™ brainstorming framework*
-==================== END: .agilai-core/templates/brainstorming-output-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/brainstorming-output-tmpl.yaml ====================
 
-==================== START: .agilai-core/templates/competitor-analysis-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/competitor-analysis-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: competitor-analysis-template-v2
@@ -3027,9 +3027,9 @@ sections:
           - Weekly: {{weekly_items}}
           - Monthly: {{monthly_items}}
           - Quarterly: {{quarterly_analysis}}
-==================== END: .agilai-core/templates/competitor-analysis-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/competitor-analysis-tmpl.yaml ====================
 
-==================== START: .agilai-core/templates/market-research-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/market-research-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: market-research-template-v2
@@ -3283,9 +3283,9 @@ sections:
       - id: additional-analysis
         title: C. Additional Analysis
         instruction: Any supplementary analysis not included in main body
-==================== END: .agilai-core/templates/market-research-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/market-research-tmpl.yaml ====================
 
-==================== START: .agilai-core/templates/project-brief-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/project-brief-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: project-brief-template-v2
@@ -3508,9 +3508,9 @@ sections:
         title: PM Handoff
         content: |
           This Project Brief provides the full context for {{project_name}}. Please start in 'PRD Generation Mode', review the brief thoroughly to work with the user to create the PRD section by section as the template indicates, asking for any necessary clarification or suggesting improvements.
-==================== END: .agilai-core/templates/project-brief-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/project-brief-tmpl.yaml ====================
 
-==================== START: .agilai-core/data/brainstorming-techniques.md ====================
+==================== START: .aidesigner-core/data/brainstorming-techniques.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Brainstorming Techniques Data
@@ -3549,9 +3549,9 @@ sections:
 18. **Resource Constraints**: "What if you had only $10 and 1 hour?"
 19. **Metaphor Mapping**: Use extended metaphors to explore solutions
 20. **Question Storming**: Generate questions instead of answers first
-==================== END: .agilai-core/data/brainstorming-techniques.md ====================
+==================== END: .aidesigner-core/data/brainstorming-techniques.md ====================
 
-==================== START: .agilai-core/tasks/brownfield-create-epic.md ====================
+==================== START: .aidesigner-core/tasks/brownfield-create-epic.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Create Brownfield Epic Task
@@ -3714,9 +3714,9 @@ The epic creation is successful when:
 - If the scope grows beyond 3 stories, consider the full brownfield PRD process
 - Always prioritize existing system integrity over new functionality
 - When in doubt about scope or complexity, escalate to full brownfield planning
-==================== END: .agilai-core/tasks/brownfield-create-epic.md ====================
+==================== END: .aidesigner-core/tasks/brownfield-create-epic.md ====================
 
-==================== START: .agilai-core/tasks/brownfield-create-story.md ====================
+==================== START: .aidesigner-core/tasks/brownfield-create-story.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Create Brownfield Story Task
@@ -3866,16 +3866,16 @@ The story creation is successful when:
 - Always prioritize existing system integrity
 - When in doubt about integration complexity, use brownfield-create-epic instead
 - Stories should take no more than 4 hours of focused development work
-==================== END: .agilai-core/tasks/brownfield-create-story.md ====================
+==================== END: .aidesigner-core/tasks/brownfield-create-story.md ====================
 
-==================== START: .agilai-core/tasks/correct-course.md ====================
+==================== START: .aidesigner-core/tasks/correct-course.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Correct Course Task
 
 ## Purpose
 
-- Guide a structured response to a change trigger using the `.agilai-core/checklists/change-checklist`.
+- Guide a structured response to a change trigger using the `.aidesigner-core/checklists/change-checklist`.
 - Analyze the impacts of the change on epics, project artifacts, and the MVP, guided by the checklist's structure.
 - Explore potential solutions (e.g., adjust scope, rollback elements, re-scope features) as prompted by the checklist.
 - Draft specific, actionable proposed updates to any affected project artifacts (e.g., epics, user stories, PRD sections, architecture document sections) based on the analysis.
@@ -3889,7 +3889,7 @@ The story creation is successful when:
 - **Acknowledge Task & Inputs:**
   - Confirm with the user that the "Correct Course Task" (Change Navigation & Integration) is being initiated.
   - Verify the change trigger and ensure you have the user's initial explanation of the issue and its perceived impact.
-  - Confirm access to all relevant project artifacts (e.g., PRD, Epics/Stories, Architecture Documents, UI/UX Specifications) and, critically, the `.agilai-core/checklists/change-checklist`.
+  - Confirm access to all relevant project artifacts (e.g., PRD, Epics/Stories, Architecture Documents, UI/UX Specifications) and, critically, the `.aidesigner-core/checklists/change-checklist`.
 - **Establish Interaction Mode:**
   - Ask the user their preferred interaction mode for this task:
     - **"Incrementally (Default & Recommended):** Shall we work through the change-checklist section by section, discussing findings and collaboratively drafting proposed changes for each relevant part before moving to the next? This allows for detailed, step-by-step refinement."
@@ -3941,9 +3941,9 @@ The story creation is successful when:
   - A summary of the change-checklist analysis (issue, impact, rationale for the chosen path).
   - Specific, clearly drafted proposed edits for all affected project artifacts.
 - **Implicit:** An annotated change-checklist (or the record of its completion) reflecting the discussions, findings, and decisions made during the process.
-==================== END: .agilai-core/tasks/correct-course.md ====================
+==================== END: .aidesigner-core/tasks/correct-course.md ====================
 
-==================== START: .agilai-core/tasks/execute-checklist.md ====================
+==================== START: .aidesigner-core/tasks/execute-checklist.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Checklist Validation Task
@@ -3952,7 +3952,7 @@ This task provides instructions for validating documentation against checklists.
 
 ## Available Checklists
 
-If the user asks or does not specify a specific checklist, list the checklists available to the agent persona. If the task is being run not with a specific agent, tell the user to check the .agilai-core/checklists folder to select the appropriate one to run.
+If the user asks or does not specify a specific checklist, list the checklists available to the agent persona. If the task is being run not with a specific agent, tell the user to check the .aidesigner-core/checklists folder to select the appropriate one to run.
 
 ## Instructions
 
@@ -3960,7 +3960,7 @@ If the user asks or does not specify a specific checklist, list the checklists a
    - If user or the task being run provides a checklist name:
      - Try fuzzy matching (e.g. "architecture checklist" -> "architect-checklist")
      - If multiple matches found, ask user to clarify
-     - Load the appropriate checklist from .agilai-core/checklists/
+     - Load the appropriate checklist from .aidesigner-core/checklists/
    - If no checklist specified:
      - Ask the user which checklist they want to use
      - Present the available options from the files in the checklists folder
@@ -4032,9 +4032,9 @@ The LLM will:
 - Execute the complete checklist validation
 - Present a final report with pass/fail rates and key findings
 - Offer to provide detailed analysis of any section, especially those with warnings or failures
-==================== END: .agilai-core/tasks/execute-checklist.md ====================
+==================== END: .aidesigner-core/tasks/execute-checklist.md ====================
 
-==================== START: .agilai-core/tasks/shard-doc.md ====================
+==================== START: .aidesigner-core/tasks/shard-doc.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Document Sharding Task
@@ -4047,20 +4047,20 @@ The LLM will:
 
 ## Primary Method: Automatic with markdown-tree
 
-[[LLM: First, check if markdownExploder is set to true in .agilai-core/core-config.yaml. If it is, attempt to run the command: `md-tree explode {input file} {output path}`.
+[[LLM: First, check if markdownExploder is set to true in .aidesigner-core/core-config.yaml. If it is, attempt to run the command: `md-tree explode {input file} {output path}`.
 
 If the command succeeds, inform the user that the document has been sharded successfully and STOP - do not proceed further.
 
 If the command fails (especially with an error indicating the command is not found or not available), inform the user: "The markdownExploder setting is enabled but the md-tree command is not available. Please either:
 
 1. Install @kayvan/markdown-tree-parser globally with: `npm install -g @kayvan/markdown-tree-parser`
-2. Or set markdownExploder to false in .agilai-core/core-config.yaml
+2. Or set markdownExploder to false in .aidesigner-core/core-config.yaml
 
 **IMPORTANT: STOP HERE - do not proceed with manual sharding until one of the above actions is taken.**"
 
 If markdownExploder is set to false, inform the user: "The markdownExploder setting is currently false. For better performance and reliability, you should:
 
-1. Set markdownExploder to true in .agilai-core/core-config.yaml
+1. Set markdownExploder to true in .aidesigner-core/core-config.yaml
 2. Install @kayvan/markdown-tree-parser globally with: `npm install -g @kayvan/markdown-tree-parser`
 
 I will now proceed with the manual sharding process."
@@ -4222,9 +4222,9 @@ Document sharded successfully:
 - Preserve ALL formatting, including whitespace where significant
 - Handle edge cases like sections with code blocks containing ## symbols
 - Ensure the sharding is reversible (could reconstruct the original from shards)
-==================== END: .agilai-core/tasks/shard-doc.md ====================
+==================== END: .aidesigner-core/tasks/shard-doc.md ====================
 
-==================== START: .agilai-core/templates/brownfield-prd-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/brownfield-prd-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: brownfield-prd-template-v2
@@ -4506,9 +4506,9 @@ sections:
               - template: "IV1: {{existing_functionality_verification}}"
               - template: "IV2: {{integration_point_verification}}"
               - template: "IV3: {{performance_impact_verification}}"
-==================== END: .agilai-core/templates/brownfield-prd-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/brownfield-prd-tmpl.yaml ====================
 
-==================== START: .agilai-core/templates/prd-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/prd-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: prd-template-v2
@@ -4611,7 +4611,7 @@ sections:
     instruction: |
       Gather technical decisions that will guide the Architect. Steps:
 
-      1. Check if .agilai-core/data/technical-preferences.yaml or an attached technical-preferences file exists - use it to pre-populate choices
+      1. Check if .aidesigner-core/data/technical-preferences.yaml or an attached technical-preferences file exists - use it to pre-populate choices
       2. Ask user about: languages, frameworks, starter templates, libraries, APIs, deployment targets
       3. For unknowns, offer guidance based on project goals and MVP scope
       4. Document ALL technical choices with rationale (why this choice fits the project)
@@ -4712,9 +4712,9 @@ sections:
       - id: architect-prompt
         title: Architect Prompt
         instruction: This section will contain the prompt for the Architect, keep it short and to the point to initiate create architecture mode using this document as input.
-==================== END: .agilai-core/templates/prd-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/prd-tmpl.yaml ====================
 
-==================== START: .agilai-core/checklists/change-checklist.md ====================
+==================== START: .aidesigner-core/checklists/change-checklist.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Change Navigation Checklist
@@ -4899,9 +4899,9 @@ Keep it action-oriented and forward-looking.]]
 - [ ] **Confirm Next Steps:** Reiterate the handoff plan and the next actions to be taken by specific agents.
 
 ---
-==================== END: .agilai-core/checklists/change-checklist.md ====================
+==================== END: .aidesigner-core/checklists/change-checklist.md ====================
 
-==================== START: .agilai-core/checklists/pm-checklist.md ====================
+==================== START: .aidesigner-core/checklists/pm-checklist.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Product Manager (PM) Requirements Checklist
@@ -5274,17 +5274,17 @@ After presenting the report, ask if the user wants:
 
 - **READY FOR ARCHITECT**: The PRD and epics are comprehensive, properly structured, and ready for architectural design.
 - **NEEDS REFINEMENT**: The requirements documentation requires additional work to address the identified deficiencies.
-==================== END: .agilai-core/checklists/pm-checklist.md ====================
+==================== END: .aidesigner-core/checklists/pm-checklist.md ====================
 
-==================== START: .agilai-core/data/technical-preferences.md ====================
+==================== START: .aidesigner-core/data/technical-preferences.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # User-Defined Preferred Patterns and Preferences
 
 None Listed
-==================== END: .agilai-core/data/technical-preferences.md ====================
+==================== END: .aidesigner-core/data/technical-preferences.md ====================
 
-==================== START: .agilai-core/templates/architecture-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/architecture-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: architecture-template-v2
@@ -5415,7 +5415,7 @@ sections:
     instruction: |
       This is the DEFINITIVE technology selection section. Work with the user to make specific choices:
 
-      1. Review PRD technical assumptions and any preferences from .agilai-core/data/technical-preferences.yaml or an attached technical-preferences
+      1. Review PRD technical assumptions and any preferences from .aidesigner-core/data/technical-preferences.yaml or an attached technical-preferences
       2. For each category, present 2-3 viable options with pros/cons
       3. Make a clear recommendation based on project needs
       4. Get explicit user approval for each selection
@@ -5936,9 +5936,9 @@ sections:
           - Key UI requirements from PRD
           - Any frontend-specific decisions made here
           - Request for detailed frontend architecture
-==================== END: .agilai-core/templates/architecture-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/architecture-tmpl.yaml ====================
 
-==================== START: .agilai-core/templates/brownfield-architecture-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/brownfield-architecture-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: brownfield-architecture-template-v2
@@ -6416,9 +6416,9 @@ sections:
           - Key technical decisions based on real project constraints
           - Existing system compatibility requirements with specific verification steps
           - Clear sequencing of implementation to minimize risk to existing functionality
-==================== END: .agilai-core/templates/brownfield-architecture-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/brownfield-architecture-tmpl.yaml ====================
 
-==================== START: .agilai-core/templates/front-end-architecture-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/front-end-architecture-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: frontend-architecture-template-v2
@@ -6638,9 +6638,9 @@ sections:
           - Key import patterns
           - File naming conventions
           - Project-specific patterns and utilities
-==================== END: .agilai-core/templates/front-end-architecture-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/front-end-architecture-tmpl.yaml ====================
 
-==================== START: .agilai-core/templates/fullstack-architecture-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/fullstack-architecture-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: fullstack-architecture-template-v2
@@ -7465,9 +7465,9 @@ sections:
   - id: checklist-results
     title: Checklist Results Report
     instruction: Before running the checklist, offer to output the full architecture document. Once user confirms, execute the architect-checklist and populate results here.
-==================== END: .agilai-core/templates/fullstack-architecture-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/fullstack-architecture-tmpl.yaml ====================
 
-==================== START: .agilai-core/checklists/architect-checklist.md ====================
+==================== START: .aidesigner-core/checklists/architect-checklist.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Architect Solution Validation Checklist
@@ -7908,9 +7908,9 @@ Now that you've completed the checklist, generate a comprehensive validation rep
    - Component design clarity
 
 After presenting the report, ask the user if they would like detailed analysis of any specific section, especially those with warnings or failures.]]
-==================== END: .agilai-core/checklists/architect-checklist.md ====================
+==================== END: .aidesigner-core/checklists/architect-checklist.md ====================
 
-==================== START: .agilai-core/tasks/validate-next-story.md ====================
+==================== START: .aidesigner-core/tasks/validate-next-story.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Validate Next Story Task
@@ -7923,18 +7923,18 @@ To comprehensively validate a story draft before implementation begins, ensuring
 
 ### 0. Load Core Configuration and Inputs
 
-- Load `.agilai-core/core-config.yaml`
+- Load `.aidesigner-core/core-config.yaml`
 - If the file does not exist, HALT and inform the user: "core-config.yaml not found. This file is required for story validation."
 - Extract key configurations: `devStoryLocation`, `prd.*`, `architecture.*`
 - Identify and load the following inputs:
   - **Story file**: The drafted story to validate (provided by user or discovered in `devStoryLocation`)
   - **Parent epic**: The epic containing this story's requirements
   - **Architecture documents**: Based on configuration (sharded or monolithic)
-  - **Story template**: `agilai-core/templates/story-tmpl.md` for completeness validation
+  - **Story template**: `aidesigner-core/templates/story-tmpl.md` for completeness validation
 
 ### 1. Template Completeness Validation
 
-- Load `.agilai-core/templates/story-tmpl.yaml` and extract all section headings from the template
+- Load `.aidesigner-core/templates/story-tmpl.yaml` and extract all section headings from the template
 - **Missing sections check**: Compare story sections against template sections to verify all required sections are present
 - **Placeholder validation**: Ensure no template placeholders remain unfilled (e.g., `{{EpicNum}}`, `{{role}}`, `_TBD_`)
 - **Agent section verification**: Confirm all sections from template exist for future agent use
@@ -8047,9 +8047,9 @@ Provide a structured validation report including:
 - **NO-GO**: Story requires fixes before implementation
 - **Implementation Readiness Score**: 1-10 scale
 - **Confidence Level**: High/Medium/Low for successful implementation
-==================== END: .agilai-core/tasks/validate-next-story.md ====================
+==================== END: .aidesigner-core/tasks/validate-next-story.md ====================
 
-==================== START: .agilai-core/templates/story-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/story-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: story-template-v2
@@ -8188,9 +8188,9 @@ sections:
     instruction: Results from QA Agent QA review of the completed story implementation
     owner: qa-agent
     editors: [qa-agent]
-==================== END: .agilai-core/templates/story-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/story-tmpl.yaml ====================
 
-==================== START: .agilai-core/checklists/po-master-checklist.md ====================
+==================== START: .aidesigner-core/checklists/po-master-checklist.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # Product Owner (PO) Master Validation Checklist
@@ -8625,9 +8625,9 @@ After presenting the report, ask if the user wants:
 - **APPROVED**: The plan is comprehensive, properly sequenced, and ready for implementation.
 - **CONDITIONAL**: The plan requires specific adjustments before proceeding.
 - **REJECTED**: The plan requires significant revision to address critical deficiencies.
-==================== END: .agilai-core/checklists/po-master-checklist.md ====================
+==================== END: .aidesigner-core/checklists/po-master-checklist.md ====================
 
-==================== START: .agilai-core/workflows/greenfield-service.yaml ====================
+==================== START: .aidesigner-core/workflows/greenfield-service.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 workflow:
   id: greenfield-service
@@ -8767,7 +8767,7 @@ workflow:
         All stories implemented and reviewed!
         Service development phase complete.
 
-        Reference: .agilai-core/data/bmad-kb.md#IDE Development Workflow
+        Reference: .aidesigner-core/data/bmad-kb.md#IDE Development Workflow
 
   flow_diagram: |
     ```mermaid
@@ -8835,9 +8835,9 @@ workflow:
     updated_to_po: "All documents ready in docs/ folder. Please validate all artifacts for consistency."
     po_issues: "PO found issues with [document]. Please return to [agent] to fix and re-save the updated document."
     complete: "All planning artifacts validated and saved in docs/ folder. Move to IDE environment to begin development."
-==================== END: .agilai-core/workflows/greenfield-service.yaml ====================
+==================== END: .aidesigner-core/workflows/greenfield-service.yaml ====================
 
-==================== START: .agilai-core/workflows/brownfield-service.yaml ====================
+==================== START: .aidesigner-core/workflows/brownfield-service.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 workflow:
   id: brownfield-service
@@ -8969,7 +8969,7 @@ workflow:
         All stories implemented and reviewed!
         Project development phase complete.
 
-        Reference: .agilai-core/data/bmad-kb.md#IDE Development Workflow
+        Reference: .aidesigner-core/data/bmad-kb.md#IDE Development Workflow
 
   flow_diagram: |
     ```mermaid
@@ -9026,4 +9026,4 @@ workflow:
     architect_to_po: "Architecture complete. Save it as docs/architecture.md. Please validate all artifacts for service integration safety."
     po_issues: "PO found issues with [document]. Please return to [agent] to fix and re-save the updated document."
     complete: "All planning artifacts validated and saved in docs/ folder. Move to IDE environment to begin development."
-==================== END: .agilai-core/workflows/brownfield-service.yaml ====================
+==================== END: .aidesigner-core/workflows/brownfield-service.yaml ====================

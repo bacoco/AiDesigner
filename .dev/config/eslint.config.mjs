@@ -129,7 +129,7 @@ export default [
 
   // YAML workflow templates allow empty mapping values intentionally
   {
-    files: ['agilai-core/workflows/**/*.yaml'],
+    files: ['aidesigner-core/workflows/**/*.yaml'],
     rules: {
       'yml/no-empty-mapping-value': 'off',
     },

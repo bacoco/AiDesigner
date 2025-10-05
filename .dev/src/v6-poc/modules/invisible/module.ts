@@ -5,7 +5,7 @@ import fs from "node:fs";
 export interface V6ModuleContext {
   /** Root of the V6 workspace that mirrors `src/` in upstream alpha */
   workspaceRoot: string;
-  /** Directory where legacy Agilai assets currently live */
+  /** Directory where legacy aidesigner assets currently live */
   legacyRoot: string;
 }
 
@@ -16,7 +16,7 @@ export interface CompatibilityResult {
 }
 
 /**
- * Proof-of-concept adapter that tries to mount the Agilai orchestrator inside
+ * Proof-of-concept adapter that tries to mount the aidesigner orchestrator inside
  * the emerging V6 module registry. The goal is to probe where the current
  * implementation breaks when forced into the new directory conventions.
  */
@@ -37,20 +37,20 @@ export async function probeInvisibleModule(context: V6ModuleContext): Promise<Co
     notes.push(`Found candidate module directory at ${expectedModuleDir}.`);
   }
 
-  // 2. Attempt to reuse the CommonJS Agilai bridge inside an ESM-oriented runtime.
+  // 2. Attempt to reuse the CommonJS aidesigner bridge inside an ESM-oriented runtime.
   try {
-    const { AgilaiBridge } = require(path.join(context.legacyRoot, "lib", "agilai-bridge.js"));
-    const bridge = new AgilaiBridge();
+    const { aidesignerBridge } = require(path.join(context.legacyRoot, "lib", "aidesigner-bridge.js"));
+    const bridge = new aidesignerBridge();
     if (typeof bridge.initialize !== "function") {
-      blockers.push("AgilaiBridge.initialize is not available after require() shim.");
+      blockers.push("aidesignerBridge.initialize is not available after require() shim.");
     } else {
       warnings.push(
-        "AgilaiBridge loads via CommonJS require(); V6 default ESM bundler will need a compatibility shim or rewrite."
+        "aidesignerBridge loads via CommonJS require(); V6 default ESM bundler will need a compatibility shim or rewrite."
       );
     }
   } catch (error) {
     blockers.push(
-      `Failed to require legacy Agilai bridge: ${(error as Error).message}. ` +
+      `Failed to require legacy aidesigner bridge: ${(error as Error).message}. ` +
         "V6 loaders refuse CommonJS modules without explicit compatibility wrappers."
     );
   }
@@ -75,7 +75,7 @@ export async function probeInvisibleModule(context: V6ModuleContext): Promise<Co
   // 4. Check persona asset availability under the new layout.
   const personaPath = path.join(context.legacyRoot, "agents", "invisible-orchestrator.md");
   if (!fs.existsSync(personaPath)) {
-    blockers.push(`Agilai orchestrator persona missing at ${personaPath}.`);
+    blockers.push(`aidesigner orchestrator persona missing at ${personaPath}.`);
   } else {
     const newPersonaPath = path.join(context.workspaceRoot, "src", "modules", "invisible", "agents", "orchestrator.md");
     if (!fs.existsSync(path.dirname(newPersonaPath))) {

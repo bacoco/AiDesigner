@@ -200,7 +200,7 @@ mcp
   .description('Install an MCP server from the registry')
   .option(
     '--config <type>',
-    'Target config (claude, agilai, or both; bmad is a legacy alias)',
+    'Target config (claude, aidesigner, or both; bmad is a legacy alias)',
     'claude',
   )
   .action(async (server, options) => {
@@ -271,7 +271,11 @@ profile
 profile
   .command('diff <profile1> <profile2>')
   .description('Compare two profiles')
-  .option('-t, --type <type>', 'Config type (claude or agilai; bmad is a legacy alias)', 'claude')
+  .option(
+    '-t, --type <type>',
+    'Config type (claude or aidesigner; bmad is a legacy alias)',
+    'claude',
+  )
   .action(async (profile1, profile2, options) => {
     const manager = new McpManager({ rootDir: process.cwd() });
     const normalizedOptions = {

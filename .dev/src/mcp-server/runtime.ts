@@ -370,7 +370,7 @@ async function getDefaultLLMClientCtor(): Promise<any> {
 export async function runOrchestratorServer(
   options: OrchestratorServerOptions = {}
 ): Promise<void> {
-  const serverName = options.serverInfo?.name ?? "agilai-orchestrator";
+  const serverName = options.serverInfo?.name ?? "aidesigner-orchestrator";
   const serverVersion = options.serverInfo?.version ?? "1.0.0";
   const logger =
     options.logger ??
@@ -427,7 +427,7 @@ export async function runOrchestratorServer(
   };
 
   let ProjectState: any;
-  let AgilaiBridge: any;
+  let AidesignerBridge: any;
   let DeliverableGenerator: any;
   let BrownfieldAnalyzer: any;
   let QuickLane: any;
@@ -437,7 +437,7 @@ export async function runOrchestratorServer(
   let storyContextValidator: any;
 
   let projectState: any;
-  let agilaiBridge: any;
+  let aidesignerBridge: any;
   let deliverableGen: any;
   let brownfieldAnalyzer: any;
   const laneDecisions: LaneDecisionRecord[] = [];
@@ -451,8 +451,8 @@ export async function runOrchestratorServer(
       if (!ProjectState) {
         ({ ProjectState } = await importLibModule<any>("project-state.js"));
       }
-      if (!AgilaiBridge) {
-        ({ AgilaiBridge } = await importLibModule<any>("agilai-bridge.js"));
+      if (!AidesignerBridge) {
+        ({ AidesignerBridge } = await importLibModule<any>("aidesigner-bridge.js"));
       }
       if (!DeliverableGenerator) {
         ({ DeliverableGenerator } = await importLibModule<any>(
@@ -492,14 +492,14 @@ export async function runOrchestratorServer(
       await projectState.initialize();
     }
 
-    if (!agilaiBridge) {
+    if (!aidesignerBridge) {
       const llmClient = await createLLMClient("default");
-      agilaiBridge = new AgilaiBridge({ llmClient });
-      await agilaiBridge.initialize();
+      aidesignerBridge = new AidesignerBridge({ llmClient });
+      await aidesignerBridge.initialize();
 
       const environmentInfo =
-        typeof agilaiBridge.getEnvironmentInfo === "function"
-          ? agilaiBridge.getEnvironmentInfo()
+        typeof aidesignerBridge.getEnvironmentInfo === "function"
+          ? aidesignerBridge.getEnvironmentInfo()
           : null;
 
       if (environmentInfo?.mode === "v6-modules") {
@@ -513,7 +513,7 @@ export async function runOrchestratorServer(
     }
 
     if (!deliverableGen) {
-      deliverableGen = new DeliverableGenerator(projectPath, { agilaiBridge });
+      deliverableGen = new DeliverableGenerator(projectPath, { aidesignerBridge });
       await deliverableGen.initialize();
     }
 
@@ -539,7 +539,7 @@ export async function runOrchestratorServer(
 
     phaseTransitionHooks.bindDependencies({
       triggerAgent: async (agentId: string, context: any) => {
-        const result = await agilaiBridge.runAgent(agentId, context);
+        const result = await aidesignerBridge.runAgent(agentId, context);
 
         if (!result) {
           return null;
@@ -588,7 +588,7 @@ export async function runOrchestratorServer(
           operation: "execute_auto_command",
           command,
         });
-        return executeAutoCommand(command, context, agilaiBridge);
+        return executeAutoCommand(command, context, aidesignerBridge);
       },
       updateProjectState: async (updates: any) => {
         await projectState.updateState(updates);
@@ -628,7 +628,7 @@ export async function runOrchestratorServer(
     return validationModule.runStoryContextValidation({
       projectState,
       createLLMClient,
-      AgilaiBridge,
+      AidesignerBridge,
       lane,
       notes,
       trigger,
@@ -653,7 +653,7 @@ export async function runOrchestratorServer(
       return validationModule.ensureStoryContextReadyForDevelopment({
         projectState,
         createLLMClient,
-        AgilaiBridge,
+        AidesignerBridge,
         lane,
         notes,
         trigger,
@@ -701,7 +701,7 @@ export async function runOrchestratorServer(
       {
         name: "detect_phase",
         description:
-          "Analyze user message and conversation to determine appropriate Agilai phase",
+          "Analyze user message and conversation to determine appropriate aidesigner phase",
         inputSchema: {
           type: "object",
           properties: {
@@ -721,7 +721,7 @@ export async function runOrchestratorServer(
       },
       {
         name: "load_agent_persona",
-        description: "Load Agilai agent persona for the current or specified phase",
+        description: "Load aidesigner agent persona for the current or specified phase",
         inputSchema: {
           type: "object",
           properties: {
@@ -793,7 +793,7 @@ export async function runOrchestratorServer(
       {
         name: "generate_deliverable",
         description:
-          "Generate Agilai deliverable (PRD, architecture, story, etc.) and save to docs/",
+          "Generate aidesigner deliverable (PRD, architecture, story, etc.) and save to docs/",
         inputSchema: {
           type: "object",
           properties: {
@@ -860,16 +860,16 @@ export async function runOrchestratorServer(
         },
       },
       {
-        name: "list_agilai_agents",
-        description: "List all available Agilai agents",
+        name: "list_aidesigner_agents",
+        description: "List all available aidesigner agents",
         inputSchema: {
           type: "object",
           properties: {},
         },
       },
       {
-        name: "execute_agilai_workflow",
-        description: "Execute a complete Agilai workflow for a phase",
+        name: "execute_aidesigner_workflow",
+        description: "Execute a complete aidesigner workflow for a phase",
         inputSchema: {
           type: "object",
           properties: {
@@ -918,7 +918,7 @@ export async function runOrchestratorServer(
       {
         name: "detect_existing_docs",
         description:
-          "Find and load existing Agilai documentation (brief, prd, architecture, stories)",
+          "Find and load existing aidesigner documentation (brief, prd, architecture, stories)",
         inputSchema: {
           type: "object",
           properties: {},
@@ -926,7 +926,7 @@ export async function runOrchestratorServer(
       },
       {
         name: "load_previous_state",
-        description: "Load state from previous Agilai session to resume work",
+        description: "Load state from previous aidesigner session to resume work",
         inputSchema: {
           type: "object",
           properties: {},
@@ -935,7 +935,7 @@ export async function runOrchestratorServer(
       {
         name: "get_codebase_summary",
         description:
-          "Get comprehensive codebase analysis including structure, tech stack, and existing Agilai docs",
+          "Get comprehensive codebase analysis including structure, tech stack, and existing aidesigner docs",
         inputSchema: {
           type: "object",
           properties: {},
@@ -1020,7 +1020,7 @@ export async function runOrchestratorServer(
             },
             config: {
               type: "string",
-              enum: ["claude", "agilai", "both", "bmad"],
+              enum: ["claude", "aidesigner", "both", "bmad"],
               description: "Target configuration (default: claude, legacy alias: bmad)",
               default: "claude",
             },
@@ -1165,7 +1165,7 @@ export async function runOrchestratorServer(
         case "load_agent_persona": {
           const params = args as { phase?: string };
           const phase = params.phase || projectState.state.currentPhase;
-          const agent = await agilaiBridge.loadAgent(`${phase}`);
+          const agent = await aidesignerBridge.loadAgent(`${phase}`);
 
           response = {
             content: [
@@ -1430,14 +1430,14 @@ export async function runOrchestratorServer(
           break;
         }
 
-        case "list_agilai_agents": {
-          const agents = await agilaiBridge.listAgents();
+        case "list_aidesigner_agents": {
+          const agents = await aidesignerBridge.listAgents();
 
           response = {
             content: [
               {
                 type: "text",
-                text: `Available Agilai agents:\n${agents
+                text: `Available aidesigner agents:\n${agents
                   .map((a: string) => `- ${a}`)
                   .join("\n")}`,
               },
@@ -1446,9 +1446,9 @@ export async function runOrchestratorServer(
           break;
         }
 
-        case "execute_agilai_workflow": {
+        case "execute_aidesigner_workflow": {
           const params = args as { phase: string; context?: any };
-          const result = await agilaiBridge.executePhaseWorkflow(
+          const result = await aidesignerBridge.executePhaseWorkflow(
             params.phase,
             params.context || {}
           );
@@ -1486,7 +1486,7 @@ export async function runOrchestratorServer(
           });
 
           const reviewLLM = await createLLMClient(lane);
-          const reviewBridge = new AgilaiBridge({ llmClient: reviewLLM });
+          const reviewBridge = new aidesignerBridge({ llmClient: reviewLLM });
           await reviewBridge.initialize();
 
           const projectSnapshot = projectState.exportForLLM();
@@ -1622,7 +1622,7 @@ export async function runOrchestratorServer(
             content: [
               {
                 type: "text",
-                text: "No previous Agilai session found. Starting fresh.",
+                text: "No previous aidesigner session found. Starting fresh.",
               },
             ],
           };
@@ -1862,19 +1862,19 @@ export async function runOrchestratorServer(
               request: params.userRequest,
             });
             const laneTimer = logger.startTimer();
-            await agilaiBridge.executePhaseWorkflow("analyst", {
+            await aidesignerBridge.executePhaseWorkflow("analyst", {
               userMessage: params.userRequest,
               ...context,
             });
-            await agilaiBridge.executePhaseWorkflow("pm", context);
-            await agilaiBridge.executePhaseWorkflow("architect", context);
-            await agilaiBridge.executePhaseWorkflow("sm", context);
+            await aidesignerBridge.executePhaseWorkflow("pm", context);
+            await aidesignerBridge.executePhaseWorkflow("architect", context);
+            await aidesignerBridge.executePhaseWorkflow("sm", context);
 
             result = {
               lane: "complex",
               decision,
               files: ["docs/prd.md", "docs/architecture.md", "docs/stories/*.md"],
-              message: "Complex workflow executed through Agilai agents",
+              message: "Complex workflow executed through aidesigner agents",
             };
             if (selectedQuickLane && !quickLaneActive) {
               result.quickLane = {
@@ -2003,23 +2003,23 @@ export async function runOrchestratorServer(
             serverConfig.env = params.envVars;
           }
 
-          const requestedConfig = params.config || "agilai";
+          const requestedConfig = params.config || "aidesigner";
           const normalisedRequest = requestedConfig.toLowerCase();
 
           // Validate config parameter
-          const validConfigs = ["agilai", "claude", "both", "bmad"];
+          const validConfigs = ["aidesigner", "claude", "both", "bmad"];
           if (!validConfigs.includes(normalisedRequest)) {
             throw new Error(
-              `Invalid config parameter: "${params.config}". Valid options are: "agilai" (default), "claude", "both", or "bmad" (legacy alias for "agilai")`
+              `Invalid config parameter: "${params.config}". Valid options are: "aidesigner" (default), "claude", "both", or "bmad" (legacy alias for "aidesigner")`
             );
           }
 
           const legacyAliasUsed = normalisedRequest === "bmad";
-          const effectiveConfig = legacyAliasUsed ? "agilai" : normalisedRequest;
+          const effectiveConfig = legacyAliasUsed ? "aidesigner" : normalisedRequest;
           const applyClaudeConfig =
             normalisedRequest === "claude" || normalisedRequest === "both";
-          const applyAgilaiConfig =
-            effectiveConfig === "agilai" || normalisedRequest === "both";
+          const applyaidesignerConfig =
+            effectiveConfig === "aidesigner" || normalisedRequest === "both";
 
           if (applyClaudeConfig) {
             const config = manager.loadClaudeConfig();
@@ -2028,11 +2028,11 @@ export async function runOrchestratorServer(
             manager.saveClaudeConfig(config);
           }
 
-          if (applyAgilaiConfig) {
-            const config = manager.loadAgilaiConfig();
+          if (applyaidesignerConfig) {
+            const config = manager.loadaidesignerConfig();
             config.mcpServers = config.mcpServers || {};
             config.mcpServers[params.serverId] = serverConfig;
-            manager.saveAgilaiConfig(config);
+            manager.saveaidesignerConfig(config);
           }
 
           response = {
@@ -2066,7 +2066,7 @@ export async function runOrchestratorServer(
           const manager = new McpManager({ rootDir: projectState.projectPath });
 
           const claudeConfig = manager.loadClaudeConfig();
-          const agilaiConfig = manager.loadAgilaiConfig();
+          const aidesignerConfig = manager.loadaidesignerConfig();
 
           const allServers = new Map();
 
@@ -2074,9 +2074,9 @@ export async function runOrchestratorServer(
             allServers.set(name, { ...(config as Record<string, any>), source: "claude" });
           }
 
-          for (const [name, config] of Object.entries(agilaiConfig.mcpServers || {})) {
+          for (const [name, config] of Object.entries(aidesignerConfig.mcpServers || {})) {
             if (!allServers.has(name)) {
-              allServers.set(name, { ...(config as Record<string, any>), source: "agilai" });
+              allServers.set(name, { ...(config as Record<string, any>), source: "aidesigner" });
             } else {
               (allServers.get(name) as any).source = "both";
             }
@@ -2114,7 +2114,7 @@ export async function runOrchestratorServer(
           const manager = new McpManager({ rootDir: projectState.projectPath });
 
           const claudeConfig = manager.loadClaudeConfig();
-          const agilaiConfig = manager.loadAgilaiConfig();
+          const aidesignerConfig = manager.loadaidesignerConfig();
 
           const allServers = new Map();
 
@@ -2122,7 +2122,7 @@ export async function runOrchestratorServer(
             allServers.set(name, config);
           }
 
-          for (const [name, config] of Object.entries(agilaiConfig.mcpServers || {})) {
+          for (const [name, config] of Object.entries(aidesignerConfig.mcpServers || {})) {
             if (!allServers.has(name)) {
               allServers.set(name, config);
             }
@@ -2303,8 +2303,8 @@ interface McpManagerModule {
   new (options: { rootDir: string; profile: string }): {
     loadClaudeConfig(profileName?: string | null): McpConfig;
     saveClaudeConfig(config: McpConfig, profileName?: string | null): void;
-    loadAgilaiConfig(profileName?: string | null): McpConfig;
-    saveAgilaiConfig(config: McpConfig, profileName?: string | null): void;
+    loadaidesignerConfig(profileName?: string | null): McpConfig;
+    saveaidesignerConfig(config: McpConfig, profileName?: string | null): void;
   };
 }
 
@@ -2315,9 +2315,9 @@ interface McpManagerModule {
  * - MCP registry and manager modules can be successfully loaded from the bundle
  * - Registry search functionality works correctly
  * - Server installation and configuration can be performed
- * - Both Claude and Agilai config files are properly generated
+ * - Both Claude and aidesigner config files are properly generated
  *
- * The smoke test is enabled by setting AGILAI_MCP_SMOKE_TEST=1 environment variable.
+ * The smoke test is enabled by setting aidesigner_MCP_SMOKE_TEST=1 environment variable.
  * When enabled, the test runs at server startup and exits early (returns true) to
  * prevent the server from continuing to run, making it suitable for CI/CD validation.
  *
@@ -2333,7 +2333,7 @@ async function runBundledToolsSmokeCheck({
   ensureOperationAllowed: NonNullable<OrchestratorServerOptions["ensureOperationAllowed"]>;
   logger: StructuredLogger;
 }): Promise<boolean> {
-  if (process.env.AGILAI_MCP_SMOKE_TEST !== "1") {
+  if (process.env.aidesigner_MCP_SMOKE_TEST !== "1") {
     return false;
   }
 
@@ -2341,8 +2341,8 @@ async function runBundledToolsSmokeCheck({
   const McpManager = requireLibModule<McpManagerModule>("mcp-manager.js");
 
   const smokeRoot =
-    process.env.AGILAI_MCP_SMOKE_ROOT ?? mkdtempSync(path.join(tmpdir(), "agilai-mcp-smoke-"));
-  const cleanupRoot = !process.env.AGILAI_MCP_SMOKE_ROOT;
+    process.env.aidesigner_MCP_SMOKE_ROOT ?? mkdtempSync(path.join(tmpdir(), "aidesigner-mcp-smoke-"));
+  const cleanupRoot = !process.env.aidesigner_MCP_SMOKE_ROOT;
   const profile = process.env.MCP_PROFILE ?? "default";
 
   try {
@@ -2386,10 +2386,10 @@ async function runBundledToolsSmokeCheck({
     claudeConfig.mcpServers[targetServer.id] = serverConfig;
     manager.saveClaudeConfig(claudeConfig);
 
-    const agilaiConfig = manager.loadAgilaiConfig();
-    agilaiConfig.mcpServers = agilaiConfig.mcpServers || {};
-    agilaiConfig.mcpServers[targetServer.id] = serverConfig;
-    manager.saveAgilaiConfig(agilaiConfig);
+    const aidesignerConfig = manager.loadaidesignerConfig();
+    aidesignerConfig.mcpServers = aidesignerConfig.mcpServers || {};
+    aidesignerConfig.mcpServers[targetServer.id] = serverConfig;
+    manager.saveaidesignerConfig(aidesignerConfig);
 
     logger.info("mcp_smoke_test_completed", {
       operation: "smoke_test",

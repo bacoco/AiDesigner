@@ -7,12 +7,12 @@ jest.mock('child_process', () => ({
   spawn: (...args) => mockSpawn(...args),
 }));
 
-const cli = require('../../bin/agilai');
+const cli = require('../../bin/aidesigner');
 const { buildAssistantSpawnEnv } = require('../../common/utils/assistant-env');
 
 const fs = require('node:fs');
 
-describe('agilai start assistant selection', () => {
+describe('aidesigner start assistant selection', () => {
   const originalInit = cli.commands.init;
   let exitSpy;
   let existsSpy;
@@ -68,7 +68,7 @@ describe('agilai start assistant selection', () => {
 
     const lastCall = mockSpawn.mock.calls.at(-1);
     expect(lastCall[0]).toBe('node');
-    expect(lastCall[1][0]).toContain(path.join('bin', 'agilai-claude'));
+    expect(lastCall[1][0]).toContain(path.join('bin', 'aidesigner-claude'));
     expect(lastCall[1].some((arg) => arg.includes('--assistant'))).toBe(false);
   });
 
@@ -173,14 +173,14 @@ describe('agilai start assistant selection', () => {
   });
 });
 
-describe('agilai init npm scripts', () => {
+describe('aidesigner init npm scripts', () => {
   let tempDir;
   let originalCwd;
   let originalIsTTY;
 
   beforeEach(() => {
     originalCwd = process.cwd();
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agilai-init-test-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aidesigner-init-test-'));
     process.chdir(tempDir);
 
     originalIsTTY = process.stdout.isTTY;
@@ -198,18 +198,18 @@ describe('agilai init npm scripts', () => {
     return JSON.parse(file);
   };
 
-  test('seeds agilai:opencode script in new projects', async () => {
+  test('seeds aidesigner:opencode script in new projects', async () => {
     await cli.commands.init();
 
     const packageJson = readPackageJson();
-    expect(packageJson.scripts['agilai:opencode']).toBe('agilai opencode');
+    expect(packageJson.scripts['aidesigner:opencode']).toBe('aidesigner opencode');
   });
 
-  test('does not overwrite an existing agilai:opencode script', async () => {
+  test('does not overwrite an existing aidesigner:opencode script', async () => {
     const preexisting = {
       name: 'fixture',
       scripts: {
-        'agilai:opencode': 'custom-opencode',
+        'aidesigner:opencode': 'custom-opencode',
       },
     };
     fs.writeFileSync(path.join(tempDir, 'package.json'), JSON.stringify(preexisting, null, 2));
@@ -217,6 +217,6 @@ describe('agilai init npm scripts', () => {
     await cli.commands.init();
 
     const packageJson = readPackageJson();
-    expect(packageJson.scripts['agilai:opencode']).toBe('custom-opencode');
+    expect(packageJson.scripts['aidesigner:opencode']).toBe('custom-opencode');
   });
 });

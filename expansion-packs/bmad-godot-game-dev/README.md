@@ -1,16 +1,16 @@
-# Agilai Godot Game Development Expansion Pack Guide
+# aidesigner Godot Game Development Expansion Pack Guide
 
-The Agilai Godot Game Development expansion pack brings BMAD-METHOD™ multi-agent workflows directly into your game projects. It layers Godot-specific playbooks, tasks, and templates on top of the core Agilai orchestration so you can move from concept to implementation without leaving your IDE.
+The aidesigner Godot Game Development expansion pack brings BMAD-METHOD™ multi-agent workflows directly into your game projects. It layers Godot-specific playbooks, tasks, and templates on top of the core aidesigner orchestration so you can move from concept to implementation without leaving your IDE.
 
-> **Note on legacy naming:** The on-disk folders for this expansion still carry the historical `bmad-` prefix (for example `.bmad-godot-game-dev/`). These names remain in place for compatibility with existing agent bundles and CLI manifests. All usage guidance below assumes the current Agilai CLI while calling out the legacy paths when they are required verbatim.
+> **Note on legacy naming:** The on-disk folders for this expansion still carry the historical `bmad-` prefix (for example `.bmad-godot-game-dev/`). These names remain in place for compatibility with existing agent bundles and CLI manifests. All usage guidance below assumes the current aidesigner CLI while calling out the legacy paths when they are required verbatim.
 
-## Agilai Planning and Execution Workflow
+## aidesigner Planning and Execution Workflow
 
-**We follow the standard Agilai plan → build loop, tailoring the steps to Godot development.** The diagrams below mirror the production workflow that ships with Agilai 1.3.x.
+**We follow the standard aidesigner plan → build loop, tailoring the steps to Godot development.** The diagrams below mirror the production workflow that ships with aidesigner 1.3.x.
 
 ### Planning Workflow (Web UI or Agentic IDE)
 
-Before touching code, Agilai encourages a structured planning flow. Run it in the web UI for cost-efficient ideation, or inside an agentic IDE if you already have the expansion installed locally.
+Before touching code, aidesigner encourages a structured planning flow. Run it in the web UI for cost-efficient ideation, or inside an agentic IDE if you already have the expansion installed locally.
 
 ```mermaid
 graph TD
@@ -72,7 +72,7 @@ graph TD
 
 ### Core Development Cycle (IDE)
 
-Once planning is complete and the documents are sharded, Agilai follows a structured development workflow:
+Once planning is complete and the documents are sharded, aidesigner follows a structured development workflow:
 
 ```mermaid
 graph TD
@@ -129,28 +129,28 @@ If you prefer to run the planning flow in the browser using Claude, Gemini, or a
 3. Create a new Gemini Gem or Custom GPT and upload the file with the instruction: "Your critical operating instructions are attached; stay in character as directed."
 4. Type `/help` in the web interface to see the available commands.
 
-### IDE Project Setup with the Agilai CLI
+### IDE Project Setup with the aidesigner CLI
 
-Use the production CLI to install Agilai and the Godot expansion pack locally. The recommended one-liner performs initialization, dependency installation, and assistant launch prompts:
+Use the production CLI to install aidesigner and the Godot expansion pack locally. The recommended one-liner performs initialization, dependency installation, and assistant launch prompts:
 
 ```bash
 # Interactive installation (recommended)
-npx agilai@latest start
+npx aidesigner@latest start
 ```
 
 If you are developing directly from a local checkout of this repository, you can run the same workflow without npm registry access:
 
 ```bash
-node bin/agilai start
+node bin/aidesigner start
 ```
 
-Both entry points were validated against Agilai CLI **v1.3.11**. The local command surfaces the same interactive assistant selection prompt as the published package.
+Both entry points were validated against aidesigner CLI **v1.3.11**. The local command surfaces the same interactive assistant selection prompt as the published package.
 
 ## Special Agents
 
 The expansion packs ships with the full Godot game-delivery team plus a heavyweight orchestrator for web bundles.
 
-### Agilai Orchestrator (legacy file name: `agents/bmad-orchestrator.md`)
+### aidesigner Orchestrator (legacy file name: `agents/bmad-orchestrator.md`)
 
 - Acts as the web bundle conductor and can assume any specialized role on demand.
 - Uses larger context windows and should stay in the browser to avoid overwhelming IDE-based CLIs.
@@ -190,7 +190,7 @@ dependencies:
 **Key points:**
 
 - Agents load only the resources they need when commands require them.
-- Dependencies are resolved automatically when you run commands via Agilai.
+- Dependencies are resolved automatically when you run commands via aidesigner.
 - Resources are shared across agents to keep terminology consistent.
 
 ## Agent Interaction Patterns
@@ -222,13 +222,13 @@ dependencies:
 
 ## Technical Preferences System
 
-Personalize Agilai’s recommendations by editing `technical-preferences.md` under `.bmad-godot-game-dev/data/`. Although the directory retains the legacy prefix, the CLI automatically locates the file. Populate it with preferred design patterns, third-party services, or Godot-specific conventions.
+Personalize aidesigner’s recommendations by editing `technical-preferences.md` under `.bmad-godot-game-dev/data/`. Although the directory retains the legacy prefix, the CLI automatically locates the file. Populate it with preferred design patterns, third-party services, or Godot-specific conventions.
 
 When you build custom web bundles or upload instructions to hosted AI platforms, include the same content so your preferences influence every conversation from the first prompt.
 
 ## Core Configuration
 
-Agilai stores shared configuration in `.agilai-core/core-config.yaml`. The Godot expansion also looks for `.bmad-godot-game-dev/config.yaml` (legacy name retained for compatibility). Copy the `core-config.yaml.example` shipped with the expansion into both locations, then update at least the `gameDimension` value to match your project.
+aidesigner stores shared configuration in `.aidesigner-core/core-config.yaml`. The Godot expansion also looks for `.bmad-godot-game-dev/config.yaml` (legacy name retained for compatibility). Copy the `core-config.yaml.example` shipped with the expansion into both locations, then update at least the `gameDimension` value to match your project.
 
 ### Developer Always-Load Context
 
@@ -245,18 +245,18 @@ Replace `##` with the prefix generated during sharding, and keep these documents
 
 ## Validation Status
 
-- ✅ `node bin/agilai help` confirms Agilai CLI v1.3.11 exposes the `start` command used above and documents the supported flags.
-- ✅ `node bin/agilai start` (interrupted after the assistant prompt) demonstrates the local workflow launches with the same assistant selection flow as the published package.
+- ✅ `node bin/aidesigner help` confirms aidesigner CLI v1.3.11 exposes the `start` command used above and documents the supported flags.
+- ✅ `node bin/aidesigner start` (interrupted after the assistant prompt) demonstrates the local workflow launches with the same assistant selection flow as the published package.
 
-These checks ensure the instructions above work end-to-end with the current Agilai CLI. Update screenshots or command snippets in your project documentation if the CLI output changes in future releases.
+These checks ensure the instructions above work end-to-end with the current aidesigner CLI. Update screenshots or command snippets in your project documentation if the CLI output changes in future releases.
 
 ## Getting Help
 
-- **Discord Community:** [Join the Agilai/BMAD community](https://discord.gg/gk8jAdXWmj) for real-time support.
+- **Discord Community:** [Join the aidesigner/BMAD community](https://discord.gg/gk8jAdXWmj) for real-time support.
 - **GitHub Issues:** [Report bugs](https://github.com/bmadcode/bmad-method/issues) and track fixes.
-- **Documentation:** [Browse the Agilai docs](https://github.com/bacoco/Agilai/tree/main/docs) for deeper architectural details.
+- **Documentation:** [Browse the aidesigner docs](https://github.com/bacoco/aidesigner/tree/main/docs) for deeper architectural details.
 - **YouTube:** [BMadCode Channel](https://www.youtube.com/@BMadCode) for walkthroughs and release updates.
 
 ## Conclusion
 
-Agilai’s Godot expansion accelerates your game delivery pipeline by pairing BMAD-METHOD™ best practices with domain expertise. Use it to orchestrate disciplined planning, keep execution aligned with your GDD, and maintain quality across every sprint—all while staying in natural conversation with specialized agents.
+aidesigner’s Godot expansion accelerates your game delivery pipeline by pairing BMAD-METHOD™ best practices with domain expertise. Use it to orchestrate disciplined planning, keep execution aligned with your GDD, and maintain quality across every sprint—all while staying in natural conversation with specialized agents.

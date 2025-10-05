@@ -66,8 +66,8 @@ const V6_TO_LEGACY_TOOL_MAP: Record<string, string> = {
   "decision.record": "record_decision",
   "conversation.append": "add_conversation_message",
   "project.summary": "get_project_summary",
-  "agents.list": "list_agilai_agents",
-  "workflow.phase.run": "execute_agilai_workflow",
+  "agents.list": "list_aidesigner_agents",
+  "workflow.phase.run": "execute_aidesigner_workflow",
   "codebase.scan": "scan_codebase",
   "documents.detect": "detect_existing_docs",
   "state.resume": "load_previous_state",
@@ -159,10 +159,10 @@ const TOOL_METADATA: Record<string, Partial<V6ToolDefinition>> = {
   get_project_summary: {
     metadata: { scope: "project" },
   },
-  list_agilai_agents: {
+  list_aidesigner_agents: {
     metadata: { scope: "agent", tags: ["discovery"] },
   },
-  execute_agilai_workflow: {
+  execute_aidesigner_workflow: {
     metadata: { scope: "workflow", phase: "explicit" },
   },
   scan_codebase: {

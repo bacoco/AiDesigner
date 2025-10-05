@@ -1,6 +1,6 @@
 # MCP Management Examples
 
-Real-world examples and workflows for the Agilai MCP management system.
+Real-world examples and workflows for the aidesigner MCP management system.
 
 ## Table of Contents
 
@@ -18,8 +18,8 @@ Real-world examples and workflows for the Agilai MCP management system.
 Setting up MCP servers for a new React project:
 
 ```bash
-# Initialize project with Agilai
-npx agilai@latest start
+# Initialize project with aidesigner
+npx aidesigner@latest start
 
 # Browse available servers
 npm run mcp:browse
@@ -104,7 +104,7 @@ npm run mcp:doctor
 #
 # Configuration Files:
 #   ✓ .claude/mcp-config.json is valid
-#   ✓ mcp/agilai-config.json is valid
+#   ✓ mcp/aidesigner-config.json is valid
 #
 # Servers:
 #   ✓ filesystem - Responding (42ms)
@@ -170,20 +170,20 @@ npm run mcp:profile:list
 # ● prod (active)
 #   Production environment
 #   Inherits from: staging
-#   Configs: Claude ✓, Agilai ✓
+#   Configs: Claude ✓, aidesigner ✓
 #
 # ○ staging
 #   Staging environment
 #   Inherits from: dev
-#   Configs: Claude ✓, Agilai ✓
+#   Configs: Claude ✓, aidesigner ✓
 #
 # ○ dev
 #   Development environment
-#   Configs: Claude ✓, Agilai ✓
+#   Configs: Claude ✓, aidesigner ✓
 #
 # ○ default
 #   Default configuration
-#   Configs: Claude ✓, Agilai ✓
+#   Configs: Claude ✓, aidesigner ✓
 ```
 
 ### Example 5: Git Branch-Based Profile Switching
@@ -249,7 +249,7 @@ npm run mcp:secure
 #
 # Updating config files...
 #   ✓ .claude/mcp-config.json
-#   ✓ mcp/agilai-config.json
+#   ✓ mcp/aidesigner-config.json
 #
 # ✓ Migration complete! 3 credentials secured.
 
@@ -292,7 +292,7 @@ npm run mcp:audit
 #     Risk: AWS credentials not encrypted
 #     Fix: Run 'npm run mcp:secure'
 #
-# Agilai Configuration:
+# aidesigner Configuration:
 #   ✓ Secure
 #
 # Stored Credentials:
@@ -302,7 +302,7 @@ npm run mcp:audit
 # File Permissions:
 #   ⚠ Warning: Master key file has permissions 644
 #     Expected: 600
-#     Fix: chmod 600 ~/.agilai-invisible/secure/.master.key
+#     Fix: chmod 600 ~/.aidesigner-invisible/secure/.master.key
 #
 # Recommendations for 'prod' profile:
 #   🔒 Production should use secure credential storage
@@ -356,7 +356,7 @@ cat team-dev-config.json
 #       }
 #     }
 #   },
-#   "agilaiConfig": { ... }
+#   "aidesignerConfig": { ... }
 # }
 
 # Team member: Import the profile

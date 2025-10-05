@@ -17,7 +17,7 @@ class McpManager {
 
     // Backward compatibility - will be deprecated
     this.claudeConfigPath = path.join(this.rootDir, '.claude', 'mcp-config.json');
-    this.agilaiConfigPath = path.join(this.rootDir, 'mcp', 'agilai-config.json');
+    this.aidesignerConfigPath = path.join(this.rootDir, 'mcp', 'aidesigner-config.json');
     this.bmadConfigPath = path.join(this.rootDir, 'mcp', 'bmad-config.json'); // Legacy fallback
   }
 
@@ -37,19 +37,19 @@ class McpManager {
   }
 
   /**
-   * Load configuration from mcp/agilai-config.json (with profile support)
+   * Load configuration from mcp/aidesigner-config.json (with profile support)
    */
-  loadAgilaiConfig(profileName = null) {
+  loadaidesignerConfig(profileName = null) {
     const profile = profileName || this.getCurrentProfile();
-    return this.profiles.loadConfig('agilai', profile);
+    return this.profiles.loadConfig('aidesigner', profile);
   }
 
   /**
    * Legacy method for backward compatibility
-   * @deprecated Use loadAgilaiConfig() instead
+   * @deprecated Use loadaidesignerConfig() instead
    */
   loadBmadConfig(profileName = null) {
-    return this.loadAgilaiConfig(profileName);
+    return this.loadaidesignerConfig(profileName);
   }
 
   /**
@@ -61,19 +61,19 @@ class McpManager {
   }
 
   /**
-   * Save configuration to mcp/agilai-config.json (with profile support)
+   * Save configuration to mcp/aidesigner-config.json (with profile support)
    */
-  saveAgilaiConfig(config, profileName = null) {
+  saveaidesignerConfig(config, profileName = null) {
     const profile = profileName || this.getCurrentProfile();
-    this.profiles.saveConfig('agilai', config, profile);
+    this.profiles.saveConfig('aidesigner', config, profile);
   }
 
   /**
    * Legacy method for backward compatibility
-   * @deprecated Use saveAgilaiConfig() instead
+   * @deprecated Use saveaidesignerConfig() instead
    */
   saveBmadConfig(config, profileName = null) {
-    return this.saveAgilaiConfig(config, profileName);
+    return this.saveaidesignerConfig(config, profileName);
   }
 
   /**
@@ -91,7 +91,7 @@ class McpManager {
     console.log(chalk.bold('\n📡 MCP Servers Configuration\n'));
 
     const claudeConfig = this.loadClaudeConfig();
-    const agilaiConfig = this.loadAgilaiConfig();
+    const aidesignerConfig = this.loadaidesignerConfig();
 
     // Combine both configs for complete view
     const allServers = new Map();
@@ -101,18 +101,18 @@ class McpManager {
       allServers.set(name, { ...config, source: 'claude' });
     }
 
-    // Add Agilai config servers
-    for (const [name, config] of Object.entries(agilaiConfig.mcpServers || {})) {
+    // Add aidesigner config servers
+    for (const [name, config] of Object.entries(aidesignerConfig.mcpServers || {})) {
       if (allServers.has(name)) {
         allServers.get(name).source = 'both';
       } else {
-        allServers.set(name, { ...config, source: 'agilai' });
+        allServers.set(name, { ...config, source: 'aidesigner' });
       }
     }
 
     if (allServers.size === 0) {
       console.log(chalk.yellow('No MCP servers configured.'));
-      console.log(chalk.dim('Run `agilai mcp add` to configure your first server.\n'));
+      console.log(chalk.dim('Run `aidesigner mcp add` to configure your first server.\n'));
       return;
     }
 
@@ -214,7 +214,7 @@ class McpManager {
     console.log(chalk.bold('\n🏥 MCP Health Check\n'));
 
     const claudeConfig = this.loadClaudeConfig();
-    const agilaiConfig = this.loadAgilaiConfig();
+    const aidesignerConfig = this.loadaidesignerConfig();
 
     // Check if config files exist
     console.log(chalk.bold('Configuration Files:'));
@@ -222,7 +222,7 @@ class McpManager {
       `  ${fs.existsSync(this.claudeConfigPath) ? chalk.green('✓') : chalk.red('✗')} ${this.claudeConfigPath}`,
     );
     console.log(
-      `  ${fs.existsSync(this.agilaiConfigPath) ? chalk.green('✓') : chalk.red('✗')} ${this.agilaiConfigPath}`,
+      `  ${fs.existsSync(this.aidesignerConfigPath) ? chalk.green('✓') : chalk.red('✗')} ${this.aidesignerConfigPath}`,
     );
     console.log('');
 
@@ -231,7 +231,7 @@ class McpManager {
     for (const [name, config] of Object.entries(claudeConfig.mcpServers || {})) {
       allServers.set(name, config);
     }
-    for (const [name, config] of Object.entries(agilaiConfig.mcpServers || {})) {
+    for (const [name, config] of Object.entries(aidesignerConfig.mcpServers || {})) {
       if (!allServers.has(name)) {
         allServers.set(name, config);
       }
@@ -411,7 +411,7 @@ class McpManager {
         message: 'Which configuration to update?',
         choices: [
           { name: 'Claude Code (.claude/mcp-config.json)', value: 'claude' },
-          { name: 'Agilai (mcp/agilai-config.json)', value: 'agilai' },
+          { name: 'aidesigner (mcp/aidesigner-config.json)', value: 'aidesigner' },
           { name: 'Both', value: 'both' },
         ],
         default: 'claude',
@@ -438,15 +438,15 @@ class McpManager {
       console.log(chalk.green(`\n✓ Added ${answers.name} to .claude/mcp-config.json`));
     }
 
-    if (configAnswer.config === 'agilai' || configAnswer.config === 'both') {
-      const config = this.loadAgilaiConfig();
+    if (configAnswer.config === 'aidesigner' || configAnswer.config === 'both') {
+      const config = this.loadaidesignerConfig();
       config.mcpServers = config.mcpServers || {};
       config.mcpServers[answers.name] = serverConfig;
-      this.saveAgilaiConfig(config);
-      console.log(chalk.green(`✓ Added ${answers.name} to mcp/agilai-config.json`));
+      this.saveaidesignerConfig(config);
+      console.log(chalk.green(`✓ Added ${answers.name} to mcp/aidesigner-config.json`));
     }
 
-    console.log(chalk.dim('\nRun `agilai mcp doctor` to test the server.\n'));
+    console.log(chalk.dim('\nRun `aidesigner mcp doctor` to test the server.\n'));
   }
 
   /**
@@ -456,19 +456,19 @@ class McpManager {
     console.log(chalk.bold('\n➖ Remove MCP Server\n'));
 
     const claudeConfig = this.loadClaudeConfig();
-    const agilaiConfig = this.loadAgilaiConfig();
+    const aidesignerConfig = this.loadaidesignerConfig();
 
     const existsInClaude = claudeConfig.mcpServers?.[serverName];
-    const existsInAgilai = agilaiConfig.mcpServers?.[serverName];
+    const existsInaidesigner = aidesignerConfig.mcpServers?.[serverName];
 
-    if (!existsInClaude && !existsInAgilai) {
+    if (!existsInClaude && !existsInaidesigner) {
       console.log(chalk.red(`Server "${serverName}" not found in any configuration.`));
       return;
     }
 
     const locations = [];
     if (existsInClaude) locations.push('Claude Code');
-    if (existsInAgilai) locations.push('Agilai');
+    if (existsInaidesigner) locations.push('aidesigner');
 
     const answer = await inquirer.prompt([
       {
@@ -490,10 +490,10 @@ class McpManager {
       console.log(chalk.green(`\n✓ Removed ${serverName} from .claude/mcp-config.json`));
     }
 
-    if (existsInAgilai) {
-      delete agilaiConfig.mcpServers[serverName];
-      this.saveAgilaiConfig(agilaiConfig);
-      console.log(chalk.green(`✓ Removed ${serverName} from mcp/agilai-config.json`));
+    if (existsInaidesigner) {
+      delete aidesignerConfig.mcpServers[serverName];
+      this.saveaidesignerConfig(aidesignerConfig);
+      console.log(chalk.green(`✓ Removed ${serverName} from mcp/aidesigner-config.json`));
     }
 
     console.log('');
@@ -525,7 +525,7 @@ class McpManager {
         console.log(`  ${chalk.yellow('⚠')}  Requires: ${server.envVars.join(', ')}`);
       }
 
-      console.log(`  ${chalk.dim('Install:')} agilai mcp install ${server.id}`);
+      console.log(`  ${chalk.dim('Install:')} aidesigner mcp install ${server.id}`);
       console.log('');
     }
   }
@@ -541,7 +541,7 @@ class McpManager {
 
     if (!server) {
       console.log(chalk.red(`Server "${serverIdOrName}" not found in registry.`));
-      console.log(chalk.dim('Search available servers with: agilai mcp search <query>\n'));
+      console.log(chalk.dim('Search available servers with: aidesigner mcp search <query>\n'));
       return;
     }
 
@@ -599,7 +599,7 @@ class McpManager {
         message: 'Which configuration to update?',
         choices: [
           { name: 'Claude Code (.claude/mcp-config.json)', value: 'claude' },
-          { name: 'Agilai (mcp/agilai-config.json)', value: 'agilai' },
+          { name: 'aidesigner (mcp/aidesigner-config.json)', value: 'aidesigner' },
           { name: 'Both', value: 'both' },
         ],
         default: options.config || 'claude',
@@ -626,15 +626,15 @@ class McpManager {
       console.log(chalk.green(`\n✓ Added ${nameAnswer.name} to .claude/mcp-config.json`));
     }
 
-    if (configAnswer.config === 'agilai' || configAnswer.config === 'both') {
-      const config = this.loadAgilaiConfig();
+    if (configAnswer.config === 'aidesigner' || configAnswer.config === 'both') {
+      const config = this.loadaidesignerConfig();
       config.mcpServers = config.mcpServers || {};
       config.mcpServers[nameAnswer.name] = serverConfig;
-      this.saveAgilaiConfig(config);
-      console.log(chalk.green(`✓ Added ${nameAnswer.name} to mcp/agilai-config.json`));
+      this.saveaidesignerConfig(config);
+      console.log(chalk.green(`✓ Added ${nameAnswer.name} to mcp/aidesigner-config.json`));
     }
 
-    console.log(chalk.dim('\nRun `agilai mcp doctor` to test the server.\n'));
+    console.log(chalk.dim('\nRun `aidesigner mcp doctor` to test the server.\n'));
   }
 
   /**
@@ -648,7 +648,7 @@ class McpManager {
 
     if (suggestions.length === 0) {
       console.log(chalk.yellow('No specific suggestions based on your project.'));
-      console.log(chalk.dim('Browse available servers with: agilai mcp browse\n'));
+      console.log(chalk.dim('Browse available servers with: aidesigner mcp browse\n'));
       return;
     }
 
@@ -658,7 +658,7 @@ class McpManager {
       console.log(`${chalk.cyan('●')} ${chalk.bold(server.name)}`);
       console.log(`  ${chalk.dim('Reason:')} ${reason}`);
       console.log(`  ${server.description}`);
-      console.log(`  ${chalk.dim('Install:')} agilai mcp install ${server.id}`);
+      console.log(`  ${chalk.dim('Install:')} aidesigner mcp install ${server.id}`);
       console.log('');
     }
   }
@@ -693,7 +693,7 @@ class McpManager {
     }
 
     console.log(chalk.dim(`\n\nTotal: ${servers.length} server(s)`));
-    console.log(chalk.dim('Install with: agilai mcp install <server-id>\n'));
+    console.log(chalk.dim('Install with: aidesigner mcp install <server-id>\n'));
   }
 
   /**
@@ -706,13 +706,13 @@ class McpManager {
 
     const profile = this.getCurrentProfile();
     const claudeConfig = this.loadClaudeConfig();
-    const agilaiConfig = this.loadAgilaiConfig();
+    const aidesignerConfig = this.loadaidesignerConfig();
 
     // Audit first
     const auditClaude = this.security.auditConfig(claudeConfig);
-    const auditAgilai = this.security.auditConfig(agilaiConfig);
+    const auditaidesigner = this.security.auditConfig(aidesignerConfig);
 
-    const totalIssues = auditClaude.issues.length + auditAgilai.issues.length;
+    const totalIssues = auditClaude.issues.length + auditaidesigner.issues.length;
 
     if (totalIssues === 0) {
       console.log(chalk.green('✓ No security issues found. Configuration is already secure.\n'));
@@ -747,13 +747,13 @@ class McpManager {
       );
     }
 
-    // Migrate Agilai config
-    if (auditAgilai.issues.length > 0) {
-      const migrated = await this.security.migrateToSecure(agilaiConfig, profile);
-      this.saveAgilaiConfig(migrated.config);
+    // Migrate aidesigner config
+    if (auditaidesigner.issues.length > 0) {
+      const migrated = await this.security.migrateToSecure(aidesignerConfig, profile);
+      this.saveaidesignerConfig(migrated.config);
       console.log(
         chalk.green(
-          `✓ Migrated ${migrated.count} credential(s) from Agilai config to secure storage`,
+          `✓ Migrated ${migrated.count} credential(s) from aidesigner config to secure storage`,
         ),
       );
     }
@@ -769,10 +769,10 @@ class McpManager {
 
     const profile = this.getCurrentProfile();
     const claudeConfig = this.loadClaudeConfig();
-    const agilaiConfig = this.loadAgilaiConfig();
+    const aidesignerConfig = this.loadaidesignerConfig();
 
     const auditClaude = this.security.auditConfig(claudeConfig);
-    const auditAgilai = this.security.auditConfig(agilaiConfig);
+    const auditaidesigner = this.security.auditConfig(aidesignerConfig);
 
     console.log(chalk.bold('Claude Configuration:'));
     if (auditClaude.secure) {
@@ -785,12 +785,12 @@ class McpManager {
     }
 
     console.log('');
-    console.log(chalk.bold('Agilai Configuration:'));
-    if (auditAgilai.secure) {
+    console.log(chalk.bold('aidesigner Configuration:'));
+    if (auditaidesigner.secure) {
       console.log(chalk.green('  ✓ Secure'));
     } else {
-      console.log(chalk.red(`  ✗ ${auditAgilai.issues.length} issue(s) found`));
-      for (const issue of auditAgilai.issues) {
+      console.log(chalk.red(`  ✗ ${auditaidesigner.issues.length} issue(s) found`));
+      for (const issue of auditaidesigner.issues) {
         console.log(`    - ${issue.message}`);
       }
     }
@@ -871,7 +871,7 @@ class McpManager {
 
       const status = [];
       if (profile.hasClaudeConfig) status.push('Claude');
-      if (profile.hasAgilaiConfig) status.push('Agilai');
+      if (profile.hasaidesignerConfig) status.push('aidesigner');
 
       if (status.length > 0) {
         console.log(`  ${chalk.dim('Configs:')} ${status.join(', ')}`);

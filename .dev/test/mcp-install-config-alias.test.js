@@ -11,7 +11,7 @@ const McpManager = require('../tools/mcp-manager');
 const inquirer = require('inquirer');
 
 function createTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'agilai-mcp-install-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'aidesigner-mcp-install-'));
 }
 
 describe('mcp install config aliases', () => {
@@ -26,7 +26,7 @@ describe('mcp install config aliases', () => {
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
-  test('normalizes --config bmad to agilai output path', async () => {
+  test('normalizes --config bmad to aidesigner output path', async () => {
     const manager = new McpManager({ rootDir: tempDir });
 
     manager.registry.getServer = jest.fn().mockResolvedValue({
@@ -55,14 +55,14 @@ describe('mcp install config aliases', () => {
       config: normalizeConfigTarget('bmad'),
     });
 
-    const agilaiConfigPath = path.join(tempDir, 'mcp', 'agilai-config.json');
-    expect(fs.existsSync(agilaiConfigPath)).toBe(true);
+    const aidesignerConfigPath = path.join(tempDir, 'mcp', 'aidesigner-config.json');
+    expect(fs.existsSync(aidesignerConfigPath)).toBe(true);
 
     // Verify that bmad-config.json is NOT created (ensuring proper alias resolution)
     const bmadConfigPath = path.join(tempDir, 'mcp', 'bmad-config.json');
     expect(fs.existsSync(bmadConfigPath)).toBe(false);
 
-    const config = JSON.parse(fs.readFileSync(agilaiConfigPath, 'utf8'));
+    const config = JSON.parse(fs.readFileSync(aidesignerConfigPath, 'utf8'));
     expect(config.mcpServers).toHaveProperty('alias-test');
 
     // Verify the structure of the saved config matches expectations

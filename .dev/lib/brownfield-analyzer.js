@@ -1,6 +1,6 @@
 /**
  * Brownfield Analyzer
- * Scans existing codebases, detects tech stack, finds existing Agilai docs
+ * Scans existing codebases, detects tech stack, finds existing aidesigner docs
  */
 
 const fs = require('fs-extra');
@@ -11,7 +11,7 @@ class BrownfieldAnalyzer {
   constructor(projectPath = process.cwd()) {
     this.projectPath = projectPath;
     this.docsPath = path.join(projectPath, 'docs');
-    this.agilaiStatePath = path.join(projectPath, '.agilai');
+    this.aidesignerStatePath = path.join(projectPath, '.aidesigner');
   }
 
   /**
@@ -315,10 +315,10 @@ class BrownfieldAnalyzer {
   }
 
   /**
-   * Detect if Agilai state exists (previous session)
+   * Detect if aidesigner state exists (previous session)
    */
   async detectPreviousState() {
-    const stateFile = path.join(this.agilaiStatePath, 'state.json');
+    const stateFile = path.join(this.aidesignerStatePath, 'state.json');
 
     if (await fs.pathExists(stateFile)) {
       const state = await fs.readJson(stateFile);
@@ -343,7 +343,7 @@ class BrownfieldAnalyzer {
   }
 
   /**
-   * Detect existing Agilai documentation
+   * Detect existing aidesigner documentation
    */
   async detectExistingDocs() {
     const docs = {
@@ -517,9 +517,9 @@ class BrownfieldAnalyzer {
       summary += `\n`;
     }
 
-    // Previous Agilai state
+    // Previous aidesigner state
     if (previousState.exists) {
-      summary += `## Previous Agilai Session Found\n\n`;
+      summary += `## Previous aidesigner Session Found\n\n`;
       summary += `- **Last Phase**: ${previousState.lastPhase}\n`;
       summary += `- **Last Updated**: ${previousState.lastUpdated}\n`;
       summary += `\n**Note**: You can resume from this point or start fresh.\n\n`;
@@ -534,7 +534,7 @@ class BrownfieldAnalyzer {
       existingDocs.stories.length > 0;
 
     if (hasExistingDocs) {
-      summary += `## Existing Agilai Documentation\n\n`;
+      summary += `## Existing aidesigner Documentation\n\n`;
       if (existingDocs.brief) summary += `- ✅ Project Brief (docs/brief.md)\n`;
       if (existingDocs.prd) summary += `- ✅ Product Requirements (docs/prd.md)\n`;
       if (existingDocs.architecture) summary += `- ✅ Architecture (docs/architecture.md)\n`;

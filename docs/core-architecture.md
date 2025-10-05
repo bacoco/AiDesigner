@@ -12,13 +12,13 @@ The systems core module facilitates a full development lifecycle tailored to the
 
 ## 2. System Architecture Diagram
 
-The entire BMad-Method ecosystem is designed around the installed `agilai-core` directory, which acts as the brain of the operation. The `tools` directory provides the means to process and package this brain for different environments.
+The entire BMad-Method ecosystem is designed around the installed `aidesigner-core` directory, which acts as the brain of the operation. The `tools` directory provides the means to process and package this brain for different environments.
 
 ```mermaid
 graph TD
     subgraph BMad Method Project
         subgraph Core Framework
-            A["agilai-core"]
+            A["aidesigner-core"]
             A --> B["agents"]
             A --> C["agent-teams"]
             A --> D["workflows"]
@@ -55,15 +55,15 @@ graph TD
     J --> L
 
     style A fill:#1a73e8,color:#fff
-    style I fill:#f9abagilaiagilai,color:#fff
+    style I fill:#f9abaidesigneraidesigner,color:#fff
     style J fill:#34a853,color:#fff
 ```
 
 ## 3. Core Components
 
-The `agilai-core` directory contains all the definitions and resources that give the agents their capabilities.
+The `aidesigner-core` directory contains all the definitions and resources that give the agents their capabilities.
 
-### 3.1. Agents (`agilai-core/agents/`)
+### 3.1. Agents (`aidesigner-core/agents/`)
 
 - **Purpose**: These are the foundational building blocks of the system. Each markdown file (e.g., `bmad-master.md`, `pm.md`, `dev.md`) defines the persona, capabilities, and dependencies of a single AI agent.
 - **Structure**: An agent file contains a YAML header that specifies its role, persona, dependencies, and startup instructions. These dependencies are lists of tasks, templates, checklists, and data files that the agent is allowed to use.
@@ -71,12 +71,12 @@ The `agilai-core` directory contains all the definitions and resources that give
 - **Document Integration**: Agents can reference and load documents from the project's `docs/` folder as part of tasks, workflows, or startup sequences. Users can also drag documents directly into chat interfaces to provide additional context.
 - **Example**: The `bmad-master` agent lists its dependencies, which tells the build tool which files to include in a web bundle and informs the agent of its own capabilities.
 
-### 3.2. Agent Teams (`agilai-core/agent-teams/`)
+### 3.2. Agent Teams (`aidesigner-core/agent-teams/`)
 
 - **Purpose**: Team files (e.g., `team-all.yaml`) define collections of agents and workflows that are bundled together for a specific purpose, like "full-stack development" or "backend-only". This creates a larger, pre-packaged context for web UI environments.
 - **Structure**: A team file lists the agents to include. It can use wildcards, such as `"*"` to include all agents. This allows for the creation of comprehensive bundles like `team-all`.
 
-### 3.3. Workflows (`agilai-core/workflows/`)
+### 3.3. Workflows (`aidesigner-core/workflows/`)
 
 - **Purpose**: Workflows are YAML files (e.g., `greenfield-fullstack.yaml`) that define a prescribed sequence of steps and agent interactions for a specific project type. They act as a strategic guide for the user and the `bmad-orchestrator` agent.
 - **Structure**: A workflow defines sequences for both complex and simple projects, lists the agents involved at each step, the artifacts they create, and the conditions for moving from one step to the next. It often includes a Mermaid diagram for visualization.
@@ -95,17 +95,17 @@ A key architectural principle of BMad is that templates are self-contained and i
 
 The BMad framework employs a sophisticated template processing system orchestrated by three key components:
 
-- **`template-format.md`** (`agilai-core/utils/`): Defines the foundational markup language used throughout all BMad templates. This specification establishes syntax rules for variable substitution (`{{placeholders}}`), AI-only processing directives (`[[LLM: instructions]]`), and conditional logic blocks. Templates follow this format to ensure consistent processing across the system.
+- **`template-format.md`** (`aidesigner-core/utils/`): Defines the foundational markup language used throughout all BMad templates. This specification establishes syntax rules for variable substitution (`{{placeholders}}`), AI-only processing directives (`[[LLM: instructions]]`), and conditional logic blocks. Templates follow this format to ensure consistent processing across the system.
 
-- **`create-doc.md`** (`agilai-core/tasks/`): Acts as the orchestration engine that manages the entire document generation workflow. This task coordinates template selection, manages user interaction modes (incremental vs. rapid generation), enforces template-format processing rules, and handles validation. It serves as the primary interface between users and the template system.
+- **`create-doc.md`** (`aidesigner-core/tasks/`): Acts as the orchestration engine that manages the entire document generation workflow. This task coordinates template selection, manages user interaction modes (incremental vs. rapid generation), enforces template-format processing rules, and handles validation. It serves as the primary interface between users and the template system.
 
-- **`advanced-elicitation.md`** (`agilai-core/tasks/`): Provides an interactive refinement layer that can be embedded within templates through `[[LLM: instructions]]` blocks. This component offers 1agilai structured brainstorming actions, section-by-section review capabilities, and iterative improvement workflows to enhance content quality.
+- **`advanced-elicitation.md`** (`aidesigner-core/tasks/`): Provides an interactive refinement layer that can be embedded within templates through `[[LLM: instructions]]` blocks. This component offers 1aidesigner structured brainstorming actions, section-by-section review capabilities, and iterative improvement workflows to enhance content quality.
 
 The system maintains a clean separation of concerns: template markup is processed internally by AI agents but never exposed to users, while providing sophisticated AI processing capabilities through embedded intelligence within the templates themselves.
 
 #### 3.4.2. Technical Preferences System
 
-BMad includes a personalization layer through the `technical-preferences.md` file in `agilai-core/data/`. This file serves as a persistent technical profile that influences agent behavior across all projects.
+BMad includes a personalization layer through the `technical-preferences.md` file in `aidesigner-core/data/`. This file serves as a persistent technical profile that influences agent behavior across all projects.
 
 **Purpose and Benefits:**
 
@@ -142,7 +142,7 @@ The framework is designed for two primary environments: local IDEs and web-based
 
 ### 4.2. Environment-Specific Usage
 
-- **For IDEs**: Users interact with the agents directly via their markdown files in `agilai-core/agents/`. The IDE integration (for Cursor, Claude Code, etc.) knows how to call these agents.
+- **For IDEs**: Users interact with the agents directly via their markdown files in `aidesigner-core/agents/`. The IDE integration (for Cursor, Claude Code, etc.) knows how to call these agents.
 - **For Web UIs**: Users upload a pre-built bundle from `dist`. This single file provides the AI with the context of the entire team and all their required tools and knowledge.
 
 ## 5. BMad Workflows
@@ -170,7 +170,7 @@ graph TD
     M --> N["Ready for SM/Dev Cycle"]
 
     style I fill:#34a853,color:#fff
-    style G fill:#f9abagilaiagilai,color:#fff
+    style G fill:#f9abaidesigneraidesigner,color:#fff
     style L fill:#1a73e8,color:#fff
     style N fill:#34a853,color:#fff
 ```
@@ -213,7 +213,7 @@ graph TD
     M --> E
 
     style M fill:#34a853,color:#fff
-    style K fill:#f9abagilaiagilai,color:#fff
+    style K fill:#f9abaidesigneraidesigner,color:#fff
 ```
 
 This cycle continues, with the Scrum Master, Developer, and optionally QA agents working together. The QA agent provides senior developer review capabilities through the `review-story` task, offering code refactoring, quality improvements, and knowledge transfer. This ensures high code quality while maintaining development velocity.
@@ -224,19 +224,19 @@ The upstream V6 alpha introduces a structured "toolset" registry and wraps each 
 
 ### 6.1. Summary of API Differences
 
-- **Discovery surface** – V6 advertises tools under semantic identifiers such as `project.context` and expects the registry to include metadata, titles, and versioning fields rather than the flat MCP list our server currently returns.【F:src/mcp-server/v6-tool-adapter.ts†L47-L12agilai】【F:src/mcp-server/v6-tool-adapter.ts†L166-L2agilai4】
-- **Invocation envelope** – Requests arrive as `{ tool, version, payload, context }` instead of the MCP-native `{ name, arguments }` tuple. The adapter must lift context hints (phase, lane, project ID) into the argument bag before delegating to the legacy handler.【F:src/mcp-server/v6-tool-adapter.ts†L9-L83】【F:src/mcp-server/v6-tool-adapter.ts†L122-L15agilai】
+- **Discovery surface** – V6 advertises tools under semantic identifiers such as `project.context` and expects the registry to include metadata, titles, and versioning fields rather than the flat MCP list our server currently returns.【F:src/mcp-server/v6-tool-adapter.ts†L47-L12aidesigner】【F:src/mcp-server/v6-tool-adapter.ts†L166-L2aidesigner4】
+- **Invocation envelope** – Requests arrive as `{ tool, version, payload, context }` instead of the MCP-native `{ name, arguments }` tuple. The adapter must lift context hints (phase, lane, project ID) into the argument bag before delegating to the legacy handler.【F:src/mcp-server/v6-tool-adapter.ts†L9-L83】【F:src/mcp-server/v6-tool-adapter.ts†L122-L15aidesigner】
 - **Response contract** – V6 expects `{ tool, data, error? }`, so we need to wrap MCP responses (or errors) accordingly before handing them back to the V6 orchestrator.【F:src/mcp-server/v6-tool-adapter.ts†L31-L45】【F:src/mcp-server/v6-tool-adapter.ts†L152-L164】
 
 ### 6.2. Adapter Strategy
 
 We introduced `src/mcp-server/v6-tool-adapter.ts` to map between the two worlds. The module provides three core helpers:
 
-1. `mapV6InvocationToLegacy` – Converts the V6 envelope into the legacy tool name plus normalized arguments, reusing upstream routing hints for lane/phase selection.【F:src/mcp-server/v6-tool-adapter.ts†L122-L15agilai】
+1. `mapV6InvocationToLegacy` – Converts the V6 envelope into the legacy tool name plus normalized arguments, reusing upstream routing hints for lane/phase selection.【F:src/mcp-server/v6-tool-adapter.ts†L122-L15aidesigner】
 2. `mapLegacyResultToV6` – Packages MCP handler results or thrown errors into the V6 response format, preserving the tool identifier mapping for observability.【F:src/mcp-server/v6-tool-adapter.ts†L152-L164】
-3. `projectLegacyToolsToV6Catalog` – Re-exports the MCP tool catalog with V6-friendly identifiers, titles, and metadata so that discovery endpoints can serve both runtimes without duplicating schemas.【F:src/mcp-server/v6-tool-adapter.ts†L166-L2agilai4】
+3. `projectLegacyToolsToV6Catalog` – Re-exports the MCP tool catalog with V6-friendly identifiers, titles, and metadata so that discovery endpoints can serve both runtimes without duplicating schemas.【F:src/mcp-server/v6-tool-adapter.ts†L166-L2aidesigner4】
 
-In addition, `describeToolBridging()` surfaces the exact legacy↔︎V6 mapping for diagnostics and documentation so that downstream teams can confirm which tool identifiers are currently supported.【F:src/mcp-server/v6-tool-adapter.ts†L2agilai6-L21agilai】
+In addition, `describeToolBridging()` surfaces the exact legacy↔︎V6 mapping for diagnostics and documentation so that downstream teams can confirm which tool identifiers are currently supported.【F:src/mcp-server/v6-tool-adapter.ts†L2aidesigner6-L21aidesigner】
 
 ### 6.3. Integration Roadmap
 

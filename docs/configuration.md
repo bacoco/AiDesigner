@@ -1,8 +1,8 @@
 # Configuration Guide
 
-Complete configuration reference for Agilai.
+Complete configuration reference for aidesigner.
 
-> **Legacy aliases**: Existing `npm run bmad*` scripts continue to work, but new projects should prefer the `agilai` commands documented below.
+> **Legacy aliases**: Existing `npm run bmad*` scripts continue to work, but new projects should prefer the `aidesigner` commands documented below.
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@ Complete configuration reference for Agilai.
 
 ## Environment Variables
 
-Agilai can be configured via environment variables in a `.env` file at your project root:
+aidesigner can be configured via environment variables in a `.env` file at your project root:
 
 ```bash
 # .env
@@ -24,14 +24,14 @@ Agilai can be configured via environment variables in a `.env` file at your proj
 LLM_PROVIDER=glm
 
 # API Keys
-AGILAI_GLM_API_KEY=sk-...       # For GLM (preferred)
+aidesigner_GLM_API_KEY=sk-...       # For GLM (preferred)
 ANTHROPIC_API_KEY=sk-ant-...    # For Claude
 
 # Optional: Override model
 LLM_MODEL=glm-4-plus            # Custom GLM model
 ```
 
-Legacy names (`BMAD_*`, `GLM_*`, `ZHIPUAI_*`) continue to work, but new projects should prefer the `AGILAI_*` convention.
+Legacy names (`BMAD_*`, `GLM_*`, `ZHIPUAI_*`) continue to work, but new projects should prefer the `aidesigner_*` convention.
 
 ## LLM Provider Configuration
 
@@ -43,10 +43,10 @@ Enable GLM (ZhipuAI) for the orchestrator:
 
 ```bash
 # Use GLM via flag
-npx agilai start --glm
+npx aidesigner start --glm
 
 # Explicit provider specification
-npx agilai start --llm-provider=glm
+npx aidesigner start --llm-provider=glm
 ```
 
 #### Environment Variables
@@ -60,7 +60,7 @@ Create a `.env` file:
 LLM_PROVIDER=glm
 
 # API Key (choose one format)
-AGILAI_GLM_API_KEY=sk-...       # Preferred
+aidesigner_GLM_API_KEY=sk-...       # Preferred
 GLM_API_KEY=sk-...               # Legacy alias
 ZHIPUAI_API_KEY=sk-...          # Legacy alias (Codex CLI)
 
@@ -68,30 +68,30 @@ ZHIPUAI_API_KEY=sk-...          # Legacy alias (Codex CLI)
 LLM_MODEL=glm-4-plus            # Default: glm-4
 
 # Optional: Custom endpoint
-AGILAI_GLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4/chat/completions
+aidesigner_GLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4/chat/completions
 ```
 
 #### Variable Priority
 
 When GLM mode is active, variables are resolved in this order:
 
-| Variable                | Priority | Description                                   |
-| ----------------------- | -------- | --------------------------------------------- |
-| `AGILAI_GLM_BASE_URL`   | 1        | GLM API base URL (preferred)                  |
-| `BMAD_GLM_BASE_URL`     | 2        | GLM API base URL (legacy support)             |
-| `GLM_BASE_URL`          | 3        | GLM API base URL (standard alias)             |
-| `ANTHROPIC_BASE_URL`    | 4        | Anthropic base URL (fallback)                 |
-| `AGILAI_GLM_AUTH_TOKEN` | 1        | GLM authentication token (preferred)          |
-| `BMAD_GLM_AUTH_TOKEN`   | 2        | GLM authentication token (legacy support)     |
-| `GLM_AUTH_TOKEN`        | 3        | GLM authentication token (standard alias)     |
-| `ANTHROPIC_AUTH_TOKEN`  | 4        | Anthropic auth token (fallback)               |
-| `AGILAI_GLM_API_KEY`    | 1        | GLM API key (preferred)                       |
-| `BMAD_GLM_API_KEY`      | 2        | GLM API key (legacy support)                  |
-| `GLM_API_KEY`           | 3        | GLM API key (standard alias)                  |
-| `ZHIPUAI_API_KEY`       | 4        | GLM API key (legacy Codex alias)              |
-| `ANTHROPIC_API_KEY`     | 5        | Anthropic API key (fallback when nothing set) |
+| Variable                    | Priority | Description                                   |
+| --------------------------- | -------- | --------------------------------------------- |
+| `aidesigner_GLM_BASE_URL`   | 1        | GLM API base URL (preferred)                  |
+| `BMAD_GLM_BASE_URL`         | 2        | GLM API base URL (legacy support)             |
+| `GLM_BASE_URL`              | 3        | GLM API base URL (standard alias)             |
+| `ANTHROPIC_BASE_URL`        | 4        | Anthropic base URL (fallback)                 |
+| `aidesigner_GLM_AUTH_TOKEN` | 1        | GLM authentication token (preferred)          |
+| `BMAD_GLM_AUTH_TOKEN`       | 2        | GLM authentication token (legacy support)     |
+| `GLM_AUTH_TOKEN`            | 3        | GLM authentication token (standard alias)     |
+| `ANTHROPIC_AUTH_TOKEN`      | 4        | Anthropic auth token (fallback)               |
+| `aidesigner_GLM_API_KEY`    | 1        | GLM API key (preferred)                       |
+| `BMAD_GLM_API_KEY`          | 2        | GLM API key (legacy support)                  |
+| `GLM_API_KEY`               | 3        | GLM API key (standard alias)                  |
+| `ZHIPUAI_API_KEY`           | 4        | GLM API key (legacy Codex alias)              |
+| `ANTHROPIC_API_KEY`         | 5        | Anthropic API key (fallback when nothing set) |
 
-**Note:** At least one of `*_BASE_URL` or `*_API_KEY` must be set when using GLM mode. Legacy `BMAD_*`, `GLM_*`, and `ZHIPUAI_*` values continue to work, but `AGILAI_*` is now the canonical naming.
+**Note:** At least one of `*_BASE_URL` or `*_API_KEY` must be set when using GLM mode. Legacy `BMAD_*`, `GLM_*`, and `ZHIPUAI_*` values continue to work, but `aidesigner_*` is now the canonical naming.
 
 #### Custom Endpoints
 
@@ -99,9 +99,9 @@ GLM base URLs can include schemes, ports, and paths:
 
 ```bash
 # Full custom endpoint (preferred)
-AGILAI_GLM_BASE_URL=https://example.com:7443/custom/base
+aidesigner_GLM_BASE_URL=https://example.com:7443/custom/base
 # Legacy fallback names such as BMAD_GLM_BASE_URL or GLM_BASE_URL remain supported.
-# Agilai appends: /api/paas/v4/chat/completions
+# aidesigner appends: /api/paas/v4/chat/completions
 
 # Default (if no base URL provided)
 # https://open.bigmodel.cn/api/paas/v4/chat/completions
@@ -111,21 +111,21 @@ AGILAI_GLM_BASE_URL=https://example.com:7443/custom/base
 
 ```bash
 # Set GLM provider and credentials (preferred names)
-export AGILAI_ASSISTANT_PROVIDER=glm
-export AGILAI_GLM_BASE_URL=https://your-glm-endpoint.com
-export AGILAI_GLM_API_KEY=your-api-key
+export aidesigner_ASSISTANT_PROVIDER=glm
+export aidesigner_GLM_BASE_URL=https://your-glm-endpoint.com
+export aidesigner_GLM_API_KEY=your-api-key
 # Legacy BMAD_* and GLM_* variables are still honored for backward compatibility.
 
-# Start Agilai with GLM routing
+# Start aidesigner with GLM routing
 npm run bmad:claude
 # Output: 🌐 GLM mode active: routing Claude CLI through configured GLM endpoint.
 ```
 
 GLM routing works with all three assistant entry points:
 
-- `npx agilai start --assistant=claude --glm` - Routes Claude CLI through GLM
-- `npx agilai start --assistant=codex --glm` - Routes Codex CLI through GLM
-- `npx agilai start --assistant=opencode --glm` - Routes OpenCode CLI through GLM
+- `npx aidesigner start --assistant=claude --glm` - Routes Claude CLI through GLM
+- `npx aidesigner start --assistant=codex --glm` - Routes Codex CLI through GLM
+- `npx aidesigner start --assistant=opencode --glm` - Routes OpenCode CLI through GLM
 
 ### Anthropic Provider (Default)
 
@@ -135,11 +135,11 @@ Using Anthropic's Claude (default behavior):
 
 ```bash
 # Use Anthropic (default)
-npx agilai start
-npx agilai start --anthropic
+npx aidesigner start
+npx aidesigner start --anthropic
 
 # Explicit provider
-npx agilai start --llm-provider=claude
+npx aidesigner start --llm-provider=claude
 ```
 
 #### Environment Variables
@@ -163,14 +163,14 @@ Switch providers anytime:
 
 ```bash
 # Start with GLM
-npx agilai start --glm
+npx aidesigner start --glm
 
 # Later, switch to Anthropic
-npx agilai start --anthropic
+npx aidesigner start --anthropic
 
 # Or change .env file
 echo "LLM_PROVIDER=claude" >> .env
-npx agilai start
+npx aidesigner start
 ```
 
 **Priority order:**
@@ -189,9 +189,9 @@ npx agilai start
 
 ```json
 {
-  "agilai": {
+  "aidesigner": {
     "command": "npx",
-    "args": ["agilai-codex"],
+    "args": ["aidesigner-codex"],
     "disabled": false
   },
   "chrome-devtools": {
@@ -213,9 +213,9 @@ npx agilai start
 
 ```toml
 [[mcp]]
-id = "agilai"
+id = "aidesigner"
 command = "npx"
-args = ["agilai-codex"]
+args = ["aidesigner-codex"]
 auto_start = true
 
 [[mcp]]
@@ -239,9 +239,9 @@ Add environment variables to MCP server configuration:
 
 ```json
 {
-  "agilai": {
+  "aidesigner": {
     "command": "npx",
-    "args": ["agilai-codex"],
+    "args": ["aidesigner-codex"],
     "env": {
       "CODEX_APPROVAL_MODE": "true",
       "CODEX_LOG_CONTEXT": "{\"environment\":\"production\"}"
@@ -254,9 +254,9 @@ Add environment variables to MCP server configuration:
 
 ```toml
 [[mcp]]
-id = "agilai"
+id = "aidesigner"
 command = "npx"
-args = ["agilai-codex"]
+args = ["aidesigner-codex"]
 auto_start = true
 
   [mcp.env]
@@ -285,7 +285,7 @@ CODEX_APPROVED_OPERATIONS=generate_deliverable:prd,execute_quick_lane
 - `generate_deliverable:story` - Generate user stories
 - `execute_quick_lane` - Run Quick Lane workflow
 - `execute_complex_lane` - Run Complex Lane workflow
-- `transition_phase` - Move to next Agilai phase
+- `transition_phase` - Move to next aidesigner phase
 
 ### Model Overrides
 
@@ -308,9 +308,9 @@ CODEX_GOVERNANCE_MODEL=claude-3-5-sonnet-20241022
 
 ```toml
 [[mcp]]
-id = "agilai-codex"
+id = "aidesigner-codex"
 command = "npx"
-args = ["agilai-codex"]
+args = ["aidesigner-codex"]
 autostart = true
 
   [mcp.env]
@@ -338,14 +338,14 @@ See [`codex-config.toml.example`](../.dev/config/codex-config.toml.example) for 
 
 ### Structured Logging
 
-Agilai emits structured JSON logs to `stderr`:
+aidesigner emits structured JSON logs to `stderr`:
 
 ```json
 {
   "ts": "2024-07-16T12:34:56.789Z",
   "level": "info",
   "msg": "lane_selection_completed",
-  "service": "agilai-codex",
+  "service": "aidesigner-codex",
   "component": "mcp-orchestrator",
   "operation": "execute_workflow",
   "lane": "quick",
@@ -418,7 +418,7 @@ Enable development features:
 
 ```bash
 # Enable debug mode
-DEBUG=agilai:*
+DEBUG=aidesigner:*
 
 # Verbose logging
 VERBOSE=true
@@ -448,10 +448,10 @@ Configure project state persistence:
 
 ```bash
 # State file location (relative to project root)
-AGILAI_STATE_DIR=.agilai
+aidesigner_STATE_DIR=.aidesigner
 
 # Conversation log location
-AGILAI_LOG_FILE=.agilai/conversation.log
+aidesigner_LOG_FILE=.aidesigner/conversation.log
 
 # Auto-save state after each interaction
 AUTO_SAVE_STATE=true
@@ -481,7 +481,7 @@ Validate your configuration:
 npm run mcp:doctor
 
 # Test LLM provider connection
-npx agilai start --test
+npx aidesigner start --test
 
 # Audit security settings
 npm run mcp:audit
@@ -506,7 +506,7 @@ CODEX_LOG_CONTEXT='{"environment":"local"}'
 ```bash
 # .env
 LLM_PROVIDER=glm
-AGILAI_GLM_API_KEY=sk-...
+aidesigner_GLM_API_KEY=sk-...
 LOG_LEVEL=info
 AUTO_APPROVE=false
 CODEX_APPROVAL_MODE=true
@@ -519,7 +519,7 @@ CODEX_METRICS_STDOUT=true
 ```bash
 # .env
 LLM_PROVIDER=glm
-AGILAI_GLM_API_KEY=${CI_GLM_API_KEY}
+aidesigner_GLM_API_KEY=${CI_GLM_API_KEY}
 LOG_LEVEL=warn
 AUTO_APPROVE=true
 CODEX_APPROVAL_MODE=false
@@ -541,7 +541,7 @@ If environment variables aren't being read:
 
 If using the wrong provider:
 
-1. Check CLI flag: `npx agilai start --glm`
+1. Check CLI flag: `npx aidesigner start --glm`
 2. Verify `.env` contents: `cat .env | grep LLM_PROVIDER`
 3. Check priority: CLI flags override environment variables
 

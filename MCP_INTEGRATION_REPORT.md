@@ -1,14 +1,14 @@
-# Agilai MCP Integration Report
+# aidesigner MCP Integration Report
 
 **Date:** 2025-10-04
-**Project:** Agilai (formerly BMAD-invisible)
-**Objective:** Integrate Agilai orchestrator as MCP server in Claude Code CLI
+**Project:** aidesigner (formerly BMAD-invisible)
+**Objective:** Integrate aidesigner orchestrator as MCP server in Claude Code CLI
 
 ---
 
 ## Executive Summary
 
-Successfully published Agilai with MCP server integration. However, the MCP server fails to connect in Claude Code CLI due to ongoing path resolution issues. Published versions: **1.3.17 → 1.3.21** with multiple path resolution attempts.
+Successfully published aidesigner with MCP server integration. However, the MCP server fails to connect in Claude Code CLI due to ongoing path resolution issues. Published versions: **1.3.17 → 1.3.21** with multiple path resolution attempts.
 
 **Current Status:** ❌ **Failed** - MCP server not connecting in Claude Code CLI despite correct configuration.
 
@@ -16,7 +16,7 @@ Successfully published Agilai with MCP server integration. However, the MCP serv
 
 ## Problem Statement
 
-Agilai package includes an MCP server that should expose orchestration tools to Claude Code CLI. The server code exists and builds correctly, but fails to connect when Claude Code attempts to launch it.
+aidesigner package includes an MCP server that should expose orchestration tools to Claude Code CLI. The server code exists and builds correctly, but fails to connect when Claude Code attempts to launch it.
 
 ---
 
@@ -28,7 +28,7 @@ Agilai package includes an MCP server that should expose orchestration tools to 
 - **TypeScript Build:** Compiles to `dist/mcp/mcp/server.js`
 - **Package Structure:**
   ```
-  agilai/
+  aidesigner/
   ├── .dev/
   │   └── dist/mcp/         # ❌ NOT published (excluded by .npmignore)
   ├── dist/
@@ -40,7 +40,7 @@ Agilai package includes an MCP server that should expose orchestration tools to 
   │       │       └── runtime.js  # Core server logic
   │       └── lib/          # Supporting libraries
   └── bin/
-      └── agilai           # Installer script
+      └── aidesigner           # Installer script
   ```
 
 ### MCP Server Entry Point
@@ -67,7 +67,7 @@ const runtime_js_1 = require('../src/mcp-server/runtime.js');
 ```json
 {
   "command": "node",
-  "args": ["-e", "require('agilai/dist/mcp/mcp/server.js')"]
+  "args": ["-e", "require('aidesigner/dist/mcp/mcp/server.js')"]
 }
 ```
 
@@ -80,7 +80,7 @@ const runtime_js_1 = require('../src/mcp-server/runtime.js');
   - `@jpisnice/shadcn-ui-mcp-server` (instead of `@modelcontextprotocol/server-shadcn`)
   - `@modelcontextprotocol/server-github` (instead of `gitmcp`)
 - Added interactive GitHub token prompt
-  **Result:** ✅ Optional servers fixed, but Agilai server still failing
+  **Result:** ✅ Optional servers fixed, but aidesigner server still failing
 
 ### Version 1.3.19 - Server Rename
 
@@ -89,10 +89,10 @@ const runtime_js_1 = require('../src/mcp-server/runtime.js');
 ```json
 {
   "mcpServers": {
-    "agilai": {
-      // Renamed from "agilai-invisible-orchestrator"
+    "aidesigner": {
+      // Renamed from "aidesigner-invisible-orchestrator"
       "command": "node",
-      "args": ["-e", "require('agilai/dist/mcp/mcp/server.js')"]
+      "args": ["-e", "require('aidesigner/dist/mcp/mcp/server.js')"]
     }
   }
 }
@@ -107,7 +107,7 @@ const runtime_js_1 = require('../src/mcp-server/runtime.js');
 ```json
 {
   "command": "node",
-  "args": ["-e", "require('agilai/.dev/dist/mcp/mcp/server.js')"]
+  "args": ["-e", "require('aidesigner/.dev/dist/mcp/mcp/server.js')"]
 }
 ```
 
@@ -120,7 +120,7 @@ const runtime_js_1 = require('../src/mcp-server/runtime.js');
 ```json
 {
   "command": "node",
-  "args": ["node_modules/agilai/dist/mcp/mcp/server.js"]
+  "args": ["node_modules/aidesigner/dist/mcp/mcp/server.js"]
 }
 ```
 
@@ -144,7 +144,7 @@ The critical issue: **`dist/mcp/mcp/server.js` is missing from the npm package**
 Verified by:
 
 ```bash
-ls -la node_modules/agilai/dist/mcp/mcp/
+ls -la node_modules/aidesigner/dist/mcp/mcp/
 # Output: server.d.ts only (no server.js)
 ```
 
@@ -173,15 +173,15 @@ The MCP server `.js` file is built **during installation**, not during package p
 
 Claude Code CLI appears to have issues with relative paths:
 
-- `./node_modules/agilai/...` gets stripped to `dist/...`
-- `node_modules/agilai/...` may not resolve correctly
+- `./node_modules/aidesigner/...` gets stripped to `dist/...`
+- `node_modules/aidesigner/...` may not resolve correctly
 - Absolute paths work but aren't portable
 
 ### Issue 5: Legacy Server Entries
 
 User's `.claude.json` contains duplicate legacy servers:
 
-- `agilai-invisible-orchestrator` (old name)
+- `aidesigner-invisible-orchestrator` (old name)
 - `gitmcp` (non-existent package)
 
 These appear in `/mcp` list as failed, causing confusion.
@@ -195,9 +195,9 @@ These appear in `/mcp` list as failed, causing confusion.
 ```json
 {
   "mcpServers": {
-    "agilai": {
+    "aidesigner": {
       "command": "node",
-      "args": ["node_modules/agilai/dist/mcp/mcp/server.js"],
+      "args": ["node_modules/aidesigner/dist/mcp/mcp/server.js"],
       "disabled": false
     },
     "chrome-devtools": {
@@ -221,11 +221,11 @@ These appear in `/mcp` list as failed, causing confusion.
 
 ### MCP Server Status
 
-- ❌ **agilai**: Failed
+- ❌ **aidesigner**: Failed
 - ❌ **chrome-devtools**: Failed
 - ❌ **shadcn-ui**: Failed (not in config above, likely in user's global)
 - ✅ **github**: Connected
-- ❌ **agilai-invisible-orchestrator**: Failed (legacy, should be removed)
+- ❌ **aidesigner-invisible-orchestrator**: Failed (legacy, should be removed)
 - ❌ **gitmcp**: Failed (legacy, should be removed)
 
 ---
@@ -263,14 +263,14 @@ These appear in `/mcp` list as failed, causing confusion.
 
    ```bash
    # In a test directory
-   npm install agilai@latest
-   ls node_modules/agilai/dist/mcp/mcp/server.js
+   npm install aidesigner@latest
+   ls node_modules/aidesigner/dist/mcp/mcp/server.js
    # File must exist
    ```
 
 5. **Clean User Config**
    Remove legacy servers from `/Users/loic/.claude.json`:
-   - `agilai-invisible-orchestrator`
+   - `aidesigner-invisible-orchestrator`
    - `gitmcp`
 
 ### Structural Fixes
@@ -286,7 +286,7 @@ These appear in `/mcp` list as failed, causing confusion.
    ```json
    {
      "bin": {
-       "agilai-mcp": "dist/mcp/mcp/server.js"
+       "aidesigner-mcp": "dist/mcp/mcp/server.js"
      }
    }
    ```
@@ -295,25 +295,25 @@ These appear in `/mcp` list as failed, causing confusion.
 
    ```json
    {
-     "command": "agilai-mcp",
+     "command": "aidesigner-mcp",
      "args": []
    }
    ```
 
 3. **Alternative: npx Approach**
-   Create a dedicated npm package `@agilai/mcp-server`:
+   Create a dedicated npm package `@aidesigner/mcp-server`:
 
    ```json
    {
      "command": "npx",
-     "args": ["-y", "@agilai/mcp-server"]
+     "args": ["-y", "@aidesigner/mcp-server"]
    }
    ```
 
 4. **Path Resolution Test**
    Add to installer:
    ```javascript
-   const serverPath = path.join('node_modules', 'agilai', 'dist', 'mcp', 'mcp', 'server.js');
+   const serverPath = path.join('node_modules', 'aidesigner', 'dist', 'mcp', 'mcp', 'server.js');
    if (!fs.existsSync(serverPath)) {
      console.error('❌ MCP server not found. Running build...');
      execSync('npm run build:mcp', { cwd: path.dirname(__dirname) });
@@ -325,16 +325,16 @@ These appear in `/mcp` list as failed, causing confusion.
 1. **Fresh Installation Test**
 
    ```bash
-   mkdir test-agilai-mcp
-   cd test-agilai-mcp
+   mkdir test-aidesigner-mcp
+   cd test-aidesigner-mcp
    npm init -y
-   npm install agilai@latest
+   npm install aidesigner@latest
 
    # Verify server exists
-   ls node_modules/agilai/dist/mcp/mcp/server.js
+   ls node_modules/aidesigner/dist/mcp/mcp/server.js
 
    # Test server starts
-   node node_modules/agilai/dist/mcp/mcp/server.js
+   node node_modules/aidesigner/dist/mcp/mcp/server.js
    ```
 
 2. **Claude Code Integration Test**
@@ -343,9 +343,9 @@ These appear in `/mcp` list as failed, causing confusion.
    # Create .mcp.json
    echo '{
      "mcpServers": {
-       "agilai": {
+       "aidesigner": {
          "command": "node",
-         "args": ["node_modules/agilai/dist/mcp/mcp/server.js"]
+         "args": ["node_modules/aidesigner/dist/mcp/mcp/server.js"]
        }
      }
    }' > .mcp.json
@@ -353,13 +353,13 @@ These appear in `/mcp` list as failed, causing confusion.
    # Test with Claude Code
    claude
    # Run: /mcp
-   # Check agilai shows "✔ connected"
+   # Check aidesigner shows "✔ connected"
    ```
 
 3. **npx Installation Test**
    ```bash
    cd /tmp
-   npx agilai@latest start
+   npx aidesigner@latest start
    # Should create working .mcp.json
    # Then test with Claude Code
    ```
@@ -388,7 +388,7 @@ These appear in `/mcp` list as failed, causing confusion.
 
 ### Published Package
 
-- `bin/agilai` - Installer script (lines 1129-1172)
+- `bin/aidesigner` - Installer script (lines 1129-1172)
   - Updated MCP configuration logic
   - Added path migration
   - Added interactive prompts
@@ -397,9 +397,9 @@ These appear in `/mcp` list as failed, causing confusion.
 
 - `1.3.17`: Initial MCP integration
 - `1.3.18`: Fixed optional server package names
-- `1.3.19`: Renamed server `agilai-invisible-orchestrator` → `agilai`
+- `1.3.19`: Renamed server `aidesigner-invisible-orchestrator` → `aidesigner`
 - `1.3.20`: Updated to `.dev/dist/mcp/` path (incorrect)
-- `1.3.21`: Updated to `node_modules/agilai/dist/mcp/` path (current)
+- `1.3.21`: Updated to `node_modules/aidesigner/dist/mcp/` path (current)
 
 ---
 
@@ -415,10 +415,10 @@ These appear in `/mcp` list as failed, causing confusion.
 
 ```bash
 # Verify MCP server file exists
-ls -la node_modules/agilai/dist/mcp/mcp/server.js
+ls -la node_modules/aidesigner/dist/mcp/mcp/server.js
 
 # Test server manually
-cd node_modules/agilai
+cd node_modules/aidesigner
 node dist/mcp/mcp/server.js
 
 # Check what's published
@@ -432,7 +432,7 @@ npm run build:mcp
 
 ## Conclusion
 
-The Agilai MCP server integration is **partially complete** but **not functional** in Claude Code CLI. The core issue is that `dist/mcp/mcp/server.js` is not included in the published npm package or is not being built before publishing.
+The aidesigner MCP server integration is **partially complete** but **not functional** in Claude Code CLI. The core issue is that `dist/mcp/mcp/server.js` is not included in the published npm package or is not being built before publishing.
 
 **Recommendation:** The next developer should focus on ensuring the MCP server `.js` file is built and included in the published package BEFORE any other work. Once this fundamental issue is resolved, the path resolution should work correctly.
 
@@ -445,7 +445,7 @@ The Agilai MCP server integration is **partially complete** but **not functional
 **Session Date:** October 4, 2025
 **Claude Version:** Sonnet 4.5
 **Working Directory:** `/Users/loic/develop/BMAD-invisible`
-**Published Package:** `agilai` on npm
+**Published Package:** `aidesigner` on npm
 **Latest Version:** 1.3.21
 
 ---

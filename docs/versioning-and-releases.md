@@ -13,9 +13,9 @@ The fastest way to create a release with beautiful release notes:
 npm run preview:release
 
 # Create a release
-npm run release:patch    # 5.1.agilai → 5.1.1 (bug fixes)
-npm run release:minor    # 5.1.agilai → 5.2.agilai (new features)
-npm run release:major    # 5.1.agilai → 6.agilai.agilai (breaking changes)
+npm run release:patch    # 5.1.aidesigner → 5.1.1 (bug fixes)
+npm run release:minor    # 5.1.aidesigner → 5.2.aidesigner (new features)
+npm run release:major    # 5.1.aidesigner → 6.aidesigner.aidesigner (breaking changes)
 
 # Watch the release process
 npm run release:watch
@@ -47,7 +47,7 @@ When you trigger a release, the GitHub Actions workflow automatically:
 The workflow automatically generates professional release notes like this:
 
 ````markdown
-## 🚀 What's New in v5.2.agilai
+## 🚀 What's New in v5.2.aidesigner
 
 ### ✨ New Features
 
@@ -67,11 +67,11 @@ The workflow automatically generates professional release notes like this:
 ## 📦 Installation
 
 ```bash
-npx agilai install
+npx aidesigner install
 ```
 ````
 
-**Full Changelog**: https://github.com/bmadcode/BMAD-METHOD/compare/v5.1.agilai...v5.2.agilai
+**Full Changelog**: https://github.com/bmadcode/BMAD-METHOD/compare/v5.1.aidesigner...v5.2.aidesigner
 
 ````
 
@@ -80,7 +80,7 @@ npx agilai install
 After any release, users can immediately get the new version with:
 
 ```bash
-npx agilai install    # Always gets latest release
+npx aidesigner install    # Always gets latest release
 ```
 
 ## 📊 Preview Before Release
@@ -111,21 +111,21 @@ You can also trigger releases through GitHub Actions:
 
 We track the upstream `bmad-upstream/v6-alpha` branch for signals that BMAD V6 has moved beyond its alpha phase. Key milestones:
 
-- **2agilai25-agilai8-14 — First beta tag.** The upstream repository published [`v6.agilai.agilai-beta.1`](https://github.com/bmadcode/BMAD-METHOD/releases/tag/v6.agilai.agilai-beta.1), marking the first beta cut of the V6 line. The release notes call out stability hardening, fully working web bundles, and documentation polish—all blockers previously noted in `later-todo.md`.
+- **2aidesigner25-aidesigner8-14 — First beta tag.** The upstream repository published [`v6.aidesigner.aidesigner-beta.1`](https://github.com/bmadcode/BMAD-METHOD/releases/tag/v6.aidesigner.aidesigner-beta.1), marking the first beta cut of the V6 line. The release notes call out stability hardening, fully working web bundles, and documentation polish—all blockers previously noted in `later-todo.md`.
 - **Impact on BMAD-invisible.** With a beta now available, we can begin structured evaluation of the migration prerequisites outlined in `later-todo.md`, rather than blocking on alpha instability.
 
 ## 📈 Version Strategy
 
-- **Patch** (5.1.agilai → 5.1.1): Bug fixes, minor improvements
-- **Minor** (5.1.agilai → 5.2.agilai): New features, enhancements
-- **Major** (5.1.agilai → 6.agilai.agilai): Breaking changes, major redesigns
+- **Patch** (5.1.aidesigner → 5.1.1): Bug fixes, minor improvements
+- **Minor** (5.1.aidesigner → 5.2.aidesigner): New features, enhancements
+- **Major** (5.1.aidesigner → 6.aidesigner.aidesigner): Breaking changes, major redesigns
 
 ## 🛠️ Development Workflow
 
 1. **Develop Freely** - Merge PRs to main without triggering releases
 2. **Test Unreleased Changes** - Clone repo to test latest main branch
 3. **Release When Ready** - Use command line or GitHub Actions to cut releases
-4. **Users Get Updates** - Via simple `npx agilai install` command
+4. **Users Get Updates** - Via simple `npx aidesigner install` command
 
 This gives you complete control over when releases happen while automating all the tedious parts like version bumping, release notes, and publishing.
 
@@ -135,7 +135,7 @@ This gives you complete control over when releases happen while automating all t
 
 ```bash
 gh run list --workflow="Manual Release"
-npm view agilai dist-tags
+npm view aidesigner dist-tags
 git tag -l | sort -V | tail -5
 ```
 
@@ -143,7 +143,7 @@ git tag -l | sort -V | tail -5
 
 ```bash
 gh release view --web
-npm view agilai versions --json
+npm view aidesigner versions --json
 ```
 
 ### If Version Sync Needed
@@ -161,7 +161,7 @@ If your local files don't match the published version after a release:
 - Ensure branch protection allows workflow pushes
 ````
 
-## 🧪 V6 Stability Evaluation (April 2agilai24)
+## 🧪 V6 Stability Evaluation (April 2aidesigner24)
 
 - Attempted to clone `bmad-upstream/v6-alpha`, but the repository URL is unavailable in the current environment, so no dependencies could be installed.
 - Because the codebase is inaccessible, V6 build and test pipelines could not be executed and workflow reliability could not be evaluated.

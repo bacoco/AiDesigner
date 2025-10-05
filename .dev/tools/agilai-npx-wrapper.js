@@ -1,5 +1,5 @@
 /**
- * Agilai CLI - Direct execution wrapper for npx
+ * aidesigner CLI - Direct execution wrapper for npx
  * This file ensures proper execution when run via npx from GitHub
  */
 
@@ -15,10 +15,10 @@ if (isNpxExecution) {
   const arguments_ = process.argv.slice(2);
 
   // Use the installer for all commands
-  const installerScriptPath = path.join(__dirname, 'installer', 'bin', 'agilai.js');
+  const installerScriptPath = path.join(__dirname, 'installer', 'bin', 'aidesigner.js');
 
   if (!fs.existsSync(installerScriptPath)) {
-    console.error('Error: Could not find agilai.js at', installerScriptPath);
+    console.error('Error: Could not find aidesigner.js at', installerScriptPath);
     console.error('Current directory:', __dirname);
     process.exit(1);
   }
@@ -33,5 +33,5 @@ if (isNpxExecution) {
   }
 } else {
   // Local execution - use installer for all commands
-  require('./installer/bin/agilai.js');
+  require('./installer/bin/aidesigner.js');
 }

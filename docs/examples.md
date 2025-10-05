@@ -1,8 +1,8 @@
 # Usage Examples
 
-This guide provides detailed examples of using Agilai for real-world projects.
+This guide provides detailed examples of using aidesigner for real-world projects.
 
-> **Legacy aliases**: If you still have `npm run bmad*` scripts in your project, they'll continue to work, but the examples below use the updated `agilai` commands.
+> **Legacy aliases**: If you still have `npm run bmad*` scripts in your project, they'll continue to work, but the examples below use the updated `aidesigner` commands.
 
 ## Table of Contents
 
@@ -18,12 +18,12 @@ This example shows the complete flow for starting a new app from scratch.
 ### Example: Family Chore Tracking App
 
 ````bash
-$ npx agilai start
+$ npx aidesigner start
 Which assistant should we launch? (Claude / Codex / Opencode): claude
 
-🎯 Starting Agilai Orchestrator...
-📡 MCP Server: agilai-orchestrator
-🤖 Agent: Agilai Orchestrator
+🎯 Starting aidesigner Orchestrator...
+📡 MCP Server: aidesigner-orchestrator
+🤖 Agent: aidesigner Orchestrator
 💬 Type your project idea to begin!
 
 Welcome! I'm here to help you build your project.
@@ -183,7 +183,7 @@ Type 'done' when ready for review, or 'help' if you get stuck.
 
 ### Behind the Scenes
 
-While you had this natural conversation, Agilai automatically generated:
+While you had this natural conversation, aidesigner automatically generated:
 
 ```
 my-project/
@@ -199,7 +199,7 @@ my-project/
 │       ├── story-1-1-create-tasks.md
 │       ├── story-1-2-assign-tasks.md
 │       └── story-1-3-complete-tasks.md
-└── .agilai/
+└── .aidesigner/
     ├── state.json               # Current phase and context
     └── conversation.log         # Full conversation history
 ```
@@ -211,7 +211,7 @@ my-project/
 - Understand epics vs stories
 - Figure out how to structure the project
 
-**Agilai handled all of that invisibly** while keeping the conversation natural.
+**aidesigner handled all of that invisibly** while keeping the conversation natural.
 
 ## Adding Features to Existing Projects
 
@@ -220,7 +220,7 @@ This example shows how to add a feature to an existing app.
 ### Example: Push Notifications
 
 ````bash
-$ npx agilai chat --project ./my-app
+$ npx aidesigner chat --project ./my-app
 
 I see you have an existing project. What would you like to add?
 
@@ -471,7 +471,7 @@ Once you're done implementing, I'll help you test it thoroughly!
 
 ### Generated Documentation
 
-For this feature addition, Agilai created:
+For this feature addition, aidesigner created:
 
 ```
 
@@ -484,7 +484,7 @@ my-app/
 
 ## Complex Multi-Phase Projects
 
-For larger projects, Agilai guides you through all BMAD phases:
+For larger projects, aidesigner guides you through all BMAD phases:
 
 ### The Complete Flow
 
@@ -530,7 +530,7 @@ User: "I want to build a social marketplace app"
 
 ## Quick Tasks and Updates
 
-For simple tasks, Agilai uses the Quick Lane for rapid completion:
+For simple tasks, aidesigner uses the Quick Lane for rapid completion:
 
 ### Example: Bug Fixes
 
@@ -556,7 +556,7 @@ AI: Got it - straightforward config update.
 
 ### Quick Lane vs Complex Lane
 
-Agilai automatically routes tasks based on complexity:
+aidesigner automatically routes tasks based on complexity:
 
 **Quick Lane** (2-3 minutes):
 - Bug fixes
@@ -574,32 +574,32 @@ You never have to choose - **the system detects complexity automatically**.
 
 ## Multi-Project Management
 
-Agilai maintains separate contexts for different projects:
+aidesigner maintains separate contexts for different projects:
 
 ```bash
 # Work on project A
 cd project-a
-npx agilai start
+npx aidesigner start
 # Context: Project A state
 
 # Switch to project B
 cd ../project-b
-npx agilai start
+npx aidesigner start
 # Context: Project B state (completely separate)
 ````
 
 Each project has its own:
 
-- `.agilai/state.json` - Current phase and progress
+- `.aidesigner/state.json` - Current phase and progress
 - `docs/` - Generated documentation
 - Conversation history
 
 ## Resuming Work
 
-Agilai remembers where you left off:
+aidesigner remembers where you left off:
 
 ```bash
-$ npx agilai start
+$ npx aidesigner start
 
 Welcome back! Last time we were working on:
 - Story 1.2: Assign Tasks to Family Members
@@ -626,4 +626,4 @@ State persistence means you can:
 - **[Installation Guide](installation-methods.md)** - Complete installation options
 - **[Configuration Guide](configuration.md)** - Advanced configuration
 - **[MCP Management](mcp-management.md)** - Extend with tools and integrations
-- **[Architecture](../docs/core-architecture.md)** - How Agilai works internally
+- **[Architecture](../docs/core-architecture.md)** - How aidesigner works internally

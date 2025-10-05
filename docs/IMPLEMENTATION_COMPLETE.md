@@ -1,4 +1,4 @@
-# Agilai Implementation Complete ✅
+# aidesigner Implementation Complete ✅
 
 ## Summary
 
@@ -9,7 +9,7 @@ Successfully implemented a **fully functional MCP-based invisible orchestrator**
 ### Core Infrastructure ✅
 
 1. **MCP Server** (`mcp/server.ts`) - **521 lines**
-   - 1agilai MCP tools for project orchestration
+   - 1aidesigner MCP tools for project orchestration
    - Dynamic loading of BMAD agents
    - Phase detection and transitions
    - Deliverable generation
@@ -21,7 +21,7 @@ Successfully implemented a **fully functional MCP-based invisible orchestrator**
    - Phase transition history
    - Requirements and decisions storage
    - Deliverables tracking
-   - JSON persistence to `.agilai/`
+   - JSON persistence to `.aidesigner/`
 
 3. **BMAD Integration Bridge** (`lib/bmad-bridge.js`) - **343 lines**
    - Agent loading and persona extraction
@@ -65,13 +65,13 @@ Successfully implemented a **fully functional MCP-based invisible orchestrator**
    - Loads orchestrator agent
    - User-friendly startup messages
 
-9. **MCP Configuration** (`.claude/mcp-config.json`, `mcp/agilai-config.json`)
+9. **MCP Configuration** (`.claude/mcp-config.json`, `mcp/aidesigner-config.json`)
    - Claude Code integration
    - Workspace-relative paths
 
 ### Documentation ✅
 
-1agilai. **QUICKSTART.md** - Installation and first use 11. **USAGE.md** - Comprehensive usage guide 12. **DUAL_LANE_ORCHESTRATION.md** - Dual-lane routing guide 13. **Updated README.md** - Production-ready status
+1aidesigner. **QUICKSTART.md** - Installation and first use 11. **USAGE.md** - Comprehensive usage guide 12. **DUAL_LANE_ORCHESTRATION.md** - Dual-lane routing guide 13. **Updated README.md** - Production-ready status
 
 ## Architecture
 
@@ -80,7 +80,7 @@ User Types Message
     ↓
 Claude CLI (with MCP)
     ↓
-MCP Server (1agilai tools)
+MCP Server (1aidesigner tools)
      ├→ get_project_context
      ├→ detect_phase
      ├→ load_agent_persona
@@ -89,10 +89,10 @@ MCP Server (1agilai tools)
      ├→ record_decision
      ├→ add_conversation_message
      ├→ get_project_summary
-     ├→ list_agilai_agents
-     └→ execute_agilai_workflow
+     ├→ list_aidesigner_agents
+     └→ execute_aidesigner_workflow
     ↓
-BMAD Bridge → agilai-core agents
+BMAD Bridge → aidesigner-core agents
     ↓
 Deliverable Generator
     ↓
@@ -113,12 +113,12 @@ docs/prd.md, architecture.md, etc.
 ## File Count
 
 - **Total New/Modified Files**: 18
-- **Total Lines of Code**: ~2,5agilaiagilai
+- **Total Lines of Code**: ~2,5aidesigneraidesigner
 - **Languages**: TypeScript (MCP), JavaScript (Node.js), Markdown (Agents/Docs)
 
 ## How to Use
 
-> **Legacy aliases**: Historical `npm run bmad*` scripts still route to these commands, but the steps below use the modern `agilai` scripts.
+> **Legacy aliases**: Historical `npm run bmad*` scripts still route to these commands, but the steps below use the modern `aidesigner` scripts.
 
 ```bash
 # One-time setup
@@ -126,7 +126,7 @@ npm install
 npm run build:mcp
 
 # Start conversational interface
-npx agilai start
+npx aidesigner start
 
 # Talk naturally
 "Help me build a task management app for my family"
@@ -202,26 +202,26 @@ npm test
 
 ## Comparison to Original Plan
 
-| Feature                | Planned | Implemented | Notes                       |
-| ---------------------- | ------- | ----------- | --------------------------- |
-| MCP Server             | ✅      | ✅          | Enhanced with 1agilai tools |
-| Project State          | ✅      | ✅          | Full persistence            |
-| BMAD Bridge            | ✅      | ✅          | Complete integration        |
-| Deliverables           | ✅      | ✅          | 6 types supported           |
-| Phase Transitions      | ✅      | ✅          | With safety checks          |
-| CLI Wrapper            | ✅      | ✅          | Simple & effective          |
-| Validation Checkpoints | ✅      | ✅          | Built into orchestrator     |
-| Documentation          | ✅      | ✅          | Comprehensive               |
-| LLM API Client         | ❌      | ❌          | Not needed with MCP!        |
-| Separate CLI           | ❌      | ❌          | Uses Claude CLI instead     |
+| Feature                | Planned | Implemented | Notes                           |
+| ---------------------- | ------- | ----------- | ------------------------------- |
+| MCP Server             | ✅      | ✅          | Enhanced with 1aidesigner tools |
+| Project State          | ✅      | ✅          | Full persistence                |
+| BMAD Bridge            | ✅      | ✅          | Complete integration            |
+| Deliverables           | ✅      | ✅          | 6 types supported               |
+| Phase Transitions      | ✅      | ✅          | With safety checks              |
+| CLI Wrapper            | ✅      | ✅          | Simple & effective              |
+| Validation Checkpoints | ✅      | ✅          | Built into orchestrator         |
+| Documentation          | ✅      | ✅          | Comprehensive                   |
+| LLM API Client         | ❌      | ❌          | Not needed with MCP!            |
+| Separate CLI           | ❌      | ❌          | Uses Claude CLI instead         |
 
 ## Success Criteria
 
 ✅ **Works without API keys** - Uses Claude Pro subscription
-✅ **Integrates with Agilai CLI** - `npx agilai start` (with `--assistant=claude` / `--assistant=codex` for specific front-ends)
+✅ **Integrates with aidesigner CLI** - `npx aidesigner start` (with `--assistant=claude` / `--assistant=codex` for specific front-ends)
 ✅ **Generates real deliverables** - docs/ folder populated
 ✅ **Maintains invisible UX** - No methodology jargon
-✅ **Persists state** - .agilai/ folder
+✅ **Persists state** - .aidesigner/ folder
 ✅ **Uses MCP protocol** - Native Claude integration
 ✅ **Validates with user** - Checkpoints at phase transitions
 ✅ **Production code quality** - Error handling, logging, types
@@ -237,24 +237,24 @@ npm test
 ## Usage Command
 
 ```bash
-npx agilai start
+npx aidesigner start
 # Or pick a specific front-end:
-# npx agilai start --assistant=claude
-# npx agilai start --assistant=codex
+# npx aidesigner start --assistant=claude
+# npx aidesigner start --assistant=codex
 ```
 
 That's literally it. Just run one command and start talking about your project!
 
 ### Legacy Compatibility
 
-Need to support older automation or scripts? The legacy `npm run bmad*` aliases still ship in the package. They forward to the Agilai launcher so existing integrations continue to work while you migrate. Document any remaining dependencies on those scripts separately and plan to move them to the new `npx agilai` interface during your next maintenance window.
+Need to support older automation or scripts? The legacy `npm run bmad*` aliases still ship in the package. They forward to the aidesigner launcher so existing integrations continue to work while you migrate. Document any remaining dependencies on those scripts separately and plan to move them to the new `npx aidesigner` interface during your next maintenance window.
 
 ---
 
 **Status**: 🎉 **IMPLEMENTATION COMPLETE AND READY FOR USE**
 
 **Time to First Deliverable**: ~5 minutes of conversation
-**Cost**: $agilai (uses your existing Claude Pro subscription)
+**Cost**: $aidesigner (uses your existing Claude Pro subscription)
 **Learning Curve**: Zero (just talk naturally)
 
 The invisible orchestrator is fully functional and ready to help users build projects through natural conversation!

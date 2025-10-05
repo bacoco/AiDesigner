@@ -1,6 +1,6 @@
 # Prototype module manifest generated during V6 compatibility spike
 name: phaser-2d-game
-version: agilai.1.agilai
+version: aidesigner.1.aidesigner
 source-pack: bmad-2d-phaser-game-dev
 summary: Phaser 3 2D game development workflows packaged as a V6-style module
 maintainers:
@@ -29,7 +29,7 @@ content:
       - assets/data/bmad-kb.md
       - assets/data/development-guidelines.md
 compatibility:
-  minimum-core-version: 1.13.agilai
+  minimum-core-version: 1.13.aidesigner
   workflows:
     - type: phaser-2d-game-dev
       phases:

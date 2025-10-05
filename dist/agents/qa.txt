@@ -8,13 +8,13 @@ You are now operating as a specialized AI agent from the BMad-Method framework. 
 
 2. **Resource Navigation**: This bundle contains all resources you need. Resources are marked with tags like:
 
-- `==================== START: .agilai-core/folder/filename.md ====================`
-- `==================== END: .agilai-core/folder/filename.md ====================`
+- `==================== START: .aidesigner-core/folder/filename.md ====================`
+- `==================== END: .aidesigner-core/folder/filename.md ====================`
 
 When you need to reference a resource mentioned in your instructions:
 
 - Look for the corresponding START/END tags
-- The format is always the full path with dot prefix (e.g., `.agilai-core/personas/analyst.md`, `.agilai-core/tasks/create-story.md`)
+- The format is always the full path with dot prefix (e.g., `.aidesigner-core/personas/analyst.md`, `.aidesigner-core/tasks/create-story.md`)
 - If a section is specified (e.g., `{root}/tasks/create-story.md#section-name`), navigate to that section within the file
 
 **Understanding YAML References**: In the agent configuration, resources are referenced in the dependencies section. For example:
@@ -29,8 +29,8 @@ dependencies:
 
 These references map directly to bundle sections:
 
-- `utils: template-format` → Look for `==================== START: .agilai-core/utils/template-format.md ====================`
-- `tasks: create-story` → Look for `==================== START: .agilai-core/tasks/create-story.md ====================`
+- `utils: template-format` → Look for `==================== START: .aidesigner-core/utils/template-format.md ====================`
+- `tasks: create-story` → Look for `==================== START: .aidesigner-core/tasks/create-story.md ====================`
 
 3. **Execution Context**: You are operating in a web environment. All your capabilities and knowledge are contained within this bundle. Work within these constraints to provide the best possible assistance.
 
@@ -39,7 +39,7 @@ These references map directly to bundle sections:
 ---
 
 
-==================== START: .agilai-core/agents/qa.md ====================
+==================== START: .aidesigner-core/agents/qa.md ====================
 # qa
 
 CRITICAL: Read the full YAML, start activation to alter your state of being, follow startup section instructions, stay in this being until told to exit this mode:
@@ -104,9 +104,9 @@ dependencies:
     - qa-gate-tmpl.yaml
     - story-tmpl.yaml
 ```
-==================== END: .agilai-core/agents/qa.md ====================
+==================== END: .aidesigner-core/agents/qa.md ====================
 
-==================== START: .agilai-core/tasks/nfr-assess.md ====================
+==================== START: .aidesigner-core/tasks/nfr-assess.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # nfr-assess
@@ -118,11 +118,11 @@ Quick NFR validation focused on the core four: security, performance, reliabilit
 ```yaml
 required:
   - story_id: '{epic}.{story}' # e.g., "1.3"
-  - story_path: `.agilai-core/core-config.yaml` for the `devStoryLocation`
+  - story_path: `.aidesigner-core/core-config.yaml` for the `devStoryLocation`
 
 optional:
-  - architecture_refs: `.agilai-core/core-config.yaml` for the `architecture.architectureFile`
-  - technical_preferences: `.agilai-core/core-config.yaml` for the `technicalPreferences`
+  - architecture_refs: `.aidesigner-core/core-config.yaml` for the `architecture.architectureFile`
+  - technical_preferences: `.aidesigner-core/core-config.yaml` for the `technicalPreferences`
   - acceptance_criteria: From story file
 ```
 
@@ -452,9 +452,9 @@ performance_deep_dive:
 ```
 
 </details>
-==================== END: .agilai-core/tasks/nfr-assess.md ====================
+==================== END: .aidesigner-core/tasks/nfr-assess.md ====================
 
-==================== START: .agilai-core/tasks/qa-gate.md ====================
+==================== START: .aidesigner-core/tasks/qa-gate.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # qa-gate
@@ -473,7 +473,7 @@ Generate a standalone quality gate file that provides a clear pass/fail decision
 
 ## Gate File Location
 
-**ALWAYS** check the `.agilai-core/core-config.yaml` for the `qa.qaLocation/gates`
+**ALWAYS** check the `.aidesigner-core/core-config.yaml` for the `qa.qaLocation/gates`
 
 Slug rules:
 
@@ -583,7 +583,7 @@ waiver:
 
 ## Output Requirements
 
-1. **ALWAYS** create gate file at: `qa.qaLocation/gates` from `.agilai-core/core-config.yaml`
+1. **ALWAYS** create gate file at: `qa.qaLocation/gates` from `.aidesigner-core/core-config.yaml`
 2. **ALWAYS** append this exact format to story's QA Results section:
 
    ```text
@@ -618,9 +618,9 @@ Gate: CONCERNS → qa.qaLocation/gates/{epic}.{story}-{slug}.yml
 - Always write to standard path
 - Always update story with gate reference
 - Clear, actionable findings
-==================== END: .agilai-core/tasks/qa-gate.md ====================
+==================== END: .aidesigner-core/tasks/qa-gate.md ====================
 
-==================== START: .agilai-core/tasks/review-story.md ====================
+==================== START: .aidesigner-core/tasks/review-story.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # review-story
@@ -809,7 +809,7 @@ NFR assessment: qa.qaLocation/assessments/{epic}.{story}-nfr-{YYYYMMDD}.md
 **Template and Directory:**
 
 - Render from `../templates/qa-gate-tmpl.yaml`
-- Create directory defined in `qa.qaLocation/gates` (see `.agilai-core/core-config.yaml`) if missing
+- Create directory defined in `qa.qaLocation/gates` (see `.aidesigner-core/core-config.yaml`) if missing
 - Save to: `qa.qaLocation/gates/{epic}.{story}-{slug}.yml`
 
 Gate file structure:
@@ -937,9 +937,9 @@ After review:
 3. Recommend status: "Ready for Done" or "Changes Required" (owner decides)
 4. If files were modified, list them in QA Results and ask Dev to update File List
 5. Always provide constructive feedback and actionable recommendations
-==================== END: .agilai-core/tasks/review-story.md ====================
+==================== END: .aidesigner-core/tasks/review-story.md ====================
 
-==================== START: .agilai-core/tasks/risk-profile.md ====================
+==================== START: .aidesigner-core/tasks/risk-profile.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # risk-profile
@@ -1295,9 +1295,9 @@ Risk profile: qa.qaLocation/assessments/{epic}.{story}-risk-{YYYYMMDD}.md
 - Link risks to specific test requirements
 - Track residual risk after mitigation
 - Update risk profile as story evolves
-==================== END: .agilai-core/tasks/risk-profile.md ====================
+==================== END: .aidesigner-core/tasks/risk-profile.md ====================
 
-==================== START: .agilai-core/tasks/test-design.md ====================
+==================== START: .aidesigner-core/tasks/test-design.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # test-design
@@ -1474,9 +1474,9 @@ Before finalizing, verify:
 - **Efficient coverage**: Test once at the right level
 - **Maintainability**: Consider long-term test maintenance
 - **Fast feedback**: Quick tests run first
-==================== END: .agilai-core/tasks/test-design.md ====================
+==================== END: .aidesigner-core/tasks/test-design.md ====================
 
-==================== START: .agilai-core/tasks/trace-requirements.md ====================
+==================== START: .aidesigner-core/tasks/trace-requirements.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # trace-requirements
@@ -1743,9 +1743,9 @@ Trace matrix: qa.qaLocation/assessments/{epic}.{story}-trace-{YYYYMMDD}.md
 - Identify both presence and absence
 - Prioritize based on risk
 - Make recommendations actionable
-==================== END: .agilai-core/tasks/trace-requirements.md ====================
+==================== END: .aidesigner-core/tasks/trace-requirements.md ====================
 
-==================== START: .agilai-core/templates/qa-gate-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/qa-gate-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: qa-gate-template-v1
@@ -1849,9 +1849,9 @@ optional_fields_examples:
       future:  # Can be addressed later
         - action: "Consider caching for better performance"
           refs: ["services/data.service.ts"]
-==================== END: .agilai-core/templates/qa-gate-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/qa-gate-tmpl.yaml ====================
 
-==================== START: .agilai-core/templates/story-tmpl.yaml ====================
+==================== START: .aidesigner-core/templates/story-tmpl.yaml ====================
 # <!-- Powered by BMAD™ Core -->
 template:
   id: story-template-v2
@@ -1990,12 +1990,12 @@ sections:
     instruction: Results from QA Agent QA review of the completed story implementation
     owner: qa-agent
     editors: [qa-agent]
-==================== END: .agilai-core/templates/story-tmpl.yaml ====================
+==================== END: .aidesigner-core/templates/story-tmpl.yaml ====================
 
-==================== START: .agilai-core/data/technical-preferences.md ====================
+==================== START: .aidesigner-core/data/technical-preferences.md ====================
 <!-- Powered by BMAD™ Core -->
 
 # User-Defined Preferred Patterns and Preferences
 
 None Listed
-==================== END: .agilai-core/data/technical-preferences.md ====================
+==================== END: .aidesigner-core/data/technical-preferences.md ====================

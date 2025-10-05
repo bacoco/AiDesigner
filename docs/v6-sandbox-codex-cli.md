@@ -4,7 +4,7 @@ This note documents how the Codex CLI behaves inside the V6 sandbox baseline and
 
 ## 1. Sandbox Preparation
 
-1. Provision a fresh V6 developer sandbox (Node.js ≥ 2agilai) and clone `BMAD-invisible`.
+1. Provision a fresh V6 developer sandbox (Node.js ≥ 2aidesigner) and clone `BMAD-invisible`.
 2. Install project dependencies and rebuild the MCP bundles:
 
    ```bash
@@ -25,7 +25,7 @@ The new defaults introduced in `lib/codex/config-manager` target the V6 CLI prof
 - Model: `GPT-5-Codex`
 - Automated approvals for both CLI tools and MCP server actions
 - MCP servers:
-  - `agilai_invisible` → `npx agilai invisible mcp`
+  - `aidesigner_invisible` → `npx aidesigner invisible mcp`
   - Optional `chrome-devtools` and `shadcn` helpers (declared with
     `auto_start = false` until you install their binaries)
 
@@ -35,7 +35,7 @@ To (re)generate the CLI config from the sandbox, run:
 node -e "(async () => { const { ensureCodexConfig } = require('./lib/codex/config-manager.js'); const result = await ensureCodexConfig({ nonInteractive: false }); console.log('Codex config written to', result.configPath); })();"
 ```
 
-This writes/updates `~/.codex/config.toml` with the auto-approval profile and ensures the Agilai MCP server entry matches the compiled assets, while stubbing the optional helpers so Claude/Chromium tooling can be toggled on later.
+This writes/updates `~/.codex/config.toml` with the auto-approval profile and ensures the aidesigner MCP server entry matches the compiled assets, while stubbing the optional helpers so Claude/Chromium tooling can be toggled on later.
 
 ## 3. Representative Chat Session Simulations
 
@@ -58,7 +58,7 @@ These checks give parity coverage without depending on the live Codex service wh
 ## 4. Troubleshooting Notes
 
 - **`codex` command not found** – re-run the CLI installer inside the sandbox and verify `$PATH` includes the install location.
-- **`require('agilai/dist/mcp/mcp/server.js')` failing** – execute `npm run build:mcp` to refresh compiled MCP assets.
+- **`require('aidesigner/dist/mcp/mcp/server.js')` failing** – execute `npm run build:mcp` to refresh compiled MCP assets.
 - **Configuration not updating** – delete `~/.codex/config.toml` and rerun the `ensureCodexConfig` snippet to regenerate with the new defaults.
 
 ## 5. Outcome

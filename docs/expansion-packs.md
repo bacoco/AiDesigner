@@ -2,7 +2,7 @@
 
 ## V6 Module System Overview
 
-- V6 consolidates the legacy `agilai-core/` tree into a `src/core/` and `src/modules/` layout and introduces a modular plugin system built around BMM, BMB, and CIS domains.【F:later-todo.md†L16-L24】【F:later-todo.md†L110-L112】
+- V6 consolidates the legacy `aidesigner-core/` tree into a `src/core/` and `src/modules/` layout and introduces a modular plugin system built around BMM, BMB, and CIS domains.【F:later-todo.md†L16-L24】【F:later-todo.md†L110-L112】
 - Each module is intended to encapsulate its sub-agents and shared dependencies so they can be installed together through a single package surface.【F:later-todo.md†L16-L24】
 
 ## Current Expansion Pack Structure

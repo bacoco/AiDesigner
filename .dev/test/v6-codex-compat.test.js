@@ -3,7 +3,7 @@ const os = require('node:os');
 const path = require('node:path');
 
 const { executeAutoCommand } = require('../lib/auto-commands.js');
-const { AgilaiBridge } = require('../lib/agilai-bridge.js');
+const { aidesignerBridge } = require('../lib/aidesigner-bridge.js');
 const { DeliverableGenerator } = require('../lib/deliverable-generator.js');
 const { ProjectState } = require('../lib/project-state.js');
 const { QuickLane } = require('../lib/quick-lane.js');
@@ -96,7 +96,7 @@ describe('Codex CLI V6 sandbox compatibility', () => {
     tempDirs.push(tempDir);
 
     const stubLLM = new StubLLMClient('Mock agent output for planning');
-    const bridge = new AgilaiBridge({ llmClient: stubLLM });
+    const bridge = new aidesignerBridge({ llmClient: stubLLM });
     await bridge.initialize();
 
     const autoResult = await executeAutoCommand(
@@ -117,7 +117,7 @@ describe('Codex CLI V6 sandbox compatibility', () => {
     const stored = projectState.getDeliverable('pm', 'plan');
     expect(stored.content).toBe('Mock agent output for planning');
 
-    const generator = new DeliverableGenerator(tempDir, { agilaiBridge: bridge });
+    const generator = new DeliverableGenerator(tempDir, { aidesignerBridge: bridge });
     await generator.initialize();
 
     const prd = await generator.generatePRD({

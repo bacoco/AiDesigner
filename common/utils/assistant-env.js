@@ -14,7 +14,7 @@ const normalizeProvider = (value) => (typeof value === 'string' ? value.trim().t
  * Determines the active assistant provider with fallback logic.
  *
  * Precedence:
- * 1. AGILAI_ASSISTANT_PROVIDER (if not 'anthropic')
+ * 1. aidesigner_ASSISTANT_PROVIDER (if not 'anthropic')
  * 2. BMAD_ASSISTANT_PROVIDER (legacy, if not 'anthropic')
  * 3. LLM_PROVIDER (fallback when direct provider is unset or 'anthropic')
  * 4. Direct provider value (even if 'anthropic')
@@ -25,7 +25,7 @@ const normalizeProvider = (value) => (typeof value === 'string' ? value.trim().t
  */
 const getAssistantProvider = () => {
   const directCandidates = [
-    normalizeProvider(process.env.AGILAI_ASSISTANT_PROVIDER),
+    normalizeProvider(process.env.aidesigner_ASSISTANT_PROVIDER),
     normalizeProvider(process.env.BMAD_ASSISTANT_PROVIDER),
   ];
 
@@ -74,13 +74,13 @@ const buildAssistantSpawnEnv = () => {
 
   // Check if any GLM-specific variables are set
   const hasGlmVars = !!(
-    process.env.AGILAI_GLM_BASE_URL ||
+    process.env.aidesigner_GLM_BASE_URL ||
     process.env.BMAD_GLM_BASE_URL ||
     process.env.GLM_BASE_URL ||
-    process.env.AGILAI_GLM_AUTH_TOKEN ||
+    process.env.aidesigner_GLM_AUTH_TOKEN ||
     process.env.BMAD_GLM_AUTH_TOKEN ||
     process.env.GLM_AUTH_TOKEN ||
-    process.env.AGILAI_GLM_API_KEY ||
+    process.env.aidesigner_GLM_API_KEY ||
     process.env.BMAD_GLM_API_KEY ||
     process.env.GLM_API_KEY ||
     process.env.ZHIPUAI_API_KEY
@@ -88,25 +88,25 @@ const buildAssistantSpawnEnv = () => {
 
   // Only use ANTHROPIC_* as fallback if NO GLM-specific variables are set
   const baseUrl = hasGlmVars
-    ? preferEnvValue('AGILAI_GLM_BASE_URL', 'BMAD_GLM_BASE_URL', 'GLM_BASE_URL')
+    ? preferEnvValue('aidesigner_GLM_BASE_URL', 'BMAD_GLM_BASE_URL', 'GLM_BASE_URL')
     : preferEnvValue(
-        'AGILAI_GLM_BASE_URL',
+        'aidesigner_GLM_BASE_URL',
         'BMAD_GLM_BASE_URL',
         'GLM_BASE_URL',
         'ANTHROPIC_BASE_URL',
       );
   const authToken = hasGlmVars
-    ? preferEnvValue('AGILAI_GLM_AUTH_TOKEN', 'BMAD_GLM_AUTH_TOKEN', 'GLM_AUTH_TOKEN')
+    ? preferEnvValue('aidesigner_GLM_AUTH_TOKEN', 'BMAD_GLM_AUTH_TOKEN', 'GLM_AUTH_TOKEN')
     : preferEnvValue(
-        'AGILAI_GLM_AUTH_TOKEN',
+        'aidesigner_GLM_AUTH_TOKEN',
         'BMAD_GLM_AUTH_TOKEN',
         'GLM_AUTH_TOKEN',
         'ANTHROPIC_AUTH_TOKEN',
       );
   const apiKey = hasGlmVars
-    ? preferEnvValue('AGILAI_GLM_API_KEY', 'BMAD_GLM_API_KEY', 'GLM_API_KEY', 'ZHIPUAI_API_KEY')
+    ? preferEnvValue('aidesigner_GLM_API_KEY', 'BMAD_GLM_API_KEY', 'GLM_API_KEY', 'ZHIPUAI_API_KEY')
     : preferEnvValue(
-        'AGILAI_GLM_API_KEY',
+        'aidesigner_GLM_API_KEY',
         'BMAD_GLM_API_KEY',
         'GLM_API_KEY',
         'ZHIPUAI_API_KEY',
@@ -116,29 +116,29 @@ const buildAssistantSpawnEnv = () => {
   // Validate that at least one required credential is present
   if (!baseUrl && !apiKey) {
     console.error(
-      '❌ GLM mode requires at least one of: AGILAI_GLM_BASE_URL, BMAD_GLM_BASE_URL, GLM_BASE_URL, AGILAI_GLM_API_KEY, BMAD_GLM_API_KEY, GLM_API_KEY, or ZHIPUAI_API_KEY',
+      '❌ GLM mode requires at least one of: aidesigner_GLM_BASE_URL, BMAD_GLM_BASE_URL, GLM_BASE_URL, aidesigner_GLM_API_KEY, BMAD_GLM_API_KEY, GLM_API_KEY, or ZHIPUAI_API_KEY',
     );
     // eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit -- CLI utility needs to exit on invalid config
     process.exit(1);
   }
 
-  // Ensure Agilai-prefixed environment variables are propagated
+  // Ensure aidesigner-prefixed environment variables are propagated
   if (baseUrl === undefined) {
-    delete env.AGILAI_GLM_BASE_URL;
+    delete env.aidesigner_GLM_BASE_URL;
   } else {
-    env.AGILAI_GLM_BASE_URL = baseUrl;
+    env.aidesigner_GLM_BASE_URL = baseUrl;
   }
 
   if (authToken === undefined) {
-    delete env.AGILAI_GLM_AUTH_TOKEN;
+    delete env.aidesigner_GLM_AUTH_TOKEN;
   } else {
-    env.AGILAI_GLM_AUTH_TOKEN = authToken;
+    env.aidesigner_GLM_AUTH_TOKEN = authToken;
   }
 
   if (apiKey === undefined) {
-    delete env.AGILAI_GLM_API_KEY;
+    delete env.aidesigner_GLM_API_KEY;
   } else {
-    env.AGILAI_GLM_API_KEY = apiKey;
+    env.aidesigner_GLM_API_KEY = apiKey;
   }
 
   // Set Anthropic-compatible environment variables for GLM
@@ -161,7 +161,7 @@ const buildAssistantSpawnEnv = () => {
   }
 
   env.LLM_PROVIDER = 'glm';
-  env.AGILAI_ASSISTANT_PROVIDER = 'glm';
+  env.aidesigner_ASSISTANT_PROVIDER = 'glm';
   if (process.env.BMAD_ASSISTANT_PROVIDER) {
     env.BMAD_ASSISTANT_PROVIDER = 'glm';
   }

@@ -5,7 +5,7 @@ const os = require('node:os');
 const { spawnSync, spawn } = require('node:child_process');
 const readline = require('node:readline');
 
-const STATE_DIR_NAME = '.agilai-invisible';
+const STATE_DIR_NAME = '.aidesigner-invisible';
 const LEGACY_STATE_DIR_NAME = '.bmad-invisible';
 let legacyStateDirNoticeShown = false;
 
@@ -21,7 +21,7 @@ function ensureStateDir(rootDir) {
     if (!legacyStateDirNoticeShown) {
       legacyStateDirNoticeShown = true;
       console.warn(
-        '⚠️  Agilai compatibility: reusing legacy .bmad-invisible state directory. Rename to .agilai-invisible when convenient.',
+        '⚠️  aidesigner compatibility: reusing legacy .bmad-invisible state directory. Rename to .aidesigner-invisible when convenient.',
       );
     }
     return legacyDir;
@@ -41,7 +41,7 @@ function ensureStateDir(rootDir) {
         try {
           fs.mkdirSync(fallbackDir, { recursive: true });
           console.warn(
-            `Note: Using ${fallbackDir} for Agilai cache (installation directory is read-only)`,
+            `Note: Using ${fallbackDir} for aidesigner cache (installation directory is read-only)`,
           );
           return fallbackDir;
         } catch (fallbackError) {
@@ -49,7 +49,7 @@ function ensureStateDir(rootDir) {
             if (!legacyStateDirNoticeShown) {
               legacyStateDirNoticeShown = true;
               console.warn(
-                '⚠️  Agilai compatibility: falling back to legacy ~/.bmad-invisible cache directory.',
+                '⚠️  aidesigner compatibility: falling back to legacy ~/.bmad-invisible cache directory.',
               );
             }
             return legacyFallbackDir;
@@ -63,7 +63,7 @@ function ensureStateDir(rootDir) {
       // Verify fallbackDir exists before returning it
       if (fs.existsSync(fallbackDir)) {
         console.warn(
-          `Note: Using ${fallbackDir} for Agilai cache (installation directory is read-only)`,
+          `Note: Using ${fallbackDir} for aidesigner cache (installation directory is read-only)`,
         );
         return fallbackDir;
       }
@@ -79,7 +79,7 @@ function ensureStateDir(rootDir) {
       if (!legacyStateDirNoticeShown) {
         legacyStateDirNoticeShown = true;
         console.warn(
-          '⚠️  Agilai compatibility: reusing legacy .bmad-invisible state directory after creation failure.',
+          '⚠️  aidesigner compatibility: reusing legacy .bmad-invisible state directory after creation failure.',
         );
       }
       return legacyDir;

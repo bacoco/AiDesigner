@@ -5,14 +5,14 @@ const { execSync } = require('node:child_process');
 const os = require('node:os');
 
 /**
- * MCP Security Manager - Handles secure credential storage and encryption for Agilai
+ * MCP Security Manager - Handles secure credential storage and encryption for aidesigner
  */
 class McpSecurity {
   constructor() {
     this.platform = os.platform();
     this.algorithm = 'aes-256-gcm';
     this.keyLength = 32; // 256 bits
-    this.secureDir = path.join(os.homedir(), '.agilai', 'secure');
+    this.secureDir = path.join(os.homedir(), '.aidesigner', 'secure');
     this.vaultFile = path.join(this.secureDir, 'vault.enc');
     this.masterKeyFile = path.join(this.secureDir, '.master.key');
   }

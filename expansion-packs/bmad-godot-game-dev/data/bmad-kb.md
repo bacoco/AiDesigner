@@ -135,7 +135,7 @@ npx bmad-method install
 
 **Verify Game Development Installation**:
 
-- `.agilai-core/` folder created with all core agents
+- `.aidesigner-core/` folder created with all core agents
 - `.bmad-godot-game-dev/` folder with game development agents
 - IDE-specific integration files created
 - Game development agents available with `/BmadG` prefix

@@ -40,10 +40,10 @@
 ## Next Steps
 
 - Engage upstream V6 owners about introducing an `invisible` module manifest entry.
-- Plan a CommonJS→ESM rewrite (or build adapter) for `AgilaiBridge`, MCP runtime, and supporting hooks.
+- Plan a CommonJS→ESM rewrite (or build adapter) for `aidesignerBridge`, MCP runtime, and supporting hooks.
 - Define a persona/deliverable asset pipeline aligned with V6 packaging rules.
 - Update migration checklist once blockers are mitigated.
 
 ## Legacy Compatibility Snapshot
 
-The current Agilai packages continue to export the legacy `agilai-core/` layout and `npm run bmad*` scripts. Keep these pathways documented for teams that have not migrated yet, but route new automation through `npx agilai` and the modular `agilai/src/modules` structure. Capture any blockers that force reliance on the legacy tree so they can be burned down before deprecating the older assets.
+The current aidesigner packages continue to export the legacy `aidesigner-core/` layout and `npm run bmad*` scripts. Keep these pathways documented for teams that have not migrated yet, but route new automation through `npx aidesigner` and the modular `aidesigner/src/modules` structure. Capture any blockers that force reliance on the legacy tree so they can be burned down before deprecating the older assets.

@@ -17,20 +17,20 @@ The `codex-server.ts` script boots the orchestrator MCP server. Key responsibili
 
   ```bash
   export CODEX_DEFAULT_PROVIDER="claude"
-  export CODEX_DEFAULT_MODEL="claude-3-5-sonnet-2agilai241agilai22"
-  export CODEX_MAX_TOKENS="4agilai96"
+  export CODEX_DEFAULT_MODEL="claude-3-5-sonnet-2aidesigner241aidesigner22"
+  export CODEX_MAX_TOKENS="4aidesigner96"
   export CODEX_QUICK_PROVIDER="claude"
-  export CODEX_QUICK_MODEL="claude-3-haiku-2agilai24agilai3agilai7"
-  export CODEX_QUICK_MAX_TOKENS="2agilai48"
+  export CODEX_QUICK_MODEL="claude-3-haiku-2aidesigner24aidesigner3aidesigner7"
+  export CODEX_QUICK_MAX_TOKENS="2aidesigner48"
   export CODEX_COMPLEX_PROVIDER="claude"
-  export CODEX_COMPLEX_MODEL="claude-3-opus-2agilai24agilai229"
+  export CODEX_COMPLEX_MODEL="claude-3-opus-2aidesigner24aidesigner229"
   export CODEX_COMPLEX_MAX_TOKENS="8192"
   export CODEX_APPROVAL_MODE="true"
   export CODEX_AUTO_APPROVE="false"
   export CODEX_APPROVED_OPERATIONS="plan.generate,plan.apply"
 
   export LLM_PROVIDER="claude"
-  export LLM_MODEL="claude-3-5-sonnet-2agilai241agilai22"
+  export LLM_MODEL="claude-3-5-sonnet-2aidesigner241aidesigner22"
   ```
 
 - **Model routing** – The `ModelRouter` class maps logical lanes (default, quick, complex) and friendly aliases to concrete model selections. It supports granular overrides by operation metadata (e.g., decision lane) while falling back to sensible defaults.
@@ -44,7 +44,7 @@ Together these pieces provide a configurable, policy-aware entry point that can 
 
 `runOrchestratorServer()` hosts the MCP server responsible for coordinating BMAD phases and lane execution. Notable responsibilities:
 
-- **Lazy dependency loading** – Dynamically imports heavy modules (`ProjectState`, `AgilaiBridge`, `DeliverableGenerator`, `BrownfieldAnalyzer`, `QuickLane`, `LaneSelector`, and hooks) to reduce startup time and allow partial functionality in constrained environments.
+- **Lazy dependency loading** – Dynamically imports heavy modules (`ProjectState`, `aidesignerBridge`, `DeliverableGenerator`, `BrownfieldAnalyzer`, `QuickLane`, `LaneSelector`, and hooks) to reduce startup time and allow partial functionality in constrained environments.
 - **Lane-aware initialization** – Creates dedicated LLM clients for default and quick lanes, ensuring lane decisions are backed by appropriate models while sharing cached constructors when possible.
 - **Brownfield and quick-lane support** – Integrates `BrownfieldAnalyzer` for legacy code assessments and `QuickLane` for template-based fast paths, enabling the dual-lane orchestration introduced in v1.2.
 - **Phase transition hooks** – Binds lifecycle hooks to orchestrate BMAD phases, handling agent responses, JSON parsing safeguards, and error logging when agents return unexpected payloads.
@@ -57,7 +57,7 @@ The runtime therefore acts as a glue layer between the MCP protocol, BMAD automa
 Although not all `lib/` sources are reproduced here, the runtime illustrates core expectations:
 
 - **`ProjectState`** – Manages persistent workspace state and initializes BMAD project metadata before orchestrated work begins.
-- **`AgilaiBridge`** – Bridges orchestrator requests to BMAD-METHOD™ agents, providing a consistent interface for running specialized AI roles (analyst, architect, developer, etc.).
+- **`aidesignerBridge`** – Bridges orchestrator requests to BMAD-METHOD™ agents, providing a consistent interface for running specialized AI roles (analyst, architect, developer, etc.).
 - **`DeliverableGenerator`** – Produces artifacts (plans, designs, QA reports) in the `docs/` directory, ensuring dual lanes share a unified deliverables pipeline.
 - **`QuickLane`** – Handles lightweight changes with minimal overhead, likely templated or direct-edit operations suitable for small fixes.
 - **Hooks (`hooks/phase-transition.js`, `hooks/context-preservation.js`)** – Customize phase transitions and maintain context continuity across agent handoffs.
@@ -79,7 +79,7 @@ flowchart TD
 1. **Server start** – `codex-server.ts` assembles configuration, constructs a `CodexClient`, and invokes `runOrchestratorServer()`.
 2. **Dependency bootstrap** – `runOrchestratorServer()` lazily loads libraries, initializes project state, and prepares lane-specific LLM clients.
 3. **Task routing** – When a tool request arrives, the runtime consults `LaneSelector` to choose between complex or quick lanes, recording rationale for traceability.
-4. **Plan execution** – Selected lanes drive BMAD phases via `AgilaiBridge` and `QuickLane`, with deliverables captured through `DeliverableGenerator`.
+4. **Plan execution** – Selected lanes drive BMAD phases via `aidesignerBridge` and `QuickLane`, with deliverables captured through `DeliverableGenerator`.
 5. **Approval enforcement** – Before executing sensitive operations, `ensureOperationAllowed()` validates against configured allowlists/approvals, possibly prompting the operator.
 6. **Result delivery** – Generated artifacts and lane decisions surface back through MCP responses and persisted documentation, maintaining BMAD’s invisible yet auditable workflow.
 
@@ -110,4 +110,4 @@ flowchart TD
 
 ---
 
-**Last Updated:** October 2agilai25
+**Last Updated:** October 2aidesigner25

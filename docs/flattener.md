@@ -14,18 +14,18 @@ The BMAD-METHOD™ includes a powerful codebase flattener tool designed to prepa
 
 ```bash
 # Basic usage - creates flattened-codebase.xml in current directory
-npx agilai flatten
+npx aidesigner flatten
 
 # Specify custom input directory
-npx agilai flatten --input /path/to/source/directory
-npx agilai flatten -i /path/to/source/directory
+npx aidesigner flatten --input /path/to/source/directory
+npx aidesigner flatten -i /path/to/source/directory
 
 # Specify custom output file
-npx agilai flatten --output my-project.xml
-npx agilai flatten -o /path/to/output/codebase.xml
+npx aidesigner flatten --output my-project.xml
+npx aidesigner flatten -o /path/to/output/codebase.xml
 
 # Combine input and output options
-npx agilai flatten --input /path/to/source --output /path/to/output/codebase.xml
+npx aidesigner flatten --input /path/to/source --output /path/to/output/codebase.xml
 ```
 
 ## Example Output

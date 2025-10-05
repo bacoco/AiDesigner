@@ -1,9 +1,9 @@
 installation-options:
   full:
-    name: Complete Agilai Core
-    description: Copy the entire .agilai-core folder with all agents, templates, and tools
+    name: Complete aidesigner Core
+    description: Copy the entire .aidesigner-core folder with all agents, templates, and tools
     action: copy-folder
-    source: agilai-core
+    source: aidesigner-core
   single-agent:
     name: Single Agent
     description: Select and install a single agent with its dependencies
@@ -11,39 +11,39 @@ installation-options:
 ide-configurations:
   cursor:
     name: Cursor
-    rule-dir: .cursor/rules/agilai/
+    rule-dir: .cursor/rules/aidesigner/
     format: multi-file
     command-suffix: .mdc
     instructions: |
-      # To use Agilai agents in Cursor:
+      # To use aidesigner agents in Cursor:
       # 1. Press Ctrl+L (Cmd+L on Mac) to open the chat
       # 2. Type @agent-name (e.g., "@dev", "@pm", "@architect")
       # 3. The agent will adopt that persona for the conversation
   claude-code:
     name: Claude Code
-    rule-dir: .claude/commands/Agilai/
+    rule-dir: .claude/commands/aidesigner/
     format: multi-file
     command-suffix: .md
     instructions: |
-      # To use Agilai agents in Claude Code:
+      # To use aidesigner agents in Claude Code:
       # 1. Type /agent-name (e.g., "/dev", "/pm", "/architect")
       # 2. Claude will switch to that agent's persona
   iflow-cli:
     name: iFlow CLI
-    rule-dir: .iflow/commands/Agilai/
+    rule-dir: .iflow/commands/aidesigner/
     format: multi-file
     command-suffix: .md
     instructions: |
-      # To use Agilai agents in iFlow CLI:
+      # To use aidesigner agents in iFlow CLI:
       # 1. Type /agent-name (e.g., "/dev", "/pm", "/architect")
       # 2. iFlow will switch to that agent's persona
   crush:
     name: Crush
-    rule-dir: .crush/commands/Agilai/
+    rule-dir: .crush/commands/aidesigner/
     format: multi-file
     command-suffix: .md
     instructions: |
-      # To use Agilai agents in Crush:
+      # To use aidesigner agents in Crush:
       # 1. Press CTRL + P and press TAB
       # 2. Select agent or task
       # 3. Crush will switch to that agent's persona / task
@@ -53,7 +53,7 @@ ide-configurations:
     format: multi-file
     command-suffix: .md
     instructions: |
-      # To use Agilai agents in Windsurf:
+      # To use aidesigner agents in Windsurf:
       # 1. Type /agent-name (e.g., "/dev", "/pm")
       # 2. Windsurf will adopt that agent's persona
   trae:
@@ -62,7 +62,7 @@ ide-configurations:
     format: multi-file
     command-suffix: .md
     instructions: |
-      # To use Agilai agents in Trae:
+      # To use aidesigner agents in Trae:
       # 1. Type @agent-name (e.g., "@dev", "@pm", "@architect")
       # 2. Trae will adopt that agent's persona
   roo:
@@ -70,9 +70,9 @@ ide-configurations:
     format: custom-modes
     file: .roomodes
     instructions: |
-      # To use Agilai agents in Roo Code:
+      # To use aidesigner agents in Roo Code:
       # 1. Open the mode selector (usually in the status bar)
-      # 2. Select any agilai-{agent} mode (e.g., "agilai-dev", "agilai-pm")
+      # 2. Select any aidesigner-{agent} mode (e.g., "aidesigner-dev", "aidesigner-pm")
       # 3. The AI will adopt that agent's full personality and capabilities
   cline:
     name: Cline
@@ -80,21 +80,21 @@ ide-configurations:
     format: multi-file
     command-suffix: .md
     instructions: |
-      # To use Agilai agents in Cline:
+      # To use aidesigner agents in Cline:
       # 1. Open the Cline chat panel in VS Code
       # 2. Type @agent-name (e.g., "@dev", "@pm", "@architect")
       # 3. The agent will adopt that persona for the conversation
       # 4. Rules are stored in .clinerules/ directory in your project
   gemini:
     name: Gemini CLI
-    rule-dir: .gemini/commands/Agilai/
+    rule-dir: .gemini/commands/aidesigner/
     format: multi-file
     command-suffix: .toml
     instructions: |
-      # To use Agilai agents with the Gemini CLI:
-      # 1. The installer creates a `Agilai` folder in `.gemini/commands`.
+      # To use aidesigner agents with the Gemini CLI:
+      # 1. The installer creates a `aidesigner` folder in `.gemini/commands`.
       # 2. This adds custom commands for each agent and task.
-      # 3. Type /Agilai:agents:<agent-name> (e.g., "/Agilai:agents:dev", "/Agilai:agents:pm") or /Agilai:tasks:<task-name> (e.g., "/Agilai:tasks:create-doc").
+      # 3. Type /aidesigner:agents:<agent-name> (e.g., "/aidesigner:agents:dev", "/aidesigner:agents:pm") or /aidesigner:tasks:<task-name> (e.g., "/aidesigner:tasks:create-doc").
       # 4. The agent will adopt that persona for the conversation or preform the task.
   github-copilot:
     name: Github Copilot
@@ -102,7 +102,7 @@ ide-configurations:
     format: multi-file
     command-suffix: .md
     instructions: |
-      # To use Agilai agents with Github Copilot:
+      # To use aidesigner agents with Github Copilot:
       # 1. The installer creates a .github/chatmodes/ directory in your project
       # 2. Open the Chat view (`⌃⌘I` on Mac, `Ctrl+Alt+I` on Windows/Linux) and select **Agent** from the chat mode selector.
       # 3. The agent will adopt that persona for the conversation
@@ -114,21 +114,21 @@ ide-configurations:
     format: custom-modes
     file: .kilocodemodes
     instructions: |
-      # To use Agilai™ agents in Kilo Code:
+      # To use aidesigner™ agents in Kilo Code:
       # 1. Open the mode selector in VSCode
-      # 2. Select a agilai-{agent} mode (e.g. "agilai-dev")
+      # 2. Select a aidesigner-{agent} mode (e.g. "aidesigner-dev")
       # 3. The AI adopts that agent's persona and capabilities
 
   qwen-code:
     name: Qwen Code
-    rule-dir: .qwen/commands/Agilai/
+    rule-dir: .qwen/commands/aidesigner/
     format: multi-file
     command-suffix: .toml
     instructions: |
-      # To use Agilai agents with Qwen Code:
-      # 1. The installer creates a `Agilai` folder in `.qwen/commands`.
+      # To use aidesigner agents with Qwen Code:
+      # 1. The installer creates a `aidesigner` folder in `.qwen/commands`.
       # 2. This adds custom commands for each agent and task.
-      # 3. Type /Agilai:agents:<agent-name> (e.g., "/Agilai:agents:dev", "/Agilai:agents:pm") or /Agilai:tasks:<task-name> (e.g., "/Agilai:tasks:create-doc").
+      # 3. Type /aidesigner:agents:<agent-name> (e.g., "/aidesigner:agents:dev", "/aidesigner:agents:pm") or /aidesigner:tasks:<task-name> (e.g., "/aidesigner:tasks:create-doc").
       # 4. The agent will adopt that persona for the conversation or perform the task.
 
   auggie-cli:
@@ -137,16 +137,16 @@ ide-configurations:
     locations:
       user:
         name: User Commands (Global)
-        rule-dir: ~/.augment/commands/agilai/
+        rule-dir: ~/.augment/commands/aidesigner/
         description: Available across all your projects (user-wide)
       workspace:
         name: Workspace Commands (Project)
-        rule-dir: ./.augment/commands/agilai/
+        rule-dir: ./.augment/commands/aidesigner/
         description: Stored in your repository and shared with your team
     command-suffix: .md
     instructions: |
-      # To use Agilai agents in Auggie CLI (Augment Code):
-      # 1. Type /agilai:agent-name (e.g., "/agilai:dev", "/agilai:pm", "/agilai:architect")
+      # To use aidesigner agents in Auggie CLI (Augment Code):
+      # 1. Type /aidesigner:agent-name (e.g., "/aidesigner:dev", "/aidesigner:pm", "/aidesigner:architect")
       # 2. The agent will adopt that persona for the conversation
       # 3. Commands are available based on your selected location(s)
 
@@ -155,8 +155,8 @@ ide-configurations:
     format: project-memory
     file: AGENTS.md
     instructions: |
-      # To use Agilai agents with Codex CLI:
-      # 1. The installer updates/creates AGENTS.md at your project root with Agilai agents and tasks.
+      # To use aidesigner agents with Codex CLI:
+      # 1. The installer updates/creates AGENTS.md at your project root with aidesigner agents and tasks.
       # 2. Run `codex` in your project. Codex automatically reads AGENTS.md as project memory.
       # 3. Mention agents in your prompt (e.g., "As dev, please implement ...") or reference tasks.
       # 4. You can further customize global Codex behavior via ~/.codex/config.toml.
@@ -166,9 +166,9 @@ ide-configurations:
     format: project-memory
     file: AGENTS.md
     instructions: |
-      # To enable Agilai agents for Codex Web (cloud):
-      # 1. The installer updates/creates AGENTS.md and ensures `.agilai-core` is NOT ignored by git.
-      # 2. Commit `.agilai-core/` and `AGENTS.md` to your repository.
+      # To enable aidesigner agents for Codex Web (cloud):
+      # 1. The installer updates/creates AGENTS.md and ensures `.aidesigner-core` is NOT ignored by git.
+      # 2. Commit `.aidesigner-core/` and `AGENTS.md` to your repository.
       # 3. Open the repo in Codex Web and reference agents naturally (e.g., "As dev, ...").
       # 4. Re-run this installer to refresh agent sections when the core changes.
 
@@ -177,8 +177,8 @@ ide-configurations:
     format: jsonc-config
     file: opencode.jsonc
     instructions: |
-      # To use Agilai agents with OpenCode CLI:
+      # To use aidesigner agents with OpenCode CLI:
       # 1. The installer creates/updates `opencode.jsonc` at your project root.
-      # 2. It ensures the Agilai core instructions file is referenced: `./.agilai-core/core-config.yaml`.
+      # 2. It ensures the aidesigner core instructions file is referenced: `./.aidesigner-core/core-config.yaml`.
       # 3. If an existing `opencode.json` or `opencode.jsonc` is present, it is preserved and only `instructions` are minimally merged.
       # 4. Run `opencode` in this project to use your configured agents and commands.

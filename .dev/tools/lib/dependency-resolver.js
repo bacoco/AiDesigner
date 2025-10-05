@@ -6,7 +6,7 @@ const { extractYamlFromAgent } = require('./yaml-utils');
 class DependencyResolver {
   constructor(rootDir) {
     this.rootDir = rootDir;
-    this.bmadCore = path.join(rootDir, 'agilai-core');
+    this.bmadCore = path.join(rootDir, 'aidesigner-core');
     this.common = path.join(rootDir, 'common');
     this.cache = new Map();
   }
@@ -119,12 +119,12 @@ class DependencyResolver {
       let content = null;
       let filePath = null;
 
-      // First try agilai-core
+      // First try aidesigner-core
       try {
         filePath = path.join(this.bmadCore, type, id);
         content = await fs.readFile(filePath, 'utf8');
       } catch {
-        // If not found in agilai-core, try common folder
+        // If not found in aidesigner-core, try common folder
         try {
           filePath = path.join(this.common, type, id);
           content = await fs.readFile(filePath, 'utf8');

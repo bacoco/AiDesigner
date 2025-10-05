@@ -50,7 +50,7 @@ class ConfigLoader {
               agents.push({
                 id: agentId,
                 name: agentConfig.title || agentConfig.name || agentId,
-                file: `agilai-core/agents/${entry.name}`,
+                file: `aidesigner-core/agents/${entry.name}`,
                 description: agentConfig.whenToUse || 'No description available',
               });
             }
@@ -148,7 +148,7 @@ class ConfigLoader {
 
     // Add all resolved resources
     for (const resource of agentDeps.resources) {
-      const filePath = `.agilai-core/${resource.type}/${resource.id}.md`;
+      const filePath = `.aidesigner-core/${resource.type}/${resource.id}.md`;
       if (!depPaths.includes(filePath)) {
         depPaths.push(filePath);
       }
@@ -164,8 +164,8 @@ class ConfigLoader {
   }
 
   getBmadCorePath() {
-    // Get the path to agilai-core relative to the installer (now under tools)
-    return path.join(__dirname, '..', '..', '..', 'agilai-core');
+    // Get the path to aidesigner-core relative to the installer (now under tools)
+    return path.join(__dirname, '..', '..', '..', 'aidesigner-core');
   }
 
   getDistPath() {
@@ -229,11 +229,11 @@ class ConfigLoader {
       const depPaths = [];
 
       // Add team config file
-      depPaths.push(`.agilai-core/agent-teams/${teamId}.yaml`);
+      depPaths.push(`.aidesigner-core/agent-teams/${teamId}.yaml`);
 
       // Add all agents
       for (const agent of teamDeps.agents) {
-        const filePath = `.agilai-core/agents/${agent.id}.md`;
+        const filePath = `.aidesigner-core/agents/${agent.id}.md`;
         if (!depPaths.includes(filePath)) {
           depPaths.push(filePath);
         }
@@ -241,7 +241,7 @@ class ConfigLoader {
 
       // Add all resolved resources
       for (const resource of teamDeps.resources) {
-        const filePath = `.agilai-core/${resource.type}/${resource.id}.${resource.type === 'workflows' ? 'yaml' : 'md'}`;
+        const filePath = `.aidesigner-core/${resource.type}/${resource.id}.${resource.type === 'workflows' ? 'yaml' : 'md'}`;
         if (!depPaths.includes(filePath)) {
           depPaths.push(filePath);
         }

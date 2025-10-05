@@ -83,7 +83,7 @@ describe('story context validation helper', () => {
     const result = await runStoryContextValidation({
       projectState,
       createLLMClient: async () => ({ lane: 'review' }),
-      AgilaiBridge: FakeBridge,
+      aidesignerBridge: FakeBridge,
       notes: 'smoke test',
       trigger: 'unit_test',
     });
@@ -113,7 +113,7 @@ describe('story context validation helper', () => {
     const result = await runStoryContextValidation({
       projectState,
       createLLMClient: async () => ({ lane: 'review' }),
-      AgilaiBridge: FakeBridge,
+      aidesignerBridge: FakeBridge,
     });
 
     expect(result.status).toBe('block');
@@ -141,7 +141,7 @@ describe('story context validation helper', () => {
       ensureStoryContextReadyForDevelopment({
         projectState,
         createLLMClient: async () => ({ lane: 'review' }),
-        AgilaiBridge: FakeBridge,
+        aidesignerBridge: FakeBridge,
       }),
     ).rejects.toMatchObject({
       message: expect.stringContaining('Story context validation failed'),

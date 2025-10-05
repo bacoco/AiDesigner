@@ -30,7 +30,7 @@ graph TD
     F --> F2{"UX Required?"}
     F2 -->|Yes| F3["UX Expert: Create Front End Spec"]
     F2 -->|No| H["Architect: Create Architecture from PRD"]
-    F3 --> F4["UX Expert: Generate UI Prompt for Lovable/Vagilai (Optional)"]
+    F3 --> F4["UX Expert: Generate UI Prompt for Lovable/Vaidesigner (Optional)"]
     F4 --> H2["Architect: Create Architecture from PRD + UX Spec"]
     H --> Q{"Early Test Strategy? (Optional)"}
     H2 --> Q
@@ -46,30 +46,30 @@ graph TD
     N --> O["PO: Shard Documents"]
     O --> P["Ready for SM/Dev Cycle"]
 
-    style A fill:#f5f5f5,color:#agilaiagilaiagilai
-    style B fill:#e3f2fd,color:#agilaiagilaiagilai
-    style C fill:#e8f5e9,color:#agilaiagilaiagilai
-    style C2 fill:#e8f5e9,color:#agilaiagilaiagilai
-    style C3 fill:#e8f5e9,color:#agilaiagilaiagilai
-    style D fill:#e8f5e9,color:#agilaiagilaiagilai
-    style E fill:#fff3eagilai,color:#agilaiagilaiagilai
-    style E2 fill:#fff3eagilai,color:#agilaiagilaiagilai
-    style F fill:#fff3eagilai,color:#agilaiagilaiagilai
-    style F2 fill:#e3f2fd,color:#agilaiagilaiagilai
-    style F3 fill:#e1f5fe,color:#agilaiagilaiagilai
-    style F4 fill:#e1f5fe,color:#agilaiagilaiagilai
-    style G fill:#e3f2fd,color:#agilaiagilaiagilai
-    style H fill:#f3e5f5,color:#agilaiagilaiagilai
-    style H2 fill:#f3e5f5,color:#agilaiagilaiagilai
-    style Q fill:#e3f2fd,color:#agilaiagilaiagilai
-    style R fill:#ffd54f,color:#agilaiagilaiagilai
-    style I fill:#f9abagilaiagilai,color:#fff
-    style J fill:#e3f2fd,color:#agilaiagilaiagilai
+    style A fill:#f5f5f5,color:#aidesigneraidesigneraidesigner
+    style B fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style C fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
+    style C2 fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
+    style C3 fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
+    style D fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
+    style E fill:#fff3eaidesigner,color:#aidesigneraidesigneraidesigner
+    style E2 fill:#fff3eaidesigner,color:#aidesigneraidesigneraidesigner
+    style F fill:#fff3eaidesigner,color:#aidesigneraidesigneraidesigner
+    style F2 fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style F3 fill:#e1f5fe,color:#aidesigneraidesigneraidesigner
+    style F4 fill:#e1f5fe,color:#aidesigneraidesigneraidesigner
+    style G fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style H fill:#f3e5f5,color:#aidesigneraidesigneraidesigner
+    style H2 fill:#f3e5f5,color:#aidesigneraidesigneraidesigner
+    style Q fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style R fill:#ffd54f,color:#aidesigneraidesigneraidesigner
+    style I fill:#f9abaidesigneraidesigner,color:#fff
+    style J fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
     style K fill:#34a853,color:#fff
-    style L fill:#f9abagilaiagilai,color:#fff
-    style M fill:#fff3eagilai,color:#agilaiagilaiagilai
+    style L fill:#f9abaidesigneraidesigner,color:#fff
+    style M fill:#fff3eaidesigner,color:#aidesigneraidesigneraidesigner
     style N fill:#1a73e8,color:#fff
-    style O fill:#f9abagilaiagilai,color:#fff
+    style O fill:#f9abaidesigneraidesigner,color:#fff
     style P fill:#34a853,color:#fff
 ```
 
@@ -142,31 +142,31 @@ graph TD
     Z --> K["Mark Story as Done"]
     K --> B
 
-    style A fill:#f5f5f5,color:#agilaiagilaiagilai
-    style B fill:#e8f5e9,color:#agilaiagilaiagilai
-    style B2 fill:#e8f5e9,color:#agilaiagilaiagilai
-    style S fill:#e3f2fd,color:#agilaiagilaiagilai
-    style T fill:#ffd54f,color:#agilaiagilaiagilai
-    style U fill:#ffd54f,color:#agilaiagilaiagilai
-    style B3 fill:#e3f2fd,color:#agilaiagilaiagilai
-    style B4 fill:#fce4ec,color:#agilaiagilaiagilai
-    style C fill:#e3f2fd,color:#agilaiagilaiagilai
-    style D fill:#e3f2fd,color:#agilaiagilaiagilai
-    style E fill:#e3f2fd,color:#agilaiagilaiagilai
-    style V fill:#e3f2fd,color:#agilaiagilaiagilai
-    style W fill:#ffd54f,color:#agilaiagilaiagilai
-    style X fill:#e3f2fd,color:#agilaiagilaiagilai
-    style F fill:#e3f2fd,color:#agilaiagilaiagilai
-    style G fill:#e3f2fd,color:#agilaiagilaiagilai
-    style H fill:#e3f2fd,color:#agilaiagilaiagilai
-    style I fill:#f9abagilaiagilai,color:#fff
-    style J fill:#ffd54f,color:#agilaiagilaiagilai
+    style A fill:#f5f5f5,color:#aidesigneraidesigneraidesigner
+    style B fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
+    style B2 fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
+    style S fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style T fill:#ffd54f,color:#aidesigneraidesigneraidesigner
+    style U fill:#ffd54f,color:#aidesigneraidesigneraidesigner
+    style B3 fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style B4 fill:#fce4ec,color:#aidesigneraidesigneraidesigner
+    style C fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style D fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style E fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style V fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style W fill:#ffd54f,color:#aidesigneraidesigneraidesigner
+    style X fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style F fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style G fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style H fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style I fill:#f9abaidesigneraidesigner,color:#fff
+    style J fill:#ffd54f,color:#aidesigneraidesigneraidesigner
     style K fill:#34a853,color:#fff
-    style L fill:#e3f2fd,color:#agilaiagilaiagilai
+    style L fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
     style M fill:#ff5722,color:#fff
     style N fill:#d32f2f,color:#fff
-    style Y fill:#e3f2fd,color:#agilaiagilaiagilai
-    style Z fill:#ffd54f,color:#agilaiagilaiagilai
+    style Y fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style Z fill:#ffd54f,color:#aidesigneraidesigneraidesigner
 ```
 
 ## Prerequisites
@@ -193,7 +193,7 @@ If you want to do the planning on the web with Claude (Sonnet 4 or Opus), Gemini
 
 ```bash
 # Interactive installation (recommended)
-npx agilai install
+npx aidesigner install
 ```
 
 ### OpenCode
@@ -201,26 +201,26 @@ npx agilai install
 BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.json` (JSON-only, no Markdown fallback).
 
 - Installation:
-  - Run `npx agilai install` and choose `OpenCode` in the IDE list.
+  - Run `npx aidesigner install` and choose `OpenCode` in the IDE list.
   - The installer will detect an existing `opencode.jsonc`/`opencode.json` or create a minimal `opencode.jsonc` if missing.
   - It will:
-    - Ensure `instructions` includes `.agilai-core/core-config.yaml` (and each selected expansion pack’s `config.yaml`).
-    - Merge BMAD agents and commands using file references (`{file:./.agilai-core/...}`), idempotently.
+    - Ensure `instructions` includes `.aidesigner-core/core-config.yaml` (and each selected expansion pack’s `config.yaml`).
+    - Merge BMAD agents and commands using file references (`{file:./.aidesigner-core/...}`), idempotently.
     - Preserve other top-level fields and user-defined entries.
 
 - Prefixes and collisions:
-  - You can opt-in to prefix agent keys with `agilai-` and command keys with `/agilai:tasks:` to avoid name collisions.
+  - You can opt-in to prefix agent keys with `aidesigner-` and command keys with `/aidesigner:tasks:` to avoid name collisions.
   - If a key already exists and is not BMAD-managed, the installer will skip it and suggest enabling prefixes.
 
 - What gets added:
-  - `instructions`: `.agilai-core/core-config.yaml` plus any selected expansion pack `config.yaml` files.
+  - `instructions`: `.aidesigner-core/core-config.yaml` plus any selected expansion pack `config.yaml` files.
   - `agent`: BMAD agents from core and selected packs.
-    - `prompt`: `{file:./.agilai-core/agents/<id>.md}` (or pack path)
+    - `prompt`: `{file:./.aidesigner-core/agents/<id>.md}` (or pack path)
     - `mode`: `primary` for orchestrators, otherwise `all`
     - `tools`: `{ write: true, edit: true, bash: true }`
     - `description`: extracted from the agent’s `whenToUse`
   - `command`: BMAD tasks from core and selected packs.
-    - `template`: `{file:./.agilai-core/tasks/<id>.md}` (or pack path)
+    - `template`: `{file:./.aidesigner-core/tasks/<id>.md}` (or pack path)
     - `description`: extracted from the task’s “Purpose” section
 
 - Selected Packages Only:
@@ -229,7 +229,7 @@ BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.jso
 - Refresh after changes:
   - Re-run:
     ```bash
-    npx agilai install -f -i opencode
+    npx aidesigner install -f -i opencode
     ```
   - The installer safely updates entries without duplication and preserves your custom fields and comments.
 
@@ -238,7 +238,7 @@ BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.jso
     ```json
     {
       "scripts": {
-        "/agilai:opencode": "agilai install -f -i opencode"
+        "/aidesigner:opencode": "aidesigner install -f -i opencode"
       }
     }
     ```
@@ -248,10 +248,10 @@ BMAD integrates with OpenCode via a project-level `opencode.jsonc`/`opencode.jso
 BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files.
 
 - Two installation modes:
-  - Codex (local only): keeps `.agilai-core/` ignored for local dev.
-    - `npx agilai install -f -i codex -d .`
-  - Codex Web Enabled: ensures `.agilai-core/` is tracked so you can commit it for Codex Web.
-    - `npx agilai install -f -i codex-web -d .`
+  - Codex (local only): keeps `.aidesigner-core/` ignored for local dev.
+    - `npx aidesigner install -f -i codex -d .`
+  - Codex Web Enabled: ensures `.aidesigner-core/` is tracked so you can commit it for Codex Web.
+    - `npx aidesigner install -f -i codex-web -d .`
 
 - What gets generated:
   - `AGENTS.md` at the project root with a BMAD section containing
@@ -264,9 +264,9 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
     `shadcn` CLI can scaffold UI components without re-prompting you for
     preferences.
   - If a `package.json` exists, helpful scripts are added:
-    - `/agilai:refresh`, `/agilai:list`, `/agilai:validate`
+    - `/aidesigner:refresh`, `/aidesigner:list`, `/aidesigner:validate`
   - Global Codex CLI defaults are merged into `~/.codex/config.toml` (skipped automatically in CI/non-interactive runs).
-    - Ensures Agilai's MCP server is registered and Codex approvals run in fully automated mode by default.
+    - Ensures aidesigner's MCP server is registered and Codex approvals run in fully automated mode by default.
     - Registers optional `chrome-devtools` and `shadcn` MCP helpers with
       `autoStart = false` so you can enable them post-install.
     - Resulting snippet:
@@ -282,12 +282,12 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
       require_manual_approval = false
 
       [[mcp.servers]]
-      args = ["agilai", "mcp"]
+      args = ["aidesigner", "mcp"]
       autoApprove = true
       autoStart = true
       command = "npx"
-      description = "Agilai MCP server for orchestrating Agilai agents."
-      displayName = "Agilai MCP"
+      description = "aidesigner MCP server for orchestrating aidesigner agents."
+      displayName = "aidesigner MCP"
       name = "bmad-mcp"
       transport = "stdio"
 
@@ -318,7 +318,7 @@ BMAD integrates with OpenAI Codex via `AGENTS.md` and committed core agent files
 
 - Using Codex:
   - CLI: run `codex` in the project root and prompt naturally, e.g., “As dev, implement …”.
-  - Web: commit `.agilai-core/` and `AGENTS.md`, then open the repo in Codex and prompt the same way.
+  - Web: commit `.aidesigner-core/` and `AGENTS.md`, then open the repo in Codex and prompt the same way.
 
 - Refresh after changes:
   - Re-run the appropriate install mode (`codex` or `codex-web`) to update the BMAD block in `AGENTS.md`.
@@ -441,7 +441,7 @@ Creates comprehensive test strategies including:
 
 - Test scenarios for each acceptance criterion
 - Appropriate test level recommendations (unit vs integration vs E2E)
-- Risk-based prioritization (Pagilai/P1/P2)
+- Risk-based prioritization (Paidesigner/P1/P2)
 - Test data requirements and mock strategies
 - Execution strategies for CI/CD integration
 
@@ -455,8 +455,8 @@ test_summary:
     integration: 7
     e2e: 2
   by_priority:
-    Pagilai: 8 # Must have - linked to critical risks
-    P1: 1agilai # Should have - medium risks
+    Paidesigner: 8 # Must have - linked to critical risks
+    P1: 1aidesigner # Should have - medium risks
     P2: 6 # Nice to have - low risks
 ```
 
@@ -554,7 +554,7 @@ Quinn enforces these test quality principles:
 
 - **PASS**: All critical requirements met, no blocking issues
 - **CONCERNS**: Non-critical issues found, team should review
-- **FAIL**: Critical issues that should be addressed (security risks, missing Pagilai tests)
+- **FAIL**: Critical issues that should be addressed (security risks, missing Paidesigner tests)
 - **WAIVED**: Issues acknowledged but explicitly accepted by team
 
 ### Special Situations
@@ -603,7 +603,7 @@ Quick reference for where Test Architect outputs are stored:
 
 ## Technical Preferences System
 
-BMad includes a personalization system through the `technical-preferences.md` file located in `.agilai-core/data/` - this can help bias the PM and Architect to recommend your preferences for design patterns, technology selection, or anything else you would like to put in here.
+BMad includes a personalization system through the `technical-preferences.md` file located in `.aidesigner-core/data/` - this can help bias the PM and Architect to recommend your preferences for design patterns, technology selection, or anything else you would like to put in here.
 
 ### Using with Web Bundles
 
@@ -611,7 +611,7 @@ When creating custom web bundles or uploading to AI platforms, include your `tec
 
 ## Core Configuration
 
-The `.agilai-core/core-config.yaml` file is a critical config that enables BMad to work seamlessly with differing project structures, more options will be made available in the future. Currently the most important is the devLoadAlwaysFiles list section in the yaml.
+The `.aidesigner-core/core-config.yaml` file is a critical config that enables BMad to work seamlessly with differing project structures, more options will be made available in the future. Currently the most important is the devLoadAlwaysFiles list section in the yaml.
 
 ### Developer Context Files
 

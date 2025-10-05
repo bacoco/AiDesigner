@@ -54,7 +54,7 @@ describe('MCP server bundle smoke test', () => {
       );
     }
 
-    const smokeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agilai-mcp-smoke-test-'));
+    const smokeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'aidesigner-mcp-smoke-test-'));
 
     try {
       await new Promise((resolve, reject) => {
@@ -62,8 +62,8 @@ describe('MCP server bundle smoke test', () => {
           cwd: repoRoot,
           env: {
             ...process.env,
-            AGILAI_MCP_SMOKE_TEST: '1',
-            AGILAI_MCP_SMOKE_ROOT: smokeRoot,
+            aidesigner_MCP_SMOKE_TEST: '1',
+            aidesigner_MCP_SMOKE_ROOT: smokeRoot,
             MCP_PROFILE: 'default',
             HOME: smokeRoot,
           },
@@ -94,17 +94,17 @@ describe('MCP server bundle smoke test', () => {
       });
 
       const claudeConfigPath = path.join(smokeRoot, '.claude', 'mcp-config.json');
-      const agilaiConfigPath = path.join(smokeRoot, 'mcp', 'agilai-config.json');
+      const aidesignerConfigPath = path.join(smokeRoot, 'mcp', 'aidesigner-config.json');
 
       expect(fs.existsSync(claudeConfigPath)).toBe(true);
-      expect(fs.existsSync(agilaiConfigPath)).toBe(true);
+      expect(fs.existsSync(aidesignerConfigPath)).toBe(true);
 
       const claudeConfig = JSON.parse(fs.readFileSync(claudeConfigPath, 'utf8'));
-      const agilaiConfig = JSON.parse(fs.readFileSync(agilaiConfigPath, 'utf8'));
+      const aidesignerConfig = JSON.parse(fs.readFileSync(aidesignerConfigPath, 'utf8'));
 
       const configKeys = Object.keys(claudeConfig.mcpServers || {});
       expect(configKeys.length).toBeGreaterThan(0);
-      expect(Object.keys(agilaiConfig.mcpServers || {})).toEqual(configKeys);
+      expect(Object.keys(aidesignerConfig.mcpServers || {})).toEqual(configKeys);
     } finally {
       fs.rmSync(smokeRoot, { recursive: true, force: true });
     }

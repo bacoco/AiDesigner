@@ -7,15 +7,15 @@ const os = require('node:os');
 const path = require('node:path');
 const DEFAULT_MODEL = 'GPT-5-Codex';
 const DEFAULT_MANUAL_APPROVAL = false;
-const SERVER_NAME = 'agilai-mcp';
+const SERVER_NAME = 'aidesigner-mcp';
 const DEFAULT_SERVERS = [
   {
     name: SERVER_NAME,
-    displayName: 'Agilai MCP',
-    description: 'Agilai MCP server for orchestrating Agilai agents.',
+    displayName: 'aidesigner MCP',
+    description: 'aidesigner MCP server for orchestrating aidesigner agents.',
     transport: 'stdio',
     command: 'npx',
-    args: ['agilai', 'mcp'],
+    args: ['aidesigner', 'mcp'],
     autoStart: true,
     autoApprove: true,
   },

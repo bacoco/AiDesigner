@@ -8,7 +8,7 @@ Traditional UI design workflows have a fundamental problem: they're either too r
 
 **Real designers have conversations.** They ask about your users, explore your journey, gather inspiration, and build understanding iteratively.
 
-Agilai's **UI Designer Liaison** brings this natural design conversation to AI-powered visual concept generation with Google Nano Banana (Gemini 2.5 Flash Image).
+aidesigner's **UI Designer Liaison** brings this natural design conversation to AI-powered visual concept generation with Google Nano Banana (Gemini 2.5 Flash Image).
 
 ### What You Get
 
@@ -47,7 +47,7 @@ Agilai's **UI Designer Liaison** brings this natural design conversation to AI-p
 Quick Lane infers your user journey from the PRD and generates per-screen prompts automatically.
 
 ```bash
-npx agilai@latest start
+npx aidesigner@latest start
 
 You: "I want to build a task management app for remote teams"
 
@@ -84,7 +84,7 @@ AI: "✅ Generated:
 Complex Lane guides you through a 6-stage conversational discovery with full control.
 
 ```bash
-npx agilai@latest start
+npx aidesigner@latest start
 
 # Then activate the UI Designer Liaison
 @ui-designer-liaison
@@ -718,10 +718,10 @@ The Chrome DevTools Model Context Protocol server allows AI agents to:
 
 ### Setup
 
-**Option 1: Via Agilai Installer**
+**Option 1: Via aidesigner Installer**
 
 ```bash
-npx agilai@latest start
+npx aidesigner@latest start
 # Select to install optional MCP servers
 # Choose chrome-devtools-mcp
 ```
@@ -1069,7 +1069,7 @@ Nana: "I'll request 5 distinct state variations in the prompt"
 
 ---
 
-## Integration with Agilai Workflow
+## Integration with aidesigner Workflow
 
 ### Quick Lane Flow
 
@@ -1212,7 +1212,7 @@ All discovery data persists across phases:
 
 - [Using Google Nano Banana](USING_GOOGLE_NANO_BANANA.md) - Google AI Studio integration
 - [Dual-Lane Orchestration](../DUAL_LANE_ORCHESTRATION.md) - Quick vs Complex Lane
-- [User Guide](../user-guide.md) - Complete Agilai workflows
+- [User Guide](../user-guide.md) - Complete aidesigner workflows
 
 ### Related Guides
 
@@ -1233,4 +1233,4 @@ See `examples/` directory for:
 **Last Updated**: 2025-10-05
 **Status**: ✅ Production Ready
 
-_Built with Agilai • Powered by BMAD-METHOD™_
+_Built with aidesigner • Powered by BMAD-METHOD™_

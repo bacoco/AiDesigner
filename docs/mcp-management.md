@@ -1,6 +1,6 @@
 # MCP Management System
 
-The Agilai project includes a comprehensive Model Context Protocol (MCP) management system that enables seamless integration with AI tools and services.
+The aidesigner project includes a comprehensive Model Context Protocol (MCP) management system that enables seamless integration with AI tools and services.
 
 ## Overview
 
@@ -58,17 +58,17 @@ The installer will:
 
 #### Configuration Targets
 
-By default, MCP servers are installed to the **Agilai configuration**. You can specify a different target using the `config` parameter when using the `install_mcp_server` tool:
+By default, MCP servers are installed to the **aidesigner configuration**. You can specify a different target using the `config` parameter when using the `install_mcp_server` tool:
 
-- **`config: "agilai"`** - Install to Agilai config only (default)
+- **`config: "aidesigner"`** - Install to aidesigner config only (default)
 - **`config: "claude"`** - Install to Claude Desktop config only
-- **`config: "both"`** - Install to both Agilai and Claude Desktop configs
-- **`config: "bmad"`** - Legacy alias for "agilai"
+- **`config: "both"`** - Install to both aidesigner and Claude Desktop configs
+- **`config: "bmad"`** - Legacy alias for "aidesigner"
 
 **Example usage in agent tools:**
 
 ```javascript
-// Default - installs to Agilai config
+// Default - installs to aidesigner config
 install_mcp_server({ serverId: 'filesystem' });
 
 // Install to Claude Desktop config only
@@ -235,7 +235,7 @@ MCP servers often require API keys, tokens, and passwords. The security system p
 2. **Encrypted Vault** (fallback):
    - AES-256-GCM encryption
    - Master key stored with `600` permissions
-   - Located in `~/.agilai/secure/`
+   - Located in `~/.aidesigner/secure/`
 
 ### Migrate to Secure Storage
 
@@ -294,7 +294,7 @@ Claude Configuration:
     Path: mcpServers.github.env.GITHUB_TOKEN
     Fix: Run 'npm run mcp:secure'
 
-Agilai Configuration:
+aidesigner Configuration:
   ✓ Secure
 
 Stored Credentials:
@@ -354,10 +354,10 @@ The orchestrator follows these rules:
   .mcp-profiles.json        # Profile metadata
 
 mcp/
-  agilai-config.json        # Agilai MCP config (default profile)
-  agilai-config.dev.json    # Dev profile
+  aidesigner-config.json        # aidesigner MCP config (default profile)
+  aidesigner-config.dev.json    # Dev profile
 
-~/.agilai/secure/
+~/.aidesigner/secure/
   vault.enc                 # Encrypted credentials
   .master.key               # Encryption key (chmod 600)
 ```
@@ -424,7 +424,7 @@ npm run mcp:doctor
 
 # Common issues:
 # - Missing dependencies: npm install <package>
-# - Permission errors: chmod 600 ~/.agilai/secure/.master.key
+# - Permission errors: chmod 600 ~/.aidesigner/secure/.master.key
 # - Server not responding: Restart Claude Desktop or MCP server
 # - Config corruption: Restore from profile export
 
@@ -635,7 +635,7 @@ npm run mcp:doctor
 
 ```bash
 # Fix permissions
-chmod 600 ~/.agilai/secure/.master.key
+chmod 600 ~/.aidesigner/secure/.master.key
 ```
 
 ### Getting Help
@@ -643,7 +643,7 @@ chmod 600 ~/.agilai/secure/.master.key
 - Check logs: `DEBUG=mcp:* <command>`
 - Run doctor: `npm run mcp:doctor`
 - Security audit: `npm run mcp:audit`
-- GitHub Issues: https://github.com/bacoco/agilai/issues
+- GitHub Issues: https://github.com/bacoco/aidesigner/issues
 
 ## Contributing
 

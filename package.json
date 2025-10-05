@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "agilai",
+  "name": "aidesigner",
   "version": "1.5.0",
   "description": "Universal AI agent framework with MCP integration - Chat naturally, get professional results",
   "keywords": [
@@ -25,36 +25,36 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bacoco/Agilai.git"
+    "url": "git+https://github.com/bacoco/aidesigner.git"
   },
   "license": "MIT",
   "author": "Loic Bacoco",
   "main": ".dev/tools/cli.js",
   "bin": {
-    "agilai": "bin/agilai",
-    "agilai-codex": "bin/agilai-codex"
+    "aidesigner": "bin/aidesigner",
+    "aidesigner-codex": "bin/aidesigner-codex"
   },
   "scripts": {
-    "agilai": "node bin/agilai start",
-    "agilai:claude": "node bin/agilai-claude",
-    "agilai:codex": "node bin/agilai-codex",
-    "agilai:opencode": "npx agilai opencode",
-    "bmad": "npm run agilai --",
-    "bmad:claude": "npm run agilai:claude --",
-    "bmad:codex": "npm run agilai:codex --",
-    "bmad:opencode": "npm run agilai:opencode --",
+    "aidesigner": "node bin/aidesigner start",
+    "aidesigner:claude": "node bin/aidesigner-claude",
+    "aidesigner:codex": "node bin/aidesigner-codex",
+    "aidesigner:opencode": "npx aidesigner opencode",
+    "bmad": "npm run aidesigner --",
+    "bmad:claude": "npm run aidesigner:claude --",
+    "bmad:codex": "npm run aidesigner:codex --",
+    "bmad:opencode": "npm run aidesigner:opencode --",
     "build": "node .dev/tools/cli.js build",
     "build:agents": "node .dev/tools/cli.js build --agents-only",
     "build:mcp": "tsc -p .dev/mcp/tsconfig.json && tsc -p .dev/config/tsconfig.codex.json && cp -r .dev/lib dist/mcp/ && cp -r hooks dist/mcp/ && rm -rf dist/mcp/agents && cp -r agents dist/mcp/agents && node -e \"const fs=require('node:fs'); const path=require('node:path'); const dest=path.join('dist','mcp','tools'); fs.mkdirSync(dest,{recursive:true}); for (const file of ['mcp-registry.js','mcp-manager.js','mcp-profiles.js','mcp-security.js']) { fs.copyFileSync(path.join('.dev','tools',file), path.join(dest,file)); }\"",
     "build:teams": "node .dev/tools/cli.js build --teams-only",
-    "codex": "node bin/agilai-codex",
+    "codex": "node bin/aidesigner-codex",
     "fix": "npm run format && npm run lint:fix",
     "flatten": "node .dev/tools/flattener/main.js",
     "format": "prettier --config .dev/config/prettier.config.mjs --write \"**/*.{js,cjs,mjs,json,md,yaml}\"",
     "format:check": "prettier --config .dev/config/prettier.config.mjs --check \"**/*.{js,cjs,mjs,json,md,yaml}\"",
     "postinstall": "node .dev/tools/postinstall-build-mcp.js",
-    "install:agilai": "node .dev/tools/installer/bin/agilai.js install",
-    "install:bmad": "npm run install:agilai --",
+    "install:aidesigner": "node .dev/tools/installer/bin/aidesigner.js install",
+    "install:bmad": "npm run install:aidesigner --",
     "lint": "eslint --config .dev/config/eslint.config.mjs . --ext .js,.cjs,.mjs,.yaml --max-warnings=0",
     "lint:fix": "eslint --config .dev/config/eslint.config.mjs . --ext .js,.cjs,.mjs,.yaml --fix",
     "list:agents": "node .dev/tools/cli.js list:agents",

@@ -4,11 +4,11 @@ const https = require('node:https');
 const chalk = require('chalk');
 
 /**
- * MCP Registry - Fetches and manages MCP server registry for Agilai
+ * MCP Registry - Fetches and manages MCP server registry for aidesigner
  */
 class McpRegistry {
   constructor() {
-    this.cacheDir = path.join(require('node:os').homedir(), '.agilai', 'cache');
+    this.cacheDir = path.join(require('node:os').homedir(), '.aidesigner', 'cache');
     this.cacheFile = path.join(this.cacheDir, 'mcp-registry.json');
     this.cacheTTL = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -215,7 +215,7 @@ class McpRegistry {
         path: '/modelcontextprotocol/servers/main/README.md',
         method: 'GET',
         headers: {
-          'User-Agent': 'Agilai-MCP-Manager',
+          'User-Agent': 'aidesigner-MCP-Manager',
         },
       };
 

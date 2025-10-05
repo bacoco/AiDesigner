@@ -21,7 +21,7 @@ class WebBuilder {
     return yaml.load(content);
   }
 
-  convertToWebPath(filePath, bundleRoot = 'agilai-core') {
+  convertToWebPath(filePath, bundleRoot = 'aidesigner-core') {
     // Convert absolute paths to web bundle paths with dot prefix
     // All resources get installed under the bundle root, so use that path
     const relativePath = path.relative(this.rootDir, filePath);
@@ -32,7 +32,7 @@ class WebBuilder {
       // For expansion packs, remove 'expansion-packs/packname' and use the rest
       resourcePath = pathParts.slice(2).join('/');
     } else {
-      // For agilai-core, common, etc., remove the first part
+      // For aidesigner-core, common, etc., remove the first part
       resourcePath = pathParts.slice(1).join('/');
     }
 
@@ -41,22 +41,22 @@ class WebBuilder {
 
   generateWebInstructions(bundleType, packName = null) {
     // Generate dynamic web instructions based on bundle type
-    const rootExample = packName ? `.${packName}` : '.agilai-core';
+    const rootExample = packName ? `.${packName}` : '.aidesigner-core';
     const examplePath = packName
       ? `.${packName}/folder/filename.md`
-      : '.agilai-core/folder/filename.md';
+      : '.aidesigner-core/folder/filename.md';
     const personasExample = packName
       ? `.${packName}/personas/analyst.md`
-      : '.agilai-core/personas/analyst.md';
+      : '.aidesigner-core/personas/analyst.md';
     const tasksExample = packName
       ? `.${packName}/tasks/create-story.md`
-      : '.agilai-core/tasks/create-story.md';
+      : '.aidesigner-core/tasks/create-story.md';
     const utilitiesExample = packName
       ? `.${packName}/utils/template-format.md`
-      : '.agilai-core/utils/template-format.md';
+      : '.aidesigner-core/utils/template-format.md';
     const tasksReference = packName
       ? `.${packName}/tasks/create-story.md`
-      : '.agilai-core/tasks/create-story.md';
+      : '.aidesigner-core/tasks/create-story.md';
 
     return `# Web Agent Bundle Instructions
 
@@ -158,13 +158,13 @@ These references map directly to bundle sections:
     const sections = [template];
 
     // Add agent configuration
-    const agentPath = this.convertToWebPath(dependencies.agent.path, 'agilai-core');
-    sections.push(this.formatSection(agentPath, dependencies.agent.content, 'agilai-core'));
+    const agentPath = this.convertToWebPath(dependencies.agent.path, 'aidesigner-core');
+    sections.push(this.formatSection(agentPath, dependencies.agent.content, 'aidesigner-core'));
 
     // Add all dependencies
     for (const resource of dependencies.resources) {
-      const resourcePath = this.convertToWebPath(resource.path, 'agilai-core');
-      sections.push(this.formatSection(resourcePath, resource.content, 'agilai-core'));
+      const resourcePath = this.convertToWebPath(resource.path, 'aidesigner-core');
+      sections.push(this.formatSection(resourcePath, resource.content, 'aidesigner-core'));
     }
 
     return sections.join('\n');
@@ -177,19 +177,19 @@ These references map directly to bundle sections:
     const sections = [template];
 
     // Add team configuration
-    const teamPath = this.convertToWebPath(dependencies.team.path, 'agilai-core');
-    sections.push(this.formatSection(teamPath, dependencies.team.content, 'agilai-core'));
+    const teamPath = this.convertToWebPath(dependencies.team.path, 'aidesigner-core');
+    sections.push(this.formatSection(teamPath, dependencies.team.content, 'aidesigner-core'));
 
     // Add all agents
     for (const agent of dependencies.agents) {
-      const agentPath = this.convertToWebPath(agent.path, 'agilai-core');
-      sections.push(this.formatSection(agentPath, agent.content, 'agilai-core'));
+      const agentPath = this.convertToWebPath(agent.path, 'aidesigner-core');
+      sections.push(this.formatSection(agentPath, agent.content, 'aidesigner-core'));
     }
 
     // Add all deduplicated resources
     for (const resource of dependencies.resources) {
-      const resourcePath = this.convertToWebPath(resource.path, 'agilai-core');
-      sections.push(this.formatSection(resourcePath, resource.content, 'agilai-core'));
+      const resourcePath = this.convertToWebPath(resource.path, 'aidesigner-core');
+      sections.push(this.formatSection(resourcePath, resource.content, 'aidesigner-core'));
     }
 
     return sections.join('\n');
@@ -247,7 +247,7 @@ These references map directly to bundle sections:
     }
   }
 
-  formatSection(path, content, bundleRoot = 'agilai-core') {
+  formatSection(path, content, bundleRoot = 'aidesigner-core') {
     const separator = '====================';
 
     // Process agent content if this is an agent file
@@ -420,7 +420,7 @@ These references map directly to bundle sections:
                 if (!found) {
                   const corePath = path.join(
                     this.rootDir,
-                    'agilai-core',
+                    'aidesigner-core',
                     resourceType,
                     resourceName,
                   );
@@ -550,7 +550,12 @@ These references map directly to bundle sections:
       } else {
         // Use core BMad version
         try {
-          const coreAgentPath = path.join(this.rootDir, 'agilai-core', 'agents', `${agentId}.md`);
+          const coreAgentPath = path.join(
+            this.rootDir,
+            'aidesigner-core',
+            'agents',
+            `${agentId}.md`,
+          );
           const coreAgentContent = await fs.readFile(coreAgentPath, 'utf8');
           const coreAgentWebPath = this.convertToWebPath(coreAgentPath, packName);
           sections.push(this.formatSection(coreAgentWebPath, coreAgentContent, packName));
@@ -604,7 +609,7 @@ These references map directly to bundle sections:
 
       // If not found in expansion pack (or doesn't exist there), try core
       if (!found) {
-        const corePath = path.join(this.rootDir, 'agilai-core', dep.type, dep.name);
+        const corePath = path.join(this.rootDir, 'aidesigner-core', dep.type, dep.name);
         try {
           const content = await fs.readFile(corePath, 'utf8');
           const coreWebPath = this.convertToWebPath(corePath, packName);

@@ -125,8 +125,8 @@ const mockLoadAgent = jest.fn();
 const mockListAgents = jest.fn();
 const mockGetEnvironmentInfo = jest.fn();
 
-jest.mock('../lib/agilai-bridge.js', () => {
-  const AgilaiBridge = jest.fn().mockImplementation(() => ({
+jest.mock('../lib/aidesigner-bridge.js', () => {
+  const aidesignerBridge = jest.fn().mockImplementation(() => ({
     initialize: mockBridgeInitialize,
     getEnvironmentInfo: mockGetEnvironmentInfo,
     runAgent: mockRunAgent,
@@ -136,7 +136,7 @@ jest.mock('../lib/agilai-bridge.js', () => {
   }));
 
   return {
-    AgilaiBridge,
+    aidesignerBridge,
     __bridgeMocks: {
       initializeMock: mockBridgeInitialize,
       runAgentMock: mockRunAgent,
@@ -309,7 +309,7 @@ jest.mock('../lib/story-context-validator.js', () => {
 const { __instances: serverInstances } = require('@modelcontextprotocol/sdk/server/index.js');
 const laneSelector = require('../lib/lane-selector.js');
 const quickLaneModule = require('../lib/quick-lane.js');
-const bridgeModule = require('../lib/agilai-bridge.js');
+const bridgeModule = require('../lib/aidesigner-bridge.js');
 const deliverableGeneratorModule = require('../lib/deliverable-generator.js');
 const projectStateModule = require('../lib/project-state.js');
 const phaseTransitionModule = require('../hooks/phase-transition.js');

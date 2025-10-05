@@ -5,32 +5,32 @@ const os = require('node:os');
 
 jest.mock('../hooks/context-enrichment', () => ({}), { virtual: true });
 
-const { AgilaiBridge } = require('../lib/agilai-bridge.js');
+const { aidesignerBridge } = require('../lib/aidesigner-bridge.js');
 
-describe('AgilaiBridge legacy core detection', () => {
+describe('aidesignerBridge legacy core detection', () => {
   test('initializes from package root using default paths', async () => {
-    const bridge = new AgilaiBridge({ llmClient: { chat: jest.fn() } });
+    const bridge = new aidesignerBridge({ llmClient: { chat: jest.fn() } });
 
     const config = await bridge.initialize();
 
     const packageRoot = path.resolve(__dirname, '..', '..');
-    const expectedConfigPath = path.join(packageRoot, 'agilai-core', 'core-config.yaml');
+    const expectedConfigPath = path.join(packageRoot, 'aidesigner-core', 'core-config.yaml');
     const expectedConfig = yaml.load(await fs.readFile(expectedConfigPath, 'utf8'));
 
     expect(config).toEqual(expectedConfig);
     expect(bridge.getCoreConfig()).toEqual(expectedConfig);
     expect(bridge.getEnvironmentInfo()).toMatchObject({
       mode: 'legacy-core',
-      root: path.join(packageRoot, 'agilai-core'),
+      root: path.join(packageRoot, 'aidesigner-core'),
     });
   });
 
-  test('uses custom agilaiCorePath when provided', async () => {
+  test('uses custom aidesignerCorePath when provided', async () => {
     const packageRoot = path.resolve(__dirname, '..', '..');
-    const customPath = path.join(packageRoot, 'agilai-core');
+    const customPath = path.join(packageRoot, 'aidesigner-core');
 
-    const bridge = new AgilaiBridge({
-      agilaiCorePath: customPath,
+    const bridge = new aidesignerBridge({
+      aidesignerCorePath: customPath,
       llmClient: { chat: jest.fn() },
     });
 
@@ -44,7 +44,7 @@ describe('AgilaiBridge legacy core detection', () => {
   });
 
   test('falls back to V6 when legacy core not found', async () => {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'agilai-v6-test-'));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'aidesigner-v6-test-'));
 
     try {
       // Create a minimal V6 structure
@@ -54,9 +54,9 @@ describe('AgilaiBridge legacy core detection', () => {
       const agentContent = `# Test Agent\n\n\`\`\`yaml\nagent:\n  id: test-agent\n  name: Test Agent\n\`\`\`\n\nTest content.`;
       await fs.writeFile(path.join(modulesRoot, 'agents', 'test-agent.md'), agentContent, 'utf8');
 
-      const bridge = new AgilaiBridge({
-        agilaiCorePath: path.join(tempRoot, 'missing-core'),
-        agilaiV6Path: path.join(tempRoot, 'bmad'),
+      const bridge = new aidesignerBridge({
+        aidesignerCorePath: path.join(tempRoot, 'missing-core'),
+        aidesignerV6Path: path.join(tempRoot, 'bmad'),
         llmClient: { chat: jest.fn() },
       });
 
@@ -70,16 +70,16 @@ describe('AgilaiBridge legacy core detection', () => {
   });
 
   test('throws error when neither legacy core nor V6 modules found', async () => {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'agilai-empty-test-'));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'aidesigner-empty-test-'));
 
     try {
-      const bridge = new AgilaiBridge({
-        agilaiCorePath: path.join(tempRoot, 'missing-core'),
-        agilaiV6Path: path.join(tempRoot, 'missing-v6'),
+      const bridge = new aidesignerBridge({
+        aidesignerCorePath: path.join(tempRoot, 'missing-core'),
+        aidesignerV6Path: path.join(tempRoot, 'missing-v6'),
         llmClient: { chat: jest.fn() },
       });
 
-      await expect(bridge.initialize()).rejects.toThrow(/Agilai core not found/);
+      await expect(bridge.initialize()).rejects.toThrow(/aidesigner core not found/);
     } finally {
       await fs.remove(tempRoot);
     }
