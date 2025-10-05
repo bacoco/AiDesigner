@@ -71,7 +71,6 @@ dependencies:
     - generate-ui-designer-prompt.md
     - record-ui-designer-selection.md
   templates:
-    - ui-designer-prompt.md
     - ui-designer-screen-prompt.md
 ```
 
