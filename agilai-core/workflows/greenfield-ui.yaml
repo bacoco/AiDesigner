@@ -40,14 +40,15 @@ workflow:
       condition: user_wants_ai_generation
       notes: "OPTIONAL BUT RECOMMENDED: Generate AI UI prompt for tools like v0, Lovable, etc. Use the generate-ai-frontend-prompt task. User can then generate UI in external tool and download project structure."
 
-    - agent: nano-banana-liaison
-      creates: nano-banana-brief.md, nano-banana-explorations.md (optional)
+    - agent: ui-designer-liaison
+      creates: ui-designer-brief.md, ui-designer-screen-prompts.md, ui-designer-explorations.md (optional)
       requires: front-end-spec.md
-      condition: user_wants_ai_generation
+      condition: user_wants_visual_exploration
       optional_steps:
-        - generate_nano_banana_prompt
-        - record_nano_banana_selection
-      notes: "OPTIONAL: Generate Google Nano Banana visual concept exploration prompt using *generate-nano-brief command. User runs prompt in Google AI Studio (https://aistudio.google.com) to get multiple visual concept variations. After reviewing concepts, user runs *log-nano-selection to record chosen concept. This captures design intent early and informs architecture. SAVE OUTPUT: Copy docs/ui/nano-banana-brief.md and docs/ui/nano-banana-explorations.md to your project."
+        - discover_ui_journey
+        - assemble_prompts
+        - log_selection
+      notes: "OPTIONAL: Use conversational UI designer workflow for visual concept exploration with Google Nano Banana (Gemini 2.5 Flash Image). Two modes: (1) Quick: Use auto-generated brief and screen prompts, or (2) Full: Run *discover-journey for 6-stage conversational discovery (journey mapping → inspiration intake → CSS extraction via Chrome MCP → visual language → per-screen prompts). User runs prompts in Google AI Studio to get visual concepts. After reviewing, run *log-selection to record chosen concept with journey context and CSS tokens. SAVE OUTPUT: Copy docs/ui/ui-designer-screen-prompts.md and docs/ui/ui-designer-explorations.md to your project."
 
     - agent: architect
       creates: front-end-architecture.md
@@ -178,11 +179,11 @@ workflow:
         D2 -->|Yes| D3[ux-expert: create v0 prompt]
         D2 -->|No| E[architect: front-end-architecture.md]
         D3 --> D4[User: generate UI in v0/Lovable]
-        D4 --> D5{Generate Nano Banana concepts?}
-        D5 -->|Yes| D6[nano-banana-liaison: create Nano Banana brief]
+        D4 --> D5{Generate visual concepts?}
+        D5 -->|Yes| D6[ui-designer-liaison: conversational discovery or use auto-generated prompts]
         D5 -->|No| E
-        D6 --> D7[User: generate concepts in Google AI Studio]
-        D7 --> D8[nano-banana-liaison: log selected concept]
+        D6 --> D7[User: generate concepts in Google AI Studio with Nano Banana]
+        D7 --> D8[ui-designer-liaison: log selected concept with journey context]
         D8 --> E
         E --> F{Architecture suggests PRD changes?}
         F -->|Yes| G[pm: update prd.md]
@@ -222,9 +223,9 @@ workflow:
         style O fill:#ADD8E6
         style D3 fill:#E6E6FA
         style D4 fill:#E6E6FA
-        style D6 fill:#FFE4E1
-        style D7 fill:#FFE4E1
-        style D8 fill:#FFE4E1
+        style D6 fill:#E8F5E9
+        style D7 fill:#E8F5E9
+        style D8 fill:#E8F5E9
         style B fill:#FFE4B5
         style C fill:#FFE4B5
         style D fill:#FFE4B5

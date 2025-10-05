@@ -5,38 +5,104 @@
 [![npm version](https://img.shields.io/npm/v/agilai.svg?style=flat)](https://www.npmjs.com/package/agilai)
 [![Package Size](https://img.shields.io/badge/size-2.6MB-success)](https://www.npmjs.com/package/agilai)
 
-**Ship specs in under five minutes with Quick Lane or run enterprise-grade deep dives with Complex Lane—no methodology training required.**
+<div align="center">
 
-## The Problem
+### 🚀 **From Idea to Implementation in Under Five Minutes**
 
-Building software with AI should be simple. Instead, developers waste hours figuring out _how_ to ask AI for help rather than actually building.
+**Professional specs • Visual concepts • Architecture docs • Ready-to-build stories**
 
-Professional teams use structured agile methodologies (analyst → PM → architect → developer → QA), but learning these frameworks takes weeks and adds unnecessary friction.
+_All through natural conversation. No methodology training. No prompt engineering._
 
-## The Solution
+[Quick Start](#quick-start) • [See It In Action](#natural-conversation-example) • [Documentation](docs/user-guide.md)
 
-**Agilai gives you professional agile workflows through natural conversation.**
+</div>
 
-Just talk about your project. The system:
+---
 
-✅ **Understands** what you're building (no framework jargon needed)
-✅ **Generates** professional deliverables automatically (PRD, architecture, user stories)
-✅ **Guides** you through proven development phases invisibly
-✅ **Routes** work intelligently: Quick Lane for fast specs and briefs (under five minutes), Complex Lane for enterprise PRDs, architectures, and QA-ready stories
+## Stop Fighting Your Tools. Start Building.
 
-**You focus on ideas. Agilai handles methodology.**
+**The Problem:** You have a brilliant idea. But before you write a single line of code, you need:
+
+- A product requirements document (so the team knows what to build)
+- Technical architecture (so it's built right)
+- Visual design concepts (so it looks professional)
+- User stories (so developers know what to implement)
+
+Traditional approach? **Days of writing specs, creating mockups, and coordinating team meetings.**
+
+AI tools today? **Hours of prompt engineering just to get structured output.**
+
+**There has to be a better way.**
+
+## The Agilai Way: Talk Naturally. Ship Professionally.
+
+Imagine describing your project idea in plain English and getting back:
+
+✨ **Complete PRD** with user stories, acceptance criteria, and technical requirements
+🎨 **Visual concept explorations** for every screen in your journey
+🏗️ **Technical architecture** with file structure, tech stack, and implementation guidance
+📋 **Development-ready stories** that developers can pick up immediately
+
+**No jargon. No templates. No methodology training.**
+
+Just conversation → professional deliverables → ready to build.
+
+### How It Works
+
+**1. Quick Lane (Under 5 Minutes)**
+
+- Natural conversation about your idea
+- Auto-generated specs, architecture, and visual prompts
+- Implementation-ready output in `docs/`
+
+**2. Complex Lane (Enterprise-Grade)**
+
+- Deep-dive conversational discovery
+- Visual journey mapping with CSS token extraction
+- Multi-phase QA-ready documentation
+
+**3. Conversational UI Designer (NEW 🆕)**
+
+- Guide users through their UI journey step-by-step
+- Extract design tokens from reference URLs via Chrome DevTools
+- Generate per-screen visual prompts for Google Nano Banana
+- Capture decisions with journey context and CSS specifications
+
+### What Makes Agilai Different
+
+🎯 **Zero Prompt Engineering**
+
+> Other tools: "Act as a senior product manager with 10 years experience in SaaS..."
+> Agilai: "I want to build a task management app"
+
+🎨 **Visual-First Development**
+
+> Traditional: Write specs → Hire designer → Wait for mockups → Start coding
+> Agilai: Describe idea → Get visual concepts in minutes → Architecture adapts automatically
+
+🏃 **Two Speeds, One System**
+
+> Quick Lane: Ship specs in 5 minutes
+> Complex Lane: Enterprise depth when needed
+> Seamlessly switch between both
+
+🔒 **Local-First, Private**
+
+> No API calls to external services
+> Runs through Claude CLI, Codex CLI, or OpenCode
+> Your data never leaves your machine
 
 ### Key Features
 
-- **Zero learning curve** - Chat naturally, no methodology training
-- **Proven framework** - Built on BMAD-METHOD™ battle-tested processes
-- **Intelligent dual lanes** - Quick Lane ships actionable specs, briefs, and implementation notes in under five minutes
-- **Complex-ready depth** - Complex Lane drives enterprise-grade PRDs, architectures, test plans, and user stories
-- **Professional output** - Industry-standard documentation
-- **Local-first** - Works with Claude CLI, Codex CLI, or OpenCode
-- **No API costs** - Runs through your existing CLI tooling
+- **Conversational Discovery** - Multi-turn UI journey mapping that extracts design intent naturally
+- **Chrome MCP Integration** - Automatically pull CSS tokens, color palettes, and typography from reference URLs
+- **Per-Screen Visual Prompts** - Tailored Nano Banana prompts for each step in your user journey
+- **Dual-Lane Intelligence** - Quick Lane for speed, Complex Lane for depth
+- **Professional Output** - Industry-standard PRDs, architecture docs, and user stories
+- **Built on BMAD-METHOD™** - Battle-tested agile processes, invisible to users
+- **Local & Private** - Works with your existing CLI tooling, no API costs
 
-> **Two-Lane Orchestration:** Start in the speed-focused Quick Lane or unlock the depth of the Complex Lane—see the [Dual-Lane Orchestration](#dual-lane-orchestration) section below to learn how Agilai orchestrates both without extra prompts.
+> **NEW: Conversational UI Designer** - The only AI workflow that guides you through visual discovery the way a real designer would: journey mapping → inspiration intake → CSS extraction → per-screen prompts. [See it in action →](#conversational-ui-designer-workflow)
 
 ## Quick Start
 
@@ -100,52 +166,234 @@ All organized in `docs/` folder, ready to use.
 
 → **[Complete Examples](docs/examples.md)** - Detailed walkthrough examples
 
-## AI-Powered Visual Concept Exploration
+## Conversational UI Designer Workflow
 
-Before writing a single line of UI code, explore multiple visual design directions with **Google Nano Banana** (Gemini 2.5 Flash Image).
+**The first AI workflow that designs UIs the way a real designer would: through conversation.**
 
-### How It Works
+### 🎨 How Real Designers Work
 
-When building UI features, Agilai automatically generates:
+1. **Discover the journey** - "Walk me through how users will flow through your app"
+2. **Deep-dive each step** - "What's the user's mindset on this screen? What emotion should they feel?"
+3. **Gather inspiration** - "Share a reference URL - I'll extract the colors, fonts, and spacing"
+4. **Define visual language** - "Let's lock in your palette, typography, and layout system"
+5. **Generate concepts** - "Here are tailored prompts for each screen with all the context"
 
-1. **Visual concept prompts** tailored to your requirements
-2. **Multiple design directions** to explore before committing
-3. **Documented selections** that inform architecture decisions
+**Agilai's UI Designer Liaison does exactly this.**
+
+### Quick Lane (Auto Mode)
 
 ```
-You: "I need a dashboard for tracking family chores"
+You: "I want to build a task management app for remote teams"
 
-AI: "I've generated visual concept prompts for your dashboard.
+AI: "✅ Generated PRD, architecture, and stories
+     📋 Quick Lane also created:
 
-     📋 docs/ui/nano-banana-brief.md contains 3 ready-to-use prompts:
+     docs/ui/ui-designer-screen-prompts.md
 
-     1. Clean minimal cards with completion rings
-     2. Gamified quest board with character avatars
-     3. Calendar-focused timeline with family photos
+     I've inferred your user journey from the PRD:
+     1. Browse tasks
+     2. Search & filter
+     3. Create task
+     4. Task details
+     5. Assign & collaborate
 
-     Visit https://aistudio.google.com/prompts/new_freeform
-     and use these prompts to explore visual directions.
+     Each screen has a tailored visual concept prompt ready for
+     Google Nano Banana (Gemini 2.5 Flash Image).
 
-     Once you've selected your preferred concept, let me know
-     and I'll update the architecture accordingly."
+     Copy the prompts to https://aistudio.google.com and get
+     3 concept variations per screen!"
+```
 
-You: "I like option 2, the gamified approach"
+**Time:** Under 5 minutes, fully automatic
 
-AI: "✓ Logged your selection to docs/ui/nano-banana-explorations.md
-     ✓ Updated architecture with gamification components
-     ✓ Added visual design system requirements to PRD"
+### Complex Lane (Conversational Mode)
+
+```
+You: "@ui-designer-liaison"
+
+Nana: "Hi! I'm Nana, your UI designer liaison. Ready to craft your
+       visual journey?
+
+       🎨 Existing inspiration (URLs, reference designs)
+       ✨ From scratch (I'll guide you)
+       🔀 Both
+
+       Which approach works best?"
+
+You: "I have Linear.app as inspiration"
+
+Nana: "Perfect! I notice you want to use Linear.app for reference.
+
+       To automatically extract colors, typography, and CSS tokens,
+       I recommend enabling Chrome DevTools MCP. It's optional but
+       saves manual work.
+
+       Would you like to activate it?"
+
+You: "Yes, it's enabled"
+
+Nana: "Excellent! Let me extract the visual elements...
+
+       🎨 Color Palette:
+       - Primary: #5E6AD2 (purple)
+       - Accent: #3D9970 (green)
+       - Neutral: #6B7280 (gray)
+
+       ✍️ Typography:
+       - Headings: 'Inter', sans-serif (600 weight)
+       - Body: 'Inter', sans-serif (400 weight)
+
+       📏 Spacing: 4px, 8px, 12px, 16px, 24px, 32px
+
+       What elements should we KEEP vs AVOID from Linear?"
+
+You: "Keep the minimal sidebar and generous spacing. Avoid the complex
+      command palette."
+
+Nana: "Got it! Now walk me through your ideal user journey from first
+       touch to success..."
+
+[... 6-stage conversational flow continues ...]
+
+Nana: "✅ Visual concept prompts generated!
+
+       📄 docs/ui/ui-designer-screen-prompts.md
+
+       5 screens mapped:
+       1. Browse tasks
+       2. Search & filter
+       3. Create task
+       4. Task details
+       5. Collaborate
+
+       Each prompt includes:
+       - Journey context (position, adjacent steps)
+       - Persona mindset & goals
+       - CSS tokens from Linear.app
+       - Your visual preferences
+
+       Copy to Google AI Studio and generate concepts!"
+```
+
+**Time:** 10-15 minutes, rich context, CSS extraction
+
+### What You Get
+
+**Per-Screen Prompts** like this:
+
+```
+You are Google Nano Banana (Gemini 2.5 Flash Image).
+Render 3 concept options for the **Search & Filter** step of TaskFlow Pro.
+
+## Context
+- Journey position: Step 2 of 5 (Early exploration phase)
+- Previous step: Browse tasks
+- Next step: Task details
+- Persona mindset: User with specific criteria looking to narrow task list
+- Screen goal: Filter tasks by status, assignee, due date efficiently
+- Emotional tone: Focused, in-control
+
+## Visual System
+### Brand Palette
+#5E6AD2, #3D9970, #6B7280
+
+**CSS Tokens:**
+--color-primary: #5E6AD2;
+--color-accent: #3D9970;
+--font-heading: 'Inter', sans-serif;
+--space-base: 4px;
+--space-md: 12px;
+
+### Typography
+- Heading: Inter 600
+- Body: Inter 400
+- Scale: 14px body, 18px subtitle, 24px heading
+
+[... complete prompt with all context ...]
+```
+
+### Chrome MCP Integration
+
+**Extract design tokens from any URL:**
+
+1. Share a reference URL (Linear, Notion, Stripe, etc.)
+2. Chrome DevTools MCP automatically captures:
+   - Color palette (hex codes)
+   - Typography (font families, weights, sizes)
+   - Spacing tokens (margins, padding)
+   - CSS custom properties
+3. Tokens embedded in every screen prompt
+4. Developers get CSS-ready specifications
+
+### Log Your Selection
+
+```
+You: "*log-selection"
+
+Nana: "Let's record your selected visual concept!
+
+       Which concept did you choose?"
+
+You: "Concept 2 - the clean minimal with purple accents"
+
+Nana: "Perfect! I'll log:
+       ✅ Visual characteristics
+       ✅ Journey context (5 screens)
+       ✅ CSS tokens from Linear.app
+       ✅ Per-screen prompts used
+       ✅ Asset locations
+
+       Saved to: docs/ui/ui-designer-explorations.md
+
+       This informs:
+       - Frontend architecture
+       - Component library setup
+       - Design system documentation"
 ```
 
 ### Benefits
 
-- **Reduce rework** - Validate visual direction before implementation
-- **Faster iteration** - Explore 5+ concepts in minutes vs. hours of mockups
-- **Better alignment** - Stakeholders see options early in the process
-- **Informed architecture** - Design decisions feed directly into technical specs
+🚀 **10x Faster Than Traditional Design**
 
-**Available in both Quick Lane and Complex Lane** - Every UI project gets visual concept exploration automatically.
+> Traditional: Designer creates mockups (days) → Revisions (days) → Developer handoff
+> Agilai: Conversation (10 min) → Concepts (minutes) → CSS tokens included
 
-→ **[Complete Nano Banana Guide](docs/guides/USING_GOOGLE_NANO_BANANA.md)** - Detailed workflow and examples
+🎯 **Context-Aware Prompts**
+
+> Generic tools: Single prompt for entire app
+> Agilai: Tailored prompt per screen with journey context
+
+🔧 **Developer-Ready Output**
+
+> Other tools: Images only
+> Agilai: Images + CSS tokens + design system documentation
+
+💡 **Inspiration Made Actionable**
+
+> Copy visual elements: Manual color picking from screenshots
+> Agilai: Automatic CSS extraction with Chrome DevTools MCP
+
+### Try It Now
+
+**Quick Lane (Auto):**
+
+```bash
+npx agilai@latest start
+# Describe your UI project
+# Get visual prompts automatically
+```
+
+**Complex Lane (Conversational):**
+
+```bash
+npx agilai@latest start
+# Activate: @ui-designer-liaison
+# Run: *discover-journey
+# Full 6-stage designer conversation
+```
+
+→ **[Complete UI Designer Guide](docs/guides/CONVERSATIONAL_UI_DESIGNER.md)** - Full workflow documentation
+→ **[Using Google Nano Banana](docs/guides/USING_GOOGLE_NANO_BANANA.md)** - Google AI Studio integration
 
 ## Extend with Any Tool
 

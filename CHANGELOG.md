@@ -61,6 +61,83 @@ This prevents errors from attempting to use incompatible API formats (e.g., Clau
 - Added "What init Creates" section explaining generated structure
 - Updated CLI-provider compatibility documentation with accurate supported combinations
 
+## [1.5.0](https://github.com/bacoco/Agilai/compare/v1.4.0...v1.5.0) (2025-10-05)
+
+### Features
+
+**🎨 Conversational UI Designer Workflow** - Multi-turn visual concept exploration with Google Nano Banana
+
+- **6-stage conversational discovery**: Warm Welcome → Journey Discovery → Step Deep-Dive → Inspiration Intake → Visual Language → Prompt Assembly
+- **Chrome DevTools MCP integration**: Automatic CSS token extraction from reference URLs (palette, typography, spacing, layout)
+- **Per-screen prompt generation**: Individual prompts for each journey step with full context (persona, emotions, goals, visual system)
+- **Dual-lane support**: Quick Lane (auto-inference from PRD) and Complex Lane (6-stage conversational flow)
+- **Google Nano Banana integration**: Generate 3 visual concept variations per screen using Gemini 2.5 Flash Image
+- **Enhanced selection logging**: Capture chosen concept with journey context, CSS tokens, asset locations, and implementation guidance
+- **UI Designer Liaison agent (Nana)**: Conversational agent with commands `*discover-journey`, `*assemble-prompts`, `*log-selection`
+
+### New Files
+
+**Tasks:**
+
+- `agilai-core/tasks/discover-ui-journey.md` - 6-stage conversational discovery workflow with Chrome MCP integration
+- `agilai-core/tasks/generate-ui-designer-prompt.md` - Assembles per-screen prompts from discovery state
+- `agilai-core/tasks/record-ui-designer-selection.md` - Enhanced selection logging with CSS tokens and journey context
+
+**Templates:**
+
+- `agilai-core/templates/ui-designer-screen-prompt.md` - Canonical per-screen prompt template with placeholders
+- `dist/mcp/lib/spec-kit-templates/ui-designer-screen-prompts-template.md` - Quick Lane output template
+
+**Agent:**
+
+- `agilai-core/agents/ui-designer-liaison.md` - Conversational designer agent (Nana)
+
+**Documentation:**
+
+- `docs/guides/CONVERSATIONAL_UI_DESIGNER.md` - Comprehensive 500+ line workflow guide with examples
+
+### Improvements
+
+**✨ Quick Lane Journey Inference** - Automatic UI journey extraction from PRD
+
+- **User story parsing**: Regex-based extraction of "As a..., I want to..." patterns
+- **Intelligent screen naming**: Maps actions to UI screen names (browse → "Browse / Explore", search → "Search & Filter")
+- **Component inference**: Derives likely UI components from user actions
+- **Emotion mapping**: Infers persona emotions for each journey step
+- **Auto-generated prompts**: Creates per-screen visual concept prompts without conversation
+
+**🔧 Enhanced Quick Lane Engine** - `.dev/lib/quick-lane.js` improvements
+
+- New method: `generateUIDesignerScreenPrompts()` for per-screen prompt generation
+- Helper methods: `inferJourneySteps()`, `deriveStepName()`, `inferComponents()`, `inferEmotion()`
+- Journey inference from PRD user stories with persona and goal extraction
+
+### Workflow Updates
+
+**Updated greenfield-ui.yaml:**
+
+- Agent reference updated: `nano-banana-liaison` → `ui-designer-liaison`
+- Added optional steps: `discover_ui_journey`, `assemble_prompts`, `log_selection`
+- Documentation: Two modes (Quick auto-inference vs Full conversational discovery)
+
+### Documentation
+
+- **README.md**: Added "Conversational UI Designer Workflow" section with marketing-focused copy
+- **DUAL_LANE_ORCHESTRATION.md**:
+  - Added "Conversational UI Designer (Quick Lane)" section with journey inference examples
+  - Added "Conversational UI Designer (Complex Lane)" section with 6-stage flow details
+  - Chrome MCP integration code examples
+  - Comparison table: Quick vs Complex lane capabilities
+- **CONVERSATIONAL_UI_DESIGNER.md**: Complete workflow guide with troubleshooting, FAQs, and examples
+
+### Key Benefits
+
+- **Zero-setup visual concepts**: Quick Lane auto-generates prompts from PRD in seconds
+- **Deep customization**: Complex Lane provides 6-stage conversational flow for custom visual languages
+- **CSS token extraction**: Chrome MCP automatically captures design tokens from reference sites
+- **Developer handoff**: Selection logging includes CSS tokens and implementation notes for seamless dev transition
+- **Gemini 2.5 Flash Image**: Generate 3 concept variations per screen for design exploration
+
 ## [1.3.24](https://github.com/bacoco/Agilai/compare/v1.3.23...v1.3.24) (2025-10-04)
 
 ### Maintenance

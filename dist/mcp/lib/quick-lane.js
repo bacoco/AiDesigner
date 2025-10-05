@@ -22,6 +22,7 @@ class QuickLane {
       plan: null,
       tasks: null,
       nanoBananaBrief: null,
+      uiDesignerScreenPrompts: null,
     };
   }
 
@@ -48,6 +49,10 @@ class QuickLane {
     );
     this.templates.nanoBananaBrief = await fs.readFile(
       path.join(this.templatesDir, 'nano-banana-brief-template.md'),
+      'utf8',
+    );
+    this.templates.uiDesignerScreenPrompts = await fs.readFile(
+      path.join(this.templatesDir, 'ui-designer-screen-prompts-template.md'),
       'utf8',
     );
   }
@@ -97,6 +102,14 @@ class QuickLane {
     await fs.writeFile(nanoBriefPath, nanoBrief);
     result.files.push('docs/ui/nano-banana-brief.md');
     result.artifacts.nanoBananaBrief = nanoBrief;
+
+    // Step 5: Generate per-screen UI designer prompts (Enhanced conversational workflow)
+    console.error('[Quick Lane] Generating per-screen UI designer prompts...');
+    const screenPrompts = await this.generateUIDesignerScreenPrompts(userRequest, spec, context);
+    const screenPromptsPath = path.join(this.uiDir, 'ui-designer-screen-prompts.md');
+    await fs.writeFile(screenPromptsPath, screenPrompts);
+    result.files.push('docs/ui/ui-designer-screen-prompts.md');
+    result.artifacts.uiDesignerScreenPrompts = screenPrompts;
 
     return result;
   }
@@ -223,6 +236,267 @@ class QuickLane {
       .replace(/\{\{VOICE_GUIDELINES\}\}/g, voiceGuidelines);
 
     return brief;
+  }
+
+  /**
+   * Generate per-screen UI designer prompts from PRD
+   * Infers journey steps and creates tailored prompts for each screen
+   */
+  async generateUIDesignerScreenPrompts(userRequest, specification, context = {}) {
+    // Extract or infer journey steps from PRD
+    const journeySteps = context.journeySteps || this.inferJourneySteps(specification);
+
+    // Extract project context (same as nano banana brief)
+    const projectName = context.projectName || this.extractProjectName(userRequest, specification);
+    const projectDescription =
+      context.projectDescription || this.extractDescription(userRequest, specification);
+    const primaryUsers = context.primaryUsers || this.extractPrimaryUsers(specification);
+    const coreValue = context.coreValue || this.extractCoreValue(specification);
+
+    // Visual system (with sensible defaults)
+    const brandPalette =
+      context.brandPalette || 'Deep blue #1E40AF, vibrant teal #14B8A6, neutral grays #6B7280';
+    const typography = context.typography || 'Modern sans-serif with clear hierarchy';
+    const illustrationStyle = context.illustrationStyle || 'Flat design with subtle gradients';
+    const experienceTone = context.experienceTone || 'Professional yet approachable';
+    const layoutPrinciples =
+      context.layoutPrinciples ||
+      'Card-based layouts with generous whitespace and clear visual hierarchy';
+    const voiceGuidelines = context.voiceGuidelines || 'Concise and action-oriented';
+
+    // Build journey summary
+    const journeyList = journeySteps
+      .map(
+        (step, i) => `${i + 1}. **${step.stepName}**: ${step.screenGoal || 'Complete this step'}`,
+      )
+      .join('\n');
+
+    // Build per-screen prompts section
+    let screenPromptsSection = '';
+    journeySteps.forEach((step, index) => {
+      const positionDescriptor = this.getPositionDescriptor(index, journeySteps.length);
+      const previousStep = index > 0 ? journeySteps[index - 1].stepName : 'Entry point';
+      const nextStep =
+        index < journeySteps.length - 1 ? journeySteps[index + 1].stepName : 'Journey complete';
+
+      screenPromptsSection += `
+### ${step.stepName} (Step ${index + 1})
+
+**Copy this prompt to Google AI Studio:**
+
+\`\`\`
+You are Google Nano Banana (Gemini 2.5 Flash Image). Render 3 concept options for the **${step.stepName}** step of ${projectName}.
+
+## Context
+
+- **Journey position**: Step ${index + 1} of ${journeySteps.length} (${positionDescriptor})
+- **Previous step**: ${previousStep}
+- **Next step**: ${nextStep}
+- **Persona mindset**: ${step.screenPersona || 'User engaging with this screen'}
+- **Screen goal**: ${step.screenGoal || 'Complete this step successfully'}
+- **Emotional tone**: ${step.emotionTags || 'Confident, focused'}
+
+## Visual System
+
+### Brand Palette
+${brandPalette}
+
+### Typography
+- **Heading font**: ${typography.split(' ')[0] || 'Inter'} Bold
+- **Body font**: ${typography.split(' ')[0] || 'Inter'} Regular
+- **Font scale**: 14px body, 18px subtitle, 24px heading
+
+### Layout System
+- **Structure**: ${layoutPrinciples}
+- **Spacing scale**: 8px, 16px, 24px, 32px, 48px, 64px
+- **Container max-width**: 1200px
+
+### Icon & Illustration Style
+${illustrationStyle}
+
+### Motion & Interaction Cues
+Subtle transitions (200-300ms), soft hover effects
+
+## UI Requirements
+
+### Critical Components
+${step.requiredComponents || 'Key interactive elements for this screen'}
+
+### Data States
+Default, Loading, Error, Empty
+
+### Accessibility Requirements
+- Contrast ratio: 4.5:1 for body text, 3:1 for large text (WCAG AA)
+- Touch targets: 44x44px minimum
+
+### Microcopy Voice
+${voiceGuidelines}
+
+## Output Instructions
+
+- Produce **mobile-first artboards** (aspect ratio 4:5)
+- Generate **3 states** for this screen (default, loading, error/empty)
+- Include **CSS-ready color callouts** in image annotations
+- Show **font pairing examples** with actual text samples
+- For 3 concepts, ensure each has a distinct visual approach while maintaining brand consistency
+\`\`\`
+
+**Usage Notes:**
+- Model: Gemini 2.5 Flash (or latest Flash Image model)
+- Expected output: 3 concept variations
+- Aspect ratio: 4:5 (mobile-first)
+
+---
+`;
+    });
+
+    // Replace placeholders in template
+    let screenPrompts = this.templates.uiDesignerScreenPrompts
+      .replace(/\{\{PROJECT_NAME\}\}/g, projectName)
+      .replace(/\{\{PROJECT_DESCRIPTION\}\}/g, projectDescription)
+      .replace(/\{\{PRIMARY_USERS\}\}/g, primaryUsers)
+      .replace(/\{\{JOURNEY_STEPS\}\}/g, journeyList)
+      .replace(/\{\{JOURNEY_COUNT\}\}/g, journeySteps.length.toString())
+      .replace(/\{\{BRAND_PALETTE\}\}/g, brandPalette)
+      .replace(/\{\{TYPOGRAPHY\}\}/g, typography)
+      .replace(/\{\{LAYOUT_PRINCIPLES\}\}/g, layoutPrinciples)
+      .replace(/\{\{ILLUSTRATION_STYLE\}\}/g, illustrationStyle)
+      .replace(/\{\{EXPERIENCE_TONE\}\}/g, experienceTone)
+      .replace(/\{\{SCREEN_PROMPTS_SECTION\}\}/g, screenPromptsSection);
+
+    return screenPrompts;
+  }
+
+  /**
+   * Infer journey steps from PRD user stories
+   */
+  inferJourneySteps(specification) {
+    // Default journey steps for modern SaaS if we can't infer from PRD
+    const defaultSteps = [
+      {
+        stepName: 'Browse / Explore',
+        screenPersona: 'New user exploring the product',
+        screenGoal: 'Discover available options and build interest',
+        requiredComponents: 'Navigation, featured content, search/filter',
+        emotionTags: 'Curious, excited',
+      },
+      {
+        stepName: 'Search & Filter',
+        screenPersona: 'User with specific needs',
+        screenGoal: 'Find relevant items efficiently',
+        requiredComponents: 'Search bar, filter controls, results list',
+        emotionTags: 'Focused, goal-oriented',
+      },
+      {
+        stepName: 'Create / Compose',
+        screenPersona: 'User ready to take action',
+        screenGoal: 'Input new content or data',
+        requiredComponents: 'Form fields, input controls, save/submit button',
+        emotionTags: 'Engaged, productive',
+      },
+      {
+        stepName: 'Review / Confirm',
+        screenPersona: 'User finalizing their action',
+        screenGoal: 'Verify details before committing',
+        requiredComponents: 'Summary view, edit link, confirmation button',
+        emotionTags: 'Confident, assured',
+      },
+    ];
+
+    // Try to extract user stories that hint at journey steps
+    const userStoryPattern =
+      /\*\*?As (?:a|an) (.+?),?\s*I want to (.+?)\s*(?:so that|in order to)?\s*(.+?)(?:\.|$|\n)/gi;
+    const matches = [...specification.matchAll(userStoryPattern)];
+
+    if (matches.length >= 3) {
+      // Extract journey from user stories
+      return matches.slice(0, 6).map((match, i) => ({
+        stepName: this.deriveStepName(match[2]),
+        screenPersona: match[1].trim(),
+        screenGoal: match[2].trim(),
+        requiredComponents: this.inferComponents(match[2]),
+        emotionTags: this.inferEmotion(match[2], match[3] || ''),
+      }));
+    }
+
+    return defaultSteps;
+  }
+
+  /**
+   * Derive step name from user story action
+   */
+  deriveStepName(action) {
+    const actionLower = action.toLowerCase();
+    if (actionLower.includes('browse') || actionLower.includes('explore'))
+      return 'Browse / Explore';
+    if (actionLower.includes('search') || actionLower.includes('filter')) return 'Search & Filter';
+    if (
+      actionLower.includes('create') ||
+      actionLower.includes('add') ||
+      actionLower.includes('compose')
+    )
+      return 'Create / Compose';
+    if (
+      actionLower.includes('view') ||
+      actionLower.includes('see') ||
+      actionLower.includes('details')
+    )
+      return 'View Details';
+    if (actionLower.includes('edit') || actionLower.includes('update')) return 'Edit / Update';
+    if (actionLower.includes('delete') || actionLower.includes('remove')) return 'Delete / Remove';
+    if (actionLower.includes('review') || actionLower.includes('confirm'))
+      return 'Review / Confirm';
+    if (actionLower.includes('share') || actionLower.includes('collaborate'))
+      return 'Share / Collaborate';
+
+    // Generic fallback
+    return action.charAt(0).toUpperCase() + action.slice(1, 30).replace(/\s+/g, ' ');
+  }
+
+  /**
+   * Infer required components from user story action
+   */
+  inferComponents(action) {
+    const actionLower = action.toLowerCase();
+    if (actionLower.includes('browse') || actionLower.includes('explore'))
+      return 'Navigation, content grid/list, featured items';
+    if (actionLower.includes('search') || actionLower.includes('filter'))
+      return 'Search bar, filter controls, results list';
+    if (actionLower.includes('create') || actionLower.includes('add'))
+      return 'Form inputs, save button, validation messages';
+    if (actionLower.includes('view') || actionLower.includes('details'))
+      return 'Content display, metadata, related items';
+    if (actionLower.includes('edit')) return 'Editable fields, save/cancel buttons';
+    if (actionLower.includes('delete')) return 'Confirmation dialog, warning message';
+    if (actionLower.includes('share')) return 'Share controls, permission settings';
+
+    return 'Key interactive elements for this screen';
+  }
+
+  /**
+   * Infer emotional tone from user story
+   */
+  inferEmotion(action, benefit) {
+    const combined = (action + ' ' + benefit).toLowerCase();
+    if (combined.includes('quick') || combined.includes('efficient') || combined.includes('fast'))
+      return 'Focused, efficient';
+    if (combined.includes('discover') || combined.includes('explore')) return 'Curious, excited';
+    if (combined.includes('confident') || combined.includes('trust') || combined.includes('secure'))
+      return 'Confident, assured';
+    if (combined.includes('collab') || combined.includes('share'))
+      return 'Connected, collaborative';
+
+    return 'Focused, engaged';
+  }
+
+  /**
+   * Get position descriptor for journey context
+   */
+  getPositionDescriptor(index, total) {
+    if (index === 0) return 'Entry point - first impression';
+    if (index === total - 1) return 'Final step - completion/confirmation';
+    if (index < total / 2) return 'Early journey - exploration phase';
+    return 'Late journey - commitment phase';
   }
 
   /**

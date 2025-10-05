@@ -185,40 +185,70 @@ Breaks down plan into actionable stories:
 
 **No external dependencies** - uses BMAD's existing LLM client.
 
-### Nano Banana UI Exploration (Quick Lane)
+### Conversational UI Designer (Quick Lane)
 
-The Quick Lane now includes Google Nano Banana visual concept exploration brief generation:
+The Quick Lane now includes **automatic UI journey inference and per-screen visual concept prompts** for Google Nano Banana (Gemini 2.5 Flash Image):
 
-#### 4. Nano Banana Template (`lib/spec-kit-templates/nano-banana-brief-template.md`)
+#### 4. UI Designer Templates
 
-Generates a visual concept exploration brief with:
+**A. Legacy Nano Banana Brief** (`lib/spec-kit-templates/nano-banana-brief-template.md`)
 
+- Single global prompt (backward compatibility)
 - Project context summary
-- Ready-to-use Google Nano Banana prompt
 - Google AI Studio usage instructions
-- Expected outputs and next steps
-- Guidance for logging concept selections
 
-**Input**: User request, generated spec
-**Output**: `docs/ui/nano-banana-brief.md`
+**B. Per-Screen Prompts** (`lib/spec-kit-templates/ui-designer-screen-prompts-template.md`) ✨ **NEW**
+
+- Infers user journey from PRD user stories
+- Generates tailored prompt per screen
+- Includes journey context, persona, goals
+- CSS-ready with sensible defaults
+
+**Input**: User request, generated PRD
+**Output**:
+
+- `docs/ui/nano-banana-brief.md` (legacy)
+- `docs/ui/ui-designer-screen-prompts.md` ✨ **NEW**
 
 **Workflow Extension**:
 
 ```javascript
 // After tasks generation:
 
-13. Load nano-banana-brief template
-14. Extract project context from spec
-15. Populate template with context
-16. Write to docs/ui/nano-banana-brief.md
+13. Infer journey steps from PRD user stories
+14. Generate per-screen visual prompts with:
+    - Journey position (step X of Y)
+    - Screen persona & goals
+    - Visual system (modern SaaS defaults)
+    - Component requirements
+15. Write to docs/ui/ui-designer-screen-prompts.md
 ```
 
-The Nano Banana brief is automatically generated alongside PRD, architecture, and stories. Users can then:
+**Journey Inference Logic**:
 
-1. Copy the prompt from the brief
-2. Run it in Google AI Studio (https://aistudio.google.com)
-3. Review generated visual concepts
-4. Log their selected concept (optional, via `@nano-banana-liaison` agent)
+```javascript
+// Parses PRD for user stories:
+"As a user, I want to browse products..." → Browse / Explore screen
+"As a user, I want to search and filter..." → Search & Filter screen
+"As a user, I want to create a task..." → Create / Compose screen
+
+// Derives screen context:
+{
+  stepName: "Browse Products",
+  screenPersona: "New user exploring catalog",
+  screenGoal: "Discover product variety",
+  requiredComponents: "Product grid, filters, search",
+  emotionTags: "Curious, excited"
+}
+```
+
+The per-screen prompts are automatically generated alongside PRD, architecture, and stories. Users can then:
+
+1. Open `docs/ui/ui-designer-screen-prompts.md`
+2. Copy each screen's prompt from code blocks
+3. Run in Google AI Studio (https://aistudio.google.com)
+4. Review generated visual concepts (3 per screen)
+5. Log selected concept (optional, via `@ui-designer-liaison` agent)
 
 ## Complex Lane Implementation
 
@@ -257,9 +287,9 @@ The Complex lane runs full BMAD methodology:
 // Continues through all phases...
 ```
 
-### Nano Banana UI Exploration (Complex Lane)
+### Conversational UI Designer (Complex Lane)
 
-The Complex Lane includes optional Google Nano Banana visual concept exploration through the **Nano Banana Liaison** agent:
+The Complex Lane includes an optional **6-stage conversational visual discovery** workflow through the **UI Designer Liaison** agent:
 
 **Workflow Integration** (after UX Expert phase):
 
@@ -268,27 +298,74 @@ The Complex Lane includes optional Google Nano Banana visual concept exploration
 
 1. UX Expert creates front-end-spec.md
 2. (Optional) UX Expert generates v0/Lovable prompt
-3. (Optional) Nano Banana Liaison runs:
-   a. Generate Nano Banana prompt brief
-   b. User runs prompt in Google AI Studio
-   c. Log selected concept to project state
+3. (Optional) UI Designer Liaison runs:
+   a. *discover-journey - 6-stage conversational discovery
+   b. *assemble-prompts - Generate per-screen prompts
+   c. User runs prompts in Google AI Studio
+   d. *log-selection - Record concept with CSS tokens
 4. Architect creates architecture (references logged concept if available)
+```
+
+**The 6-Stage Conversational Flow**:
+
+1. **Warm Welcome** - Choose approach (inspiration, scratch, or both)
+2. **Journey Discovery** - Map user journey steps (3-8 screens)
+3. **Step Deep-Dive** - For each step: persona, goals, emotions, components
+4. **Inspiration Intake** - URLs (Chrome MCP CSS extraction) or images
+5. **Visual Language** - Confirm palette, typography, layout, motion
+6. **Prompt Assembly** - Generate per-screen prompts with full context
+
+**Chrome DevTools MCP Integration** ✨ **NEW**:
+
+When user provides a reference URL (e.g., Linear.app, Notion.so):
+
+```javascript
+// Automatically extracts:
+chrome_navigate({ url: "https://linear.app" });
+chrome_get_styles({ selectors: ["body", "h1", "button", ...] });
+
+// Captures:
+{
+  cssVariables: {
+    "--color-primary": "#5E6AD2",
+    "--font-heading": "'Inter', sans-serif",
+    "--space-base": "4px"
+  },
+  extractedPalette: ["#5E6AD2", "#3D9970", "#6B7280"],
+  extractedTypography: "Inter sans-serif",
+  extractedSpacing: "4px base grid"
+}
+
+// Embeds in every screen prompt
 ```
 
 **Key Capabilities**:
 
-- **Prompt Generation**: `*generate-nano-brief` creates context-rich visual concept prompts
-- **Concept Logging**: `*log-nano-selection` records chosen concept in project state and `docs/ui/nano-banana-explorations.md`
-- **State Persistence**: Selected concept stored via MCP `recordDecision` for downstream phases
-- **UX Spec Integration**: Front-end spec template includes "AI Concept Explorations" section
+- **Conversational Discovery**: `*discover-journey` guides through 6-stage flow
+- **CSS Extraction**: Chrome MCP automatically captures design tokens from URLs
+- **Per-Screen Prompts**: `*assemble-prompts` generates tailored prompts with journey context
+- **Enhanced Logging**: `*log-selection` records with CSS tokens, journey steps, and reference assets
+- **State Persistence**: Full context stored via MCP `recordDecision` for downstream phases
 
 **Artifacts**:
 
-- `docs/ui/nano-banana-brief.md` - Prompt and usage instructions
-- `docs/ui/nano-banana-explorations.md` - Logged concept selections with rationale
-- Project state decision: `ui_concept` with full visual characteristics
+- `docs/ui/ui-designer-screen-prompts.md` - Per-screen prompts with CSS tokens ✨ **NEW**
+- `docs/ui/ui-designer-explorations.md` - Logged selections with journey context ✨ **NEW**
+- `docs/ui/nano-banana-brief.md` - Legacy brief (backward compatibility)
+- Project state decision: `ui_concept` with journey steps, reference styles, and screen prompts
 
-This optional step captures design intent early, informing architecture and development phases with a shared visual direction.
+**Comparison: Quick Lane vs Complex Lane**:
+
+| Aspect            | Quick Lane (Auto)      | Complex Lane (Conversational)                 |
+| ----------------- | ---------------------- | --------------------------------------------- |
+| **Time**          | 0 min (automatic)      | 10-15 min (interactive)                       |
+| **Journey**       | Inferred from PRD      | User-defined conversation                     |
+| **Visual System** | SaaS defaults          | Custom with Chrome MCP CSS extraction         |
+| **Context Depth** | Basic (persona, goal)  | Rich (emotions, edge cases, reference assets) |
+| **CSS Tokens**    | Generic                | Extracted from reference URLs                 |
+| **Best For**      | MVP, rapid prototyping | Custom design systems, brand-specific         |
+
+This optional step captures design intent through natural conversation, extracting CSS tokens from inspiration URLs, and generating developer-ready specifications.
 
 ## MCP Integration
 
