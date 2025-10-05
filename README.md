@@ -163,7 +163,7 @@ Agilai automatically steers every request through the right mix of speed and dep
 
 #### Quick Lane: 3-minute briefs
 
-The quick lane boots up your `docs/` workspace in minutes, generating the core folders and drafting the product requirement, architecture outline, and user stories you need to get moving. It is designed for lightweight asks where momentum matters most, giving you production-ready assets without waiting on a full committee.
+The quick lane boots up your `docs/` workspace in minutes, generating the core folders and drafting the product requirement, architecture outline, user stories, and Google Nano Banana visual concept brief you need to get moving. It is designed for lightweight asks where momentum matters most, giving you production-ready assets without waiting on a full committee.
 
 #### Complex Lane: BMAD depth on demand
 
@@ -236,14 +236,17 @@ npx agilai@latest start --anthropic
 ```
 my-project/
 ├── docs/
-│   ├── brief.md               # Project context
-│   ├── prd.md                 # Product requirements
-│   ├── architecture.md        # Technical design
-│   ├── epics/*.md             # Feature epics
-│   └── stories/*.md           # User stories
+│   ├── brief.md                        # Project context
+│   ├── prd.md                          # Product requirements
+│   ├── architecture.md                 # Technical design
+│   ├── epics/*.md                      # Feature epics
+│   ├── stories/*.md                    # User stories
+│   └── ui/
+│       ├── nano-banana-brief.md        # Google Nano Banana visual concept prompt
+│       └── nano-banana-explorations.md # Logged visual concept selections
 └── .agilai/
-    ├── state.json             # Current phase
-    └── conversation.log       # Full history
+    ├── state.json                      # Current phase
+    └── conversation.log                # Full history
 ```
 
 ## Contributing

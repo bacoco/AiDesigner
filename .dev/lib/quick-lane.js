@@ -12,6 +12,7 @@ class QuickLane {
     this.projectPath = projectPath;
     this.docsDir = path.join(projectPath, 'docs');
     this.storiesDir = path.join(this.docsDir, 'stories');
+    this.uiDir = path.join(this.docsDir, 'ui');
     this.templatesDir = path.join(__dirname, 'spec-kit-templates');
     this.llmClient = options.llmClient;
 
@@ -20,6 +21,7 @@ class QuickLane {
       spec: null,
       plan: null,
       tasks: null,
+      nanoBananaBrief: null,
     };
   }
 
@@ -29,6 +31,7 @@ class QuickLane {
   async initialize() {
     await fs.ensureDir(this.docsDir);
     await fs.ensureDir(this.storiesDir);
+    await fs.ensureDir(this.uiDir);
 
     // Load templates
     this.templates.spec = await fs.readFile(
@@ -41,6 +44,10 @@ class QuickLane {
     );
     this.templates.tasks = await fs.readFile(
       path.join(this.templatesDir, 'tasks-template.md'),
+      'utf8',
+    );
+    this.templates.nanoBananaBrief = await fs.readFile(
+      path.join(this.templatesDir, 'nano-banana-brief-template.md'),
       'utf8',
     );
   }
@@ -82,6 +89,14 @@ class QuickLane {
     const storyFiles = await this.writeTasks(tasks);
     result.files.push(...storyFiles);
     result.artifacts.stories = tasks;
+
+    // Step 4: Generate Nano Banana brief (UI concept exploration)
+    console.error('[Quick Lane] Generating Nano Banana visual concept brief...');
+    const nanoBrief = await this.generateNanoBananaBrief(userRequest, spec, context);
+    const nanoBriefPath = path.join(this.uiDir, 'nano-banana-brief.md');
+    await fs.writeFile(nanoBriefPath, nanoBrief);
+    result.files.push('docs/ui/nano-banana-brief.md');
+    result.artifacts.nanoBananaBrief = nanoBrief;
 
     return result;
   }
@@ -159,6 +174,118 @@ class QuickLane {
     );
 
     return this.cleanLLMResponse(response);
+  }
+
+  /**
+   * Generate Nano Banana brief from template
+   */
+  async generateNanoBananaBrief(userRequest, specification, context = {}) {
+    // Extract or infer context for Nano Banana placeholders
+    const projectName = context.projectName || this.extractProjectName(userRequest, specification);
+    const projectDescription =
+      context.projectDescription || this.extractDescription(userRequest, specification);
+    const primaryUsers = context.primaryUsers || this.extractPrimaryUsers(specification);
+    const coreValue = context.coreValue || this.extractCoreValue(specification);
+
+    // Infer UI-specific context (with sensible defaults)
+    const searchGoal = context.searchGoal || 'finding and filtering relevant items';
+    const writeGoal = context.writeGoal || 'creating and editing new content';
+    const signupValue =
+      context.signupValue || coreValue || 'streamlined collaboration and productivity';
+    const signinSecurity = context.signinSecurity || 'secure authentication and data protection';
+
+    // Brand and visual defaults for modern SaaS
+    const brandPalette =
+      context.brandPalette || 'Deep blue #1E40AF, vibrant teal #14B8A6, neutral grays #6B7280';
+    const typography = context.typography || 'Modern sans-serif with clear hierarchy';
+    const illustrationStyle = context.illustrationStyle || 'Flat design with subtle gradients';
+    const experienceTone = context.experienceTone || 'Professional yet approachable';
+    const layoutPrinciples =
+      context.layoutPrinciples ||
+      'Card-based layouts with generous whitespace and clear visual hierarchy';
+    const voiceGuidelines = context.voiceGuidelines || 'Concise and action-oriented';
+
+    // Replace all placeholders in template
+    let brief = this.templates.nanoBananaBrief
+      .replace(/\{\{PROJECT_NAME\}\}/g, projectName)
+      .replace(/\{\{PROJECT_DESCRIPTION\}\}/g, projectDescription)
+      .replace(/\{\{PRIMARY_USERS\}\}/g, primaryUsers)
+      .replace(/\{\{CORE_VALUE\}\}/g, coreValue)
+      .replace(/\{\{SEARCH_GOAL\}\}/g, searchGoal)
+      .replace(/\{\{WRITE_GOAL\}\}/g, writeGoal)
+      .replace(/\{\{SIGNUP_VALUE\}\}/g, signupValue)
+      .replace(/\{\{SIGNIN_SECURITY\}\}/g, signinSecurity)
+      .replace(/\{\{BRAND_PALETTE\}\}/g, brandPalette)
+      .replace(/\{\{TYPOGRAPHY\}\}/g, typography)
+      .replace(/\{\{ILLUSTRATION_STYLE\}\}/g, illustrationStyle)
+      .replace(/\{\{EXPERIENCE_TONE\}\}/g, experienceTone)
+      .replace(/\{\{LAYOUT_PRINCIPLES\}\}/g, layoutPrinciples)
+      .replace(/\{\{VOICE_GUIDELINES\}\}/g, voiceGuidelines);
+
+    return brief;
+  }
+
+  /**
+   * Extract project name from user request or specification
+   */
+  extractProjectName(userRequest, specification) {
+    // Try to find project name in spec first lines
+    const nameMatch = specification.match(/^#\s+(.+?)(?:\n|$)/m);
+    if (nameMatch) {
+      return nameMatch[1].replace(/Product Requirements|PRD|Specification/gi, '').trim();
+    }
+
+    // Fallback: extract from user request
+    const requestMatch = userRequest.match(
+      /(?:build|create|develop)\s+(?:a|an)\s+(.+?)(?:\s+for|\s+that|\s+to|$)/i,
+    );
+    if (requestMatch) {
+      return requestMatch[1].trim();
+    }
+
+    return 'Product';
+  }
+
+  /**
+   * Extract project description
+   */
+  extractDescription(userRequest, specification) {
+    // Try to find description in spec overview
+    const overviewMatch = specification.match(/##\s+Overview\s+(.+?)(?=##|$)/is);
+    if (overviewMatch) {
+      return overviewMatch[1]
+        .trim()
+        .split('\n')[0]
+        .replace(/^Based on.+?:\s*"/i, '')
+        .replace(/"$/, '')
+        .trim();
+    }
+
+    return userRequest.slice(0, 150);
+  }
+
+  /**
+   * Extract primary users
+   */
+  extractPrimaryUsers(specification) {
+    const userMatch = specification.match(/\*\*(?:As a|Users?|Target)\*\*[:\s]+(.+?)(?:\n|\*\*)/i);
+    if (userMatch) {
+      return userMatch[1].trim();
+    }
+    return 'users';
+  }
+
+  /**
+   * Extract core value proposition
+   */
+  extractCoreValue(specification) {
+    const valueMatch = specification.match(
+      /\*\*(?:So that|Value|Benefit)\*\*[:\s]+(.+?)(?:\n|\*\*)/i,
+    );
+    if (valueMatch) {
+      return valueMatch[1].trim();
+    }
+    return 'improved productivity and efficiency';
   }
 
   /**

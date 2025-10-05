@@ -40,13 +40,23 @@ workflow:
       condition: user_wants_ai_generation
       notes: "OPTIONAL BUT RECOMMENDED: Generate AI UI prompt for tools like v0, Lovable, etc. Use the generate-ai-frontend-prompt task. User can then generate UI in external tool and download project structure."
 
+    - agent: nano-banana-liaison
+      creates: nano-banana-brief.md, nano-banana-explorations.md (optional)
+      requires: front-end-spec.md
+      condition: user_wants_ai_generation
+      optional_steps:
+        - generate_nano_banana_prompt
+        - record_nano_banana_selection
+      notes: "OPTIONAL: Generate Google Nano Banana visual concept exploration prompt using *generate-nano-brief command. User runs prompt in Google AI Studio (https://aistudio.google.com) to get multiple visual concept variations. After reviewing concepts, user runs *log-nano-selection to record chosen concept. This captures design intent early and informs architecture. SAVE OUTPUT: Copy docs/ui/nano-banana-brief.md and docs/ui/nano-banana-explorations.md to your project."
+
     - agent: architect
       creates: front-end-architecture.md
       requires: front-end-spec.md
       optional_steps:
         - technical_research_prompt
         - review_generated_ui_structure
-      notes: "Creates frontend architecture using front-end-architecture-tmpl. If user generated UI with v0/Lovable, can incorporate the project structure into architecture. May suggest changes to PRD stories or new stories. SAVE OUTPUT: Copy final front-end-architecture.md to your project's docs/ folder."
+        - review_nano_banana_concept
+      notes: "Creates frontend architecture using front-end-architecture-tmpl. If user generated UI with v0/Lovable, can incorporate the project structure into architecture. If Nano Banana concept was selected, reference the visual direction and component patterns. May suggest changes to PRD stories or new stories. SAVE OUTPUT: Copy final front-end-architecture.md to your project's docs/ folder."
 
     - agent: pm
       updates: prd.md (if needed)
@@ -164,11 +174,16 @@ workflow:
         A[Start: UI Development] --> B[analyst: project-brief.md]
         B --> C[pm: prd.md]
         C --> D[ux-expert: front-end-spec.md]
-        D --> D2{Generate v0 prompt?}
+        D --> D2{Generate AI prompts?}
         D2 -->|Yes| D3[ux-expert: create v0 prompt]
         D2 -->|No| E[architect: front-end-architecture.md]
         D3 --> D4[User: generate UI in v0/Lovable]
-        D4 --> E
+        D4 --> D5{Generate Nano Banana concepts?}
+        D5 -->|Yes| D6[nano-banana-liaison: create Nano Banana brief]
+        D5 -->|No| E
+        D6 --> D7[User: generate concepts in Google AI Studio]
+        D7 --> D8[nano-banana-liaison: log selected concept]
+        D8 --> E
         E --> F{Architecture suggests PRD changes?}
         F -->|Yes| G[pm: update prd.md]
         F -->|No| H[po: validate all artifacts]
@@ -207,6 +222,9 @@ workflow:
         style O fill:#ADD8E6
         style D3 fill:#E6E6FA
         style D4 fill:#E6E6FA
+        style D6 fill:#FFE4E1
+        style D7 fill:#FFE4E1
+        style D8 fill:#FFE4E1
         style B fill:#FFE4B5
         style C fill:#FFE4B5
         style D fill:#FFE4B5

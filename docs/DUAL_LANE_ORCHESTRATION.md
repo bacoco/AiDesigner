@@ -185,6 +185,41 @@ Breaks down plan into actionable stories:
 
 **No external dependencies** - uses BMAD's existing LLM client.
 
+### Nano Banana UI Exploration (Quick Lane)
+
+The Quick Lane now includes Google Nano Banana visual concept exploration brief generation:
+
+#### 4. Nano Banana Template (`lib/spec-kit-templates/nano-banana-brief-template.md`)
+
+Generates a visual concept exploration brief with:
+
+- Project context summary
+- Ready-to-use Google Nano Banana prompt
+- Google AI Studio usage instructions
+- Expected outputs and next steps
+- Guidance for logging concept selections
+
+**Input**: User request, generated spec
+**Output**: `docs/ui/nano-banana-brief.md`
+
+**Workflow Extension**:
+
+```javascript
+// After tasks generation:
+
+13. Load nano-banana-brief template
+14. Extract project context from spec
+15. Populate template with context
+16. Write to docs/ui/nano-banana-brief.md
+```
+
+The Nano Banana brief is automatically generated alongside PRD, architecture, and stories. Users can then:
+
+1. Copy the prompt from the brief
+2. Run it in Google AI Studio (https://aistudio.google.com)
+3. Review generated visual concepts
+4. Log their selected concept (optional, via `@nano-banana-liaison` agent)
+
 ## Complex Lane Implementation
 
 ### Multi-Agent Workflow
@@ -221,6 +256,39 @@ The Complex lane runs full BMAD methodology:
 
 // Continues through all phases...
 ```
+
+### Nano Banana UI Exploration (Complex Lane)
+
+The Complex Lane includes optional Google Nano Banana visual concept exploration through the **Nano Banana Liaison** agent:
+
+**Workflow Integration** (after UX Expert phase):
+
+```javascript
+// Optional step in greenfield-ui workflow:
+
+1. UX Expert creates front-end-spec.md
+2. (Optional) UX Expert generates v0/Lovable prompt
+3. (Optional) Nano Banana Liaison runs:
+   a. Generate Nano Banana prompt brief
+   b. User runs prompt in Google AI Studio
+   c. Log selected concept to project state
+4. Architect creates architecture (references logged concept if available)
+```
+
+**Key Capabilities**:
+
+- **Prompt Generation**: `*generate-nano-brief` creates context-rich visual concept prompts
+- **Concept Logging**: `*log-nano-selection` records chosen concept in project state and `docs/ui/nano-banana-explorations.md`
+- **State Persistence**: Selected concept stored via MCP `recordDecision` for downstream phases
+- **UX Spec Integration**: Front-end spec template includes "AI Concept Explorations" section
+
+**Artifacts**:
+
+- `docs/ui/nano-banana-brief.md` - Prompt and usage instructions
+- `docs/ui/nano-banana-explorations.md` - Logged concept selections with rationale
+- Project state decision: `ui_concept` with full visual characteristics
+
+This optional step captures design intent early, informing architecture and development phases with a shared visual direction.
 
 ## MCP Integration
 
@@ -283,18 +351,21 @@ Both lanes create identical file structures:
 ```
 my-project/
 ├── docs/
-│   ├── prd.md                  # Product requirements
-│   ├── architecture.md         # Technical design
-│   ├── epics/                  # (Complex lane may add this)
+│   ├── prd.md                         # Product requirements
+│   ├── architecture.md                # Technical design
+│   ├── epics/                         # (Complex lane may add this)
 │   │   └── epic-1-auth.md
-│   └── stories/                # Development stories
-│       ├── story-1-login.md
-│       └── story-2-signup.md
+│   ├── stories/                       # Development stories
+│   │   ├── story-1-login.md
+│   │   └── story-2-signup.md
+│   └── ui/                            # Visual design artifacts
+│       ├── nano-banana-brief.md       # Google Nano Banana prompt (both lanes)
+│       └── nano-banana-explorations.md # Logged concept selections (Complex lane)
 └── .agilai/
-    ├── state.json              # Project state
-    ├── conversation.json       # Chat history
-    ├── deliverables.json       # Generated artifacts
-    └── decisions.jsonl         # Lane routing log
+    ├── state.json                     # Project state (includes ui_concept decision)
+    ├── conversation.json              # Chat history
+    ├── deliverables.json              # Generated artifacts
+    └── decisions.jsonl                # Lane routing log
 ```
 
 ### Decision Logging

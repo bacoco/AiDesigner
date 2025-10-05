@@ -473,7 +473,12 @@ describe('runOrchestratorServer integration flows', () => {
 
     quickLaneModule.__quickLaneMocks.execute.mockResolvedValueOnce({
       message: 'Quick lane done',
-      files: ['docs/prd.md'],
+      files: [
+        'docs/prd.md',
+        'docs/architecture.md',
+        'docs/stories/story-1.md',
+        'docs/ui/nano-banana-brief.md',
+      ],
     });
 
     const response = await callTool({

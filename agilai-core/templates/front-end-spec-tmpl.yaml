@@ -146,6 +146,28 @@ sections:
     sections:
       - id: design-files
         template: "**Primary Design Files:** {{design_tool_link}}"
+      - id: ai-concept-explorations
+        title: AI Concept Explorations
+        instruction: |
+          If Google Nano Banana visual concept explorations were generated, document the selected concept here. This captures early design intent and informs architecture and development.
+        sections:
+          - id: concept-summary
+            title: Selected Concept
+            template: |
+              **Concept Name:** {{concept_name}}
+
+              **Visual Direction:** {{visual_direction}}
+
+              **Key Differentiators:**
+              - {{differentiator_1}}
+              - {{differentiator_2}}
+              - {{differentiator_3}}
+
+              **Asset References:** [See docs/ui/nano-banana-explorations.md](../ui/nano-banana-explorations.md)
+
+              **Implementation Guidance:** {{implementation_guidance}}
+          - id: exploration-link
+            template: "**Full Exploration Details:** See `docs/ui/nano-banana-brief.md` for the prompt used and `docs/ui/nano-banana-explorations.md` for all concept variations and selection rationale."
       - id: key-screen-layouts
         title: Key Screen Layouts
         repeatable: true
