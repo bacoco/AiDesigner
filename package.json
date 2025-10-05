@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "agilai",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Universal AI agent framework with MCP integration - Chat naturally, get professional results",
   "keywords": [
     "ai",
