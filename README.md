@@ -158,15 +158,15 @@ User: "I want to build an app"
 
 Agilai automatically steers every request through the right mix of speed and depth. You never toggle a switch—the system senses complexity and elevates the workflow the moment your project needs more than a quick brief.
 
-**Quick Lane: 3-minute briefs**
+#### Quick Lane: 3-minute briefs
 
 The quick lane boots up your `docs/` workspace in minutes, generating the core folders and drafting the product requirement, architecture outline, and user stories you need to get moving. It is designed for lightweight asks where momentum matters most, giving you production-ready assets without waiting on a full committee.
 
-**Complex Lane: BMAD depth on demand**
+#### Complex Lane: BMAD depth on demand
 
 When scope grows, the complex lane inherits everything the quick lane has already staged and then unleashes the full BMAD multi-agent orchestration. Analysts deepen the research, product managers expand the PRD, architects iterate on design, and delivery experts refine stories—all while building on the same documentation spine so nothing gets lost in translation.
 
-**Seamless hand-off, consistent outcomes**
+#### Seamless hand-off, consistent outcomes
 
 Because both lanes converge on the exact same deliverables, you can trust that every project—simple or sophisticated—arrives with the same professional PRD, architecture, and story set. The automatic hand-off means you stay in flow while Agilai keeps your `docs/` assets synchronized and production-ready.
 
