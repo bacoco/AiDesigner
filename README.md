@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/agilai.svg?style=flat)](https://www.npmjs.com/package/agilai)
 [![Package Size](https://img.shields.io/badge/size-2.6MB-success)](https://www.npmjs.com/package/agilai)
 
-**Ship specs in minutes with Quick Lane or run enterprise-grade deep dives with Complex Lane—no methodology training required.**
+**Ship specs in under five minutes with Quick Lane or run enterprise-grade deep dives with Complex Lane—no methodology training required.**
 
 ## The Problem
 
@@ -22,7 +22,7 @@ Just talk about your project. The system:
 ✅ **Understands** what you're building (no framework jargon needed)
 ✅ **Generates** professional deliverables automatically (PRD, architecture, user stories)
 ✅ **Guides** you through proven development phases invisibly
-✅ **Routes** work into the Quick Lane to ship briefs and specs in minutes or the Complex Lane for enterprise-grade PRDs, architectures, and QA-ready user stories
+✅ **Routes** work intelligently: Quick Lane for fast specs and briefs (under five minutes), Complex Lane for enterprise PRDs, architectures, and QA-ready stories
 
 **You focus on ideas. Agilai handles methodology.**
 
@@ -36,7 +36,7 @@ Just talk about your project. The system:
 - **Local-first** - Works with Claude CLI, Codex CLI, or OpenCode
 - **No API costs** - Runs through your existing CLI tooling
 
-> 🔁 **Two-Lane Orchestration:** Start in the speed-focused Quick Lane or unlock the depth of the Complex Lane—then read on below to see how Agilai orchestrates both without extra prompts.
+> **Two-Lane Orchestration:** Start in the speed-focused Quick Lane or unlock the depth of the Complex Lane—see the [Dual-Lane Orchestration](#dual-lane-orchestration) section below to learn how Agilai orchestrates both without extra prompts.
 
 ## Quick Start
 
