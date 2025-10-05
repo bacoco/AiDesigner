@@ -69,13 +69,13 @@ By default, MCP servers are installed to the **Agilai configuration**. You can s
 
 ```javascript
 // Default - installs to Agilai config
-install_mcp_server({ serverId: 'filesystem' })
+install_mcp_server({ serverId: 'filesystem' });
 
 // Install to Claude Desktop config only
-install_mcp_server({ serverId: 'filesystem', config: 'claude' })
+install_mcp_server({ serverId: 'filesystem', config: 'claude' });
 
 // Install to both configs (dual-write)
-install_mcp_server({ serverId: 'filesystem', config: 'both' })
+install_mcp_server({ serverId: 'filesystem', config: 'both' });
 ```
 
 ### Search for Servers
