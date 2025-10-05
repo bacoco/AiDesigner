@@ -173,6 +173,21 @@ When scope grows, the complex lane inherits everything the quick lane has alread
 
 Because both lanes converge on the exact same deliverables, you can trust that every project—simple or sophisticated—arrives with the same professional PRD, architecture, and story set. The automatic hand-off means you stay in flow while Agilai keeps your `docs/` assets synchronized and production-ready.
 
+```mermaid
+flowchart LR
+    UserRequest["User request"] --> LaneSelector["Lane selector"]
+    LaneSelector -->|Quick lane| QuickLane["Quick lane runtime"]
+    LaneSelector -->|Complex lane| ComplexLane["Complex lane workflow"]
+    QuickLane --> Docs["Shared docs/ outputs"]
+    ComplexLane --> Docs
+```
+
+**Summary:** The Quick Lane runtime sequentially loads the Spec Kit–derived spec, plan, and tasks templates—calling the LLM at each step to author `docs/prd.md`, `docs/architecture.md`, and `docs/stories/*.md`—while the Complex lane employs the multi-agent BMAD workflow to produce the same deliverables through coordinated specialists.
+
+- **Spec Kit Step – Product Spec Template** ↔ **BMAD Phase – Analyst Discovery & Product Framing**
+- **Spec Kit Step – Delivery Plan Template** ↔ **BMAD Phase – Architecture & Planning Alignment**
+- **Spec Kit Step – Tasks Template** ↔ **BMAD Phase – Story Breakdown & Delivery Execution**
+
 → **[DUAL_LANE_ORCHESTRATION.md](docs/DUAL_LANE_ORCHESTRATION.md)** - Technical details
 
 ## LLM Provider Support
