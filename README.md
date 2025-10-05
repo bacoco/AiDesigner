@@ -278,7 +278,7 @@ BMAD™ and BMAD-METHOD™ are trademarks of BMad Code, LLC.
 
 ---
 
-**Current Version**: v1.3.11 - Production Ready ✅
+**Current Version**: v1.4.0 - Production Ready ✅
 
 **Get Started**: `npx agilai@latest start`
 
