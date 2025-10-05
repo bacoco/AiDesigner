@@ -100,6 +100,53 @@ All organized in `docs/` folder, ready to use.
 
 → **[Complete Examples](docs/examples.md)** - Detailed walkthrough examples
 
+## AI-Powered Visual Concept Exploration
+
+Before writing a single line of UI code, explore multiple visual design directions with **Google Nano Banana** (Gemini 2.5 Flash Image).
+
+### How It Works
+
+When building UI features, Agilai automatically generates:
+
+1. **Visual concept prompts** tailored to your requirements
+2. **Multiple design directions** to explore before committing
+3. **Documented selections** that inform architecture decisions
+
+```
+You: "I need a dashboard for tracking family chores"
+
+AI: "I've generated visual concept prompts for your dashboard.
+
+     📋 docs/ui/nano-banana-brief.md contains 3 ready-to-use prompts:
+
+     1. Clean minimal cards with completion rings
+     2. Gamified quest board with character avatars
+     3. Calendar-focused timeline with family photos
+
+     Visit https://aistudio.google.com/prompts/new_freeform
+     and use these prompts to explore visual directions.
+
+     Once you've selected your preferred concept, let me know
+     and I'll update the architecture accordingly."
+
+You: "I like option 2, the gamified approach"
+
+AI: "✓ Logged your selection to docs/ui/nano-banana-explorations.md
+     ✓ Updated architecture with gamification components
+     ✓ Added visual design system requirements to PRD"
+```
+
+### Benefits
+
+- **Reduce rework** - Validate visual direction before implementation
+- **Faster iteration** - Explore 5+ concepts in minutes vs. hours of mockups
+- **Better alignment** - Stakeholders see options early in the process
+- **Informed architecture** - Design decisions feed directly into technical specs
+
+**Available in both Quick Lane and Complex Lane** - Every UI project gets visual concept exploration automatically.
+
+→ **[Complete Nano Banana Guide](docs/guides/USING_GOOGLE_NANO_BANANA.md)** - Detailed workflow and examples
+
 ## Extend with Any Tool
 
 Add powerful integrations through natural conversation:
