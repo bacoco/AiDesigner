@@ -31,7 +31,7 @@ npm run mcp:browse
 
 Explore 15+ official MCP servers organized by category:
 
-- **Development Tools**: filesystem, github, git, gitlab, puppeteer, playwright
+- **Development Tools**: filesystem, github, git, gitlab, chrome-devtools
 - **Databases**: postgres, sqlite, memory
 - **Cloud Services**: aws-kb-retrieval, cloudflare
 - **Search & AI**: brave-search, fetch, everything
@@ -316,7 +316,7 @@ The invisible orchestrator can manage MCP servers naturally through conversation
 **Assistant**: Suggests PostgreSQL/SQLite MCP servers and offers installation
 
 **User**: "Help me with browser automation"
-**Assistant**: Recommends Puppeteer/Playwright and installs with confirmation
+**Assistant**: Recommends enabling the Chrome DevTools MCP tooling and installs with confirmation
 
 **User**: "Can you search the web for me?"
 **Assistant**: Installs Brave Search MCP and configures API key
