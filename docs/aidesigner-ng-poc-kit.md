@@ -1,19 +1,26 @@
+---
+title: "AiDesigner NG — POC Kit"
+description: "POC kit for the AiDesigner NG workflow covering Chrome MCP inspection, token inference, React codegen (Shadcn/MUI), validation, and reporting"
+---
+
 # AiDesigner NG — POC Kit (Chrome MCP × Shadcn/MUI)
 
-## Scope livré (MVP prêt à cloner dans `bacoco/AiDesigner`)
+## Scope Delivered (MVP ready to clone into `bacoco/AiDesigner`)
 
-1. Mini **POC** “**URL → tokens → page HTML/React (Shadcn)**” avec **evidence pack** et **rapport de drift**.
-2. **Templates de prompts** Nano Banana / Gemini **design-locked**.
-3. **Registry de mapping** (Shadcn & MUI) + **3 codemods** types (ts-node / jscodeshift/ts-morph).
+1. Mini **POC** "**URL → tokens → HTML/React page (Shadcn)**" with **evidence pack** and **drift report**.
+2. **Prompt templates** for Nano Banana / Gemini **design-locked** generation.
+3. **Mapping registry** (Shadcn & MUI) + **3 codemod** types (ts-node / jscodeshift/ts-morph).
 
-> ⚠️ Tout est pensé pour **Chrome DevTools MCP** exclusivement (jamais Playwright). Les appels MCP sont encapsulés pour que tu puisses mapper aux noms d’outils de ton serveur MCP actuel.
+> ⚠️ **Important**: Everything is designed exclusively for **Chrome DevTools MCP** (never Playwright). MCP calls are encapsulated so you can map to your current MCP server's tool names.
+>
+> ⚠️ **Community Discussion Required**: Per [CONTRIBUTING.md](../CONTRIBUTING.md), significant features should be discussed in Discord (#general-dev) and have a feature request issue before implementation. Please confirm community discussion has occurred.
 
 ---
 
-## 0) Arborescence proposée (monorepo)
+## 0) Proposed Repository Structure (monorepo)
 
-```
-/ (racine du repo AiDesigner)
+```text
+/ (AiDesigner repository root)
 ├─ apps/
 │  └─ aidesigner-poc/
 │     ├─ README.md
@@ -25,32 +32,32 @@
 │     │  ├─ generate-reports.ts
 │     │  └─ types.ts
 │     └─ out/ (généré)
-│        ├─ evidence/
-│        ├─ reports/
-│        └─ generated/
+│        ├─ evidence/        (captured artifacts)
+│        ├─ reports/         (validation reports)
+│        └─ generated/       (generated code)
 ├─ packages/
-│  ├─ mcp-inspector/
+│  ├─ mcp-inspector/         (Chrome MCP wrapper)
 │  │  ├─ package.json
 │  │  └─ src/index.ts
-│  ├─ inference/
+│  ├─ inference/             (token & component detection)
 │  │  ├─ package.json
 │  │  └─ src/{tokens.ts,components.ts}
-│  ├─ canonical-spec/
+│  ├─ canonical-spec/        (JSON schemas)
 │  │  ├─ package.json
 │  │  └─ schemas/{tokens.schema.json,components-map.schema.json}
-│  ├─ validators/
+│  ├─ validators/            (design system validation)
 │  │  ├─ package.json
 │  │  └─ src/{contrast.ts,spacing.ts,grid.ts,index.ts}
-│  ├─ mappers/
+│  ├─ mappers/               (UI library mappings)
 │  │  ├─ package.json
 │  │  └─ registry/{shadcn.json,mui.json}
-│  ├─ codegen/
+│  ├─ codegen/               (code generation)
 │  │  ├─ package.json
 │  │  └─ src/{canonical.ts,react-shadcn.ts,react-mui.ts,stories.ts,tests.ts}
-│  └─ codemods/
+│  └─ codemods/              (AST transformations)
 │     ├─ package.json
 │     └─ src/{apply-tokens-shadcn.ts,replace-inline-styles.ts,mui-intent-size.ts}
-└─ prompts/
+└─ prompts/                  (LLM prompt templates)
    ├─ nano-banana-design-locked.txt
    └─ gemini-2.5-design-locked.txt
 ```
@@ -103,9 +110,11 @@ export type ValidationReport = {
 
 ### 1.2 `packages/mcp-inspector/src/index.ts`
 
+> **Note**: This is skeleton code for illustration purposes. Actual implementation requires connecting to your Chrome DevTools MCP server.
+
 ```ts
-// Wrapper minimal pour Chrome DevTools MCP.
-// Adapte les noms d'outils à ton serveur MCP Chrome (voir README MCP Chrome).
+// Minimal wrapper for Chrome DevTools MCP.
+// Adapt tool names to match your Chrome MCP server (see Chrome MCP README).
 
 export type InspectOptions = {
   url: string;
@@ -123,19 +132,27 @@ export type InspectResult = {
 };
 
 export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResult> {
-  // TODO: brancher sur ton client MCP existant.
-  // Pseudo-calls:
-  // await mcp.browser.open(opts.url)
-  // const domSnapshot = await mcp.devtools.dom_snapshot()
-  // const accessibilityTree = await mcp.devtools.accessibility_tree()
-  // const cssom = await mcp.devtools.cssom_dump()
-  // const computedStyles = await mcp.devtools.get_computed_styles({ nodes: 'all' })
-  // const console = await mcp.devtools.console_get_messages({ levels: ['log','warn','error'] })
-  // await mcp.devtools.performance_start_trace({ preset: 'navigation' })
-  // ... navigate/idle ...
-  // const perfTracePath = await mcp.devtools.performance_stop_trace()
-  // const screenshots = await mcp.devtools.capture_screenshot({ states: opts.states || ['default'] })
+  // TODO: Connect to your existing MCP client.
+  // Pseudo-calls (replace with actual MCP server tool names):
+  //
+  // try {
+  //   await mcp.browser.open(opts.url)
+  //   const domSnapshot = await mcp.devtools.dom_snapshot()
+  //   const accessibilityTree = await mcp.devtools.accessibility_tree()
+  //   const cssom = await mcp.devtools.cssom_dump()
+  //   const computedStyles = await mcp.devtools.get_computed_styles({ nodes: 'all' })
+  //   const console = await mcp.devtools.console_get_messages({ levels: ['log','warn','error'] })
+  //   await mcp.devtools.performance_start_trace({ preset: 'navigation' })
+  //   // ... navigate/idle ...
+  //   const perfTracePath = await mcp.devtools.performance_stop_trace()
+  //   const screenshots = await mcp.devtools.capture_screenshot({ states: opts.states || ['default'] })
+  //
+  //   return { domSnapshot, accessibilityTree, cssom, computedStyles, console, perfTracePath, screenshots };
+  // } catch (error) {
+  //   throw new Error(`MCP analysis failed: ${error.message}`);
+  // }
 
+  // Placeholder return for skeleton code:
   return {
     domSnapshot: {},
     accessibilityTree: {},
@@ -150,6 +167,8 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
 
 ### 1.3 `packages/inference/src/tokens.ts`
 
+> **Note**: This is skeleton code for illustration purposes. Production implementation should use proper clustering algorithms and style extraction.
+
 ```ts
 import { Tokens } from '../../../apps/aidesigner-poc/src/types';
 
@@ -158,10 +177,10 @@ export function inferTokens(input: {
   computedStyles: any[];
   cssom: any;
 }): Tokens {
-  // Heuristiques: clustering couleurs (k-medoids simplifié), steps d’espacement (GCD-like), familles de fonts.
+  // Heuristics: color clustering (simplified k-medoids), spacing steps (GCD-like), font families.
   const now = new Date().toISOString();
 
-  // TODO: extraire des valeurs réelles depuis computedStyles
+  // TODO: Extract real values from computedStyles
   const colors = {
     'base/fg': '#0A0A0A',
     'base/bg': '#FFFFFF',
@@ -186,6 +205,8 @@ export function inferTokens(input: {
 
 ### 1.4 `packages/inference/src/components.ts`
 
+> **Note**: This is skeleton code for illustration purposes. Production implementation should use sophisticated pattern matching.
+
 ```ts
 import { ComponentMap } from '../../../apps/aidesigner-poc/src/types';
 
@@ -194,7 +215,7 @@ export function detectComponents(input: {
   accessibilityTree: any;
   cssom: any;
 }): ComponentMap {
-  // Heuristiques: rôle ARIA, classes, patterns CSS récurrents
+  // Heuristics: ARIA roles, class patterns, recurring CSS patterns
   return {
     Button: {
       detect: { role: ['button'], classesLike: ['btn', 'button'], patterns: ['rounded'] },
@@ -295,17 +316,29 @@ export function contrastRatio(hex1: string, hex2: string): number {
 
 ```ts
 import { Tokens, ComponentMap } from '../../../apps/aidesigner-poc/src/types';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-export function buildShadcnPage(tokens: Tokens, comps: ComponentMap, outDir: string) {
+export async function buildShadcnPage(tokens: Tokens, comps: ComponentMap, outDir: string) {
+  // Validate and sanitize output directory
+  const resolvedOutDir = path.resolve(process.cwd(), outDir);
+  if (!resolvedOutDir.startsWith(process.cwd())) {
+    throw new Error('Invalid output directory: path traversal detected');
+  }
   const imports = `import { Button } from "@/components/ui/button"\nimport { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"`;
   const styles = `:root{ --fg:${tokens.primitives.color['base/fg']}; --bg:${tokens.primitives.color['base/bg']}; } body{ background:var(--bg); color:var(--fg); font-family:${tokens.primitives.font.sans.family}; }`;
 
   const page = `\n${imports}\n\nexport default function Page(){\n  return (\n    <main className="p-6 grid gap-6 md:grid-cols-2">\n      <section>\n        <h1 className="text-2xl font-semibold mb-4">AiDesigner POC</h1>\n        <Button variant="default" size="default">Primary</Button>\n      </section>\n      <Card>\n        <CardHeader><CardTitle>Card</CardTitle></CardHeader>\n        <CardContent>Generated with tokens</CardContent>\n      </Card>\n    </main>\n  )\n}`;
 
-  fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(`${outDir}/page.tsx`, page, 'utf-8');
-  fs.writeFileSync(`${outDir}/globals.css`, styles, 'utf-8');
+  try {
+    await fs.mkdir(resolvedOutDir, { recursive: true });
+    await Promise.all([
+      fs.writeFile(path.join(resolvedOutDir, 'page.tsx'), page, 'utf-8'),
+      fs.writeFile(path.join(resolvedOutDir, 'globals.css'), styles, 'utf-8'),
+    ]);
+  } catch (error) {
+    throw new Error(`Failed to write generated files: ${error.message}`);
+  }
 }
 ```
 
@@ -316,32 +349,52 @@ import { analyzeWithMCP } from '../../..//packages/mcp-inspector/src';
 import { inferTokens } from '../../..//packages/inference/src/tokens';
 import { detectComponents } from '../../..//packages/inference/src/components';
 import { Tokens, ComponentMap } from './types';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 export async function runUrlAnalysis(
   url: string,
   outRoot: string,
 ): Promise<{ tokens: Tokens; comps: ComponentMap; evidence: string }> {
-  const res = await analyzeWithMCP({ url, states: ['default', 'hover', 'dark', 'md'] });
-  const tokens = inferTokens(res);
-  const comps = detectComponents(res);
+  // Validate and sanitize output directory
+  const resolvedOutRoot = path.resolve(process.cwd(), outRoot);
+  if (!resolvedOutRoot.startsWith(process.cwd())) {
+    throw new Error('Invalid output directory: path traversal detected');
+  }
 
-  const evidenceDir = `${outRoot}/evidence`;
-  fs.mkdirSync(evidenceDir, { recursive: true });
-  fs.writeFileSync(`${evidenceDir}/domSnapshot.json`, JSON.stringify(res.domSnapshot, null, 2));
-  fs.writeFileSync(
-    `${evidenceDir}/accessibilityTree.json`,
-    JSON.stringify(res.accessibilityTree, null, 2),
-  );
-  fs.writeFileSync(`${evidenceDir}/cssom.json`, JSON.stringify(res.cssom, null, 2));
-  fs.writeFileSync(`${evidenceDir}/console.json`, JSON.stringify(res.console, null, 2));
+  try {
+    const res = await analyzeWithMCP({ url, states: ['default', 'hover', 'dark', 'md'] });
+    const tokens = inferTokens(res);
+    const comps = detectComponents(res);
 
-  const dataDir = `${outRoot}/data`;
-  fs.mkdirSync(dataDir, { recursive: true });
-  fs.writeFileSync(`${dataDir}/tokens.json`, JSON.stringify(tokens, null, 2));
-  fs.writeFileSync(`${dataDir}/components.map.json`, JSON.stringify(comps, null, 2));
+    const evidenceDir = path.join(resolvedOutRoot, 'evidence');
+    const dataDir = path.join(resolvedOutRoot, 'data');
 
-  return { tokens, comps, evidence: evidenceDir };
+    // Create directories and write files in parallel
+    await Promise.all([
+      fs.mkdir(evidenceDir, { recursive: true }),
+      fs.mkdir(dataDir, { recursive: true }),
+    ]);
+
+    await Promise.all([
+      fs.writeFile(
+        path.join(evidenceDir, 'domSnapshot.json'),
+        JSON.stringify(res.domSnapshot, null, 2),
+      ),
+      fs.writeFile(
+        path.join(evidenceDir, 'accessibilityTree.json'),
+        JSON.stringify(res.accessibilityTree, null, 2),
+      ),
+      fs.writeFile(path.join(evidenceDir, 'cssom.json'), JSON.stringify(res.cssom, null, 2)),
+      fs.writeFile(path.join(evidenceDir, 'console.json'), JSON.stringify(res.console, null, 2)),
+      fs.writeFile(path.join(dataDir, 'tokens.json'), JSON.stringify(tokens, null, 2)),
+      fs.writeFile(path.join(dataDir, 'components.map.json'), JSON.stringify(comps, null, 2)),
+    ]);
+
+    return { tokens, comps, evidence: evidenceDir };
+  } catch (error) {
+    throw new Error(`URL analysis failed: ${error.message}`);
+  }
 }
 ```
 
@@ -350,10 +403,11 @@ export async function runUrlAnalysis(
 ```ts
 import { buildShadcnPage } from '../../../packages/codegen/src/react-shadcn';
 import { Tokens, ComponentMap } from './types';
+import path from 'node:path';
 
 export async function buildReact(tokens: Tokens, comps: ComponentMap, outRoot: string) {
-  const outDir = `${outRoot}/generated/shadcn-app/src/app`;
-  buildShadcnPage(tokens, comps, outDir);
+  const outDir = path.join(outRoot, 'generated', 'shadcn-app', 'src', 'app');
+  await buildShadcnPage(tokens, comps, outDir);
 }
 ```
 
@@ -362,10 +416,17 @@ export async function buildReact(tokens: Tokens, comps: ComponentMap, outRoot: s
 ```ts
 import { Tokens } from './types';
 import { contrastRatio } from '../../../packages/validators/src/contrast';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-export function generateDriftReport(tokens: Tokens, outRoot: string) {
-  // Demo: drift minimal = contraste + spacing step
+export async function generateDriftReport(tokens: Tokens, outRoot: string) {
+  // Validate output directory
+  const resolvedOutRoot = path.resolve(process.cwd(), outRoot);
+  if (!resolvedOutRoot.startsWith(process.cwd())) {
+    throw new Error('Invalid output directory: path traversal detected');
+  }
+
+  // Demo: minimal drift = contrast + spacing step
   const fg = tokens.primitives.color['base/fg'];
   const bg = tokens.primitives.color['base/bg'];
   const ratio = contrastRatio(fg, bg);
@@ -376,9 +437,14 @@ export function generateDriftReport(tokens: Tokens, outRoot: string) {
     spacing: { step: spacingStep, driftAvgPx: 0 },
     summary: ratio >= 4.5 ? 'OK' : 'Issues detected',
   };
-  const reportsDir = `${outRoot}/reports`;
-  fs.mkdirSync(reportsDir, { recursive: true });
-  fs.writeFileSync(`${reportsDir}/drift.json`, JSON.stringify(report, null, 2));
+
+  try {
+    const reportsDir = path.join(resolvedOutRoot, 'reports');
+    await fs.mkdir(reportsDir, { recursive: true });
+    await fs.writeFile(path.join(reportsDir, 'drift.json'), JSON.stringify(report, null, 2));
+  } catch (error) {
+    throw new Error(`Failed to generate drift report: ${error.message}`);
+  }
 }
 ```
 
@@ -397,11 +463,16 @@ if (!url) {
 }
 
 (async () => {
-  const outRoot = `./out/${Date.now()}`;
-  const { tokens, comps } = await runUrlAnalysis(url, outRoot);
-  await buildReact(tokens, comps, outRoot);
-  generateDriftReport(tokens, outRoot);
-  console.log(`✅ Done. See ${outRoot}/evidence, ${outRoot}/generated, ${outRoot}/reports`);
+  try {
+    const outRoot = `./out/${Date.now()}`;
+    const { tokens, comps } = await runUrlAnalysis(url, outRoot);
+    await buildReact(tokens, comps, outRoot);
+    await generateDriftReport(tokens, outRoot);
+    console.log(`✅ Done. See ${outRoot}/evidence, ${outRoot}/generated, ${outRoot}/reports`);
+  } catch (error) {
+    console.error(`❌ Error: ${error.message}`);
+    process.exit(1);
+  }
 })();
 ```
 
@@ -410,10 +481,27 @@ if (!url) {
 ````md
 # AiDesigner POC — URL → Tokens → Shadcn
 
-## Prérequis
+## Prerequisites
 
 - Node 18+
-- Chrome DevTools MCP server opérationnel + variables d’environnement pointant dessus
+- Chrome DevTools MCP server running + environment variables configured
+- Dependencies (see below)
+
+## Dependencies
+
+```json
+{
+  "dependencies": {
+    "ts-morph": "^21.0.0",
+    "jscodeshift": "^0.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "ts-node": "^10.9.0"
+  }
+}
+```
 
 ## Run
 
@@ -422,12 +510,21 @@ pnpm -w install
 pnpm -w --filter aidesigner-poc dev https://stripe.com
 ```
 
-Sorties:
+Outputs:
 
-- `out/<ts>/evidence/*` (snapshots DOM/CSS/console)
+- `out/<ts>/evidence/*` (DOM/CSS/console snapshots)
 - `out/<ts>/data/tokens.json`, `components.map.json`
 - `out/<ts>/generated/shadcn-app/src/app/page.tsx`
 - `out/<ts>/reports/drift.json`
+
+## Data Lifecycle Management
+
+Evidence packs can grow large. Recommended practices:
+
+- **Size limits**: Cap evidence packs at 100MB per analysis
+- **Cleanup**: Auto-delete evidence older than 30 days
+- **Storage**: Use `.gitignore` for `out/` directory
+- **Archiving**: Compress and archive significant evidence packs for audit trails
 
 ```
 
@@ -435,7 +532,9 @@ Sorties:
 
 ---
 
-## 2) Templates de prompts — Nano Banana / Gemini (Design-Locked)
+## 2) Prompt Templates — Nano Banana / Gemini (Design-Locked)
+
+> ⚠️ **Security Note**: When using user input in prompts, sanitize the `{{brief}}` variable to prevent prompt injection attacks. Strip or escape control characters, reject multi-line input where single-line is expected, and validate against a whitelist of acceptable characters.
 
 ### 2.1 `prompts/nano-banana-design-locked.txt`
 
@@ -452,7 +551,7 @@ CONSTRAINTS (hard)
 - Do not introduce colors, fonts, shadows, radii outside tokens.
 
 GOAL
-Generate N coherent UI concept(s) for: {{brief}}.
+Generate N coherent UI concept(s) for: {{brief | sanitize}}.
 Respect the information architecture and component patterns: {{components.map | json}}.
 
 OUTPUTS
@@ -463,6 +562,13 @@ OUTPUTS
    - Primary actions, secondary actions
    - Token usage (color refs, spacing steps)
    - Violations (if any)
+
+INPUT SANITIZATION
+Before using {{brief}}, apply:
+- Strip control characters (newlines, tabs, escape sequences)
+- Limit length to 500 characters
+- Escape special prompt delimiters
+- Reject if contains common injection patterns
 ```
 
 ### 2.2 `prompts/gemini-2.5-design-locked.txt`
@@ -503,13 +609,28 @@ VALIDATION
 ### 3.1 Codemod 1 — `apply-tokens-shadcn.ts`
 
 ```ts
-// ts-node codemod: injecte classes/props cohérentes avec tokens (ex. radii/spacing via tailwind config)
+// ts-node codemod: inject classes/props consistent with tokens (e.g., radii/spacing via tailwind config)
 import { Project, SyntaxKind } from 'ts-morph';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 export async function run(pathGlob: string, tokensPath: string) {
+  // Validate and sanitize tokens path
+  const resolvedTokensPath = path.resolve(process.cwd(), tokensPath);
+  if (!resolvedTokensPath.startsWith(process.cwd()) || !resolvedTokensPath.endsWith('.json')) {
+    throw new Error('Invalid tokens path: must be a JSON file within project directory');
+  }
+
   const project = new Project();
   project.addSourceFilesAtPaths(pathGlob);
-  const tokens = require(tokensPath);
+
+  let tokens;
+  try {
+    const tokensContent = await fs.readFile(resolvedTokensPath, 'utf-8');
+    tokens = JSON.parse(tokensContent);
+  } catch (error) {
+    throw new Error(`Failed to load tokens: ${error.message}`);
+  }
 
   project.getSourceFiles().forEach((sf) => {
     sf.forEachDescendant((node) => {
@@ -532,13 +653,28 @@ export async function run(pathGlob: string, tokensPath: string) {
 ### 3.2 Codemod 2 — `replace-inline-styles.ts`
 
 ```ts
-// Remplace styles inline (backgroundColor, color, borderRadius) par classes/props mappées aux tokens
+// Replace inline styles (backgroundColor, color, borderRadius) with token-mapped classes/props
 import { Project, SyntaxKind } from 'ts-morph';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 export async function run(glob: string, tokensPath: string) {
+  // Validate and sanitize tokens path
+  const resolvedTokensPath = path.resolve(process.cwd(), tokensPath);
+  if (!resolvedTokensPath.startsWith(process.cwd()) || !resolvedTokensPath.endsWith('.json')) {
+    throw new Error('Invalid tokens path: must be a JSON file within project directory');
+  }
+
   const project = new Project();
   project.addSourceFilesAtPaths(glob);
-  const tokens = require(tokensPath);
+
+  let tokens;
+  try {
+    const tokensContent = await fs.readFile(resolvedTokensPath, 'utf-8');
+    tokens = JSON.parse(tokensContent);
+  } catch (error) {
+    throw new Error(`Failed to load tokens: ${error.message}`);
+  }
 
   const colorMap = {
     [tokens.primitives.color['brand/600']]: 'bg-brand-600',
@@ -564,8 +700,8 @@ export async function run(glob: string, tokensPath: string) {
 ### 3.3 Codemod 3 — `mui-intent-size.ts`
 
 ```ts
-// Convertit des props canoniques intent/size vers MUI color/size
-import { Project, SyntaxKind } from 'ts-morph';
+// Convert canonical intent/size props to MUI color/size
+import { Project, SyntaxKind, JsxAttribute } from 'ts-morph';
 
 const intentToColor: Record<string, string> = {
   primary: 'primary',
@@ -581,23 +717,40 @@ export async function run(glob: string) {
   project.getSourceFiles().forEach((sf) => {
     sf.forEachDescendant((node) => {
       if (node.getKind() === SyntaxKind.JsxOpeningElement) {
-        const el = node.asKind(SyntaxKind.JsxOpeningElement)!;
+        const el = node.asKind(SyntaxKind.JsxOpeningElement);
+        if (!el) return;
+
         if (el.getTagNameNode().getText() === 'Button') {
-          const intent = el.getAttribute('intent');
-          if (intent) {
-            el.addAttribute({
-              name: 'color',
-              initializer: `"${intentToColor[(intent as any).getInitializer()?.getText()?.replace(/\"/g, '') || 'primary']}"`,
-            });
-            (intent as any).remove();
+          const intentAttr = el.getAttribute('intent');
+          if (intentAttr && intentAttr.getKind() === SyntaxKind.JsxAttribute) {
+            const intent = intentAttr as JsxAttribute;
+            const initializer = intent.getInitializer();
+            if (initializer) {
+              // Strip quotes from the initializer text (e.g., '"primary"' -> 'primary')
+              const rawValue = initializer.getText().replace(/^["']|["']$/g, '');
+              const colorValue = intentToColor[rawValue] || 'primary';
+              el.addAttribute({
+                name: 'color',
+                initializer: `"${colorValue}"`,
+              });
+            }
+            intent.remove();
           }
-          const size = el.getAttribute('size');
-          if (size) {
-            el.addAttribute({
-              name: 'size',
-              initializer: `"${sizeMap[(size as any).getInitializer()?.getText()?.replace(/\"/g, '') || 'md']}"`,
-            });
-            (size as any).remove();
+
+          const sizeAttr = el.getAttribute('size');
+          if (sizeAttr && sizeAttr.getKind() === SyntaxKind.JsxAttribute) {
+            const size = sizeAttr as JsxAttribute;
+            const initializer = size.getInitializer();
+            if (initializer) {
+              // Strip quotes from the initializer text (e.g., '"md"' -> 'md')
+              const rawValue = initializer.getText().replace(/^["']|["']$/g, '');
+              const sizeValue = sizeMap[rawValue] || 'medium';
+              el.addAttribute({
+                name: 'size',
+                initializer: `"${sizeValue}"`,
+              });
+            }
+            size.remove();
           }
         }
       }
@@ -676,24 +829,77 @@ export async function run(glob: string) {
 
 ---
 
-## 6) Notes d’intégration & bonnes pratiques
+## 6) Integration Notes & Best Practices
 
-- **MCP Chrome only**: centralise les appels dans `packages/mcp-inspector`. Tu pourras mapper aux noms des tools exposés par ton serveur (DOM snapshot, a11y tree, CSSOM, screenshots, console, performance trace).
-- **Design-Locked**: toute génération (image/HTML/React) doit passer par `tokens.json` + validateurs (contrast/spacing/grid).
-- **Registry extensible**: ajoute d’autres libs UI en créant des fichiers `.json` dans `packages/mappers/registry`.
-- **Codemods**: exécutables via `ts-node` dans CI pour imposer la parité (intent/size, retirer styles inline, appliquer tokens).
-- **Sécurité/IP**: si pages propriétaires, activer un mode “Legal-Safe” (pas d’export d’actifs, distillation de style abstraite, provenance des sources).
+### Chrome MCP Security
+
+**Sandbox Configuration:**
+- Run Chrome MCP server in isolated container/VM
+- Apply egress controls: whitelist only necessary domains
+- Use ephemeral storage: auto-delete browser data after each session
+- Execution boundaries: separate process per analysis with resource limits (CPU, memory, time)
+- Network policies: block access to internal/private IP ranges
+
+**Data Handling:**
+- No persistent cookies or local storage between sessions
+- Screenshot/trace data encrypted at rest if stored
+- Automatic cleanup of evidence packs after configurable retention period
+
+### Design System Integration
+
+- **MCP Chrome only**: Centralize calls in `packages/mcp-inspector`. Map to tool names exposed by your server (DOM snapshot, a11y tree, CSSOM, screenshots, console, performance trace).
+- **Design-Locked**: All generation (image/HTML/React) must go through `tokens.json` + validators (contrast/spacing/grid).
+- **Extensible registry**: Add other UI libs by creating `.json` files in `packages/mappers/registry`.
+- **Codemods**: Executable via `ts-node` in CI to enforce parity (intent/size, remove inline styles, apply tokens).
+- **Security/IP**: For proprietary pages, enable "Legal-Safe Mode" (no asset export, abstract style distillation, source provenance tracking).
+
+### Integration with Existing AiDesigner
+
+This POC complements the existing AiDesigner workflow:
+
+- **Existing flow**: Natural language → PRD → architecture → user stories (conversational design collaboration)
+- **NG POC flow**: URL → tokens → code generation (style extraction and code scaffolding)
+
+**Use cases:**
+1. **Bootstrap from existing site**: Use NG POC to extract design tokens from competitor/reference site, then feed into existing AiDesigner workflow
+2. **Code generation**: After story creation in existing flow, use NG POC's codegen to scaffold React components
+3. **Design drift detection**: Use NG POC validators to check implemented code against design system
+
+**Migration path**: No migration required - this is an additive capability, not a replacement.
 
 ---
 
-## 7) Prochaines extensions (faciles à brancher ensuite)
+## 7) Testing Strategy
 
-- **Overlay d’annotations à la Drawbridge** côté app → génère patches AST + `diffs/*.patch`.
-- **Graphe interne** (Tokens⇄Components⇄Pages⇄Tests) pour impact analysis & journey checks.
-- **Génération MUI en parallèle** (switch de target).
-- **Prompts “describe UI Facts”** Nano Banana/Gemini pour croiser vision ↔ DOM.
+### Unit Tests
+- **Token inference**: Verify color clustering, spacing extraction, font detection
+- **Component detection**: Test ARIA role matching, class pattern recognition
+- **Validators**: Ensure contrast calculations, spacing drift detection work correctly
+- **Codemods**: AST transformation correctness with fixture files
+
+### Integration Tests
+- **End-to-end flow**: URL → tokens → React page generation
+- **MCP integration**: Mock MCP server responses, verify proper handling
+- **Evidence pack**: Validate all artifacts are created with correct structure
+
+### Visual Regression Tests
+- **Generated components**: Snapshot testing of Shadcn/MUI output
+- **Token application**: Verify generated pages match token constraints
+
+### Quality Gates
+- TypeScript: strict mode, no `any` types in production code
+- Linting: ESLint with recommended rules
+- Test coverage: ≥80% for validators and codemods
+- All examples: must pass TypeScript compilation
+
+## 8) Future Extensions (easy to add later)
+
+- **Drawbridge-style annotation overlay** in browser → generates AST patches + `diffs/*.patch`
+- **Internal graph** (Tokens⇄Components⇄Pages⇄Tests) for impact analysis & journey checks
+- **Parallel MUI generation** (switch target library)
+- **"Describe UI Facts" prompts** with Nano Banana/Gemini to cross-reference vision ↔ DOM
 
 ---
 
-**Fin du kit.** Copie-colle ces fichiers dans ton repo et branche `mcp-inspector` sur ton serveur MCP Chrome. Puis lance `apps/aidesigner-poc` sur une URL cible pour obtenir `tokens.json`, une page Shadcn basique, et les rapports.
+**End of kit.** Copy these files into your repo and connect `mcp-inspector` to your Chrome MCP server. Then run `apps/aidesigner-poc` on a target URL to get `tokens.json`, a basic Shadcn page, and validation reports.
 ````

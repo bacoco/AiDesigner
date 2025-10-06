@@ -1,163 +1,171 @@
+---
+title: "AiDesigner NG — Chrome MCP Strategy Pack"
+description: "Strategy, PRD, and technical specification for AiDesigner NG with Chrome MCP, Gemini 2.5 Flash, and Nano Banana integration"
+---
+
 # AiDesigner NG — Chrome MCP × Gemini/Nano Banana Strategy Pack
 
-Parfait — je reprends TOUT avec les nouvelles sources, j’intègre les contraintes (“jamais Playwright, uniquement Chrome DevTools MCP”), j’exploite Gemini 2.5 Flash Image / Nano Banana, SuperDesign, Drawbridge, et la liste Awesome UI Component Library. Tu obtiens ci-dessous :
+This document provides strategic direction for AiDesigner NG, integrating Chrome DevTools MCP (never Playwright), Gemini 2.5 Flash Image / Nano Banana, SuperDesign, Drawbridge, and UI component library mappings.
 
-1. **Un top-ideas concret** (impact × faisabilité)
-2. **Un PRD actionnable** (Personae, KPIs, scénarios)
-3. **Une Tech Spec prête pour dev** (schémas JSON, flows MCP, playbooks de tests, rapports)
+Contents:
+
+1. **Top ideas** (impact × feasibility)
+2. **Actionable PRD** (Personas, KPIs, scenarios)
+3. **Technical specification** (JSON schemas, MCP flows, test playbooks, reports)
 
 ---
 
-## 1. Short-list des meilleures idées
+## 1. Top Ideas (Impact × Feasibility)
 
-1. **Token Inference + Evidence Pack** — Extraire tokens et générer un evidence pack complet depuis Chrome MCP (DOM/CSSOM/a11y, captures multi-états, heatmaps répétition) pour garantir confiance.
-2. **Contrats “Design-Locked”** — Chaque génération (image → UI → code) contrainte par `tokens.json` + `components.map.json` avec validateurs (contraste, spacing, grille).
-3. **Nano Banana comme “UI Vision Oracle”** — Décrire précisément les écrans (composants, hiérarchie) et croiser ces faits avec les données MCP.
-4. **“Visual-to-HTML” assisté** — Convertir concepts (Nano Banana/Gemini) en HTML/React mappé sur Shadcn/MUI/Ant/Chakra.
-5. **Chrome MCP Debug Loop** — Inspection et autocorrection via `dom_snapshot`, `cssom_dump`, `console_get_messages`, `performance_trace`.
-6. **Drawbridge-style edits, MCP-native** — Annoter l’UI dans le navigateur et générer des patches AST diff.
-7. **Intégration SuperDesign** — Prompts enrichis par tokens pour générer variations, mappées aux composants.
-8. **Graphe interne** — Tokens ⇄ Components ⇄ Pages ⇄ Tests pour impact analysis & journey checks.
-9. **Bench & coûts réalistes** — Latence & coûts cibles pour Gemini/Nano Banana.
-10. **Sécurité/IP (“Legal-Safe Mode”)** — Sandboxing MCP, SynthID, distillation de style.
+1. **Token Inference + Evidence Pack** — Extract tokens and generate comprehensive evidence pack from Chrome MCP (DOM/CSSOM/a11y, multi-state captures, repetition heatmaps) to ensure confidence.
+2. **"Design-Locked" Contracts** — Every generation (image → UI → code) constrained by `tokens.json` + `components.map.json` with validators (contrast, spacing, grid).
+3. **Nano Banana as "UI Vision Oracle"** — Precisely describe screens (components, hierarchy) and cross-reference with MCP data.
+4. **Assisted "Visual-to-HTML"** — Convert concepts (Nano Banana/Gemini) to HTML/React mapped to Shadcn/MUI/Ant/Chakra.
+5. **Chrome MCP Debug Loop** — Inspection and auto-correction via `dom_snapshot`, `cssom_dump`, `console_get_messages`, `performance_trace`.
+6. **Drawbridge-style edits, MCP-native** — Annotate UI in browser and generate AST diff patches.
+7. **SuperDesign Integration** — Token-enriched prompts to generate variations, mapped to components.
+8. **Internal Graph** — Tokens ⇄ Components ⇄ Pages ⇄ Tests for impact analysis & journey checks.
+9. **Realistic Benchmarks & Costs** — Latency & cost targets for Gemini/Nano Banana.
+10. **Security/IP ("Legal-Safe Mode")** — MCP sandboxing, SynthID, style distillation.
 
 ---
 
 ## 2. PRD — AiDesigner NG (Chrome MCP × Gemini/Nano Banana)
 
-### Objectif
+### Objective
 
-Créer le designer + debugger UI de référence : récupération de styles, génération design-locked, validation en boucle via Chrome MCP.
+Create the reference UI designer + debugger: style extraction, design-locked generation, validation loop via Chrome MCP.
 
-### Personae & Jobs-to-be-Done
+### Personas & Jobs-to-be-Done
 
-- **UI Designer** — Comprendre le système visuel et itérer on-brand.
-- **Front Dev** — Recevoir du code propre mappé sur la lib UI cible, avec tests.
-- **Lead/QA** — Vérifier respect accessibilité, responsive, tokens.
+- **UI Designer** — Understand visual system and iterate on-brand.
+- **Frontend Developer** — Receive clean code mapped to target UI library, with tests.
+- **Lead/QA** — Verify accessibility compliance, responsiveness, token adherence.
 
-### Capabilités clé (MVP+)
+### Key Capabilities (MVP+)
 
 1. URL → Tokens/Patterns (MVP)
-2. Image/Mockup → Concepts design-locked (MVP)
-3. Concept → HTML/React mappé (MVP+)
+2. Image/Mockup → Design-locked concepts (MVP)
+3. Concept → Mapped HTML/React (MVP+)
 4. Chrome MCP Debug Loop (MVP+)
-5. Evidence Pack & Rapports (MVP)
+5. Evidence Pack & Reports (MVP)
 6. Graph Impact View (V2)
 
 ### KPIs
 
-- Time-to-first-prototype ↓ 60 %
-- Générations “design-locked” ≥ 80 %
-- Drift visuel ≤ 5 % (P95)
-- 0 erreur console bloquante après auto-correction
-- Adoption lib UI : ≥ 2 cibles (Shadcn + MUI)
+- Time-to-first-prototype ↓ 60%
+- "Design-locked" generations ≥ 80%
+- Visual drift ≤ 5% (P95)
+- 0 blocking console errors after auto-correction
+- UI lib adoption: ≥ 2 targets (Shadcn + MUI)
 
-### Scénarios prioritaires
+### Priority Scenarios
 
-S1: Aspirer un style depuis URL → tokens + evidence.
-S2: Transformer un concept image en page HTML.
-S3: Ouvrir l’URL, corriger erreurs console & contrastes via MCP.
-S4: Exporter React + Stories + tests visuels/a11y.
+S1: Extract style from URL → tokens + evidence.
+S2: Transform image concept to HTML page.
+S3: Open URL, fix console errors & contrast via MCP.
+S4: Export React + Stories + visual/a11y tests.
 
-### Hors-scope MVP
+### Out of Scope (MVP)
 
-Pas de Playwright, pas de backend/state, respect des politiques d’images.
+No Playwright, no backend/state management, respect image usage policies.
 
 ---
 
-## 3. Tech Spec prête pour dev
+## 3. Technical Specification (Development-Ready)
 
-### Architecture logique
+### Logical Architecture
 
-- **Inspector (MCP)** — Collecte DOM/CSSOM/a11y/console/perf, inférence tokens, evidence pack.
-- **Designer (Vision)** — Nano Banana/Gemini : concepts, descriptions, cohérence multi-images.
-- **Builder (Codegen)** — Spéc canonique → HTML/React mappé libs, Stories, tests, patches.
-- **Orchestrateur** — Séquence déterministe, artefacts, métriques.
+- **Inspector (MCP)** — Collect DOM/CSSOM/a11y/console/perf, infer tokens, evidence pack.
+- **Designer (Vision)** — Nano Banana/Gemini: concepts, descriptions, multi-image coherence.
+- **Builder (Codegen)** — Canonical spec → HTML/React mapped to libs, Stories, tests, patches.
+- **Orchestrator** — Deterministic sequence, artifacts, metrics.
 
-### Schémas de contrats (JSON)
+### Contract Schemas (JSON)
 
-- `tokens.json` — palette, typo, spacing, modes, contraintes.
-- `components.map.json` — détection, variants, states, a11y, mappings.
-- `evidence.manifest.json` — artefacts (screenshots, css dumps, console, perf, diffs).
+- `tokens.json` — palette, typography, spacing, modes, constraints.
+- `components.map.json` — detection, variants, states, a11y, mappings.
+- `evidence.manifest.json` — artifacts (screenshots, CSS dumps, console, perf, diffs).
 
-### Flows Chrome MCP (pseudo API)
+### Chrome MCP Flows (Pseudo API)
 
-1. Analyse URL → `browser.open`, `devtools.dom_snapshot`, `devtools.cssom_dump`, `devtools.capture_screenshot`, `devtools.console_get_messages`, `devtools.performance_start_trace`/`stop_trace`, inférence tokens, validateurs.
-2. Génération contrainte → `vision.describe`, enrichissement prompt, `vision.generate`, codegen, validation.
-3. Debug/autofix → lecture console, corrections AST, revalidation, before/after.
+1. URL Analysis → `browser.open`, `devtools.dom_snapshot`, `devtools.cssom_dump`, `devtools.capture_screenshot`, `devtools.console_get_messages`, `devtools.performance_start_trace`/`stop_trace`, token inference, validators.
+2. Constrained Generation → `vision.describe`, prompt enrichment, `vision.generate`, codegen, validation.
+3. Debug/Autofix → read console, AST corrections, revalidation, before/after.
 
 ### Prompting (Nano Banana / Gemini)
 
-- Contraintes dures injectées (palette, typo, spacing, grid, contrast).
-- Cohérence multi-images, style transfer contrôlé, edits localisés.
+- Hard constraints injected (palette, typography, spacing, grid, contrast).
+- Multi-image coherence, controlled style transfer, localized edits.
+- Input sanitization to prevent prompt injection (see POC Kit section 2).
 
-### Mapping libs UI
+### UI Library Mapping
 
-- Registry pour Shadcn/MUI/Ant/Chakra, aligné sur awesome list.
-- Codemods assurant parité props (`intent`→`variant`/`color`, suppression inline styles, injection tokens).
+- Registry for Shadcn/MUI/Ant/Chakra, aligned with awesome-ui-component-libraries.
+- Codemods ensuring prop parity (`intent`→`variant`/`color`, inline style removal, token injection).
 
-### Graph interne
+### Internal Graph
 
-- Nœuds : Token, Component, Page, Test, Defect, Edit.
-- Arêtes : uses, violates, generates, fixes, impacts.
-- Usages : impact analysis, journey coherence, gating QA.
+- Nodes: Token, Component, Page, Test, Defect, Edit.
+- Edges: uses, violates, generates, fixes, impacts.
+- Usage: impact analysis, journey coherence, QA gating.
 
-### Sécurité/Compliance
+### Security/Compliance
 
-- Sandbox Chrome MCP, egress control, storage éphémère.
-- Sanitisation anti prompt-injection.
-- Legal-Safe Mode : distillation style, SynthID.
-
----
-
-## 4. Playbooks de tests & qualité
-
-1. **URL → Tokens** — Stabilité ≥ 90 %, coverage composants ≥ 85 %, evidence complet.
-2. **Image → HTML/React** — Drift ≤ 5 %, contraste ≥ 4.5:1, hit area ≥ 44 px, lint/TS OK, Stories/tests générés.
-3. **Debug Loop MCP** — 0 erreurs console, pas de régression perf (CLS/LCP), rapport before/after.
+- Chrome MCP sandbox, egress control, ephemeral storage.
+- Anti-prompt-injection sanitization.
+- Legal-Safe Mode: style distillation, SynthID, provenance tracking.
 
 ---
 
-## 5. Rapports exemples
+## 4. Test & Quality Playbooks
 
-- **Design Debt Report** — Violations tokens, drift spacing, issues a11y.
-- **Evidence Pack** — Screenshots desktop/mobile/dark, console errors avant/après, perf trace, diffs CSS/HTML.
-
----
-
-## 6. Roadmap (8–12 semaines)
-
-1. S1-2 — Foundations MCP & inférence tokens.
-2. S3-4 — Vision contrainte (prompts, validateurs).
-3. S5-7 — Codegen & mapping libs.
-4. S8-10 — Drawbridge-like overlay & diff.
-5. S11-12 — Graph & reporting consolidé.
+1. **URL → Tokens** — Stability ≥ 90%, component coverage ≥ 85%, complete evidence pack.
+2. **Image → HTML/React** — Drift ≤ 5%, contrast ≥ 4.5:1, hit area ≥ 44px, lint/TS pass, Stories/tests generated.
+3. **MCP Debug Loop** — 0 console errors, no perf regression (CLS/LCP), before/after report.
 
 ---
 
-## 7. Modules & APIs internes
+## 5. Example Reports
 
-- Packages : `mcp-inspector`, `inference`, `vision`, `canonical-spec`, `mappers`, `validators`, `codegen`, `apps/aidesigner`.
-- APIs TypeScript : `analyzeUrl`, `describeUI`, `generateConcepts`, `buildReact`, `validateAll`, `autofixConsole`.
-
----
-
-## 8. Résumé stakeholder (deck)
-
-- Vision : “Le navigateur devient l’atelier de design intelligent.”
-- Différenciateurs : Token inference + Design-Locked generation + MCP debug loop.
-- ROI : −60 % TTFP, −40 % retours QA, +80 % parité design/code.
-- Risques : IP, prompt-injection, mapping incomplet → garde-fous (Legal-Safe, sandbox, validators).
-- Preuves : Evidence packs, rapports de drift, Stories/tests.
+- **Design Debt Report** — Token violations, spacing drift, a11y issues.
+- **Evidence Pack** — Screenshots (desktop/mobile/dark), console errors (before/after), perf trace, CSS/HTML diffs.
 
 ---
 
-## 9. Références clés
+## 6. Roadmap (8–12 Weeks)
 
-- Chrome DevTools MCP — blog, repo server.
-- Gemini 2.5 Flash Image / Nano Banana — doc, pricing, latence.
-- UX Planet — techniques d’édition Nano Banana.
-- SuperDesign — design agent open-source.
-- Drawbridge — workflow d’annotation visuelle.
-- Awesome UI Component Library — mapping libs.
-- Dataïads — contexte Nano Banana.
+1. W1-2 — MCP foundations & token inference.
+2. W3-4 — Constrained vision (prompts, validators).
+3. W5-7 — Codegen & library mapping.
+4. W8-10 — Drawbridge-style overlay & diff.
+5. W11-12 — Graph & consolidated reporting.
+
+---
+
+## 7. Internal Modules & APIs
+
+- Packages: `mcp-inspector`, `inference`, `vision`, `canonical-spec`, `mappers`, `validators`, `codegen`, `apps/aidesigner`.
+- TypeScript APIs: `analyzeUrl`, `describeUI`, `generateConcepts`, `buildReact`, `validateAll`, `autofixConsole`.
+
+---
+
+## 8. Stakeholder Summary (Deck)
+
+- **Vision**: "The browser becomes the intelligent design workshop."
+- **Differentiators**: Token inference + Design-Locked generation + MCP debug loop.
+- **ROI**: −60% TTFP, −40% QA returns, +80% design/code parity.
+- **Risks**: IP, prompt-injection, incomplete mapping → guardrails (Legal-Safe, sandbox, validators).
+- **Evidence**: Evidence packs, drift reports, Stories/tests.
+
+---
+
+## 9. Key References
+
+- Chrome DevTools MCP — blog, server repo.
+- Gemini 2.5 Flash Image / Nano Banana — docs, pricing, latency.
+- UX Planet — Nano Banana editing techniques.
+- SuperDesign — open-source design agent.
+- Drawbridge — visual annotation workflow.
+- Awesome UI Component Library — library mappings.
+- Dataïads — Nano Banana context.
