@@ -180,7 +180,7 @@ npm run mcp:install postgres    # Database access
 **For Full-Stack Projects:**
 
 ```bash
-npm run mcp:install filesystem github postgres puppeteer
+npm run mcp:install filesystem github postgres chrome-devtools
 # ✓ Complete development environment ready!
 ```
 
@@ -194,7 +194,7 @@ npm run mcp:install filesystem postgres brave-search
 **For Frontend Projects:**
 
 ```bash
-npm run mcp:install filesystem github puppeteer
+npm run mcp:install filesystem github chrome-devtools
 # ✓ Frontend tools ready!
 ```
 
@@ -205,7 +205,7 @@ After installing MCP servers, your AI can:
 - 🐙 **GitHub**: Create issues, manage PRs, review code
 - 📁 **Filesystem**: Read/write files, search codebase
 - 🗄️ **PostgreSQL**: Query databases, analyze schemas
-- 🌐 **Puppeteer**: Browser automation, E2E testing
+- 🌐 **Chrome DevTools**: Browser automation, E2E testing
 - 🔍 **Brave Search**: Web search integration
 - 💬 **Slack**: Team notifications
 
