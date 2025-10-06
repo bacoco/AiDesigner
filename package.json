@@ -45,7 +45,7 @@
     "bmad:opencode": "npm run aidesigner:opencode --",
     "build": "node .dev/tools/cli.js build",
     "build:agents": "node .dev/tools/cli.js build --agents-only",
-    "build:mcp": "tsc -p .dev/mcp/tsconfig.json && tsc -p .dev/config/tsconfig.codex.json && cp -r .dev/lib dist/mcp/ && rm -rf dist/mcp/agents && cp -r agents dist/mcp/agents && node -e \"const fs=require('node:fs'); const path=require('node:path'); const dest=path.join('dist','mcp','tools'); fs.mkdirSync(dest,{recursive:true}); for (const file of ['mcp-registry.js','mcp-manager.js','mcp-profiles.js','mcp-security.js']) { fs.copyFileSync(path.join('.dev','tools',file), path.join(dest,file)); }\"",
+    "build:mcp": "tsc -p .dev/mcp/tsconfig.json && tsc -p .dev/config/tsconfig.codex.json && cp -r .dev/lib dist/mcp/ && node -e \"const fs=require('node:fs'); const path=require('node:path'); const dest=path.join('dist','mcp','tools'); fs.mkdirSync(dest,{recursive:true}); for (const file of ['mcp-registry.js','mcp-manager.js','mcp-profiles.js','mcp-security.js']) { fs.copyFileSync(path.join('.dev','tools',file), path.join(dest,file)); }\"",
     "build:teams": "node .dev/tools/cli.js build --teams-only",
     "codex": "node bin/aidesigner-codex",
     "fix": "npm run format && npm run lint:fix",
