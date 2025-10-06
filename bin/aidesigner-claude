@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Agilai Orchestrator - Chat Interface
+ * AiDesigner Orchestrator - Chat Interface
  * Launches Claude CLI with MCP server and orchestrator agent
  */
 
@@ -16,7 +16,7 @@ const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
 const rootDir = path.join(__dirname, '..');
 runIntegrityPreflight(rootDir, { silentOnMatch: true });
 const mcpConfigDir = path.join(rootDir, 'mcp');
-const newMcpConfigPath = path.join(mcpConfigDir, 'agilai-config.json');
+const newMcpConfigPath = path.join(mcpConfigDir, 'aidesigner-config.json');
 const legacyMcpConfigPath = path.join(mcpConfigDir, 'bmad-config.json');
 let mcpConfigPath = newMcpConfigPath;
 let usingLegacyMcpConfig = false;
@@ -51,12 +51,12 @@ if (fs.existsSync(newMcpConfigPath)) {
       console.error(`Error: Legacy config file ${legacyMcpConfigPath} is invalid or corrupted.`);
       console.error(error.message);
     }
-    console.error('Expected mcp/agilai-config.json. Run: npm run build:mcp');
+    console.error('Expected mcp/aidesigner-config.json. Run: npm run build:mcp');
     process.exit(1);
   }
 } else {
   // Neither config exists
-  console.error('Error: MCP config not found. Expected mcp/agilai-config.json. Run: npm run build:mcp');
+  console.error('Error: MCP config not found. Expected mcp/aidesigner-config.json. Run: npm run build:mcp');
   process.exit(1);
 }
 
@@ -109,20 +109,20 @@ async function main() {
   }
 
   if (usingLegacyMcpConfig) {
-    console.warn('⚠️  Using legacy MCP config mcp/bmad-config.json. Please migrate to mcp/agilai-config.json.');
+    console.warn('⚠️  Using legacy MCP config mcp/bmad-config.json. Please migrate to mcp/aidesigner-config.json.');
   }
 
-  console.log('🎯 Starting Agilai Orchestrator...');
-  console.log('📡 MCP Server: agilai-orchestrator');
-  console.log('🤖 Agent: Agilai Orchestrator');
+  console.log('🎯 Starting AiDesigner Orchestrator...');
+  console.log('📡 MCP Server: aidesigner-orchestrator');
+  console.log('🤖 Agent: AiDesigner Orchestrator');
   console.log('💬 Type your project idea to begin!\n');
 
   const claudeBinary = claudeCheck.binaryPath || 'claude';
   const { env: claudeEnv, isGlm } = buildAssistantSpawnEnv();
   const mergedEnv = { ...process.env, ...claudeEnv };
 
-  if (process.env.AGILAI_ASSISTANT_PROVIDER && !('AGILAI_ASSISTANT_PROVIDER' in claudeEnv)) {
-    mergedEnv.AGILAI_ASSISTANT_PROVIDER = process.env.AGILAI_ASSISTANT_PROVIDER;
+  if (process.env.AIDESIGNER_ASSISTANT_PROVIDER && !('AIDESIGNER_ASSISTANT_PROVIDER' in claudeEnv)) {
+    mergedEnv.AIDESIGNER_ASSISTANT_PROVIDER = process.env.AIDESIGNER_ASSISTANT_PROVIDER;
   }
 
   if (process.env.BMAD_ASSISTANT_PROVIDER && !('BMAD_ASSISTANT_PROVIDER' in claudeEnv)) {
