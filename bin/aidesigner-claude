@@ -98,7 +98,7 @@ async function main() {
 
   // Build Claude command
   const claudeArgs = [
-    '--config', mcpConfigPath,
+    '--mcp-config', mcpConfigPath,
     '--append-system-prompt', orchestratorContent,
   ];
 
