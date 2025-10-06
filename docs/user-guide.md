@@ -93,6 +93,18 @@ QA Assessments   → docs/qa/assessments/
 QA Gates         → docs/qa/gates/
 ```
 
+#### Momentum Snapshot (Executive Overview)
+
+Every PRD generated with the core template now opens with a **Momentum Snapshot** table. This quick-read header is designed for executive reviews and daily stand-ups:
+
+- 🎯 **Project Goal** — auto-filled from the latest Project Brief or documented decisions so the current north star is immediately visible.
+- 🧑‍🤝‍🧑 **Primary Users** — pulls personas from the brief or any attached research to keep empathy front-and-center.
+- 🚦 **Current Phase** — reflects where the product sits in the lifecycle based on recent approvals or the phase detector.
+- ➡️ **Recommended Next Move** — identifies the single action that keeps momentum, citing the artifact or conversation that backs the recommendation.
+- ⚠️ **Assumptions to Confirm** — clearly labels any guessed or missing data with “**Assumption – Needs Confirmation**,” helping reviewers decide what to validate first.
+
+Before asking new questions, the PM agent cross-references the Project Brief, Decision Log, and other uploaded artifacts to pre-populate the snapshot. Any uncertainty is surfaced as an explicit assumption so stakeholders know exactly what requires confirmation.
+
 #### Targeted Epic Specs (Next-Incomplete Focus)
 
 - Run the Architect command `cmd tech-spec` whenever you're ready to advance an epic.
