@@ -33,7 +33,7 @@ function resolvePackageRoot() {
   // Fallback: assume package root is two levels up from __dirname
   const fallbackPath = path.resolve(__dirname, '..', '..');
   console.warn(
-    `[aidesignerBridge] Warning: No package.json found in directory tree. Falling back to ${fallbackPath}`,
+    `[AidesignerBridge] Warning: No package.json found in directory tree. Falling back to ${fallbackPath}`,
   );
   return fallbackPath;
 }
@@ -59,7 +59,7 @@ function resolveDefaultV6Path(rootDirectory) {
   }
 
   console.warn(
-    `[aidesignerBridge] Warning: No V6 modules found in candidates: ${candidates.join(', ')}`,
+    `[AidesignerBridge] Warning: No V6 modules found in candidates: ${candidates.join(', ')}`,
   );
   return null;
 }
@@ -108,9 +108,9 @@ function arrayify(value) {
   return [value];
 }
 
-class aidesignerBridge {
+class AidesignerBridge {
   /**
-   * Creates a new aidesignerBridge instance
+   * Creates a new AidesignerBridge instance
    * @param {Object} options - Configuration options
    * @param {string} [options.aidesignerCorePath] - Path to aidesigner-core directory
    * @param {string} [options.aidesignerV6Path] - Path to v6 modules directory
@@ -215,7 +215,7 @@ class aidesignerBridge {
       const candidatePath = path.join(basePath, `${agentId}.md`);
 
       if (await fs.pathExists(candidatePath)) {
-        console.debug(`[aidesignerBridge] Found agent '${agentId}' at: ${candidatePath}`);
+        console.debug(`[AidesignerBridge] Found agent '${agentId}' at: ${candidatePath}`);
         resolvedAgentPath = candidatePath;
         break;
       }
@@ -317,7 +317,7 @@ class aidesignerBridge {
           return path.resolve(candidate);
         } catch (error) {
           console.warn(
-            `[aidesignerBridge] Skipping invalid agent search path: ${candidate}`,
+            `[AidesignerBridge] Skipping invalid agent search path: ${candidate}`,
             error,
           );
           return null;
@@ -794,4 +794,4 @@ class aidesignerBridge {
   }
 }
 
-module.exports = { aidesignerBridge };
+module.exports = { AidesignerBridge };

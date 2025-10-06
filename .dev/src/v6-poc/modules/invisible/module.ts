@@ -39,18 +39,18 @@ export async function probeInvisibleModule(context: V6ModuleContext): Promise<Co
 
   // 2. Attempt to reuse the CommonJS aidesigner bridge inside an ESM-oriented runtime.
   try {
-    const { aidesignerBridge } = require(path.join(context.legacyRoot, "lib", "aidesigner-bridge.js"));
-    const bridge = new aidesignerBridge();
+    const { AidesignerBridge } = require(path.join(context.legacyRoot, "lib", "aidesigner-bridge.js"));
+    const bridge = new AidesignerBridge();
     if (typeof bridge.initialize !== "function") {
-      blockers.push("aidesignerBridge.initialize is not available after require() shim.");
+      blockers.push("AidesignerBridge.initialize is not available after require() shim.");
     } else {
       warnings.push(
-        "aidesignerBridge loads via CommonJS require(); V6 default ESM bundler will need a compatibility shim or rewrite."
+        "AidesignerBridge loads via CommonJS require(); V6 default ESM bundler will need a compatibility shim or rewrite."
       );
     }
   } catch (error) {
     blockers.push(
-      `Failed to require legacy aidesigner bridge: ${(error as Error).message}. ` +
+      `Failed to require legacy AidesignerBridge: ${(error as Error).message}. ` +
         "V6 loaders refuse CommonJS modules without explicit compatibility wrappers."
     );
   }

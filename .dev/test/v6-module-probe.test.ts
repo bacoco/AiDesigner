@@ -49,7 +49,7 @@ describe('probeInvisibleModule', () => {
             return initializeMock();
           }
         }
-        return { aidesignerBridge: MockBridge };
+        return { AidesignerBridge: MockBridge };
       }
       throw new Error(`Unexpected require path: ${requestedPath}`);
     });
@@ -81,7 +81,7 @@ describe('probeInvisibleModule', () => {
     expect(result.blockers).toHaveLength(1);
     expect(result.blockers[0]).toMatch(/Failed to import MCP runtime as ESM:.*TypeScript compilation currently targets CommonJS paths, incompatible with V6's native ES build\./);
     expect(result.warnings).toEqual([
-      'aidesignerBridge loads via CommonJS require(); V6 default ESM bundler will need a compatibility shim or rewrite.',
+      'AidesignerBridge loads via CommonJS require(); V6 default ESM bundler will need a compatibility shim or rewrite.',
     ]);
     expect(result.notes).toEqual([
       `Found candidate module directory at ${expectedModuleDir}.`,
@@ -144,7 +144,7 @@ describe('probeInvisibleModule', () => {
     // The important check is the result, not the exact error messages
     expect(result.blockers).toHaveLength(4);
     expect(result.blockers[0]).toBe(`Missing module slot: expected directory at ${expectedModuleDir}. V6 alpha currently ships only BMM/BMB/CIS modules, so invisible orchestration needs a new module registration point.`);
-    expect(result.blockers[1]).toBe('Failed to require legacy aidesigner bridge: CommonJS module rejection. V6 loaders refuse CommonJS modules without explicit compatibility wrappers.');
+    expect(result.blockers[1]).toBe('Failed to require legacy AidesignerBridge: CommonJS module rejection. V6 loaders refuse CommonJS modules without explicit compatibility wrappers.');
     expect(result.blockers[2]).toMatch(/Failed to import MCP runtime as ESM:.*TypeScript compilation currently targets CommonJS paths, incompatible with V6's native ES build\./);
     expect(result.blockers[3]).toBe(`aidesigner orchestrator persona missing at ${personaPath}.`);
     expect(result.warnings).toEqual([]);
