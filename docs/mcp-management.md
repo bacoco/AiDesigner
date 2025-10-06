@@ -117,12 +117,14 @@ For browser automation and E2E testing, we now recommend **Chrome DevTools MCP**
 If you're currently using Puppeteer or Playwright MCP servers:
 
 1. **Install Chrome DevTools MCP**:
+
    ```bash
    npm run mcp:install chrome-devtools
    # Optional: Set BROWSER_WS_ENDPOINT if connecting to remote Chrome
    ```
 
 2. **Optional: Configure WebSocket endpoint** (if using remote debugging):
+
    ```bash
    # Start Chrome with remote debugging
    google-chrome --remote-debugging-port=9222
