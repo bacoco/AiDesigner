@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@aidesigner/shared-types": ["./packages/shared-types/src"],
+      "@aidesigner/mcp-inspector": ["./packages/mcp-inspector/src"],
+      "@aidesigner/inference": ["./packages/inference/src"],
+      "@aidesigner/validators": ["./packages/validators/src"],
+      "@aidesigner/mappers": ["./packages/mappers"],
+      "@aidesigner/codegen": ["./packages/codegen/src"],
+      "@aidesigner/codemods": ["./packages/codemods/src"],
+      "@aidesigner/canonical-spec": ["./packages/canonical-spec"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*",
+    "packages/*/schemas/**/*",
+    "packages/*/registry/**/*",
+    "apps/*/src/**/*"
+  ],
+  "exclude": ["node_modules", "dist", "out"]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@aidesigner/mappers",
+  "version": "0.1.0",
+  "description": "UI library mappings for AiDesigner NG",
+  "keywords": [
+    "aidesigner",
+    "mappers",
+    "shadcn",
+    "mui"
+  ],
+  "license": "MIT",
+  "author": "AiDesigner",
+  "main": "registry/shadcn.json"
+}

@@ -1,0 +1,29 @@
+{
+  "Button": {
+    "component": "Button",
+    "props": {
+      "intent->variant": {
+        "primary": "default",
+        "secondary": "secondary",
+        "danger": "destructive"
+      },
+      "size": { "sm": "sm", "md": "default", "lg": "lg" }
+    },
+    "imports": {
+      "@/components/ui/button": ["Button"]
+    }
+  },
+  "Card": {
+    "component": "Card",
+    "imports": {
+      "@/components/ui/card": [
+        "Card",
+        "CardHeader",
+        "CardContent",
+        "CardFooter",
+        "CardTitle",
+        "CardDescription"
+      ]
+    }
+  }
+}

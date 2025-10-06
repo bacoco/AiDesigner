@@ -1,0 +1,14 @@
+{
+  "Button": {
+    "component": "Button",
+    "props": {
+      "intent->color": { "primary": "primary", "secondary": "secondary", "danger": "error" },
+      "size": { "sm": "small", "md": "medium", "lg": "large" }
+    },
+    "imports": { "@mui/material": ["Button"] }
+  },
+  "Card": {
+    "component": "Card",
+    "imports": { "@mui/material": ["Card", "CardHeader", "CardContent"] }
+  }
+}

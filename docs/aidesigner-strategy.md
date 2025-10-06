@@ -1,11 +1,19 @@
 ---
-title: "AiDesigner NG — Chrome MCP Strategy Pack"
-description: "Strategy, PRD, and technical specification for AiDesigner NG with Chrome MCP, Gemini 2.5 Flash, and Nano Banana integration"
+title: 'AiDesigner — Chrome MCP Strategy Pack'
+description: 'Strategy, PRD, and technical specification for AiDesigner with Chrome MCP, Gemini 2.5 Flash, and Nano Banana integration'
 ---
 
-# AiDesigner NG — Chrome MCP × Gemini/Nano Banana Strategy Pack
+# AiDesigner — Chrome MCP × Gemini/Nano Banana Strategy Pack
 
-This document provides strategic direction for AiDesigner NG, integrating Chrome DevTools MCP (never Playwright), Gemini 2.5 Flash Image / Nano Banana, SuperDesign, Drawbridge, and UI component library mappings.
+This document provides strategic direction for AiDesigner's UI Design phase, integrating Chrome DevTools MCP (never Playwright), Gemini 2.5 Flash Image / Nano Banana, SuperDesign, Drawbridge, and UI component library mappings.
+
+**Context**: This is **Phase 2** of the complete AiDesigner workflow:
+
+- Phase 1: Idea & Discovery
+- **Phase 2: UI Design** ← This document
+- Phase 3: Agile Implementation
+
+See [COMPLETE-WORKFLOW.md](COMPLETE-WORKFLOW.md) for the full journey.
 
 Contents:
 
@@ -30,11 +38,16 @@ Contents:
 
 ---
 
-## 2. PRD — AiDesigner NG (Chrome MCP × Gemini/Nano Banana)
+## 2. PRD — AiDesigner UI Design Phase (Chrome MCP × Gemini/Nano Banana)
 
 ### Objective
 
-Create the reference UI designer + debugger: style extraction, design-locked generation, validation loop via Chrome MCP.
+Bridge the gap between idea and implementation through conversational UI design:
+
+- Extract design tokens from user-provided inspiration URLs
+- Generate visual concepts with Gemini/Nano Banana
+- Lock design system for consistent implementation
+- Seamlessly transition to agile development with design constraints
 
 ### Personas & Jobs-to-be-Done
 
@@ -61,10 +74,10 @@ Create the reference UI designer + debugger: style extraction, design-locked gen
 
 ### Priority Scenarios
 
-S1: Extract style from URL → tokens + evidence.
-S2: Transform image concept to HTML page.
-S3: Open URL, fix console errors & contrast via MCP.
-S4: Export React + Stories + visual/a11y tests.
+S1: User shares inspiration URL → Extract design tokens → Present for refinement
+S2: Journey mapping → Per-screen visual prompts → Gemini/Nano Banana concepts
+S3: Design selection → Lock tokens → Transition to implementation with constraints
+S4: Chrome MCP validation → Drift detection → Evidence packs for QA
 
 ### Out of Scope (MVP)
 
@@ -152,11 +165,13 @@ No Playwright, no backend/state management, respect image usage policies.
 
 ## 8. Stakeholder Summary (Deck)
 
-- **Vision**: "The browser becomes the intelligent design workshop."
-- **Differentiators**: Token inference + Design-Locked generation + MCP debug loop.
-- **ROI**: −60% TTFP, −40% QA returns, +80% design/code parity.
-- **Risks**: IP, prompt-injection, incomplete mapping → guardrails (Legal-Safe, sandbox, validators).
-- **Evidence**: Evidence packs, drift reports, Stories/tests.
+- **Vision**: "Bridge idea to implementation through conversational UI design."
+- **Position in Workflow**: Phase 2 of 3 (Idea → **UI Design** → Implementation)
+- **Differentiators**: Conversational design + Token extraction from inspiration + Design-locked code generation
+- **ROI**: −60% TTFP, −40% QA returns, +80% design/code parity, zero handoff loss
+- **Risks**: IP, prompt-injection, incomplete mapping → guardrails (Legal-Safe, sandbox, validators)
+- **Evidence**: Evidence packs, drift reports, Stories/tests
+- **Integration**: Design decisions flow directly into PRD, architecture, and development stories
 
 ---
 

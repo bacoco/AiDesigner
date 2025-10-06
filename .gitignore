@@ -46,3 +46,8 @@ test-project-install/*
 sample-project/*
 flattened-codebase.xml
 *.stats.md
+
+# AiDesigner NG POC
+apps/aidesigner-poc/out/
+packages/*/dist/
+*.tsbuildinfo

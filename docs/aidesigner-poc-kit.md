@@ -1,9 +1,13 @@
 ---
-title: "AiDesigner NG — POC Kit"
-description: "POC kit for the AiDesigner NG workflow covering Chrome MCP inspection, token inference, React codegen (Shadcn/MUI), validation, and reporting"
+title: 'AiDesigner — POC Kit'
+description: 'POC kit for the AiDesigner UI Design Phase covering Chrome MCP inspection, token inference, React codegen (Shadcn/MUI), validation, and reporting'
 ---
 
-# AiDesigner NG — POC Kit (Chrome MCP × Shadcn/MUI)
+# AiDesigner — POC Kit (Chrome MCP × Shadcn/MUI)
+
+**Context**: This POC implements **Phase 2: UI Design** of the complete AiDesigner workflow.
+
+See [COMPLETE-WORKFLOW.md](COMPLETE-WORKFLOW.md) for the full journey: Idea → UI Design → Implementation.
 
 ## Scope Delivered (MVP ready to clone into `bacoco/AiDesigner`)
 
@@ -116,7 +120,12 @@ export type ValidationReport = {
 > **Note**: This file now re-exports types from the shared package for backward compatibility.
 
 ```ts
-export type { Tokens, ComponentMap, EvidencePack, ValidationReport } from '@aidesigner/shared-types';
+export type {
+  Tokens,
+  ComponentMap,
+  EvidencePack,
+  ValidationReport,
+} from '@aidesigner/shared-types';
 ```
 
 ### 1.3 `packages/mcp-inspector/src/index.ts`
@@ -841,6 +850,7 @@ export async function run(glob: string) {
 ### Chrome MCP Security
 
 **Sandbox Configuration:**
+
 - Run Chrome MCP server in isolated container/VM
 - Apply egress controls: whitelist only necessary domains
 - Use ephemeral storage: auto-delete browser data after each session
@@ -848,6 +858,7 @@ export async function run(glob: string) {
 - Network policies: block access to internal/private IP ranges
 
 **Data Handling:**
+
 - No persistent cookies or local storage between sessions
 - Screenshot/trace data encrypted at rest if stored
 - Automatic cleanup of evidence packs after configurable retention period
@@ -868,6 +879,7 @@ This POC complements the existing AiDesigner workflow:
 - **NG POC flow**: URL → tokens → code generation (style extraction and code scaffolding)
 
 **Use cases:**
+
 1. **Bootstrap from existing site**: Use NG POC to extract design tokens from competitor/reference site, then feed into existing AiDesigner workflow
 2. **Code generation**: After story creation in existing flow, use NG POC's codegen to scaffold React components
 3. **Design drift detection**: Use NG POC validators to check implemented code against design system
@@ -879,21 +891,25 @@ This POC complements the existing AiDesigner workflow:
 ## 7) Testing Strategy
 
 ### Unit Tests
+
 - **Token inference**: Verify color clustering, spacing extraction, font detection
 - **Component detection**: Test ARIA role matching, class pattern recognition
 - **Validators**: Ensure contrast calculations, spacing drift detection work correctly
 - **Codemods**: AST transformation correctness with fixture files
 
 ### Integration Tests
+
 - **End-to-end flow**: URL → tokens → React page generation
 - **MCP integration**: Mock MCP server responses, verify proper handling
 - **Evidence pack**: Validate all artifacts are created with correct structure
 
 ### Visual Regression Tests
+
 - **Generated components**: Snapshot testing of Shadcn/MUI output
 - **Token application**: Verify generated pages match token constraints
 
 ### Quality Gates
+
 - TypeScript: strict mode, no `any` types in production code
 - Linting: ESLint with recommended rules
 - Test coverage: ≥80% for validators and codemods

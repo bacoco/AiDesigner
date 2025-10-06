@@ -1,0 +1,13 @@
+{
+  "name": "@aidesigner/canonical-spec",
+  "version": "0.1.0",
+  "description": "JSON schemas for AiDesigner NG",
+  "keywords": [
+    "aidesigner",
+    "schemas",
+    "json-schema"
+  ],
+  "license": "MIT",
+  "author": "AiDesigner",
+  "main": "schemas/tokens.schema.json"
+}

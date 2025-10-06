@@ -1,0 +1,25 @@
+{
+  "name": "@aidesigner/codemods",
+  "version": "0.1.0",
+  "description": "AST transformations for AiDesigner NG",
+  "keywords": [
+    "aidesigner",
+    "codemods",
+    "ast",
+    "ts-morph"
+  ],
+  "license": "MIT",
+  "author": "AiDesigner",
+  "main": "src/apply-tokens-shadcn.ts",
+  "types": "src/apply-tokens-shadcn.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "ts-morph": "^21.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}

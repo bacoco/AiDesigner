@@ -1,0 +1,32 @@
+{
+  "name": "aidesigner-poc",
+  "version": "0.1.0",
+  "description": "AiDesigner POC — URL → Tokens → Shadcn",
+  "keywords": [
+    "aidesigner",
+    "poc",
+    "design-tokens"
+  ],
+  "license": "MIT",
+  "author": "AiDesigner",
+  "main": "src/cli.ts",
+  "bin": {
+    "aidesigner-poc": "src/cli.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/cli.ts"
+  },
+  "dependencies": {
+    "@aidesigner/codegen": "*",
+    "@aidesigner/inference": "*",
+    "@aidesigner/mcp-inspector": "*",
+    "@aidesigner/shared-types": "*",
+    "@aidesigner/validators": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.0"
+  }
+}

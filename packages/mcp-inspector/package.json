@@ -1,0 +1,21 @@
+{
+  "name": "@aidesigner/mcp-inspector",
+  "version": "0.1.0",
+  "description": "Chrome DevTools MCP wrapper for AiDesigner NG",
+  "keywords": [
+    "aidesigner",
+    "mcp",
+    "chrome-devtools"
+  ],
+  "license": "MIT",
+  "author": "AiDesigner",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}

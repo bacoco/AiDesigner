@@ -1,0 +1,15 @@
+{
+  "$id": "https://aidesigner.dev/schemas/components-map.v1.json",
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "properties": {
+      "detect": { "type": "object" },
+      "variants": { "type": "object" },
+      "states": { "type": "array" },
+      "a11y": { "type": "object" },
+      "mappings": { "type": "object" }
+    },
+    "required": ["mappings"]
+  }
+}

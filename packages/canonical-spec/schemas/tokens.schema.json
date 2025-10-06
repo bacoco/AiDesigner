@@ -1,0 +1,12 @@
+{
+  "$id": "https://aidesigner.dev/schemas/tokens.v1.json",
+  "type": "object",
+  "properties": {
+    "meta": { "type": "object" },
+    "primitives": { "type": "object" },
+    "semantic": { "type": "object" },
+    "modes": { "type": "object" },
+    "constraints": { "type": "object" }
+  },
+  "required": ["meta", "primitives", "semantic"]
+}

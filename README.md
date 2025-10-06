@@ -7,11 +7,11 @@
 
 <div align="center">
 
-### 🚀 **From Idea to Implementation in Under Five Minutes**
+### 🚀 **From Idea to Shipped Product: Design + Development in One Flow**
 
-**Professional specs • Visual concepts • Architecture docs • Ready-to-build stories**
+**Conversational UI design → Design tokens → Visual concepts → Agile implementation**
 
-_All through natural conversation. No methodology training. No prompt engineering._
+_The complete journey: Ideation • UI Design • Token Extraction • Code Generation_
 
 [Quick Start](#quick-start) • [See It In Action](#natural-conversation-example) • [Documentation](docs/user-guide.md)
 
@@ -19,72 +19,115 @@ _All through natural conversation. No methodology training. No prompt engineerin
 
 ---
 
-## Stop Fighting Your Tools. Start Building.
+## The Complete Journey: Idea → Design → Code
 
-**The Problem:** You have a brilliant idea. But before you write a single line of code, you need:
+**The Problem:** Building a product requires orchestrating multiple disciplines:
 
-- A product requirements document (so the team knows what to build)
-- Technical architecture (so it's built right)
-- Visual design concepts (so it looks professional)
-- User stories (so developers know what to implement)
+- **Ideation**: Understanding what to build and for whom
+- **UI/UX Design**: Creating visual concepts that resonate with users
+- **Design Systems**: Establishing consistent tokens (colors, typography, spacing)
+- **Architecture**: Technical decisions that support the design vision
+- **Development**: Writing code that matches the design specifications
 
-Traditional approach? **Days of writing specs, creating mockups, and coordinating team meetings.**
+Traditional approach? **Weeks of handoffs between designers, architects, and developers.**
 
-AI tools today? **Hours of prompt engineering just to get structured output.**
+AI tools today? **Disconnected point solutions that don't talk to each other.**
 
 **There has to be a better way.**
 
-## The aidesigner Way: Talk Naturally. Ship Professionally.
+## The AiDesigner Way: Integrated Workflow, Professional Results
 
-Imagine describing your project idea in plain English and getting back:
+A single conversational journey that takes you from idea to production-ready code:
 
-✨ **Complete PRD** with user stories, acceptance criteria, and technical requirements
-🎨 **Visual concept explorations** for every screen in your journey
-🏗️ **Technical architecture** with file structure, tech stack, and implementation guidance
-📋 **Development-ready stories** that developers can pick up immediately
+### 💡 Phase 1: Idea & Discovery
 
-**No jargon. No templates. No methodology training.**
+Natural conversation about your concept, user journeys, and success criteria
 
-Just conversation → professional deliverables → ready to build.
+### 🎨 Phase 2: UI Design (The Innovation)
+
+- **Conversational UI Designer** walks you through each screen
+- **Chrome MCP Integration** extracts design tokens from inspiration URLs
+- **Visual Concept Generation** with Gemini/Nano Banana per screen
+- **Design System Lock-In** ensures consistency (colors, fonts, spacing)
+
+### 🚀 Phase 3: Agile Implementation
+
+- **Auto-generated PRD** incorporating design decisions
+- **Technical Architecture** with component mappings (Shadcn, MUI)
+- **Development Stories** with visual context and design tokens
+- **Code Generation** with design-locked constraints
+
+**No context switching. No information loss between phases. One continuous flow.**
 
 ### How It Works
 
-**1. Quick Lane (Under 5 Minutes)**
+**1. Start the Conversation**
 
-- Natural conversation about your idea
-- Auto-generated specs, architecture, and visual prompts
-- Implementation-ready output in `docs/`
+```bash
+npx aidesigner@latest start
+```
 
-**2. Complex Lane (Enterprise-Grade)**
+Talk naturally about your idea. The AI guides you through:
 
-- Deep-dive conversational discovery
-- Visual journey mapping with CSS token extraction
-- Multi-phase QA-ready documentation
+- What you're building and why
+- Who will use it
+- Key user journeys and screens
 
-**3. Conversational UI Designer (NEW 🆕)**
+**2. Design Your UI (Core Innovation)**
 
-- Guide users through their UI journey step-by-step
-- Extract design tokens from reference URLs via Chrome DevTools
-- Generate per-screen visual prompts for Google Nano Banana
-- Capture decisions with journey context and CSS specifications
+The **Conversational UI Designer** walks you through each screen:
 
-### What Makes aidesigner Different
+```
+AI: "Let's design your dashboard. Do you have inspiration?"
+You: "Linear.app has the vibe I want"
+AI: "Extracting design tokens from Linear.app..."
 
-🎯 **Zero Prompt Engineering**
+    🎨 Extracted:
+    - Colors: #5E6AD2 (primary), #3D9970 (accent)
+    - Typography: Inter 400/600
+    - Spacing: 4px, 8px, 16px, 24px
 
-> Other tools: "Act as a senior product manager with 10 years experience in SaaS..."
-> aidesigner: "I want to build a task management app"
+    What should we keep vs change?
+```
 
-🎨 **Visual-First Development**
+Get visual concept prompts for each screen, ready for Gemini/Nano Banana.
 
-> Traditional: Write specs → Hire designer → Wait for mockups → Start coding
-> aidesigner: Describe idea → Get visual concepts in minutes → Architecture adapts automatically
+**3. Automatic Transition to Development**
 
-🏃 **Two Speeds, One System**
+Your design decisions automatically flow into:
 
-> Quick Lane: Ship specs in 5 minutes
-> Complex Lane: Enterprise depth when needed
-> Seamlessly switch between both
+- PRD with visual requirements
+- Architecture with component mappings
+- Development stories with design tokens
+- Code generation with design-locked constraints
+
+**No manual handoffs. Design decisions become development constraints.**
+
+### What Makes AiDesigner Different
+
+🎨 **Conversational UI Design (The Bridge)**
+
+> Traditional: Specs → Designer → Mockups → Handoff → Development
+> AiDesigner: Natural conversation → Design tokens → Visual concepts → Code generation
+> **Design decisions become code constraints in real-time**
+
+🔍 **Smart Token Extraction**
+
+> Other tools: Manual design system documentation
+> AiDesigner: "Share an inspiration URL" → Chrome MCP extracts colors, fonts, spacing
+> **From inspiration to implementation in minutes**
+
+🎯 **Design-to-Development Continuity**
+
+> Traditional: Design files → Developer interpretation → Inconsistent implementation
+> AiDesigner: Design tokens locked → Components mapped (Shadcn/MUI) → Code generated with constraints
+> **What you design is exactly what gets built**
+
+🚀 **Complete Integrated Workflow**
+
+> Other tools: Separate tools for planning, design, and development
+> AiDesigner: Idea → UI Design → Agile Implementation in one conversation
+> **No context switching, no information loss**
 
 🔒 **Local-First, Private**
 
@@ -94,15 +137,24 @@ Just conversation → professional deliverables → ready to build.
 
 ### Key Features
 
-- **Conversational Discovery** - Multi-turn UI journey mapping that extracts design intent naturally
-- **Chrome MCP Integration** - Automatically pull CSS tokens, color palettes, and typography from reference URLs
-- **Per-Screen Visual Prompts** - Tailored Nano Banana prompts for each step in your user journey
-- **Dual-Lane Intelligence** - Quick Lane for speed, Complex Lane for depth
-- **Professional Output** - Industry-standard PRDs, architecture docs, and user stories
-- **Built on BMAD-METHOD™** - Battle-tested agile processes, invisible to users
-- **Local & Private** - Works with your existing CLI tooling, no API costs
+**Complete Journey Coverage:**
 
-> **NEW: Conversational UI Designer** - The only AI workflow that guides you through visual discovery the way a real designer would: journey mapping → inspiration intake → CSS extraction → per-screen prompts. [See it in action →](#conversational-ui-designer-workflow)
+- **Conversational Discovery** - Natural dialogue about your idea, users, and success criteria
+- **UI Journey Mapping** - Screen-by-screen walkthrough with contextual design questions
+- **Chrome MCP Token Extraction** - Pull design tokens from inspiration URLs (Linear, Notion, Stripe, etc.)
+- **Visual Concept Generation** - Per-screen Gemini/Nano Banana prompts with full context
+- **Design System Lock-In** - Consistent colors, typography, spacing across all screens
+- **Agile Implementation** - PRD, architecture, and stories incorporating design decisions
+- **Component Mapping** - Shadcn/MUI component selection with design constraints
+- **Code Generation** - Production-ready code with design-locked tokens
+
+**Built on Proven Methods:**
+
+- **BMAD Agile Methodology** - Battle-tested processes, invisible to users
+- **Local & Private** - Works with Claude CLI, Codex CLI, or OpenCode
+- **No API Costs** - Your data never leaves your machine
+
+> **The Innovation: Conversational UI Designer** - The only workflow that bridges design and development in one continuous conversation. From "I have this idea" to "Here's your production code" without losing context. [See the complete workflow →](#the-complete-ui-design-workflow)
 
 ## Quick Start
 
@@ -166,9 +218,11 @@ All organized in `docs/` folder, ready to use.
 
 → **[Complete Examples](docs/examples.md)** - Detailed walkthrough examples
 
-## Conversational UI Designer Workflow
+## The Complete UI Design Workflow
 
-**The first AI workflow that designs UIs the way a real designer would: through conversation.**
+**The first AI workflow that bridges idea, design, and implementation in one continuous conversation.**
+
+This is the heart of AiDesigner - where your concept transforms into visual specifications and design-locked code.
 
 ### 🎨 How Real Designers Work
 
