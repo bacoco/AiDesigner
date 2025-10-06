@@ -189,7 +189,7 @@ Now let's gather visual inspiration...
 
 ## Stage 3: Inspiration Intake
 
-### If `flowMode` includes "inspiration":
+### If `flowMode` is "inspiration" or "both":
 
 **Liaison Message:**
 
