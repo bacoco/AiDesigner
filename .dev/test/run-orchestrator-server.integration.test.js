@@ -126,7 +126,7 @@ const mockListAgents = jest.fn();
 const mockGetEnvironmentInfo = jest.fn();
 
 jest.mock('../lib/aidesigner-bridge.js', () => {
-  const aidesignerBridge = jest.fn().mockImplementation(() => ({
+  const AidesignerBridge = jest.fn().mockImplementation(() => ({
     initialize: mockBridgeInitialize,
     getEnvironmentInfo: mockGetEnvironmentInfo,
     runAgent: mockRunAgent,
@@ -136,7 +136,7 @@ jest.mock('../lib/aidesigner-bridge.js', () => {
   }));
 
   return {
-    aidesignerBridge,
+    AidesignerBridge,
     __bridgeMocks: {
       initializeMock: mockBridgeInitialize,
       runAgentMock: mockRunAgent,

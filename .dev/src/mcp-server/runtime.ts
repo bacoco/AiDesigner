@@ -1486,7 +1486,7 @@ export async function runOrchestratorServer(
           });
 
           const reviewLLM = await createLLMClient(lane);
-          const reviewBridge = new aidesignerBridge({ llmClient: reviewLLM });
+          const reviewBridge = new AidesignerBridge({ llmClient: reviewLLM });
           await reviewBridge.initialize();
 
           const projectSnapshot = projectState.exportForLLM();

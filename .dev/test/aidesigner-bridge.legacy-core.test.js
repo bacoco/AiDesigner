@@ -5,11 +5,11 @@ const os = require('node:os');
 
 jest.mock('../hooks/context-enrichment', () => ({}), { virtual: true });
 
-const { aidesignerBridge } = require('../lib/aidesigner-bridge.js');
+const { AidesignerBridge } = require('../lib/aidesigner-bridge.js');
 
-describe('aidesignerBridge legacy core detection', () => {
+describe('AidesignerBridge legacy core detection', () => {
   test('initializes from package root using default paths', async () => {
-    const bridge = new aidesignerBridge({ llmClient: { chat: jest.fn() } });
+    const bridge = new AidesignerBridge({ llmClient: { chat: jest.fn() } });
 
     const config = await bridge.initialize();
 
@@ -29,7 +29,7 @@ describe('aidesignerBridge legacy core detection', () => {
     const packageRoot = path.resolve(__dirname, '..', '..');
     const customPath = path.join(packageRoot, 'aidesigner-core');
 
-    const bridge = new aidesignerBridge({
+    const bridge = new AidesignerBridge({
       aidesignerCorePath: customPath,
       llmClient: { chat: jest.fn() },
     });
@@ -54,7 +54,7 @@ describe('aidesignerBridge legacy core detection', () => {
       const agentContent = `# Test Agent\n\n\`\`\`yaml\nagent:\n  id: test-agent\n  name: Test Agent\n\`\`\`\n\nTest content.`;
       await fs.writeFile(path.join(modulesRoot, 'agents', 'test-agent.md'), agentContent, 'utf8');
 
-      const bridge = new aidesignerBridge({
+      const bridge = new AidesignerBridge({
         aidesignerCorePath: path.join(tempRoot, 'missing-core'),
         aidesignerV6Path: path.join(tempRoot, 'bmad'),
         llmClient: { chat: jest.fn() },
@@ -73,7 +73,7 @@ describe('aidesignerBridge legacy core detection', () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'aidesigner-empty-test-'));
 
     try {
-      const bridge = new aidesignerBridge({
+      const bridge = new AidesignerBridge({
         aidesignerCorePath: path.join(tempRoot, 'missing-core'),
         aidesignerV6Path: path.join(tempRoot, 'missing-v6'),
         llmClient: { chat: jest.fn() },

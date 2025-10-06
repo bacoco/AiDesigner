@@ -4,7 +4,7 @@ const path = require('node:path');
 
 jest.mock('../hooks/context-enrichment', () => ({}), { virtual: true });
 
-const { aidesignerBridge } = require('../lib/aidesigner-bridge.js');
+const { AidesignerBridge } = require('../lib/aidesigner-bridge.js');
 
 async function createV6Workspace() {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'aidesigner-v6-workspace-'));
@@ -26,7 +26,7 @@ async function createV6Workspace() {
   return tempRoot;
 }
 
-describe('aidesignerBridge V6 module detection', () => {
+describe('AidesignerBridge V6 module detection', () => {
   let tempRoot;
   let pathExistsSpy;
   let readFileSpy;
@@ -72,7 +72,7 @@ describe('aidesignerBridge V6 module detection', () => {
       throw new Error(`Unexpected readFile access during test: ${targetPath}`);
     });
 
-    const bridge = new aidesignerBridge({
+    const bridge = new AidesignerBridge({
       aidesignerCorePath: path.join(tempRoot, 'missing-core'),
       aidesignerV6Path: tempRoot,
       llmClient: { chat: jest.fn() },

@@ -3,7 +3,7 @@ const os = require('node:os');
 const path = require('node:path');
 
 const { executeAutoCommand } = require('../lib/auto-commands.js');
-const { aidesignerBridge } = require('../lib/aidesigner-bridge.js');
+const { AidesignerBridge } = require('../lib/aidesigner-bridge.js');
 const { DeliverableGenerator } = require('../lib/deliverable-generator.js');
 const { ProjectState } = require('../lib/project-state.js');
 const { QuickLane } = require('../lib/quick-lane.js');
@@ -96,7 +96,7 @@ describe('Codex CLI V6 sandbox compatibility', () => {
     tempDirs.push(tempDir);
 
     const stubLLM = new StubLLMClient('Mock agent output for planning');
-    const bridge = new aidesignerBridge({ llmClient: stubLLM });
+    const bridge = new AidesignerBridge({ llmClient: stubLLM });
     await bridge.initialize();
 
     const autoResult = await executeAutoCommand(
