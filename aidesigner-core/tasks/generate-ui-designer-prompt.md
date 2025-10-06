@@ -84,50 +84,74 @@ const discoveryState = {
 
 **If Quick Lane (auto-inference):**
 
-Accept pre-populated context passed from Quick Lane engine:
+Accept pre-populated context passed from Quick Lane engine **and attempt to hydrate it with stored Chrome MCP artifacts before falling back to SaaS defaults**:
 
 ```javascript
 const quickLaneContext = {
   productName: "TaskFlow Pro",
   projectDescription: "Collaborative task management",
   journeySteps: [...], // Inferred from PRD
-  brandPalette: {...},  // Defaults or from UX spec
-  typography: {...},    // Defaults
+  chromeMcpEvidence: loadEvidence('docs/ui/chrome-mcp/*.json'),
+  brandPalette: {...},  // May be replaced by synthesized preset
+  typography: {...},    // May be replaced by synthesized preset
+  layoutSystem: {...},  // May be replaced by synthesized preset
   // ... Quick Lane sensible defaults
 }
 ```
 
+> 🔍 **Evidence-first fallback:** Always inspect `chromeMcpEvidence` (or `referenceAssets[].chromeMcpArtifacts`) for CSS variables, extracted palettes, font families, and spacing scales. Only revert to the generic SaaS defaults if **no usable evidence** is available after synthesis.
+
 ### Step 2: Prepare Visual System Context
 
-Consolidate the visual system into reusable tokens:
+1. **Aggregate Chrome MCP evidence** (if present) into a synthesized preset.
+2. **Blend multiple references** to reinforce recurring patterns.
+3. **Only fall back to SaaS defaults** if neither the discovery state nor Chrome MCP evidence provides usable tokens.
 
 ```javascript
+const { packs: evidencePacks, summary: blendSummary } = collectEvidence({
+  chromeMcpEvidence,
+  referenceAssets,
+  discoveryDefaults: { brandPalette, typography, layoutSystem },
+});
+
+const synthesizedPreset = synthesizePreset(evidencePacks, blendSummary);
+
+const {
+  brandPalette: resolvedPalette,
+  typography: resolvedTypography,
+  layoutSystem: resolvedLayout,
+  illustrationStyle: resolvedIllustration,
+  motionNotes: resolvedMotion,
+  confidenceNotes,
+  evidenceTrail,
+} = synthesizedPreset;
+
 const visualSystem = {
-  brandPaletteColors: `${brandPalette.primary}, ${brandPalette.accent}, ${brandPalette.neutral}`,
+  brandPaletteColors: `${resolvedPalette.primary}, ${resolvedPalette.accent}, ${resolvedPalette.neutral}`,
 
   cssVariables: `
---color-primary: ${brandPalette.primary};
---color-accent: ${brandPalette.accent};
---color-neutral: ${brandPalette.neutral};
---font-heading: ${typography.headingFont};
---font-body: ${typography.bodyFont};
---space-base: ${layoutSystem.spacingBase};
-${generateSpacingTokens(layoutSystem.spacingScale)}
+${formatCssBlock(resolvedPalette.cssVariables, resolvedTypography.cssVariables, resolvedLayout.cssVariables)}
   `.trim(),
 
-  headingFont: typography.headingFont,
-  bodyFont: typography.bodyFont,
-  fontScale: `${typography.scale.body} body, ${typography.scale.subtitle} subtitle, ${typography.scale.heading} heading`,
+  headingFont: resolvedTypography.headingFont,
+  bodyFont: resolvedTypography.bodyFont,
+  fontScale: `${resolvedTypography.scale.body} body, ${resolvedTypography.scale.subtitle} subtitle, ${resolvedTypography.scale.heading} heading`,
 
-  layoutStructure: layoutSystem.structure,
-  spacingTokens: layoutSystem.spacingScale.join(', ') + 'px',
-  containerMaxWidth: layoutSystem.maxWidth,
-  gridPattern: layoutSystem.gridPattern || 'Responsive grid (3-col desktop, 1-col mobile)',
+  layoutStructure: resolvedLayout.structure,
+  spacingTokens: resolvedLayout.spacingScale.map((value) => `${value}px`).join(', '),
+  containerMaxWidth: resolvedLayout.maxWidth,
+  gridPattern: resolvedLayout.gridPattern || 'Responsive grid (3-col desktop, 1-col mobile)',
 
-  illustrationStyle: illustrationStyle,
-  motionNotes: motionNotes,
+  illustrationStyle: resolvedIllustration,
+  motionNotes: resolvedMotion,
+  confidenceNotes,
+  evidenceTrail,
 };
+
+applyBlendMetadata(referenceAssets, evidencePacks);
 ```
+
+> ✅ **Always annotate defaults with `confidenceNotes`** explaining whether they came from Chrome MCP evidence (high confidence), blended inference (medium), or SaaS fallback (low). Surface the `evidenceTrail` so downstream tasks can cite the exact source of each token.
 
 ### Step 3: Generate Per-Screen Prompts
 
@@ -164,6 +188,9 @@ journeySteps.forEach((step, index) => {
     grid_pattern: visualSystem.gridPattern,
     illustration_style: visualSystem.illustrationStyle,
     motion_notes: visualSystem.motionNotes,
+    confidence_notes: visualSystem.confidenceNotes,
+    evidence_trail: visualSystem.evidenceTrail,
+    reference_blend_summary: blendSummary.blendNotes,
 
     // Reference Assets (passed as array for template loop)
     reference_assets: (referenceAssets || []).map((asset) => ({
@@ -173,6 +200,9 @@ journeySteps.forEach((step, index) => {
       elements_to_avoid: asset.elementsToAvoid,
       css_extracted: !!asset.cssVariables,
       css_tokens: formatCSSTokens(asset.cssVariables),
+      token_weight: asset.tokenWeight,
+      typography_pairs: asset.typographyPairs,
+      evidence_confidence: asset.evidenceConfidence,
     })),
 
     // UI Requirements
@@ -225,6 +255,259 @@ function formatCSSTokens(cssVars) {
     .map(([key, value]) => `${key}: ${value}`)
     .join(', ');
 }
+
+function collectEvidence({ chromeMcpEvidence, referenceAssets, discoveryDefaults }) {
+  const packs = [];
+
+  if (Array.isArray(chromeMcpEvidence)) {
+    chromeMcpEvidence.forEach((artifact) => {
+      packs.push({
+        source: artifact.sourceUrl || artifact.file,
+        type: 'chrome-mcp',
+        cssVariables: artifact.cssVariables,
+        palette: artifact.palette,
+        typography: artifact.typography,
+        spacingScale: artifact.spacingScale,
+      });
+    });
+  }
+
+  (referenceAssets || []).forEach((asset) => {
+    packs.push({
+      source: asset.sourceUrl || asset.description,
+      type: asset.cssVariables ? 'reference-css' : 'reference-manual',
+      cssVariables: asset.cssVariables,
+      palette: asset.palette,
+      typography: asset.typography,
+      spacingScale: asset.spacingScale,
+    });
+  });
+
+  if (!packs.length) {
+    if (!discoveryDefaults) {
+      return {
+        packs: [],
+        summary: summarizeBlend([], undefined),
+      };
+    }
+    return {
+      packs: [
+        {
+          source: 'SaaS default pack',
+          type: 'fallback',
+          cssVariables: discoveryDefaults.brandPalette?.cssVariables,
+          palette: discoveryDefaults.brandPalette,
+          typography: discoveryDefaults.typography,
+          spacingScale: discoveryDefaults.layoutSystem?.spacingScale,
+          layoutSystem: discoveryDefaults.layoutSystem,
+        },
+      ],
+      summary: summarizeBlend([], discoveryDefaults),
+    };
+  }
+
+  return {
+    packs,
+    summary: summarizeBlend(packs, discoveryDefaults),
+  };
+}
+
+function synthesizePreset(packs, blendSummary) {
+  const weights = {};
+  const paletteAccumulator = {};
+  const typographyAccumulator = {};
+  const spacingAccumulator = {};
+
+  packs.forEach((pack) => {
+    const baseWeight = pack.type === 'chrome-mcp' ? 3 : pack.type === 'reference-css' ? 2 : 1;
+    Object.entries(pack.palette || {}).forEach(([token, value]) => {
+      const key = value.toLowerCase();
+      paletteAccumulator[key] = (paletteAccumulator[key] || 0) + baseWeight;
+      weights[token] = weights[token] || {};
+      weights[token][key] = (weights[token][key] || 0) + baseWeight;
+    });
+
+    (pack.typography?.pairings || []).forEach((pair) => {
+      const key = `${pair.heading}|${pair.body}`.toLowerCase();
+      typographyAccumulator[key] = (typographyAccumulator[key] || 0) + baseWeight;
+    });
+
+    (pack.spacingScale || []).forEach((value) => {
+      const key = `${value}px`;
+      spacingAccumulator[key] = (spacingAccumulator[key] || 0) + baseWeight;
+    });
+  });
+
+  const resolvedPalette = resolvePalette(weights, paletteAccumulator);
+  const resolvedTypography = resolveTypography(typographyAccumulator, packs);
+  const resolvedLayout = resolveLayout(spacingAccumulator, packs);
+
+  const evidenceTrail = packs.map((pack) => ({
+    source: pack.source,
+    type: pack.type,
+    contributedTokens: Object.keys(pack.cssVariables || {}),
+  }));
+
+  const confidenceNotes = buildConfidence(
+    resolvedPalette,
+    resolvedTypography,
+    resolvedLayout,
+    packs,
+  );
+
+  return {
+    brandPalette: resolvedPalette,
+    typography: resolvedTypography,
+    layoutSystem: resolvedLayout,
+    illustrationStyle: blendSummary?.illustrationStyle || 'Clean SaaS with contextual accents',
+    motionNotes: blendSummary?.motionNotes || 'Subtle micro-interactions (200ms easing)',
+    confidenceNotes,
+    evidenceTrail,
+  };
+}
+
+function summarizeBlend(packs, discoveryDefaults) {
+  if (!packs.length) {
+    return {
+      illustrationStyle: discoveryDefaults?.illustrationStyle || 'Clean SaaS illustration',
+      motionNotes: discoveryDefaults?.motionNotes || 'Default SaaS interactions',
+      blendNotes: 'No Chrome MCP evidence found — SaaS defaults applied.',
+    };
+  }
+
+  const recurringSources = packs
+    .filter((pack) => pack.type !== 'fallback')
+    .map((pack) => pack.source)
+    .join(', ');
+
+  return {
+    illustrationStyle:
+      packs.find((pack) => pack.illustrationStyle)?.illustrationStyle ||
+      discoveryDefaults?.illustrationStyle,
+    motionNotes:
+      packs.find((pack) => pack.motionNotes)?.motionNotes || discoveryDefaults?.motionNotes,
+    blendNotes: `Synthesized from ${recurringSources || 'SaaS defaults'}`,
+  };
+}
+
+function formatCssBlock(...tokenGroups) {
+  return tokenGroups
+    .filter(Boolean)
+    .flatMap((group) => Object.entries(group))
+    .map(([key, value]) => `${key}: ${value};`)
+    .join('\n');
+}
+
+function resolvePalette(tokenWeights, paletteAccumulator) {
+  const resolved = { primary: '#2563EB', accent: '#F97316', neutral: '#1F2937', cssVariables: {} };
+  Object.entries(tokenWeights).forEach(([token, values]) => {
+    const sorted = Object.entries(values).sort((a, b) => b[1] - a[1]);
+    if (sorted.length > 0) {
+      const [winner] = sorted[0];
+      resolved[token] = winner.toUpperCase();
+      resolved.cssVariables[`--color-${token}`] = winner;
+    }
+  });
+
+  if (!Object.keys(resolved.cssVariables).length && Object.keys(paletteAccumulator).length) {
+    const sorted = Object.entries(paletteAccumulator).sort((a, b) => b[1] - a[1]);
+    if (sorted.length > 0) {
+      const [fallback] = sorted[0];
+      resolved.primary = fallback.toUpperCase();
+      resolved.cssVariables['--color-primary'] = fallback;
+    }
+  }
+
+  return resolved;
+}
+
+function resolveTypography(typographyAccumulator, packs) {
+  const resolved = {
+    headingFont: 'Inter, sans-serif',
+    bodyFont: 'Inter, sans-serif',
+    scale: { body: '16px', subtitle: '18px', heading: '28px' },
+    cssVariables: {
+      '--font-heading': '"Inter", sans-serif',
+      '--font-body': '"Inter", sans-serif',
+    },
+  };
+
+  const sorted = Object.entries(typographyAccumulator).sort((a, b) => b[1] - a[1]);
+  if (sorted.length > 0) {
+    const [pair] = sorted[0];
+    const [heading, body] = pair.split('|');
+    resolved.headingFont = heading;
+    resolved.bodyFont = body;
+    resolved.cssVariables['--font-heading'] = heading;
+    resolved.cssVariables['--font-body'] = body;
+  }
+
+  const scaleSource = packs.find(
+    (pack) => Array.isArray(pack.spacingScale) && pack.typography?.scale,
+  );
+  if (scaleSource?.typography?.scale) {
+    resolved.scale = scaleSource.typography.scale;
+  }
+
+  return resolved;
+}
+
+function resolveLayout(spacingAccumulator, packs) {
+  const resolved = {
+    structure: 'Responsive cards with generous whitespace',
+    spacingScale: [8, 16, 24, 32, 48, 64],
+    maxWidth: '1200px',
+    cssVariables: { '--space-base': '8px' },
+  };
+
+  const weightedSpacing = Object.entries(spacingAccumulator).sort((a, b) => b[1] - a[1]);
+  if (weightedSpacing.length) {
+    resolved.spacingScale = weightedSpacing.slice(0, 6).map(([value]) => parseInt(value, 10));
+    resolved.cssVariables['--space-base'] = weightedSpacing[0][0];
+  }
+
+  const layoutSource = packs.find((pack) => pack.layoutSystem);
+  if (layoutSource?.layoutSystem) {
+    Object.assign(resolved, layoutSource.layoutSystem);
+  }
+
+  return resolved;
+}
+
+function buildConfidence(resolvedPalette, resolvedTypography, resolvedLayout, packs) {
+  const highConfidence = packs.some((pack) => pack.type === 'chrome-mcp');
+  const mediumConfidence = packs.some((pack) => pack.type === 'reference-css');
+
+  if (highConfidence) {
+    return `High confidence: palette + typography pulled directly from Chrome MCP evidence (${packs
+      .filter((pack) => pack.type === 'chrome-mcp')
+      .map((pack) => pack.source)
+      .join(', ')}).`;
+  }
+
+  if (mediumConfidence) {
+    return `Medium confidence: blended recurring tokens from reference URLs (${packs
+      .filter((pack) => pack.type === 'reference-css')
+      .map((pack) => pack.source)
+      .join(', ')}). Override if brand guidance differs.`;
+  }
+
+  return 'Low confidence: SaaS defaults applied. Provide brand tokens or rerun Chrome MCP extraction to improve fidelity.';
+}
+
+function applyBlendMetadata(referenceAssets, packs) {
+  if (!Array.isArray(referenceAssets)) return;
+
+  referenceAssets.forEach((asset) => {
+    const pack = packs.find((item) => item.source === (asset.sourceUrl || asset.description));
+    if (!pack) return;
+    const baseWeight = pack.type === 'chrome-mcp' ? 3 : pack.type === 'reference-css' ? 2 : 1;
+    asset.tokenWeight = baseWeight;
+    asset.typographyPairs = pack.typography?.pairings || [];
+    asset.evidenceConfidence =
+      pack.type === 'chrome-mcp' ? 'high' : pack.type === 'reference-css' ? 'medium' : 'low';
+  });
+}
 ```
 
 ### Step 4: Compile Prompts Document
@@ -273,6 +556,15 @@ Create `docs/ui/ui-designer-screen-prompts.md` with all prompts:
 - Illustrations: {{illustration_style}}
 - Motion: {{motion_notes}}
 
+### Confidence & Evidence
+
+- Notes: {{confidence_notes}}
+- Reference blend: {{reference_blend_summary}}
+- Evidence trail:
+  {{#each evidence_trail}}
+  - {{type}} → {{source}} ({{contributedTokens.length}} tokens)
+    {{/each}}
+
 ---
 
 ## Per-Screen Prompts
@@ -314,6 +606,16 @@ Create `docs/ui/ui-designer-screen-prompts.md` with all prompts:
 - **{{sourceType}}**: {{sourceUrl}}
   - Keep: {{elementsToKeep}}
   - Avoid: {{elementsToAvoid}}
+  - Confidence: {{evidenceConfidence}} (weight: {{tokenWeight}})
+  {{#if typography_pairs}}
+  - Typography pairs reinforcing defaults:
+    {{#each typography_pairs}}
+    - {{this.heading}} × {{this.body}}
+    {{/each}}
+  {{/if}}
+  {{#if cssExtracted}}
+  - CSS extracted: ✅ (see tokens above)
+  {{/if}}
 {{/each}}
 
 ---
@@ -391,6 +693,12 @@ This brief supports the single-shot workflow. For the **conversational designer 
 ✅ Color palette: {{brand_palette.primary}}, {{brand_palette.accent}}, {{brand_palette.neutral}}
 ✅ Typography: {{typography.headingFont}} / {{typography.bodyFont}}
 ✅ Layout: {{layoutSystem.structure}}
+🔎 Confidence: {{confidence_notes}}
+🔗 Evidence sources:
+{{#each evidence_trail}}
+  - {{type}} → {{source}} ({{contributedTokens.length}} tokens)
+{{/each}}
+🧪 Reference blend: {{reference_blend_summary}}
 
 **Next Steps:**
 
@@ -421,12 +729,13 @@ All context from discovery is reused:
 
 **If discovery state is incomplete:**
 
-1. Use PRD/UX spec to infer missing context
-2. Apply sensible defaults for modern SaaS
-3. Warn user about inferred values
-4. Suggest re-running discovery for better prompts
+1. Inspect `chromeMcpEvidence` + `referenceAssets[].chromeMcpArtifacts`.
+2. Weight Chrome MCP artifacts highest, CSS extraction mid, manual notes lowest.
+3. Blend recurring tokens, typography pairings, and spacing before suggesting defaults.
+4. Emit `confidenceNotes` + `evidenceTrail`, highlighting any low-confidence fields.
+5. If **no evidence packs** remain, clearly warn the user and then apply SaaS presets.
 
-**Default Visual System (if missing):**
+**SaaS Fallback (evidence not found):**
 
 ```javascript
 {
