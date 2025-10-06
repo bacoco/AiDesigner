@@ -321,6 +321,7 @@ function synthesizePreset(packs, blendSummary) {
   packs.forEach((pack) => {
     const baseWeight = pack.type === 'chrome-mcp' ? 3 : pack.type === 'reference-css' ? 2 : 1;
     Object.entries(pack.palette || {}).forEach(([token, value]) => {
+      if (typeof value !== 'string' || !value.trim()) return;
       const key = value.toLowerCase();
       paletteAccumulator[key] = (paletteAccumulator[key] || 0) + baseWeight;
       weights[token] = weights[token] || {};
@@ -328,6 +329,7 @@ function synthesizePreset(packs, blendSummary) {
     });
 
     (pack.typography?.pairings || []).forEach((pair) => {
+      if (!pair.heading || !pair.body) return;
       const key = `${pair.heading}|${pair.body}`.toLowerCase();
       typographyAccumulator[key] = (typographyAccumulator[key] || 0) + baseWeight;
     });
@@ -442,9 +444,7 @@ function resolveTypography(typographyAccumulator, packs) {
     resolved.cssVariables['--font-body'] = body;
   }
 
-  const scaleSource = packs.find(
-    (pack) => Array.isArray(pack.spacingScale) && pack.typography?.scale,
-  );
+  const scaleSource = packs.find((pack) => pack.typography?.scale);
   if (scaleSource?.typography?.scale) {
     resolved.scale = scaleSource.typography.scale;
   }
