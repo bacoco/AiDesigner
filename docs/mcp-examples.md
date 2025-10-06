@@ -737,7 +737,7 @@ npm run mcp:install github
 # Create dev profile inheriting from base
 npm run mcp:profile:create dev --inherit-from base
 npm run mcp:profile:switch dev
-npm run mcp:install puppeteer  # Dev-specific testing
+npm run mcp:install chrome-devtools  # Dev-specific E2E testing
 
 # Create staging inheriting from dev
 npm run mcp:profile:create staging --inherit-from dev
@@ -762,7 +762,7 @@ npm run mcp:profile:list
 #
 # ○ dev (inherits from base)
 #   Development environment
-#   Additional: puppeteer
+#   Additional: chrome-devtools
 #
 # ○ staging (inherits from dev)
 #   Staging environment

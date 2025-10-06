@@ -428,7 +428,7 @@ AI: "✓ PostgreSQL access configured!
      Restart your chat to start using database features."
 ```
 
-**Available integrations** (15+): GitHub, PostgreSQL, Filesystem, Puppeteer, Brave Search, Slack, AWS, and more.
+**Available integrations** (15+): GitHub, PostgreSQL, Filesystem, Chrome DevTools, Brave Search, Slack, AWS, and more.
 
 → **[MCP Management Guide](docs/mcp-management.md)** - Complete integration guide
 

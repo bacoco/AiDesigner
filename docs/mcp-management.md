@@ -98,6 +98,58 @@ Analyzes your project and suggests relevant MCP servers based on:
 - Project structure
 - Existing dependencies
 
+## Migration Guide: Browser Automation
+
+### Moving from Puppeteer/Playwright to Chrome DevTools MCP
+
+For browser automation and E2E testing, we now recommend **Chrome DevTools MCP** as the preferred integration. It provides native Chrome DevTools Protocol access with better performance and simpler configuration.
+
+#### Why Chrome DevTools MCP?
+
+- **Native Chrome integration**: Direct Chrome DevTools Protocol (CDP) access
+- **Record and replay**: Capture user flows directly in Chrome for E2E testing
+- **Simpler setup**: No additional browser binaries required if Chrome is already installed
+- **Better performance**: Lightweight STDIO-based communication
+- **Team alignment**: Tests use the same browser your team develops with
+
+#### Migration Steps
+
+If you're currently using Puppeteer or Playwright MCP servers:
+
+1. **Install Chrome DevTools MCP**:
+   ```bash
+   npm run mcp:install chrome-devtools
+   # Optional: Set BROWSER_WS_ENDPOINT if connecting to remote Chrome
+   ```
+
+2. **Optional: Configure WebSocket endpoint** (if using remote debugging):
+   ```bash
+   # Start Chrome with remote debugging
+   google-chrome --remote-debugging-port=9222
+
+   # Set environment variable
+   export BROWSER_WS_ENDPOINT=ws://localhost:9222
+   ```
+
+3. **Update your workflows**: Chrome DevTools MCP uses the same CDP commands as Puppeteer but through the MCP protocol.
+
+4. **Remove old servers** (optional):
+   ```bash
+   npm run mcp:remove puppeteer
+   npm run mcp:remove playwright
+   ```
+
+#### When to Keep Puppeteer/Playwright
+
+Chrome DevTools MCP is recommended for most cases, but you might prefer Puppeteer/Playwright if you need:
+
+- Cross-browser testing (Firefox, Safari, WebKit)
+- Headless mode in Docker/CI without Chrome installed
+- Specific Puppeteer/Playwright APIs not available in CDP
+- Existing test suites heavily dependent on those libraries
+
+Both options remain available in the MCP registry - use what works best for your project.
+
 ## Server Management
 
 ### Add a Custom Server
