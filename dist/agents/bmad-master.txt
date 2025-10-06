@@ -5574,6 +5574,20 @@ workflow:
   elicitation: advanced-elicitation
 
 sections:
+  - id: executive-overview
+    title: Momentum Snapshot
+    type: table
+    columns: [Focus, Details]
+    instruction: |
+      Generate a fast-scanning executive overview before deeper sections. Populate the table with:
+
+      - 🎯 Project Goal — summarize the current north star. Auto-fill using the latest Project Brief (docs/project-brief.md) or recently approved outcomes in the Decisions log if available.
+      - 🧑‍🤝‍🧑 Primary Users — identify the main personas or segments. Pull directly from the Project Brief or user research artifacts when supplied.
+      - 🚦 Current Phase — indicate the product development phase inferred from the latest decisions, roadmap milestones, or phase detector insights.
+      - ➡️ Recommended Next Move — state the single action that keeps momentum (e.g., unblock dependency, validate assumption, advance to next workflow stage). Cite the artifact or conversation that informs the recommendation.
+      - ⚠️ Assumptions to Confirm — explicitly list any guesses or incomplete data surfaced while preparing the snapshot. Highlight them with **Assumption – Needs Confirmation** so reviewers can respond immediately.
+
+      Always cross-reference existing documents before asking new questions. If data is missing, mark the gap as an assumption and clarify what validation is required in the snapshot.
   - id: goals-context
     title: Goals and Background Context
     instruction: |
