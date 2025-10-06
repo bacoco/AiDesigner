@@ -1433,6 +1433,16 @@ const commands = {
     const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     packageJson.scripts = packageJson.scripts || {};
 
+    // Remove legacy agilai scripts
+    const legacyScripts = ['agilai', 'agilai:codex', 'agilai:claude', 'agilai:opencode', 'agilai:build'];
+    let legacyRemoved = false;
+    for (const scriptName of legacyScripts) {
+      if (packageJson.scripts[scriptName]) {
+        delete packageJson.scripts[scriptName];
+        legacyRemoved = true;
+      }
+    }
+
     const scriptsToAdd = {
       aidesigner: 'aidesigner start',
       codex: 'aidesigner codex',
@@ -1450,12 +1460,22 @@ const commands = {
       }
     }
 
-    if (scriptsAdded) {
+    if (scriptsAdded || legacyRemoved) {
       fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
-      console.log('✅ Added npm scripts to package.json');
+      if (legacyRemoved) {
+        console.log('✅ Removed legacy agilai scripts from package.json');
+      }
+      if (scriptsAdded) {
+        console.log('✅ Added npm scripts to package.json');
+      }
     }
 
-    // Add aidesigner as a dependency
+    // Remove legacy agilai dependency and add aidesigner
+    if (packageJson.dependencies && packageJson.dependencies.agilai) {
+      delete packageJson.dependencies.agilai;
+      console.log('✅ Removed legacy agilai dependency');
+    }
+
     const desiredDependencyVersion = `^${currentVersion}`;
     const existingDependencyVersion =
       packageJson.dependencies && packageJson.dependencies.aidesigner;
