@@ -138,7 +138,7 @@ ${formatCssBlock(resolvedPalette.cssVariables, resolvedTypography.cssVariables, 
   fontScale: `${resolvedTypography.scale.body} body, ${resolvedTypography.scale.subtitle} subtitle, ${resolvedTypography.scale.heading} heading`,
 
   layoutStructure: resolvedLayout.structure,
-  spacingTokens: resolvedLayout.spacingScale.join(', ') + 'px',
+  spacingTokens: resolvedLayout.spacingScale.map((value) => `${value}px`).join(', '),
   containerMaxWidth: resolvedLayout.maxWidth,
   gridPattern: resolvedLayout.gridPattern || 'Responsive grid (3-col desktop, 1-col mobile)',
 
@@ -284,16 +284,22 @@ function collectEvidence({ chromeMcpEvidence, referenceAssets, discoveryDefaults
   });
 
   if (!packs.length) {
+    if (!discoveryDefaults) {
+      return {
+        packs: [],
+        summary: summarizeBlend([], undefined),
+      };
+    }
     return {
       packs: [
         {
           source: 'SaaS default pack',
           type: 'fallback',
-          cssVariables: discoveryDefaults?.brandPalette?.cssVariables,
-          palette: discoveryDefaults?.brandPalette,
-          typography: discoveryDefaults?.typography,
-          spacingScale: discoveryDefaults?.layoutSystem?.spacingScale,
-          layoutSystem: discoveryDefaults?.layoutSystem,
+          cssVariables: discoveryDefaults.brandPalette?.cssVariables,
+          palette: discoveryDefaults.brandPalette,
+          typography: discoveryDefaults.typography,
+          spacingScale: discoveryDefaults.layoutSystem?.spacingScale,
+          layoutSystem: discoveryDefaults.layoutSystem,
         },
       ],
       summary: summarizeBlend([], discoveryDefaults),
@@ -395,17 +401,21 @@ function formatCssBlock(...tokenGroups) {
 function resolvePalette(tokenWeights, paletteAccumulator) {
   const resolved = { primary: '#2563EB', accent: '#F97316', neutral: '#1F2937', cssVariables: {} };
   Object.entries(tokenWeights).forEach(([token, values]) => {
-    const [winner] = Object.entries(values).sort((a, b) => b[1] - a[1])[0] || [];
-    if (winner) {
+    const sorted = Object.entries(values).sort((a, b) => b[1] - a[1]);
+    if (sorted.length > 0) {
+      const [winner] = sorted[0];
       resolved[token] = winner.toUpperCase();
       resolved.cssVariables[`--color-${token}`] = winner;
     }
   });
 
   if (!Object.keys(resolved.cssVariables).length && Object.keys(paletteAccumulator).length) {
-    const [fallback] = Object.entries(paletteAccumulator).sort((a, b) => b[1] - a[1])[0];
-    resolved.primary = fallback[0].toUpperCase();
-    resolved.cssVariables['--color-primary'] = fallback[0];
+    const sorted = Object.entries(paletteAccumulator).sort((a, b) => b[1] - a[1]);
+    if (sorted.length > 0) {
+      const [fallback] = sorted[0];
+      resolved.primary = fallback.toUpperCase();
+      resolved.cssVariables['--color-primary'] = fallback;
+    }
   }
 
   return resolved;
@@ -422,8 +432,9 @@ function resolveTypography(typographyAccumulator, packs) {
     },
   };
 
-  const [pair] = Object.entries(typographyAccumulator).sort((a, b) => b[1] - a[1])[0] || [];
-  if (pair) {
+  const sorted = Object.entries(typographyAccumulator).sort((a, b) => b[1] - a[1]);
+  if (sorted.length > 0) {
+    const [pair] = sorted[0];
     const [heading, body] = pair.split('|');
     resolved.headingFont = heading;
     resolved.bodyFont = body;
