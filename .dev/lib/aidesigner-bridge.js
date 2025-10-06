@@ -6,7 +6,6 @@
 const fs = require('fs-extra');
 const path = require('node:path');
 const yaml = require('js-yaml');
-const { LLMClient } = require('./llm-client');
 const { V6ModuleLoader } = require('./v6-module-loader');
 const contextEnrichment = require('../hooks/context-enrichment');
 
@@ -114,7 +113,6 @@ class AidesignerBridge {
    * @param {Object} options - Configuration options
    * @param {string} [options.aidesignerCorePath] - Path to aidesigner-core directory
    * @param {string} [options.aidesignerV6Path] - Path to v6 modules directory
-   * @param {Object} [options.llmClient] - LLM client instance
    * @param {Object} [options.contextEnrichment] - Context enrichment module
    * @param {Array} [options.contextEnrichers] - Additional context enricher functions
    * @param {string|string[]} [options.agentSearchPaths] - Custom agent search paths (replaces default core path)
@@ -124,7 +122,6 @@ class AidesignerBridge {
     this.aidesignerCorePath = options.aidesignerCorePath || DEFAULT_CORE_PATH;
     this.aidesignerV6Path =
       options.aidesignerV6Path || DEFAULT_V6_PATH || path.join(PACKAGE_ROOT, 'bmad');
-    this.llmClient = options.llmClient || new LLMClient();
     this.coreConfig = null;
     this.contextEnrichment = options.contextEnrichment || contextEnrichment;
     this.contextEnrichers = Array.isArray(options.contextEnrichers)
@@ -249,33 +246,10 @@ class AidesignerBridge {
   }
 
   /**
-   * Execute an agent with given context
+   * REMOVED: runAgent() - MCP servers should not make independent LLM API calls
+   * Agent execution happens in the Claude CLI session, not in the MCP server.
+   * Use loadAgent() to get agent prompts and let Claude CLI handle the conversation.
    */
-  async runAgent(agentId, context = {}) {
-    const agent = await this.loadAgent(agentId);
-
-    // Build system prompt from agent persona
-    const enrichment = await this.applyContextEnrichers(agent, context);
-
-    const systemPrompt = this.buildAgentSystemPrompt(agent, enrichment);
-
-    // Build user message from enriched context
-    const userMessage = this.buildContextMessage(enrichment.context, enrichment);
-
-    // Call LLM with agent persona
-    const response = await this.llmClient.chat([{ role: 'user', content: userMessage }], {
-      systemPrompt,
-      temperature: 0.7,
-      maxTokens: 8192,
-    });
-
-    return {
-      agentId,
-      response,
-      context: enrichment.context,
-      enrichment,
-    };
-  }
 
   /**
    * Build prioritized list of agent search paths with deduplication

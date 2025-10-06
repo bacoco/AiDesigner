@@ -5,6 +5,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { mkdtempSync, rmSync } from "node:fs";
+import * as fs from "fs-extra";
 import { performance } from "node:perf_hooks";
 import * as path from "node:path";
 import { tmpdir } from "node:os";
@@ -538,50 +539,7 @@ export async function runOrchestratorServer(
     }
 
     phaseTransitionHooks.bindDependencies({
-      triggerAgent: async (agentId: string, context: any) => {
-        const result = await aidesignerBridge.runAgent(agentId, context);
-
-        if (!result) {
-          return null;
-        }
-
-        const rawResponse = result.response;
-
-        if (rawResponse == null) {
-          return null;
-        }
-
-        if (typeof rawResponse === "string") {
-          try {
-            return JSON.parse(rawResponse);
-          } catch (error: unknown) {
-            logger.warn("agent_response_parse_failed", {
-              operation: "trigger_agent",
-              agentId,
-              error: error instanceof Error ? error.message : String(error),
-            });
-            return {
-              error: `Failed to parse response from agent ${agentId}`,
-              rawResponse,
-            };
-          }
-        }
-
-        if (typeof rawResponse === "object") {
-          return rawResponse;
-        }
-
-        const structuredError = buildParseError({
-          agentId,
-          rawResponse,
-          error: new Error("Unsupported response type"),
-          context,
-        });
-        logger.error(
-          `[MCP] Failed to parse response from agent ${agentId}: Unsupported response type (${typeof rawResponse})`
-        );
-        return structuredError;
-      },
+      // triggerAgent removed - phase detection now uses heuristics, no LLM calls
       triggerCommand: async (command: string, context: any) => {
         await ensureOperationAllowed("execute_auto_command", { command });
         logger.info("auto_command_execute", {
@@ -696,27 +654,6 @@ export async function runOrchestratorServer(
               default: 10,
             },
           },
-        },
-      },
-      {
-        name: "detect_phase",
-        description:
-          "Analyze user message and conversation to determine appropriate aidesigner phase",
-        inputSchema: {
-          type: "object",
-          properties: {
-            userMessage: {
-              type: "string",
-              description: "User's latest message",
-            },
-            conversationHistory: {
-              type: "array",
-              description: "Recent conversation messages",
-              items: { type: "object" },
-              default: [],
-            },
-          },
-          required: ["userMessage"],
         },
       },
       {
@@ -1065,6 +1002,75 @@ export async function runOrchestratorServer(
           },
         },
       },
+      {
+        name: "generate_nano_banana_prompts",
+        description:
+          "Generate Nano Banana (Gemini) visual concept prompts for UI design exploration. Creates docs/ui/nano-banana-brief.md with ready-to-use prompts for Google AI Studio.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            productName: {
+              type: "string",
+              description: "Name of the product",
+            },
+            productDescriptor: {
+              type: "string",
+              description: "One-sentence product description",
+            },
+            primaryPersona: {
+              type: "string",
+              description: "Main user type (e.g., 'remote team managers')",
+            },
+            screens: {
+              type: "array",
+              items: { type: "string" },
+              description: "List of screen names to generate concepts for",
+              default: ["Search", "Write/Compose", "Sign Up", "Sign In"],
+            },
+            visualStyle: {
+              type: "string",
+              description: "Desired visual style (e.g., 'modern SaaS', 'minimalist')",
+              default: "modern SaaS",
+            },
+            brandPalette: {
+              type: "string",
+              description: "Color palette with hex codes",
+            },
+            designTokens: {
+              type: "object",
+              description: "Optional design tokens extracted from reference URLs",
+            },
+          },
+          required: ["productName", "productDescriptor", "primaryPersona"],
+        },
+      },
+      {
+        name: "generate_ui_designer_prompts",
+        description:
+          "Generate per-screen UI designer prompts for conversational design flow. Creates docs/ui/ui-designer-screen-prompts.md with tailored prompts for each journey step.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            journey: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  screenName: { type: "string" },
+                  purpose: { type: "string" },
+                  userGoal: { type: "string" },
+                },
+              },
+              description: "User journey steps with screen definitions",
+            },
+            visualContext: {
+              type: "object",
+              description: "Visual design context and constraints",
+            },
+          },
+          required: ["journey"],
+        },
+      },
     ],
   }));
 
@@ -1111,51 +1117,6 @@ export async function runOrchestratorServer(
               {
                 type: "text",
                 text: JSON.stringify(context, null, 2),
-              },
-            ],
-          };
-          break;
-        }
-
-        case "detect_phase": {
-          const params = args as { userMessage: string; conversationHistory?: any[] };
-
-          const result = await phaseTransitionHooks.checkTransition(
-            { conversation: params.conversationHistory || [] },
-            params.userMessage,
-            projectState.state.currentPhase
-          );
-
-          if (result && typeof result === "object" && "error" in result) {
-            const errorPayload = {
-              detected_phase: projectState.state.currentPhase,
-              confidence: 0,
-              shouldTransition: false,
-              error: result.error,
-            } as const;
-
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: JSON.stringify(errorPayload, null, 2),
-                },
-              ],
-            };
-          }
-
-          const detection =
-            result || ({
-              detected_phase: projectState.state.currentPhase,
-              confidence: 0.5,
-              shouldTransition: false,
-            } as const);
-
-          response = {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(detection, null, 2),
               },
             ],
           };
@@ -2196,6 +2157,180 @@ export async function runOrchestratorServer(
                   null,
                   2
                 ),
+              },
+            ],
+          };
+          break;
+        }
+
+        case "generate_nano_banana_prompts": {
+          const params = args as {
+            productName: string;
+            productDescriptor: string;
+            primaryPersona: string;
+            screens?: string[];
+            visualStyle?: string;
+            brandPalette?: string;
+            designTokens?: any;
+          };
+
+          // Read template
+          const templatePath = path.join(
+            aidesignerBridge.aidesignerCorePath,
+            "templates",
+            "nano-banana-prompt.md"
+          );
+          const templateContent = await fs.readFile(templatePath, "utf-8");
+
+          // Populate template with context
+          const productContext = {
+            concept_variations: "3",
+            product_name: params.productName,
+            product_descriptor: params.productDescriptor,
+            primary_persona: params.primaryPersona,
+            search_goal: `finding relevant ${params.productName} items`,
+            write_goal: `creating new content in ${params.productName}`,
+            signup_value_prop: `joining ${params.productName} community`,
+            signin_security_needs: "secure authentication",
+            brand_palette: params.brandPalette || "Modern blue and white palette",
+            typography: "Clean sans-serif fonts",
+            illustration_style: params.visualStyle || "Modern SaaS design",
+            experience_tone: "Professional yet approachable",
+            layout_principles: "Card-based layouts with clear hierarchy",
+            voice_guidelines: "Concise and action-oriented",
+          };
+
+          let populatedPrompt = templateContent;
+          for (const [key, value] of Object.entries(productContext)) {
+            populatedPrompt = populatedPrompt.replace(
+              new RegExp(`\\{\\{${key}\\}\\}`, "g"),
+              value
+            );
+          }
+
+          // Create docs/ui directory if it doesn't exist
+          const docsUiDir = path.join(projectState.state.projectRoot || process.cwd(), "docs", "ui");
+          await fs.ensureDir(docsUiDir);
+
+          // Write brief file
+          const briefPath = path.join(docsUiDir, "nano-banana-brief.md");
+          const briefContent = `# Nano Banana Visual Concept Brief
+
+## Project: ${params.productName}
+
+${params.productDescriptor}
+
+## Target Users
+${params.primaryPersona}
+
+## Ready-to-Use Prompt for Google AI Studio
+
+Copy the prompt below and paste it into https://aistudio.google.com/ (Gemini 2.5 Flash)
+
+---
+
+${populatedPrompt}
+
+---
+
+## Next Steps
+
+1. Visit https://aistudio.google.com/
+2. Select Gemini 2.5 Flash model
+3. Copy and paste the prompt above
+4. Generate visual concepts
+5. Review the 3 concepts and select your preferred direction
+6. Save your selected concept images to docs/mockups/
+
+${params.designTokens ? `\n## Design Tokens\n\n${JSON.stringify(params.designTokens, null, 2)}\n` : ""}
+`;
+
+          await fs.writeFile(briefPath, briefContent, "utf-8");
+
+          response = {
+            content: [
+              {
+                type: "text",
+                text: `✓ Created Nano Banana prompts in ${briefPath}\n\nNext: Copy the prompt from that file and paste it into https://aistudio.google.com/`,
+              },
+            ],
+          };
+          break;
+        }
+
+        case "generate_ui_designer_prompts": {
+          const params = args as {
+            journey: Array<{
+              screenName: string;
+              purpose: string;
+              userGoal: string;
+            }>;
+            visualContext?: any;
+          };
+
+          // Generate per-screen prompts
+          const screenPrompts = params.journey
+            .map(
+              (step, index) => `
+## Screen ${index + 1}: ${step.screenName}
+
+**Purpose:** ${step.purpose}
+
+**User Goal:** ${step.userGoal}
+
+**Design Prompt:**
+
+Create a visual mockup for the ${step.screenName} screen. This screen should help users ${step.userGoal.toLowerCase()}.
+
+Key requirements:
+- Clear visual hierarchy
+- Accessible contrast ratios
+- Mobile-first responsive design
+- Consistent with overall product design language
+- Prominent primary actions
+
+${params.visualContext ? `**Visual Context:**\n${JSON.stringify(params.visualContext, null, 2)}` : ""}
+`
+            )
+            .join("\n---\n");
+
+          // Create docs/ui directory
+          const docsUiDir = path.join(projectState.state.projectRoot || process.cwd(), "docs", "ui");
+          await fs.ensureDir(docsUiDir);
+
+          // Write prompts file
+          const promptsPath = path.join(docsUiDir, "ui-designer-screen-prompts.md");
+          const promptsContent = `# UI Designer Screen Prompts
+
+## User Journey Overview
+
+${params.journey.map((s, i) => `${i + 1}. ${s.screenName} - ${s.purpose}`).join("\n")}
+
+---
+
+${screenPrompts}
+
+---
+
+## Usage
+
+Use these prompts with:
+- Gemini 2.5 Flash (https://aistudio.google.com/)
+- Midjourney
+- DALL-E
+- Figma AI
+- Your preferred design tool
+
+Generate concepts for each screen, then refine based on user feedback.
+`;
+
+          await fs.writeFile(promptsPath, promptsContent, "utf-8");
+
+          response = {
+            content: [
+              {
+                type: "text",
+                text: `✓ Created UI designer prompts in ${promptsPath}\n\nGenerated ${params.journey.length} screen-specific design prompts.`,
               },
             ],
           };

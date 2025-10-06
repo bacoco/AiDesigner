@@ -164,6 +164,10 @@ Your design decisions automatically flow into:
 - npm ≥ 9.0.0
 - One chat CLI installed: Claude CLI, Codex CLI, or OpenCode CLI
 
+**✨ No API Keys Required!**
+
+AiDesigner works through your Claude CLI session - no additional API keys or accounts needed. All LLM interactions happen through your existing Claude CLI authentication.
+
 ### Installation
 
 ```bash

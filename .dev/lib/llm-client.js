@@ -1,6 +1,13 @@
 /**
  * LLM Client Integration
  * Supports Claude (Anthropic), GLM, GPT (OpenAI), and Gemini (Google)
+ *
+ * @deprecated This module is being phased out in favor of Claude CLI-native execution.
+ * MCP servers should NOT make independent LLM API calls. Instead, they should provide
+ * context and let the Claude CLI session handle all LLM interactions.
+ *
+ * Current usage: Review/validation features only (will be refactored in future)
+ * Do NOT use for new features - use load_agent_persona tool instead.
  */
 
 const https = require('node:https');
