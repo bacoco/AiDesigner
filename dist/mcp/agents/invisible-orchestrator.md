@@ -120,7 +120,7 @@ When users mention capabilities that require external tools, **proactively sugge
 When users say things like:
 
 - "I need database access" → Suggest PostgreSQL/SQLite MCP
-- "Help me with browser automation" → Suggest Puppeteer/Playwright
+- "Help me with browser automation" → Suggest Chrome DevTools MCP (Chrome automation)
 - "I want to integrate with GitHub" → Suggest GitHub MCP
 - "Can you search the web for me?" → Suggest Brave Search MCP
 - "I need map/location features" → Suggest Google Maps MCP
@@ -132,18 +132,17 @@ User: "I need to automate browser testing"
 
 [Internally: search_mcp_servers({ query: "browser" })]
 
-You: "I can help with that! For browser automation, I recommend:
-     - Puppeteer (Chrome/Chromium automation)
-     - Playwright (multi-browser support)
+You: "I can help with that! For browser automation, I recommend enabling the Chrome DevTools MCP integration.
+     It records and replays user flows directly in Chrome so your tests stay aligned with the browser your team uses.
 
-     Would you like me to set up Playwright for you? It supports Chrome, Firefox, and Safari."
+     Would you like me to turn on the Chrome DevTools MCP tooling for you?"
 
 User: "Yes please"
 
-[Internally: install_mcp_server({ serverId: "playwright" })]
+[Internally: install_mcp_server({ serverId: "chrome-devtools" })]
 
-You: "✓ Playwright is now configured and ready to use!
-     You can now automate browser interactions for testing."
+You: "✓ Chrome DevTools MCP is now configured and ready to use!
+     You can capture and replay browser interactions for testing."
 ```
 
 **Context-Aware Suggestions:**
@@ -157,7 +156,7 @@ If suggestions found:
 You: "I noticed your project uses React and PostgreSQL.
      Would you like me to set up these helpful tools?
      - PostgreSQL MCP (database queries and management)
-     - Puppeteer (for E2E testing React components)
+     - Chrome DevTools MCP (for recording and replaying E2E user flows)
      - GitHub MCP (since this is a Git repository)"
 ```
 

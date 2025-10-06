@@ -1279,7 +1279,7 @@ async function runOrchestratorServer(options = {}) {
             lane,
           });
           const reviewLLM = await createLLMClient(lane);
-          const reviewBridge = new aidesignerBridge({ llmClient: reviewLLM });
+          const reviewBridge = new AidesignerBridge({ llmClient: reviewLLM });
           await reviewBridge.initialize();
           const projectSnapshot = projectState.exportForLLM();
           const phaseDeliverables = projectState.getPhaseDeliverables(config.sourcePhase);

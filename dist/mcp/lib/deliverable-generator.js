@@ -5,14 +5,14 @@
 
 const fs = require('fs-extra');
 const path = require('node:path');
-const { aidesignerBridge } = require('./aidesigner-bridge');
+const { AidesignerBridge } = require('./aidesigner-bridge');
 
 class DeliverableGenerator {
   constructor(projectPath = process.cwd(), options = {}) {
     this.projectPath = projectPath;
     this.docsPath = path.join(projectPath, 'docs');
     this.aidesignerBridge =
-      options.aidesignerBridge || options.bmadBridge || new aidesignerBridge();
+      options.aidesignerBridge || options.bmadBridge || new AidesignerBridge();
 
     /** @type {Map<number, Promise<any>>} */
     this.epicSpecCache = new Map();

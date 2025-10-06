@@ -55,7 +55,7 @@ function hasBody(section) {
 async function runStoryContextValidation({
   projectState,
   createLLMClient,
-  aidesignerBridge,
+  AidesignerBridge,
   lane = 'review',
   notes,
   trigger,
@@ -68,12 +68,12 @@ async function runStoryContextValidation({
   if (typeof createLLMClient !== 'function') {
     throw new TypeError('createLLMClient function is required');
   }
-  if (typeof aidesignerBridge !== 'function') {
-    throw new TypeError('aidesignerBridge constructor is required');
+  if (typeof AidesignerBridge !== 'function') {
+    throw new TypeError('AidesignerBridge constructor is required');
   }
 
   const llmClient = await createLLMClient(lane);
-  const bridge = new aidesignerBridge({ llmClient });
+  const bridge = new AidesignerBridge({ llmClient });
 
   if (typeof bridge.initialize === 'function') {
     await bridge.initialize();
