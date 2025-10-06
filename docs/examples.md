@@ -10,6 +10,7 @@ This guide provides detailed examples of using aidesigner for real-world project
 - [Adding Features to Existing Projects](#adding-features-to-existing-projects)
 - [Complex Multi-Phase Projects](#complex-multi-phase-projects)
 - [Quick Tasks and Updates](#quick-tasks-and-updates)
+- [Persona Simulation Walkthrough](#persona-simulation-walkthrough)
 
 ## Starting a New Project
 
@@ -627,3 +628,7 @@ State persistence means you can:
 - **[Configuration Guide](configuration.md)** - Advanced configuration
 - **[MCP Management](mcp-management.md)** - Extend with tools and integrations
 - **[Architecture](../docs/core-architecture.md)** - How aidesigner works internally
+
+## Persona Simulation Walkthrough
+
+Looking for an end-to-end example from a single user’s perspective? See [End-to-End Persona Simulation: UX Team Lead Using AiDesigner](./persona-simulation.md) for a detailed transcript, agent breakdowns, Gemini prompt, and maquette outline.
