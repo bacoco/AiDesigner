@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "aidesigner",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Universal AI agent framework with MCP integration - Chat naturally, get professional results",
   "keywords": [
     "ai",
