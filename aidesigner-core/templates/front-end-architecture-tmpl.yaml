@@ -192,7 +192,7 @@ sections:
         items:
           - "**Unit Tests**: Test individual components in isolation"
           - "**Integration Tests**: Test component interactions"
-          - "**E2E Tests**: Test critical user flows (using Cypress/Playwright)"
+          - "**E2E Tests**: Test critical user flows using Chrome DevTools MCP recordings"
           - "**Coverage Goals**: Aim for 80% code coverage"
           - "**Test Structure**: Arrange-Act-Assert pattern"
           - "**Mock External Dependencies**: API calls, routing, state management"

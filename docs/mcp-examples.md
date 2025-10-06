@@ -31,7 +31,7 @@ npm run mcp:browse
 #   • filesystem - File system operations
 #   • github - GitHub API integration
 #   • git - Git repository operations
-#   • puppeteer - Browser automation
+#   • chrome-devtools - Browser automation
 #   ...
 
 # Install essential development tools
@@ -84,7 +84,7 @@ npm run mcp:suggest
 #
 # Recommended:
 #   • postgres - Database operations
-#   • puppeteer - E2E testing
+#   • chrome-devtools - E2E testing
 #
 # Optional:
 #   • slack - Team notifications
@@ -432,8 +432,8 @@ npm run mcp:install filesystem
 # ? Directory: /Users/me/projects/myapp
 # ✓ Installed
 
-npm run mcp:install puppeteer
-# ? Chromium path: (default)
+npm run mcp:install chrome-devtools
+# ? Browser WebSocket endpoint: (default)
 # ✓ Installed for E2E testing
 
 # Install backend tools
@@ -458,7 +458,7 @@ npm run mcp:doctor
 # 🏥 MCP Health Check
 #
 # ✓ filesystem - Ready (12ms)
-# ✓ puppeteer - Ready (234ms)
+# ✓ chrome-devtools - Ready (234ms)
 # ✓ postgres - Ready (45ms)
 # ✓ github - Ready (123ms)
 # ✓ slack - Ready (89ms)
@@ -663,28 +663,27 @@ Investigating performance issues:
 npm run mcp:doctor
 
 # Output:
-# ⚠ puppeteer - Slow response (4823ms)
+# ⚠ chrome-devtools - Slow response (4823ms)
 #    Warning: Response time exceeded 1000ms
 #    Recommendation: Check system resources
 
 # Check detailed logs
-DEBUG=mcp:puppeteer npm run mcp:list
+DEBUG=mcp:chrome-devtools npm run mcp:list
 
 # Output:
-# [mcp:puppeteer] Starting Chromium...
-# [mcp:puppeteer] Warning: Low memory (234MB available)
-# [mcp:puppeteer] Chromium startup took 4234ms
+# [mcp:chrome-devtools] Connecting to browser...
+# [mcp:chrome-devtools] Warning: Low memory (234MB available)
+# [mcp:chrome-devtools] Browser connection took 4234ms
 
 # Fix: Configure with lighter settings
-npm run mcp:add puppeteer --reconfigure
-# ? Headless mode: true
-# ? Disable GPU: true
-# ? No sandbox: true
+npm run mcp:add chrome-devtools --reconfigure
+# ? Browser WebSocket endpoint: ws://localhost:9222
+# ? Connection timeout: 5000
 # ✓ Reconfigured for better performance
 
 # Verify improvement
 npm run mcp:doctor
-# ✓ puppeteer - Ready (823ms)
+# ✓ chrome-devtools - Ready (823ms)
 ```
 
 ## Advanced Workflows
@@ -738,7 +737,7 @@ npm run mcp:install github
 # Create dev profile inheriting from base
 npm run mcp:profile:create dev --inherit-from base
 npm run mcp:profile:switch dev
-npm run mcp:install puppeteer  # Dev-specific testing
+npm run mcp:install chrome-devtools  # Dev-specific E2E testing
 
 # Create staging inheriting from dev
 npm run mcp:profile:create staging --inherit-from dev
@@ -763,7 +762,7 @@ npm run mcp:profile:list
 #
 # ○ dev (inherits from base)
 #   Development environment
-#   Additional: puppeteer
+#   Additional: chrome-devtools
 #
 # ○ staging (inherits from dev)
 #   Staging environment
