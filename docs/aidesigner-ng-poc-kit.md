@@ -36,6 +36,9 @@ description: "POC kit for the AiDesigner NG workflow covering Chrome MCP inspect
 │        ├─ reports/         (validation reports)
 │        └─ generated/       (generated code)
 ├─ packages/
+│  ├─ shared-types/          (shared TypeScript types)
+│  │  ├─ package.json
+│  │  └─ src/index.ts
 │  ├─ mcp-inspector/         (Chrome MCP wrapper)
 │  │  ├─ package.json
 │  │  └─ src/index.ts
@@ -66,7 +69,7 @@ description: "POC kit for the AiDesigner NG workflow covering Chrome MCP inspect
 
 ## 1) POC URL → Tokens → Page React (Shadcn)
 
-### 1.1 `apps/aidesigner-poc/src/types.ts`
+### 1.1 `packages/shared-types/src/index.ts`
 
 ```ts
 export type Tokens = {
@@ -108,7 +111,15 @@ export type ValidationReport = {
 };
 ```
 
-### 1.2 `packages/mcp-inspector/src/index.ts`
+### 1.2 `apps/aidesigner-poc/src/types.ts`
+
+> **Note**: This file now re-exports types from the shared package for backward compatibility.
+
+```ts
+export type { Tokens, ComponentMap, EvidencePack, ValidationReport } from '@aidesigner/shared-types';
+```
+
+### 1.3 `packages/mcp-inspector/src/index.ts`
 
 > **Note**: This is skeleton code for illustration purposes. Actual implementation requires connecting to your Chrome DevTools MCP server.
 
@@ -165,12 +176,12 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
 }
 ```
 
-### 1.3 `packages/inference/src/tokens.ts`
+### 1.4 `packages/inference/src/tokens.ts`
 
 > **Note**: This is skeleton code for illustration purposes. Production implementation should use proper clustering algorithms and style extraction.
 
 ```ts
-import { Tokens } from '../../../apps/aidesigner-poc/src/types';
+import type { Tokens } from '@aidesigner/shared-types';
 
 export function inferTokens(input: {
   domSnapshot: any;
@@ -203,12 +214,12 @@ export function inferTokens(input: {
 }
 ```
 
-### 1.4 `packages/inference/src/components.ts`
+### 1.5 `packages/inference/src/components.ts`
 
 > **Note**: This is skeleton code for illustration purposes. Production implementation should use sophisticated pattern matching.
 
 ```ts
-import { ComponentMap } from '../../../apps/aidesigner-poc/src/types';
+import type { ComponentMap } from '@aidesigner/shared-types';
 
 export function detectComponents(input: {
   domSnapshot: any;
@@ -239,7 +250,7 @@ export function detectComponents(input: {
 }
 ```
 
-### 1.5 `packages/validators/src/contrast.ts`
+### 1.6 `packages/validators/src/contrast.ts`
 
 ```ts
 export function contrastRatio(hex1: string, hex2: string): number {
@@ -259,7 +270,7 @@ export function contrastRatio(hex1: string, hex2: string): number {
 }
 ```
 
-### 1.6 `packages/mappers/registry/shadcn.json`
+### 1.7 `packages/mappers/registry/shadcn.json`
 
 ```json
 {
@@ -293,7 +304,7 @@ export function contrastRatio(hex1: string, hex2: string): number {
 }
 ```
 
-### 1.7 `packages/mappers/registry/mui.json`
+### 1.8 `packages/mappers/registry/mui.json`
 
 ```json
 {
@@ -312,10 +323,10 @@ export function contrastRatio(hex1: string, hex2: string): number {
 }
 ```
 
-### 1.8 `packages/codegen/src/react-shadcn.ts`
+### 1.9 `packages/codegen/src/react-shadcn.ts`
 
 ```ts
-import { Tokens, ComponentMap } from '../../../apps/aidesigner-poc/src/types';
+import type { Tokens, ComponentMap } from '@aidesigner/shared-types';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -342,7 +353,7 @@ export async function buildShadcnPage(tokens: Tokens, comps: ComponentMap, outDi
 }
 ```
 
-### 1.9 `apps/aidesigner-poc/src/run-url-analysis.ts`
+### 1.10 `apps/aidesigner-poc/src/run-url-analysis.ts`
 
 ```ts
 import { analyzeWithMCP } from '../../..//packages/mcp-inspector/src';
@@ -398,7 +409,7 @@ export async function runUrlAnalysis(
 }
 ```
 
-### 1.10 `apps/aidesigner-poc/src/build-react-page.ts`
+### 1.11 `apps/aidesigner-poc/src/build-react-page.ts`
 
 ```ts
 import { buildShadcnPage } from '../../../packages/codegen/src/react-shadcn';
@@ -411,7 +422,7 @@ export async function buildReact(tokens: Tokens, comps: ComponentMap, outRoot: s
 }
 ```
 
-### 1.11 `apps/aidesigner-poc/src/generate-reports.ts`
+### 1.12 `apps/aidesigner-poc/src/generate-reports.ts`
 
 ```ts
 import { Tokens } from './types';
@@ -448,7 +459,7 @@ export async function generateDriftReport(tokens: Tokens, outRoot: string) {
 }
 ```
 
-### 1.12 `apps/aidesigner-poc/src/cli.ts`
+### 1.13 `apps/aidesigner-poc/src/cli.ts`
 
 ```ts
 #!/usr/bin/env node
@@ -476,7 +487,7 @@ if (!url) {
 })();
 ```
 
-### 1.13 `apps/aidesigner-poc/README.md`
+### 1.14 `apps/aidesigner-poc/README.md`
 
 ````md
 # AiDesigner POC — URL → Tokens → Shadcn
@@ -525,10 +536,6 @@ Evidence packs can grow large. Recommended practices:
 - **Cleanup**: Auto-delete evidence older than 30 days
 - **Storage**: Use `.gitignore` for `out/` directory
 - **Archiving**: Compress and archive significant evidence packs for audit trails
-
-```
-
-```
 
 ---
 
