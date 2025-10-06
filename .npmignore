@@ -22,6 +22,19 @@ prompts/
 todolist.md
 MCP_INTEGRATION_REPORT.md
 
+# Old/unused files moved here
+old-version/
+
+# Expansion packs (web UI only, not needed for CLI deployment)
+expansion-packs/
+dist/expansion-packs/
+
+# Temporary status and implementation files
+*_2025-*.md
+*_2024-*.md
+IMPLEMENTATION_STATUS*.md
+CLI_*_FIX*.md
+
 # Configuration files (dev only - moved to config/)
 .prettierrc
 .prettierignore

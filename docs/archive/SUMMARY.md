@@ -173,10 +173,11 @@ npx aidesigner install    # Install aidesigner framework
 npx aidesigner flatten    # Flatten codebase
 
 # aidesigner Invisible should be
-npx aidesigner invisible chat           # Start conversation
-npx aidesigner invisible init          # Initialize project
-npx aidesigner invisible status        # Show current phase
-npx aidesigner invisible continue      # Resume conversation
+# NOTE: These commands were from the early prototype and are now outdated
+# Current commands (see docs/guides/QUICKSTART.md):
+npx aidesigner start                   # Start conversation
+npx aidesigner init                    # Initialize project
+# status and continue were prototype concepts, not in current implementation
 ```
 
 ### Chat Interface Example

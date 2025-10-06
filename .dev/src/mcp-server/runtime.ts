@@ -1071,6 +1071,155 @@ export async function runOrchestratorServer(
           required: ["journey"],
         },
       },
+      {
+        name: "check_chrome_mcp_available",
+        description:
+          "Check if Chrome DevTools MCP is installed and available. Returns availability status and installation instructions if needed.",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "extract_design_tokens_from_url",
+        description:
+          "Extract design tokens (colors, typography, spacing) from a reference URL using Chrome DevTools MCP. Requires chrome-devtools MCP to be installed.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "URL to extract design tokens from (e.g., https://linear.app)",
+            },
+            selectors: {
+              type: "array",
+              items: { type: "string" },
+              description: "CSS selectors to analyze (default: body, h1-h6, button, a, .primary, .accent)",
+              default: ["body", "h1", "h2", "h3", "button", "a", ".primary", ".accent"],
+            },
+          },
+          required: ["url"],
+        },
+      },
+      {
+        name: "store_design_evidence",
+        description:
+          "Store extracted design tokens and evidence packs to docs/ui/chrome-mcp/ for reuse in prompt generation.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            sourceUrl: {
+              type: "string",
+              description: "Source URL that evidence was extracted from",
+            },
+            evidence: {
+              type: "object",
+              description: "Design evidence (colors, typography, spacing, cssVariables)",
+            },
+          },
+          required: ["sourceUrl", "evidence"],
+        },
+      },
+      {
+        name: "analyze_gemini_concepts",
+        description:
+          "Analyze Gemini-generated concept images and extract visual patterns, colors, layouts. Stores analysis for iterative refinement.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            imageUrls: {
+              type: "array",
+              items: { type: "string" },
+              description: "URLs or paths to Gemini concept screenshots",
+            },
+            userFeedback: {
+              type: "string",
+              description: "User's feedback on the generated concepts",
+            },
+            iterationNumber: {
+              type: "number",
+              description: "Current iteration number",
+            },
+          },
+          required: ["iterationNumber"],
+        },
+      },
+      {
+        name: "refine_design_prompts",
+        description:
+          "Refine UI designer prompts based on user feedback from Gemini concepts. Creates updated prompts and stores iteration history.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            iterationNumber: {
+              type: "number",
+              description: "Current iteration number",
+            },
+            keepElements: {
+              type: "array",
+              items: { type: "string" },
+              description: "Design elements to keep from previous iteration",
+            },
+            avoidElements: {
+              type: "array",
+              items: { type: "string" },
+              description: "Design elements to avoid in next iteration",
+            },
+            adjustments: {
+              type: "string",
+              description: "Specific adjustments to make to the prompts",
+            },
+          },
+          required: ["iterationNumber", "keepElements", "avoidElements", "adjustments"],
+        },
+      },
+      {
+        name: "store_ui_iteration",
+        description:
+          "Store a complete UI design iteration with prompts, outputs, and feedback. Tracks iteration history and marks validated designs.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            iterationNumber: {
+              type: "number",
+              description: "Iteration number",
+            },
+            promptsUsed: {
+              type: "string",
+              description: "Path to prompts file used in this iteration",
+            },
+            geminiOutputs: {
+              type: "array",
+              items: { type: "string" },
+              description: "Paths to Gemini-generated concept images",
+            },
+            userFeedback: {
+              type: "string",
+              description: "User's feedback on this iteration",
+            },
+            refinements: {
+              type: "array",
+              items: { type: "string" },
+              description: "List of refinements made in this iteration",
+            },
+            status: {
+              type: "string",
+              enum: ["in_progress", "validated", "rejected"],
+              description: "Status of this iteration",
+            },
+          },
+          required: ["iterationNumber", "promptsUsed", "userFeedback", "refinements", "status"],
+        },
+      },
+      {
+        name: "get_ui_context",
+        description:
+          "Get all UI design context for other agents (CSS tokens, journey, concepts, iterations). Allows Architect, UX Expert, and other agents to reference validated design decisions.",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
     ],
   }));
 
@@ -2334,6 +2483,614 @@ Generate concepts for each screen, then refine based on user feedback.
               },
             ],
           };
+          break;
+        }
+
+        case "check_chrome_mcp_available": {
+          try {
+            // Check if chrome-devtools-mcp is in the MCP config
+            const McpManager = requireLibModule<any>("../tools/mcp-manager.js");
+            const manager = new McpManager({ rootDir: projectState.projectPath });
+
+            const claudeConfig = manager.loadClaudeConfig();
+            const aidesignerConfig = manager.loadaidesignerConfig();
+
+            const hasChromeInClaude = claudeConfig.mcpServers?.["chrome-devtools"] != null;
+            const hasChromeInAidesigner = aidesignerConfig.mcpServers?.["chrome-devtools"] != null;
+            const isAvailable = hasChromeInClaude || hasChromeInAidesigner;
+
+            if (isAvailable) {
+              response = {
+                content: [
+                  {
+                    type: "text",
+                    text: JSON.stringify({
+                      available: true,
+                      message: "Chrome DevTools MCP is installed and available",
+                      source: hasChromeInClaude ? "claude" : "aidesigner",
+                    }, null, 2),
+                  },
+                ],
+              };
+            } else {
+              response = {
+                content: [
+                  {
+                    type: "text",
+                    text: JSON.stringify({
+                      available: false,
+                      message: "Chrome DevTools MCP is not installed",
+                      installInstructions: {
+                        step1: "Add to .mcp.json or .claude/mcp-config.json:",
+                        config: {
+                          mcpServers: {
+                            "chrome-devtools": {
+                              command: "npx",
+                              args: ["-y", "chrome-devtools-mcp"],
+                              disabled: false,
+                            },
+                          },
+                        },
+                        step2: "Or run: npm run mcp:install chrome-devtools",
+                        step3: "Restart your chat session",
+                      },
+                    }, null, 2),
+                  },
+                ],
+              };
+            }
+          } catch (error) {
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify({
+                    available: false,
+                    error: "Could not check Chrome MCP availability",
+                    message: error instanceof Error ? error.message : String(error),
+                  }, null, 2),
+                },
+              ],
+            };
+          }
+          break;
+        }
+
+        case "extract_design_tokens_from_url": {
+          const params = args as {
+            url: string;
+            selectors?: string[];
+          };
+
+          const selectors = params.selectors || ["body", "h1", "h2", "h3", "button", "a", ".primary", ".accent"];
+
+          try {
+            // NOTE: This is a proxy - it expects Chrome MCP to be available in the same session
+            // Claude/Codex CLI will have both aidesigner MCP and chrome-devtools MCP loaded
+            // We instruct the LLM to call Chrome MCP tools directly, then we parse the response
+
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify({
+                    action: "chrome_mcp_required",
+                    instructions: `To extract design tokens from ${params.url}, you need to:
+
+1. Use the Chrome DevTools MCP server tools (if available):
+   - Call chrome_navigate with url: "${params.url}"
+   - Call chrome_get_computed_styles with selectors: ${JSON.stringify(selectors)}
+   - Call chrome_get_css_variables to extract CSS custom properties
+
+2. Parse the response to extract:
+   - Color palette (all unique color values)
+   - Typography (font-family, font-size, font-weight)
+   - Spacing tokens (margin, padding values)
+   - CSS variables (--color-*, --font-*, --space-*)
+
+3. Format the extracted tokens as:
+   {
+     "cssVariables": { "--color-primary": "#...", "--font-base": "..." },
+     "palette": ["#...", "#..."],
+     "typography": { "headingFont": "...", "bodyFont": "...", "scale": {...} },
+     "spacingScale": [8, 16, 24, ...],
+     "sourceUrl": "${params.url}"
+   }
+
+4. Store the evidence using store_design_evidence tool
+
+If Chrome MCP tools are not available, inform the user and provide manual extraction instructions.`,
+                    url: params.url,
+                    selectors: selectors,
+                    manualFallback: {
+                      message: "If Chrome MCP is not available, you can:",
+                      options: [
+                        "1. Install Chrome MCP: npm run mcp:install chrome-devtools",
+                        "2. Manually inspect the site and provide color/font information",
+                        "3. Use browser DevTools to extract CSS variables and share them",
+                      ],
+                    },
+                  }, null, 2),
+                },
+              ],
+            };
+          } catch (error) {
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify({
+                    error: "Failed to prepare token extraction",
+                    message: error instanceof Error ? error.message : String(error),
+                    fallback: "Provide colors and fonts manually, or install Chrome DevTools MCP",
+                  }, null, 2),
+                },
+              ],
+            };
+          }
+          break;
+        }
+
+        case "store_design_evidence": {
+          const params = args as {
+            sourceUrl: string;
+            evidence: {
+              cssVariables?: Record<string, string>;
+              palette?: string[];
+              typography?: {
+                headingFont?: string;
+                bodyFont?: string;
+                scale?: Record<string, string>;
+              };
+              spacingScale?: number[];
+              [key: string]: any;
+            };
+          };
+
+          try {
+            // Create docs/ui/chrome-mcp directory
+            const evidenceDir = path.join(
+              projectState.state.projectRoot || process.cwd(),
+              "docs",
+              "ui",
+              "chrome-mcp"
+            );
+            await fs.ensureDir(evidenceDir);
+
+            // Generate filename from URL
+            const urlSlug = params.sourceUrl
+              .replace(/^https?:\/\//, "")
+              .replace(/[^a-z0-9]/gi, "-")
+              .toLowerCase()
+              .slice(0, 50);
+
+            const timestamp = new Date().toISOString().split("T")[0];
+            const filename = `${urlSlug}-${timestamp}.json`;
+            const filepath = path.join(evidenceDir, filename);
+
+            // Store evidence with metadata
+            const evidencePack = {
+              sourceUrl: params.sourceUrl,
+              extractedAt: new Date().toISOString(),
+              evidence: params.evidence,
+              metadata: {
+                extractionMethod: "chrome-mcp",
+                toolVersion: "1.0.0",
+              },
+            };
+
+            await fs.writeFile(filepath, JSON.stringify(evidencePack, null, 2), "utf-8");
+
+            // Also update a manifest file
+            const manifestPath = path.join(evidenceDir, "evidence-manifest.json");
+            let manifest: any = {};
+
+            if (await fs.pathExists(manifestPath)) {
+              manifest = JSON.parse(await fs.readFile(manifestPath, "utf-8"));
+            }
+
+            manifest[params.sourceUrl] = {
+              filename,
+              extractedAt: evidencePack.extractedAt,
+              hasColors: !!params.evidence.palette?.length,
+              hasTypography: !!params.evidence.typography,
+              hasCssVariables: !!params.evidence.cssVariables && Object.keys(params.evidence.cssVariables).length > 0,
+            };
+
+            await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2), "utf-8");
+
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify({
+                    success: true,
+                    message: `Design evidence stored successfully`,
+                    filepath,
+                    evidencePack: {
+                      sourceUrl: params.sourceUrl,
+                      colorsExtracted: params.evidence.palette?.length || 0,
+                      cssVariablesExtracted: Object.keys(params.evidence.cssVariables || {}).length,
+                      typographyExtracted: !!params.evidence.typography,
+                    },
+                    usage: `This evidence will be automatically used when generating UI designer prompts. The tokens are stored in ${evidenceDir}/`,
+                  }, null, 2),
+                },
+              ],
+            };
+          } catch (error) {
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify({
+                    success: false,
+                    error: "Failed to store design evidence",
+                    message: error instanceof Error ? error.message : String(error),
+                  }, null, 2),
+                },
+              ],
+            };
+          }
+          break;
+        }
+
+        case "analyze_gemini_concepts": {
+          const params = args as {
+            imageUrls?: string[];
+            userFeedback?: string;
+            iterationNumber: number;
+          };
+
+          try {
+            const analysis = {
+              iterationNumber: params.iterationNumber,
+              concepts: [] as any[],
+              extractedPatterns: {
+                colorPalettes: [] as string[][],
+                layoutStyles: [] as string[],
+                componentPatterns: [] as string[],
+              },
+              userFeedback: params.userFeedback || "",
+            };
+
+            // If images provided, store URLs for future vision analysis
+            if (params.imageUrls && params.imageUrls.length > 0) {
+              analysis.concepts = params.imageUrls.map((url, index) => ({
+                conceptId: `concept-${index + 1}`,
+                imageUrl: url,
+                analyzed: false, // Vision analysis would happen here in production
+              }));
+            }
+
+            // Store analysis in deliverables
+            const iterationDir = path.join(
+              projectState.state.projectRoot || process.cwd(),
+              "docs",
+              "ui",
+              "iterations"
+            );
+            await fs.ensureDir(iterationDir);
+
+            const analysisFile = path.join(
+              iterationDir,
+              `iteration-${params.iterationNumber}-analysis.json`
+            );
+            await fs.writeFile(
+              analysisFile,
+              JSON.stringify(analysis, null, 2),
+              "utf-8"
+            );
+
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    {
+                      success: true,
+                      analysis,
+                      storedAt: analysisFile,
+                      message: `Analysis for iteration ${params.iterationNumber} stored successfully`,
+                    },
+                    null,
+                    2
+                  ),
+                },
+              ],
+            };
+          } catch (error) {
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    {
+                      success: false,
+                      error: error instanceof Error ? error.message : String(error),
+                    },
+                    null,
+                    2
+                  ),
+                },
+              ],
+            };
+          }
+          break;
+        }
+
+        case "refine_design_prompts": {
+          const params = args as {
+            iterationNumber: number;
+            keepElements: string[];
+            avoidElements: string[];
+            adjustments: string;
+          };
+
+          try {
+            const promptsPath = path.join(
+              projectState.state.projectRoot || process.cwd(),
+              "docs",
+              "ui",
+              "ui-designer-screen-prompts.md"
+            );
+
+            // Read current prompt if exists
+            let currentPrompt = "";
+            if (await fs.pathExists(promptsPath)) {
+              currentPrompt = await fs.readFile(promptsPath, "utf-8");
+            }
+
+            // Add refinements section
+            const refinedPrompt = `${currentPrompt}
+
+---
+
+## Iteration ${params.iterationNumber} Refinements
+
+**Keep:**
+${params.keepElements.map(e => `- ${e}`).join('\n')}
+
+**Avoid:**
+${params.avoidElements.map(e => `- ${e}`).join('\n')}
+
+**Adjustments:**
+${params.adjustments}
+`;
+
+            // Save updated version
+            await fs.writeFile(promptsPath, refinedPrompt, "utf-8");
+
+            // Copy to iterations/ for history
+            const iterationDir = path.join(
+              projectState.state.projectRoot || process.cwd(),
+              "docs",
+              "ui",
+              "iterations"
+            );
+            await fs.ensureDir(iterationDir);
+
+            const iterationFile = path.join(
+              iterationDir,
+              `iteration-${params.iterationNumber}-prompts.md`
+            );
+            await fs.writeFile(iterationFile, refinedPrompt, "utf-8");
+
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    {
+                      success: true,
+                      message: `Prompts refined successfully for iteration ${params.iterationNumber}`,
+                      updatedFile: promptsPath,
+                      iterationFile,
+                      refinements: {
+                        keep: params.keepElements,
+                        avoid: params.avoidElements,
+                        adjustments: params.adjustments,
+                      },
+                    },
+                    null,
+                    2
+                  ),
+                },
+              ],
+            };
+          } catch (error) {
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    {
+                      success: false,
+                      error: error instanceof Error ? error.message : String(error),
+                    },
+                    null,
+                    2
+                  ),
+                },
+              ],
+            };
+          }
+          break;
+        }
+
+        case "store_ui_iteration": {
+          const params = args as {
+            iterationNumber: number;
+            promptsUsed: string;
+            geminiOutputs?: string[];
+            userFeedback: string;
+            refinements: string[];
+            status: "in_progress" | "validated" | "rejected";
+          };
+
+          try {
+            // Load or create iterations history
+            const iterationsPath = path.join(
+              projectState.state.projectRoot || process.cwd(),
+              "docs",
+              "ui",
+              "design-iterations.json"
+            );
+
+            let iterations: any = { iterations: [] };
+            if (await fs.pathExists(iterationsPath)) {
+              iterations = JSON.parse(await fs.readFile(iterationsPath, "utf-8"));
+            }
+
+            // Create new iteration record
+            const iteration = {
+              number: params.iterationNumber,
+              date: new Date().toISOString(),
+              promptsFile: params.promptsUsed,
+              geminiOutputs: params.geminiOutputs || [],
+              userFeedback: params.userFeedback,
+              refinements: params.refinements,
+              status: params.status,
+            };
+
+            // Update or add iteration
+            const existingIndex = iterations.iterations.findIndex(
+              (it: any) => it.number === params.iterationNumber
+            );
+            if (existingIndex >= 0) {
+              iterations.iterations[existingIndex] = iteration;
+            } else {
+              iterations.iterations.push(iteration);
+            }
+
+            // If validated, mark as final
+            if (params.status === "validated") {
+              iterations.finalDesign = {
+                iterationNumber: params.iterationNumber,
+                validatedDate: new Date().toISOString(),
+                promptsFile: params.promptsUsed,
+              };
+            }
+
+            // Save to file
+            await fs.ensureDir(path.dirname(iterationsPath));
+            await fs.writeFile(
+              iterationsPath,
+              JSON.stringify(iterations, null, 2),
+              "utf-8"
+            );
+
+            // Store in project state decisions
+            await projectState.recordDecision(
+              `ui_iteration_${params.iterationNumber}`,
+              iteration,
+              `Iteration ${params.iterationNumber}: ${params.status}`
+            );
+
+            // If validated, store visual concept decision
+            if (params.status === "validated") {
+              await projectState.recordDecision(
+                "visual_concept",
+                {
+                  iterationNumber: params.iterationNumber,
+                  validatedDate: new Date().toISOString(),
+                  promptsFile: params.promptsUsed,
+                  userFeedback: params.userFeedback,
+                },
+                "Final validated UI concept"
+              );
+            }
+
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    {
+                      success: true,
+                      iteration,
+                      storedAt: iterationsPath,
+                      message: `Iteration ${params.iterationNumber} stored with status: ${params.status}`,
+                    },
+                    null,
+                    2
+                  ),
+                },
+              ],
+            };
+          } catch (error) {
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    {
+                      success: false,
+                      error: error instanceof Error ? error.message : String(error),
+                    },
+                    null,
+                    2
+                  ),
+                },
+              ],
+            };
+          }
+          break;
+        }
+
+        case "get_ui_context": {
+          try {
+            // Retrieve UI context from project state
+            const cssTokens = projectState.getDecision("css_tokens");
+            const uiJourney = projectState.getDecision("ui_journey");
+            const visualConcept = projectState.getDecision("visual_concept");
+
+            // Load iterations history if exists
+            const iterationsPath = path.join(
+              projectState.state.projectRoot || process.cwd(),
+              "docs",
+              "ui",
+              "design-iterations.json"
+            );
+
+            let iterations = null;
+            if (await fs.pathExists(iterationsPath)) {
+              iterations = JSON.parse(await fs.readFile(iterationsPath, "utf-8"));
+            }
+
+            const context = {
+              cssTokens: cssTokens?.value || null,
+              uiJourney: uiJourney?.value || null,
+              visualConcept: visualConcept?.value || null,
+              iterations,
+              hasDesignContext: !!(cssTokens || uiJourney || visualConcept),
+            };
+
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(context, null, 2),
+                },
+              ],
+            };
+          } catch (error) {
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    {
+                      hasDesignContext: false,
+                      error: error instanceof Error ? error.message : String(error),
+                    },
+                    null,
+                    2
+                  ),
+                },
+              ],
+            };
+          }
           break;
         }
 

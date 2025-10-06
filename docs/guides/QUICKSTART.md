@@ -229,18 +229,18 @@ AI: Found 23 TODOs across 8 files. Oldest is 3 months old.
 ### Quick Commands
 
 ```bash
-npx aidesigner@latest invisible start # 🚀 One-command setup and launch (prompts for choice)
-npx aidesigner invisible init         # Initialize in project
-npx aidesigner invisible build        # Build MCP server
-npx aidesigner start                    # Start conversation (prompts for assistant choice)
-npx aidesigner start --assistant=claude             # Start Claude directly
-npx aidesigner start --assistant=codex              # Start Codex directly
-npx aidesigner start --assistant=opencode           # Start OpenCode directly
+npx aidesigner@latest start           # 🚀 One-command setup and launch (prompts for choice)
+npx aidesigner init                   # Initialize project structure
+npx aidesigner build                  # Build MCP server
+npx aidesigner start                  # Start conversation (prompts for assistant choice)
+npx aidesigner start --assistant=claude             # Start Claude CLI directly
+npx aidesigner start --assistant=codex              # Start Codex CLI directly
+npx aidesigner start --assistant=opencode           # Start OpenCode CLI directly
 # Append --glm (or --anthropic) to any aidesigner command to swap providers
 
-npx aidesigner invisible test         # Run tests
-npx aidesigner invisible validate     # Validate config
-npx aidesigner invisible help         # Show all commands
+npx aidesigner test                   # Run tests
+npx aidesigner validate               # Validate configuration
+npx aidesigner help                   # Show all commands
 ```
 
 ### Example Session

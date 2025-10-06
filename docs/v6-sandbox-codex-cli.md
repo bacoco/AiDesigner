@@ -25,7 +25,7 @@ The new defaults introduced in `lib/codex/config-manager` target the V6 CLI prof
 - Model: `GPT-5-Codex`
 - Automated approvals for both CLI tools and MCP server actions
 - MCP servers:
-  - `aidesigner_invisible` → `npx aidesigner invisible mcp`
+  - `aidesigner` → Points to the built MCP server in `dist/mcp/mcp/server.js`
   - Optional `chrome-devtools` and `shadcn` helpers (declared with
     `auto_start = false` until you install their binaries)
 

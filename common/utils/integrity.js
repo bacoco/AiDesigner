@@ -17,10 +17,6 @@ const CRITICAL_PATHS = [
     description: 'Primary document and task templates',
   },
   {
-    path: 'expansion-packs',
-    description: 'Expansion packs shipped with the distribution',
-  },
-  {
     path: '.dev/config/codex-config.toml.example',
     legacyPaths: ['codex-config.toml.example'],
     description: 'Default Codex CLI configuration template',

@@ -109,6 +109,103 @@ sections:
           - "iPhone Only"
           - "ASCII Windows Desktop"
 
+  - id: ui-design-context
+    title: UI Design Context
+    condition: has_validated_design
+    instruction: |
+      This section is AUTOMATICALLY populated if the UI Designer (Nana) has completed discovery and validated a design.
+
+      **DO NOT elicit** - this is generated from project state (decisions: css_tokens, ui_journey, visual_concept).
+
+      Use the get_ui_context MCP tool to retrieve this data. If hasDesignContext is false, skip this section.
+
+      Steps:
+      1. Call get_ui_context MCP tool
+      2. If hasDesignContext is true, populate all subsections below
+      3. Reference the iteration history to show the design refinement process
+      4. Include links to iteration files and concept images
+      5. Provide CSS tokens for Architect reference
+    sections:
+      - id: design-status
+        title: Design Status
+        instruction: |
+          Status: ✅ Design Validated (Iteration {{iteration_number}})
+
+          **Final Design:** Iteration {{iteration_number}}, Concept {{concept_id}}
+          **Validated Date:** {{validated_date}}
+
+      - id: journey-map
+        title: User Journey Map
+        type: bullet-list
+        instruction: |
+          List each journey step with its goal and persona mindset:
+
+          {{#each journey_steps}}
+          - **{{stepName}}:** {{goal}} (User: {{persona}})
+          {{/each}}
+
+      - id: design-tokens
+        title: Design Tokens (CSS)
+        instruction: |
+          **Source:** {{source_url}} (extracted via Chrome MCP)
+
+          ```css
+          /* Color Palette */
+          {{#each colors}}
+          {{name}}: {{value}};
+          {{/each}}
+
+          /* Typography */
+          --font-heading: {{typography.heading}};
+          --font-body: {{typography.body}};
+          --font-scale-body: {{typography.scale.body}};
+          --font-scale-heading: {{typography.scale.heading}};
+
+          /* Spacing */
+          --space-base: {{spacing.base}};
+          {{#each spacing.scale}}
+          --space-{{@key}}: {{this}};
+          {{/each}}
+          ```
+
+          **Architect Note:** Use these tokens when configuring Tailwind CSS or CSS-in-JS.
+
+      - id: validated-concept
+        title: Validated Visual Concept
+        instruction: |
+          - **Iteration:** {{iteration_number}}
+          - **Concept:** {{concept_id}}
+          - **Screenshots:** {{screenshots_path}}
+          - **User Feedback:** "{{final_feedback}}"
+
+          **Key Design Decisions:**
+          {{#each design_decisions}}
+          - {{this}}
+          {{/each}}
+
+          **Iteration History:**
+          {{#each iterations}}
+          - Iteration {{number}}: {{status}} - {{userFeedback}}
+          {{/each}}
+
+      - id: implementation-guidance
+        title: Implementation Guidance
+        instruction: |
+          **For Architect:**
+          - CSS Framework: Recommend Tailwind CSS with custom config matching tokens above
+          - Component Library: Consider Shadcn UI or similar matching aesthetic
+          - Fonts: Ensure {{typography.heading}} is included in build
+
+          **For UX Expert:**
+          - Reference journey map ({{journey_steps.length}} screens) for frontend spec structure
+          - Use validated concepts ({{screenshots_path}}) as visual reference
+          - Maintain consistency with {{source_url}} aesthetic
+
+          **For Developers:**
+          - Apply design tokens consistently across all components
+          - Preserve spacing grid ({{spacing.base}} base)
+          - Test color contrast ratios (WCAG AA minimum)
+
   - id: technical-assumptions
     title: Technical Assumptions
     instruction: |

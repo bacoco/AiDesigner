@@ -1076,7 +1076,49 @@ Nana: "I'll request 5 distinct state variations in the prompt"
 
 ## Integration with aidesigner Workflow
 
-### Quick Lane Flow
+### Updated Workflow with Iterative Refinement (NEW!)
+
+```
+User Request
+    ↓
+Invisible Orchestrator → Detects design intent
+    ↓
+Nana (UI Designer) AUTO-ACTIVATED
+    ↓
+*discover-journey (6-stage conversation)
+    ↓
+*assemble-prompts (generates initial prompts)
+    ↓
+User → Gemini (generates concepts)
+    ↓
+*refine-iteration (ITERATIVE LOOP) ← NEW!
+    ↓
+    User shares Gemini outputs
+    ↓
+    Nana analyzes (analyze_gemini_concepts)
+    ↓
+    User provides feedback (keep/avoid/adjust)
+    ↓
+    Nana refines prompts (refine_design_prompts)
+    ↓
+    User tests in Gemini again
+    ↓
+REPEAT until validated
+    ↓
+Nana: store_ui_iteration(status="validated")
+    ↓
+✅ Design locked in project state
+    ↓
+Architect calls get_ui_context
+    ↓
+UX Expert calls get_ui_context
+    ↓
+PM includes design context in PRD
+    ↓
+Development proceeds with validated design
+```
+
+### Quick Lane Flow (Simplified)
 
 ```
 User Request
@@ -1091,31 +1133,40 @@ docs/ui/ui-designer-screen-prompts.md created
     ↓
 User generates concepts in Google AI Studio
     ↓
-User optionally logs selection via @ui-designer-liaison
+(Optional) User runs *refine-iteration for improvements
+    ↓
+User optionally logs selection via *log-selection
 ```
 
-### Complex Lane Flow
+### Complex Lane Flow (Full Control)
 
 ```
 Analyst → Project Brief
     ↓
 PM → PRD
     ↓
-UX Expert → Front-End Spec
+UX Expert → Front-End Spec (optional)
     ↓
-(Optional) @ui-designer-liaison activated
+Nana (ui-designer-liaison) ACTIVATED
     ↓
 *discover-journey (6-stage conversation)
     ↓
 *assemble-prompts (generates per-screen)
     ↓
-docs/ui/ui-designer-screen-prompts.md created
+*refine-iteration (iterative refinement loop) ← NEW!
     ↓
-User generates concepts in Google AI Studio
+    - Gemini concept generation
+    - User feedback collection
+    - Prompt refinement
+    - REPEAT until perfect
     ↓
-*log-selection (records with full context)
+*log-selection (records validated design)
     ↓
-Architect → Front-End Architecture (references concept)
+✅ Design context available to all agents
+    ↓
+Architect → References CSS tokens via get_ui_context
+    ↓
+UX Expert → Uses journey map via get_ui_context
     ↓
 ... continues through development
 ```
@@ -1128,6 +1179,264 @@ All discovery data persists across phases:
 **CSS Tokens** → Component library setup
 **Screen Prompts** → Developer handoff docs
 **Selected Concept** → Design system foundation
+
+---
+
+## NEW: Iterative Refinement Tools
+
+### MCP Tools for Design Iteration
+
+Four new MCP tools enable iterative design refinement:
+
+#### 1. `analyze_gemini_concepts`
+
+**Purpose:** Analyze Gemini-generated concepts and extract patterns
+
+**Usage:**
+
+```javascript
+{
+  imageUrls: ["path/to/concept1.png", "path/to/concept2.png"],
+  userFeedback: "Concept 2 is closest but too dense",
+  iterationNumber: 1
+}
+```
+
+**Output:** Analysis stored in `docs/ui/iterations/iteration-N-analysis.json`
+
+#### 2. `refine_design_prompts`
+
+**Purpose:** Refine UI prompts based on feedback
+
+**Usage:**
+
+```javascript
+{
+  iterationNumber: 2,
+  keepElements: ["Green palette", "Sidebar navigation"],
+  avoidElements: ["Dense layout", "Too many items"],
+  adjustments: "Increase spacing by 50%, limit to 6-8 items per section"
+}
+```
+
+**Output:**
+
+- Updates `docs/ui/ui-designer-screen-prompts.md`
+- Saves `docs/ui/iterations/iteration-N-prompts.md`
+
+#### 3. `store_ui_iteration`
+
+**Purpose:** Record complete iteration with status
+
+**Usage:**
+
+```javascript
+{
+  iterationNumber: 3,
+  promptsUsed: "docs/ui/ui-designer-screen-prompts.md",
+  geminiOutputs: ["concept1.png", "concept2.png"],
+  userFeedback: "Perfect! Exactly what I wanted",
+  refinements: ["Subtle green palette", "Generous spacing"],
+  status: "validated"  // or "in_progress" or "rejected"
+}
+```
+
+**Output:**
+
+- Updates `docs/ui/design-iterations.json`
+- Records decision in project state
+- If validated, stores `visual_concept` decision
+
+#### 4. `get_ui_context`
+
+**Purpose:** Retrieve UI design context for other agents
+
+**Usage:**
+
+```javascript
+{
+} // No parameters needed
+```
+
+**Output:**
+
+```json
+{
+  "cssTokens": { "palette": [...], "typography": {...} },
+  "uiJourney": [ {...}, {...} ],
+  "visualConcept": { "iterationNumber": 3, ... },
+  "iterations": { "iterations": [...], "finalDesign": {...} },
+  "hasDesignContext": true
+}
+```
+
+**Consumers:**
+
+- **Architect:** Reads CSS tokens for framework recommendations
+- **UX Expert:** Uses journey map for frontend specs
+- **PM:** Includes in PRD under "UI Design Context"
+
+### New Commands in ui-designer-liaison
+
+#### `*refine-iteration`
+
+Runs `refine-ui-iteration.md` task for iterative refinement
+
+**Workflow:**
+
+1. Collect Gemini outputs (images or descriptions)
+2. Analyze concepts
+3. Elicit refinements (keep/avoid/adjust)
+4. Update prompts
+5. Store iteration
+6. Repeat or validate
+
+**Example Session:**
+
+```
+User: *refine-iteration
+
+Nana: "Share your Gemini concepts (images or descriptions)"
+
+User: [Shares 3 concept screenshots]
+
+Nana: "I see 3 concepts. Which is closest to your vision?"
+
+User: "Concept 2, but too dense"
+
+Nana: "What should we keep, avoid, and adjust?"
+
+User: "Keep: green palette. Avoid: dense layout. Adjust: more spacing"
+
+Nana: "✅ Iteration 2 prompts ready! Try in Gemini"
+
+User: [Tests, returns] "Better but green is too bright"
+
+Nana: "Iteration 3 refinements?"
+
+User: "Make green more subtle"
+
+Nana: "✅ Iteration 3 ready!"
+
+User: [Tests] "Perfect!"
+
+Nana: "Lock as validated?"
+
+User: "Yes"
+
+Nana: "✅ Design validated! Available to Architect and UX Expert"
+```
+
+### Iteration History Format
+
+**File:** `docs/ui/design-iterations.json`
+
+```json
+{
+  "projectId": "...",
+  "journey": [
+    {"stepName": "Browse", "goal": "..."}
+  ],
+  "iterations": [
+    {
+      "number": 1,
+      "date": "2025-10-06T14:30:00Z",
+      "promptsFile": "docs/ui/iterations/iteration-1-prompts.md",
+      "geminiOutputs": ["iteration-1-concept-1.png", ...],
+      "userFeedback": "Concept 2 closest but too dense",
+      "refinements": ["Increase spacing", "Keep green palette"],
+      "status": "rejected"
+    },
+    {
+      "number": 2,
+      "date": "2025-10-06T15:00:00Z",
+      "promptsFile": "docs/ui/iterations/iteration-2-prompts.md",
+      "geminiOutputs": [...],
+      "userFeedback": "Better but green too bright",
+      "refinements": ["Subtle green palette"],
+      "status": "in_progress"
+    },
+    {
+      "number": 3,
+      "date": "2025-10-06T15:30:00Z",
+      "promptsFile": "docs/ui/iterations/iteration-3-prompts.md",
+      "geminiOutputs": [...],
+      "userFeedback": "Perfect!",
+      "selectedConcept": {
+        "id": "iteration-3-concept-2",
+        "imageUrl": "docs/ui/iterations/iteration-3-concept-2.png"
+      },
+      "refinements": [],
+      "status": "validated",
+      "locked": true
+    }
+  ],
+  "finalDesign": {
+    "iterationNumber": 3,
+    "conceptId": "concept-2",
+    "validatedDate": "2025-10-06T15:35:00Z",
+    "tokens": {
+      "colors": {...},
+      "typography": {...},
+      "spacing": {...}
+    }
+  }
+}
+```
+
+### PRD Integration
+
+When validated, design context is automatically included in PRD under new section:
+
+**Section:** `ui-design-context` (conditional - only if `has_validated_design`)
+
+**Contents:**
+
+- Design Status (iteration number, validated date)
+- Journey Map (all screens with goals)
+- Design Tokens (CSS variables ready to use)
+- Validated Concept (screenshots, user feedback)
+- Implementation Guidance (for Architect, UX Expert, Developers)
+
+**Example PRD Section:**
+
+````markdown
+## UI Design Context
+
+### Design Status
+
+✅ Design Validated (Iteration 3)
+**Final Design:** Iteration 3, Concept 2
+**Validated Date:** 2025-10-06
+
+### Journey Map
+
+- **Browse Products:** Discover product variety (User: curious explorer)
+- **Search & Filter:** Find specific items (User: focused buyer)
+- **Product Details:** Evaluate choice (User: careful researcher)
+- **Add to Cart:** Commit to purchase (User: ready buyer)
+- **Checkout:** Complete transaction (User: completing purchase)
+
+### Design Tokens (CSS)
+
+**Source:** linear.app (extracted via Chrome MCP)
+
+```css
+/* Color Palette */
+--color-primary: #3d9970; /* Subtle green */
+--color-accent: #5e6ad2; /* Purple */
+--font-heading: 'Inter', sans-serif;
+--space-base: 8px;
+```
+````
+
+### Implementation Guidance
+
+**For Architect:** Recommend Tailwind CSS with custom config
+**For UX Expert:** Reference 5-screen journey map
+**For Developers:** Apply tokens consistently, test WCAG AA contrast
+
+```
 
 ---
 
@@ -1239,3 +1548,4 @@ See `examples/` directory for:
 **Status**: ✅ Production Ready
 
 _Built with aidesigner • Powered by BMAD-METHOD™_
+```

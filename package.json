@@ -91,12 +91,6 @@
     "version:all:major": "node .dev/tools/bump-all-versions.js major",
     "version:all:minor": "node .dev/tools/bump-all-versions.js minor",
     "version:all:patch": "node .dev/tools/bump-all-versions.js patch",
-    "version:expansion": "node .dev/tools/bump-expansion-version.js",
-    "version:expansion:all": "node .dev/tools/bump-all-versions.js",
-    "version:expansion:all:major": "node .dev/tools/bump-all-versions.js major",
-    "version:expansion:all:minor": "node .dev/tools/bump-all-versions.js minor",
-    "version:expansion:all:patch": "node .dev/tools/bump-all-versions.js patch",
-    "version:expansion:set": "node .dev/tools/update-expansion-version.js",
     "version:major": "node .dev/tools/version-bump.js major",
     "version:minor": "node .dev/tools/version-bump.js minor",
     "version:patch": "node .dev/tools/version-bump.js patch"

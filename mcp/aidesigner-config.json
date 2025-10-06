@@ -2,7 +2,7 @@
   "mcpServers": {
     "aidesigner": {
       "command": "node",
-      "args": ["node_modules/aidesigner/dist/mcp/mcp/server.js"],
+      "args": ["dist/mcp/mcp/server.js"],
       "disabled": false
     },
     "chrome-devtools": {
