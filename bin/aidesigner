@@ -1433,22 +1433,6 @@ const commands = {
     const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     packageJson.scripts = packageJson.scripts || {};
 
-    // Remove old scripts that may conflict
-    const scriptsToRemove = [
-      String.fromCharCode(97,103,105,108,97,105), // encoded to avoid brand reference
-      String.fromCharCode(97,103,105,108,97,105) + ':codex',
-      String.fromCharCode(97,103,105,108,97,105) + ':claude',
-      String.fromCharCode(97,103,105,108,97,105) + ':opencode',
-      String.fromCharCode(97,103,105,108,97,105) + ':build'
-    ];
-    let scriptsRemoved = false;
-    for (const scriptName of scriptsToRemove) {
-      if (packageJson.scripts[scriptName]) {
-        delete packageJson.scripts[scriptName];
-        scriptsRemoved = true;
-      }
-    }
-
     const scriptsToAdd = {
       aidesigner: 'aidesigner start',
       codex: 'aidesigner codex',
@@ -1466,21 +1450,9 @@ const commands = {
       }
     }
 
-    if (scriptsAdded || scriptsRemoved) {
+    if (scriptsAdded) {
       fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
-      if (scriptsRemoved) {
-        console.log('✅ Removed old scripts from package.json');
-      }
-      if (scriptsAdded) {
-        console.log('✅ Added npm scripts to package.json');
-      }
-    }
-
-    // Remove old dependency and add aidesigner
-    const oldDepKey = String.fromCharCode(97,103,105,108,97,105); // encoded to avoid brand reference
-    if (packageJson.dependencies && packageJson.dependencies[oldDepKey]) {
-      delete packageJson.dependencies[oldDepKey];
-      console.log('✅ Removed old dependency');
+      console.log('✅ Added npm scripts to package.json');
     }
 
     const desiredDependencyVersion = `^${currentVersion}`;
