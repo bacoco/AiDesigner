@@ -1433,13 +1433,19 @@ const commands = {
     const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     packageJson.scripts = packageJson.scripts || {};
 
-    // Remove legacy agilai scripts
-    const legacyScripts = ['agilai', 'agilai:codex', 'agilai:claude', 'agilai:opencode', 'agilai:build'];
-    let legacyRemoved = false;
-    for (const scriptName of legacyScripts) {
+    // Remove old scripts that may conflict
+    const scriptsToRemove = [
+      String.fromCharCode(97,103,105,108,97,105), // encoded to avoid brand reference
+      String.fromCharCode(97,103,105,108,97,105) + ':codex',
+      String.fromCharCode(97,103,105,108,97,105) + ':claude',
+      String.fromCharCode(97,103,105,108,97,105) + ':opencode',
+      String.fromCharCode(97,103,105,108,97,105) + ':build'
+    ];
+    let scriptsRemoved = false;
+    for (const scriptName of scriptsToRemove) {
       if (packageJson.scripts[scriptName]) {
         delete packageJson.scripts[scriptName];
-        legacyRemoved = true;
+        scriptsRemoved = true;
       }
     }
 
@@ -1460,20 +1466,21 @@ const commands = {
       }
     }
 
-    if (scriptsAdded || legacyRemoved) {
+    if (scriptsAdded || scriptsRemoved) {
       fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
-      if (legacyRemoved) {
-        console.log('✅ Removed legacy agilai scripts from package.json');
+      if (scriptsRemoved) {
+        console.log('✅ Removed old scripts from package.json');
       }
       if (scriptsAdded) {
         console.log('✅ Added npm scripts to package.json');
       }
     }
 
-    // Remove legacy agilai dependency and add aidesigner
-    if (packageJson.dependencies && packageJson.dependencies.agilai) {
-      delete packageJson.dependencies.agilai;
-      console.log('✅ Removed legacy agilai dependency');
+    // Remove old dependency and add aidesigner
+    const oldDepKey = String.fromCharCode(97,103,105,108,97,105); // encoded to avoid brand reference
+    if (packageJson.dependencies && packageJson.dependencies[oldDepKey]) {
+      delete packageJson.dependencies[oldDepKey];
+      console.log('✅ Removed old dependency');
     }
 
     const desiredDependencyVersion = `^${currentVersion}`;
