@@ -14,12 +14,12 @@ const path = require('node:path');
 
 const rootDir = path.resolve(__dirname, '..', '..');
 const distMcpDir = path.join(rootDir, 'dist', 'mcp');
-const serverEntry = path.join(distMcpDir, 'server.js');
+const serverEntry = path.join(distMcpDir, 'mcp', 'server.js');
 
 const hasPrebuiltServer = existsSync(serverEntry);
 
 if (!hasPrebuiltServer) {
-  console.warn('⚠️  Prebuilt MCP server not found at dist/mcp/server.js.');
+  console.warn('⚠️  Prebuilt MCP server not found at dist/mcp/mcp/server.js.');
   console.warn('    Skipping MCP asset sync. Run "npm run build:mcp" to generate the build.');
   process.exit(0);
 }
