@@ -199,12 +199,50 @@ Should I include these tokens in your selection record? They'll help developers 
     },
     extractedPalette: ["#1E40AF", "#F59E0B", "#6B7280"],
     extractedTypography: "Inter sans-serif, 14-24px scale",
-    extractedSpacing: "8px base grid (8, 16, 24, 32, 48, 64)"
+    extractedSpacing: "8px base grid (8, 16, 24, 32, 48, 64)",
+    evidenceConfidence: "high"
   }
 }
 ```
 
-#### 1.7 Implementation Guidance
+#### 1.7 Dynamic Default Confidence (NEW)
+
+**Explain where the defaults came from.** Capture the synthesized preset emitted during prompt generation so downstream teams know which evidence informed each token.
+
+**Liaison Message:**
+
+```
+I'm going to log the inferred defaults that shaped your prompts.
+
+Can you confirm if these confidence notes & evidence sources look correct?
+
+- Confidence: [e.g., "High confidence: Chrome MCP evidence from https://linear.app"]
+- Reference blend: [e.g., "Synthesized from https://linear.app, https://cal.com"]
+- Evidence trail: [List each source + token count]
+
+If you'd like to override any token (colors, fonts, spacing), let me know so I can update the record.
+```
+
+**Capture:**
+
+```javascript
+{
+  inferredDefaults: {
+    confidenceNotes: "High confidence: Chrome MCP evidence from https://linear.app",
+    referenceBlend: "Synthesized from https://linear.app, https://cal.com",
+    evidenceTrail: [
+      { source: "https://linear.app", type: "chrome-mcp", contributedTokens: ["--color-primary", "--font-heading"] },
+      { source: "https://cal.com", type: "reference-css", contributedTokens: ["--color-accent"] }
+    ],
+    overrides: {
+      colors: { primary: "#1E3A8A" },
+      typography: { headingFont: "Sohne", bodyFont: "Inter" }
+    }
+  }
+}
+```
+
+#### 1.8 Implementation Guidance
 
 **Liaison Message:**
 
@@ -286,11 +324,21 @@ This document tracks visual concept explorations generated with Google Nano Bana
 --space-md: 16px;
 --space-lg: 32px;
 ```
+
+**Evidence Confidence**: [High / Medium / Low]
 ````
 
 **Palette**: #1E40AF, #F59E0B, #6B7280
 **Typography**: Inter sans-serif, 14-24px scale
 **Spacing**: 8px base grid
+
+### Dynamic Defaults & Evidence (NEW)
+
+- **Confidence Notes**: [Why the defaults are trusted]
+- **Reference Blend**: [Summary of sources that influenced defaults]
+- **Evidence Trail**:
+  - [Type → Source (tokens contributed)]
+- **Overrides Applied**: [Any manual adjustments from user/stakeholder]
 
 ### Reference Assets (NEW - Enhanced)
 
@@ -383,7 +431,21 @@ Call the MCP `recordDecision` tool/method with the **enhanced schema**:
     },
     extractedPalette: ["#1E40AF", "#F59E0B", "#6B7280"],
     extractedTypography: "Inter sans-serif, 14-24px scale",
-    extractedSpacing: "8px base grid"
+    extractedSpacing: "8px base grid",
+    evidenceConfidence: "high"
+  },
+
+  inferredDefaults: {
+    confidenceNotes: "High confidence: Chrome MCP evidence from https://linear.app",
+    referenceBlend: "Synthesized from https://linear.app, https://cal.com",
+    evidenceTrail: [
+      { source: "https://linear.app", type: "chrome-mcp", contributedTokens: ["--color-primary", "--font-heading"] },
+      { source: "https://cal.com", type: "reference-css", contributedTokens: ["--color-accent"] }
+    ],
+    overrides: {
+      colors: { primary: "#1E3A8A" },
+      typography: { headingFont: "Sohne", bodyFont: "Inter" }
+    }
   },
 
   // Differentiators & guidance

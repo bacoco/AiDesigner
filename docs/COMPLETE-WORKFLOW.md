@@ -439,6 +439,12 @@ When you share an inspiration URL:
 4. AI presents extracted tokens for your refinement
 5. Refined tokens lock into all generated outputs
 
+### Evidence-Driven Defaults
+
+- **Weighted blending:** Chrome MCP captures contribute the highest weight when synthesizing palettes and typography. CSS-only references provide medium weight, and manual descriptions provide baseline weight. The resulting preset includes confidence notes and a full evidence trail.
+- **Fallback transparency:** If no Chrome MCP artifacts are found, the workflow still blends provided inspiration but marks the defaults as low confidence so engineering knows they were inferred. Once real evidence is available, rerun the prompt task to refresh the defaults.
+- **Override anytime:** Provide overrides (e.g., "Use brand primary #0052CC") and the system updates both the prompts and the downstream Nano Banana selection log while preserving the evidence history.
+
 ---
 
 ## What Gets Created

@@ -307,7 +307,7 @@ Nana: "No problem! We'll define your visual language from scratch
 ### Stage 4: Visual Language Confirmation
 
 **What Happens:**
-Nana presents a complete visual system based on your inspiration or sensible defaults, and asks for confirmation.
+Nana synthesizes a visual system by first mining Chrome MCP evidence (CSS variables, palette clusters, typography pairings) gathered during discovery. When multiple references are provided, the liaison weighs recurring tokens—Chrome MCP captures carry the highest weight, CSS-extracted references next, and manual descriptions last—before falling back to any SaaS presets.
 
 ```
 Nana: "Let's lock in your visual design system.
@@ -366,6 +366,8 @@ Confirm or request adjustments
   motionNotes: "Subtle hover lifts (4px), smooth transitions (250ms)"
 }
 ```
+
+> 🧠 **Auto-adaptive defaults:** If Chrome MCP artifacts exist (`docs/ui/chrome-mcp/*.json` or inline evidence packs), Nana uses them to build a context-specific preset and surfaces confidence notes plus an evidence trail. You'll see exactly which URLs influenced each token. If the confidence looks off—or you want to override a color, font, or spacing scale—just state the override and Nana updates the preset before prompt generation.
 
 ---
 
@@ -800,10 +802,13 @@ Nana: [Uses Chrome MCP tools]
 
 ### Fallback Without Chrome MCP
 
-If Chrome MCP isn't available:
+If Chrome MCP isn't available, Nana still blends whatever evidence you provide (manual descriptions, screenshots, UX specs) and will label the resulting defaults with **low confidence** so the team knows they came from inference rather than inspection.
 
 ```
 Nana: "Chrome DevTools MCP isn't enabled. No problem!
+
+       I'll weight recurring colors/typography from your references, but
+       mark them as inferred so engineering can double-check.
 
        Please describe the visual elements from [URL]:
        - Primary colors (hex codes if you have them)
@@ -811,7 +816,7 @@ Nana: "Chrome DevTools MCP isn't enabled. No problem!
        - Spacing patterns you like"
 ```
 
-Manual input is captured in the same format.
+Manual input is captured in the same format and annotated as `evidenceConfidence: low`. When you later supply real Chrome MCP captures, re-run the prompt task to refresh the defaults with high-confidence tokens.
 
 ---
 
