@@ -598,6 +598,23 @@ my-project/
     └── conversation.log                # Full history
 ```
 
+## Repository layout & npm package contents
+
+AiDesigner ships a lot of assets because the conversational workflow spans agents, templates, expansion packs, and compiled MCP tooling. The table below highlights the top-level directories so you can see what is required at runtime versus what only helps maintainers. When you install via `npx aidesigner`, everything marked "Yes" is bundled; the rest is excluded through the npm ignore rules so the install stays lightweight.
+
+| Path                                                                                  | Purpose                                                                                  | Required for runtime? | Shipped with `npx`? |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------- | ------------------- |
+| `bin/`                                                                                | Node entrypoints that `npx aidesigner` executes.                                         | ✅                    | ✅                  |
+| `common/`                                                                             | Shared utilities (integrity checks, environment helpers) imported by the CLI binaries.   | ✅                    | ✅                  |
+| `dist/`                                                                               | Pre-built MCP server, codex runtime, and packaged agent/team bundles.                    | ✅                    | ✅                  |
+| `aidesigner-core/`                                                                    | Canonical agents, tasks, templates, and checklists consumed by the orchestrator bridge.  | ✅                    | ✅                  |
+| `agents/`                                                                             | Legacy agent markdown used as a fallback search path for the bridge.                     | ✅                    | ✅                  |
+| `hooks/`                                                                              | Context enrichment/transition hooks loaded by the MCP runtime.                           | ✅                    | ✅                  |
+| `expansion-packs/`                                                                    | Source material for optional industry packs—kept for integrity checks and customization. | ✅                    | ✅                  |
+| `apps/`, `docs/`, `packages/`, `prompts/`, `todolist.md`, `MCP_INTEGRATION_REPORT.md` | Developer documentation, experiments, and research notes.                                | ❌                    | ❌                  |
+
+> 📦 **Why not delete the dev directories?** They are vital for maintaining the content that gets compiled into `dist/` and for publishing new expansion packs, but they are skipped during npm publishing so they do not slow down `npx` installs.
+
 ## Contributing
 
 Contributions welcome! Key areas:

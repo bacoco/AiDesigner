@@ -14,10 +14,13 @@
 .agilai/
 .claude/
 
-# Development documentation
-docs/development/
-docs/archive/
-docs/v6-migration/
+# Developer-facing resources that are unnecessary for npx installs
+apps/
+docs/
+packages/
+prompts/
+todolist.md
+MCP_INTEGRATION_REPORT.md
 
 # Configuration files (dev only - moved to config/)
 .prettierrc
