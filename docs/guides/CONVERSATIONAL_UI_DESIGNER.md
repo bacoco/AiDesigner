@@ -1276,6 +1276,58 @@ Four new MCP tools enable iterative design refinement:
 - **UX Expert:** Uses journey map for frontend specs
 - **PM:** Includes in PRD under "UI Design Context"
 
+#### 5. `automate_gemini_concepts` (NEW!)
+
+**Purpose:** Automate Google AI Studio concept generation via Chrome MCP
+
+**Usage:**
+
+```javascript
+{
+  prompt: "[Complete UI designer prompt with journey, screens, tokens]",
+  iterationNumber: 1,
+  modelPreference: "auto" // or "gemini-2.0-flash-exp"
+}
+```
+
+**What it does:**
+
+1. Opens https://aistudio.google.com/ in Chrome via Chrome MCP
+2. Navigates to create new chat
+3. Selects appropriate Gemini model (Flash)
+4. Fills and submits the UI designer prompt
+5. Waits for concept generation (up to 60 seconds)
+6. Captures screenshot of generated concepts
+7. Extracts image URLs from the page
+8. Saves to `docs/ui/iterations/iteration-N-gemini-output.png`
+9. Returns results to CLI
+
+**Requirements:**
+
+- `chrome-devtools-mcp` installed and configured
+- User logged into Google AI Studio in browser
+- Chrome browser available
+
+**Output:**
+
+```json
+{
+  "action": "chrome_automation_workflow",
+  "instructions": "[Detailed step-by-step automation workflow]",
+  "outputPath": "docs/ui/iterations/iteration-1-gemini-output.png",
+  "modelPreference": "auto"
+}
+```
+
+**Fallback:** If Chrome MCP unavailable or automation fails, provides manual instructions.
+
+**Benefits:**
+
+- **Eliminates context switching** - No need to leave CLI
+- **Faster iteration** - 3-5 seconds vs 30+ seconds manual
+- **Automatic capture** - Screenshots saved automatically
+- **Consistent process** - Same workflow every iteration
+
 ### New Commands in ui-designer-liaison
 
 #### `*refine-iteration`
@@ -1291,16 +1343,27 @@ Runs `refine-ui-iteration.md` task for iterative refinement
 5. Store iteration
 6. Repeat or validate
 
-**Example Session:**
+**Example Session (Automated):**
 
 ```
 User: *refine-iteration
 
-Nana: "Share your Gemini concepts (images or descriptions)"
+Nana: "Would you like automated or manual Gemini generation?
+       A) Automated (Chrome MCP) - Recommended 🚀
+       B) Manual (copy/paste to AI Studio)"
 
-User: [Shares 3 concept screenshots]
+User: "A"
 
-Nana: "I see 3 concepts. Which is closest to your vision?"
+Nana: "Great! I'll automate the generation using Chrome MCP.
+       [Calling automate_gemini_concepts...]
+
+       ✅ Opened Google AI Studio
+       ✅ Submitted prompt
+       ✅ Waiting for generation... (this may take up to 60s)
+       ✅ Captured 3 concept variations
+       ✅ Saved to docs/ui/iterations/iteration-1-gemini-output.png
+
+       Here are the generated concepts. Which is closest to your vision?"
 
 User: "Concept 2, but too dense"
 
@@ -1308,23 +1371,56 @@ Nana: "What should we keep, avoid, and adjust?"
 
 User: "Keep: green palette. Avoid: dense layout. Adjust: more spacing"
 
-Nana: "✅ Iteration 2 prompts ready! Try in Gemini"
+Nana: "✅ Iteration 2 prompts refined!
+       Would you like me to automatically generate iteration 2? (Yes/No)"
 
-User: [Tests, returns] "Better but green is too bright"
+User: "Yes"
 
-Nana: "Iteration 3 refinements?"
+Nana: "[Automating iteration 2...]
+       ✅ Generated concepts saved to iteration-2-gemini-output.png
+
+       Better but green is too bright?"
 
 User: "Make green more subtle"
 
-Nana: "✅ Iteration 3 ready!"
+Nana: "✅ Iteration 3 refined! Auto-generate? (Yes/No)"
 
-User: [Tests] "Perfect!"
+User: "Yes"
+
+Nana: "[Automating...]
+       ✅ Iteration 3 concepts ready!"
+
+User: "Perfect!"
 
 Nana: "Lock as validated?"
 
 User: "Yes"
 
 Nana: "✅ Design validated! Available to Architect and UX Expert"
+```
+
+**Example Session (Manual Fallback):**
+
+```
+User: *refine-iteration
+
+Nana: "Would you like automated or manual generation?
+       A) Automated (Chrome MCP)
+       B) Manual"
+
+User: "B" (or automation failed)
+
+Nana: "Copy the prompts from docs/ui/ui-designer-screen-prompts.md
+       Paste into https://aistudio.google.com/
+       Share results when ready!"
+
+User: [Shares 3 concept screenshots]
+
+Nana: "I see 3 concepts. Which is closest to your vision?"
+
+User: "Concept 2, but too dense"
+
+[... continues with manual workflow]
 ```
 
 ### Iteration History Format

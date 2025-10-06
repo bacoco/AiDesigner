@@ -19,6 +19,69 @@ Guide iterative refinement of UI concepts based on Gemini outputs and user feedb
 
 ## Workflow
 
+### Step 0: Choose Automation Method (New!)
+
+**Ask user:**
+
+"Would you like to automate the Gemini concept generation?
+
+**Option A: Automated (Recommended)** 🚀
+
+- I'll use Chrome MCP to open Google AI Studio, submit the prompt, and capture results automatically
+- Requires: chrome-devtools-mcp installed and Google account logged in to AI Studio
+- Fast and convenient!
+
+**Option B: Manual**
+
+- You'll copy the prompt, go to Google AI Studio yourself, and share results back
+- Works if Chrome MCP unavailable or you prefer manual control
+
+Which would you prefer? (A/B)"
+
+**If Option A (Automated):**
+
+**Check Chrome MCP availability:**
+
+1. Verify chrome-devtools-mcp is configured in .mcp.json or .claude/mcp-config.json
+2. If not available, notify user and fallback to Option B
+
+**Execute Automation:**
+
+Call `automate_gemini_concepts` MCP tool with:
+
+```javascript
+{
+  prompt: "[The complete UI designer prompt from docs/ui/ui-designer-screen-prompts.md]",
+  iterationNumber: N,
+  modelPreference: "auto" // or user preference
+}
+```
+
+**The tool will:**
+
+1. Open https://aistudio.google.com/ in Chrome
+2. Navigate to create new chat
+3. Select appropriate Gemini model (Flash)
+4. Fill and submit the prompt
+5. Wait for concept generation (up to 60 seconds)
+6. Capture screenshot of results
+7. Extract image URLs
+8. Save to `docs/ui/iterations/iteration-N-gemini-output.png`
+
+**After automation completes:**
+
+Show user the generated concepts and proceed to Step 2 (Analyze Concepts).
+
+**If automation fails:**
+
+Provide manual fallback instructions (Option B).
+
+**If Option B (Manual):**
+
+Continue with existing manual workflow below.
+
+---
+
 ### Step 1: Collect Gemini Outputs
 
 **Elicit from user:**
@@ -161,6 +224,17 @@ Call `refine_design_prompts` MCP tool with:
 - `docs/ui/iterations/iteration-[N]-prompts.md` (history)
 
 **Next steps:**
+
+**Option A (Automated):**
+"Would you like me to automatically generate the next iteration concepts using Chrome MCP? (Yes/No)"
+
+If Yes:
+
+- Execute `automate_gemini_concepts` with refined prompts
+- Capture results automatically
+- Proceed to Step 6 with new concepts
+
+**Option B (Manual):**
 
 1. Copy the updated prompts from `ui-designer-screen-prompts.md`
 2. Paste into Google AI Studio (Gemini 2.5 Flash)

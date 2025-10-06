@@ -157,14 +157,24 @@ During the **Inspiration Intake** stage of `discover-ui-journey.md`:
 
 ### MCP Tool Reference
 
-Available Chrome DevTools MCP tools:
+**Chrome DevTools MCP tools:**
 
 - `chrome_navigate` - Open URL in browser
 - `chrome_get_styles` - Extract computed styles for selectors
 - `chrome_get_dom` - Get DOM structure for layout analysis
 - `chrome_screenshot` - Capture visual reference (if needed)
 
-**Usage Pattern:**
+**AiDesigner MCP tools (NEW):**
+
+- `automate_gemini_concepts` - **Automate Google AI Studio concept generation**
+  - Opens https://aistudio.google.com/ in Chrome via MCP
+  - Submits UI designer prompts automatically
+  - Waits for Gemini to generate visual concepts (up to 60s)
+  - Captures screenshots and image URLs
+  - Saves to `docs/ui/iterations/iteration-N-gemini-output.png`
+  - Returns results to CLI for immediate feedback
+
+**Token Extraction Pattern:**
 
 ```javascript
 // Navigate to reference
@@ -177,6 +187,25 @@ const styles = await chrome_get_styles({
 
 // Parse and store
 const tokens = extractDesignTokens(styles);
+```
+
+**Gemini Automation Pattern (NEW):**
+
+```javascript
+// Automated concept generation
+const result = await automate_gemini_concepts({
+  prompt: '[Complete UI designer prompt with journey, tokens, screens]',
+  iterationNumber: 1,
+  modelPreference: 'auto', // or "gemini-2.0-flash-exp"
+});
+
+// Result contains:
+// - Screenshot path
+// - Image URLs
+// - Generation metadata
+// - Automation status
+
+// Show concepts to user and elicit feedback
 ```
 
 ## Conversational Flow Examples

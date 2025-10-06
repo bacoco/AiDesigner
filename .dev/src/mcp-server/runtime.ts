@@ -1220,6 +1220,30 @@ export async function runOrchestratorServer(
           properties: {},
         },
       },
+      {
+        name: "automate_gemini_concepts",
+        description:
+          "Automate Gemini/Nano Banana visual concept generation via Chrome MCP. Opens Google AI Studio, submits prompt, waits for generation, and retrieves output images. Requires chrome-devtools-mcp to be installed.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            prompt: {
+              type: "string",
+              description: "The complete UI designer prompt to send to Gemini",
+            },
+            iterationNumber: {
+              type: "number",
+              description: "Current iteration number for file naming",
+            },
+            modelPreference: {
+              type: "string",
+              enum: ["gemini-2.0-flash-exp", "gemini-2.5-flash", "auto"],
+              description: "Preferred Gemini model (default: auto)",
+            },
+          },
+          required: ["prompt", "iterationNumber"],
+        },
+      },
     ],
   }));
 
@@ -3083,6 +3107,176 @@ ${params.adjustments}
                     {
                       hasDesignContext: false,
                       error: error instanceof Error ? error.message : String(error),
+                    },
+                    null,
+                    2
+                  ),
+                },
+              ],
+            };
+          }
+          break;
+        }
+
+        case "automate_gemini_concepts": {
+          const params = args as {
+            prompt: string;
+            iterationNumber: number;
+            modelPreference?: string;
+          };
+
+          try {
+            // NOTE: This tool orchestrates Chrome MCP tools to automate Google AI Studio interaction
+            // The LLM receives detailed instructions to execute the automation workflow
+
+            const automationWorkflow = {
+              action: "chrome_automation_workflow",
+              instructions: `# Automated Gemini Concept Generation Workflow
+
+This workflow automates visual concept generation via Google AI Studio using Chrome MCP tools.
+
+## Prerequisites Check
+
+1. **Verify Chrome MCP availability**:
+   - Chrome DevTools MCP must be installed and running
+   - If not available, fallback to manual workflow (user copies prompt to AI Studio)
+
+## Automation Steps
+
+### Step 1: Navigate to Google AI Studio
+\`\`\`
+Call: navigate_page
+Args: { url: "https://aistudio.google.com/" }
+\`\`\`
+
+### Step 2: Wait for page load
+\`\`\`
+Call: wait_for
+Args: { selector: "body", timeout: 5000 }
+\`\`\`
+
+### Step 3: Check if logged in
+- Use evaluate_script to check if user is logged in (look for chat interface)
+- If not logged in, return error and ask user to log in manually first
+
+### Step 4: Create new chat or use existing
+\`\`\`
+Call: click
+Args: { selector: "[data-test-id='new-chat-button']" } // Adjust selector based on AI Studio UI
+\`\`\`
+
+Alternative: If "New chat" button not found, use existing chat interface.
+
+### Step 5: Select model (if ${params.modelPreference || "auto"} preference specified)
+- Look for model selector dropdown
+- Click and select appropriate Gemini model
+- Default to Gemini 2.0 Flash Exp or latest available Flash model
+
+### Step 6: Fill prompt
+\`\`\`
+Call: fill
+Args: {
+  selector: "textarea[placeholder*='Enter a prompt']", // Adjust based on AI Studio UI
+  value: ${JSON.stringify(params.prompt)}
+}
+\`\`\`
+
+### Step 7: Submit prompt
+\`\`\`
+Call: click
+Args: { selector: "button[aria-label='Send message']" } // Adjust selector
+\`\`\`
+
+### Step 8: Wait for generation to complete
+\`\`\`
+Call: wait_for
+Args: {
+  selector: "img[src*='googleusercontent']", // Wait for generated images
+  timeout: 60000 // 60 seconds for image generation
+}
+\`\`\`
+
+### Step 9: Capture generated concepts
+\`\`\`
+Call: take_screenshot
+Args: { fullPage: true }
+\`\`\`
+
+Store screenshot at: docs/ui/iterations/iteration-${params.iterationNumber}-gemini-output.png
+
+### Step 10: Extract image URLs (optional)
+\`\`\`
+Call: evaluate_script
+Args: {
+  script: "Array.from(document.querySelectorAll('img[src*=\"googleusercontent\"]')).map(img => img.src)"
+}
+\`\`\`
+
+This returns array of direct image URLs for download.
+
+### Step 11: Download images (if direct URLs available)
+For each image URL:
+- Save to docs/ui/iterations/iteration-${params.iterationNumber}-concept-{N}.png
+- Store image paths in iteration record
+
+## Error Handling
+
+If any step fails:
+1. Take screenshot of current state
+2. Return error with context
+3. Provide manual fallback instructions
+
+## Fallback: Manual Workflow
+
+If Chrome MCP unavailable or automation fails:
+
+1. Open https://aistudio.google.com/
+2. Create new chat or use existing
+3. Copy this prompt:
+
+\`\`\`
+${params.prompt}
+\`\`\`
+
+4. Paste into AI Studio
+5. Wait for generation
+6. Screenshot results
+7. Save to docs/ui/iterations/iteration-${params.iterationNumber}-gemini-output.png
+8. Return to CLI and provide image path
+
+## Next Steps After Automation
+
+Once concepts are generated and captured:
+1. Call analyze_gemini_concepts with image paths
+2. Show user the generated concepts
+3. Elicit feedback (keep/avoid/adjust)
+4. If user validates, call store_ui_iteration with status "validated"
+5. If user wants refinement, call refine_design_prompts and repeat
+`,
+              prompt: params.prompt,
+              iterationNumber: params.iterationNumber,
+              outputPath: `docs/ui/iterations/iteration-${params.iterationNumber}-gemini-output.png`,
+              modelPreference: params.modelPreference || "auto",
+            };
+
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(automationWorkflow, null, 2),
+                },
+              ],
+            };
+          } catch (error) {
+            response = {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    {
+                      success: false,
+                      error: error instanceof Error ? error.message : String(error),
+                      fallback: "Use manual workflow: Copy prompt to https://aistudio.google.com/",
                     },
                     null,
                     2
