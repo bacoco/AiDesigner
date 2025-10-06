@@ -4,9 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-BMAD-METHOD™ (Breakthrough Method of Agile AI-driven Development) is a universal AI agent framework that orchestrates specialized AI agents through structured workflows. The project enables domain-specific AI expertise for software development, creative writing, game development, and more through natural language prompts and templates.
+**AiDesigner** (formerly BMAD-METHOD™) is a universal AI agent framework that orchestrates specialized AI agents through structured workflows. The project enables an integrated Idea → Design → Code workflow with conversational UI design, design token extraction, and agile implementation.
 
-**Core Innovation**: Invisible Orchestrator layer that allows users to interact naturally without learning methodology jargon, while maintaining BMAD's structured multi-phase approach behind the scenes.
+**Core Innovation**:
+- **Invisible Orchestrator** layer that allows users to interact naturally without learning methodology jargon
+- **Conversational UI Designer** that guides users through screen design with visual concept generation
+- **Chrome MCP Integration** for extracting design tokens from inspiration URLs
+- **Design-locked development** ensuring consistency from concept to code
 
 ## Key Architecture Principles
 
@@ -72,6 +76,20 @@ npm run version:expansion      # Bump specific expansion pack version
 ```bash
 npm run list:agents            # List all available agents
 npm run validate               # Validate agent/team configurations
+```
+
+### MCP Management Commands
+```bash
+npm run mcp                    # Run MCP server locally
+npm run mcp:list               # List installed MCP servers
+npm run mcp:add                # Add new MCP server
+npm run mcp:remove             # Remove MCP server
+npm run mcp:doctor             # Diagnose MCP configuration issues
+npm run mcp:audit              # Security audit of MCP servers
+npm run mcp:search             # Search for MCP servers in registry
+npm run mcp:browse             # Browse available MCP servers
+npm run mcp:profile:list       # List MCP profiles
+npm run mcp:profile:switch     # Switch between MCP profiles
 ```
 
 ## Critical File Locations
@@ -227,6 +245,11 @@ Each expansion pack mirrors the core structure (agents/, workflows/, templates/,
 
 ## Important Constraints
 
+### Package Naming
+- **Package name**: `aidesigner` (published on npm)
+- **Legacy name**: Previously known as BMAD-METHOD
+- Always use `aidesigner` in new code and documentation
+
 ### Natural Language Only
 - Core framework (`aidesigner-core/`, `expansion-packs/`) contains NO code - only markdown/YAML
 - All logic, persona, and instructions are natural language prompts
@@ -374,3 +397,24 @@ npm publish
 - Update `tools/cli.js` for command-line interface changes
 - Test with `npm run build` before committing
 - Respect dependency resolution logic
+
+## Quick Start for New Contributors
+
+```bash
+# 1. Clone and install
+git clone https://github.com/bacoco/aidesigner.git
+cd aidesigner
+npm install
+
+# 2. Build everything
+npm run build        # Builds agents, teams, expansion packs
+npm run build:mcp    # Builds MCP server
+
+# 3. Run tests and validation
+npm test
+npm run validate
+npm run pre-release
+
+# 4. Try the CLI
+npx aidesigner start
+```

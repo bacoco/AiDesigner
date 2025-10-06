@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * Agilai - Main CLI entry point for npx deployment
+ * AiDesigner - Main CLI entry point for npx deployment
  *
  * This executable provides easy installation and setup via:
- *   npx agilai init
- *   npx agilai chat
- *   npx agilai install
+ *   npx aidesigner init
+ *   npx aidesigner chat
+ *   npx aidesigner install
  */
 
 const { spawn } = require('child_process');
@@ -644,10 +644,10 @@ const currentVersion = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).vers
 
 const printHelp = () => {
   console.log(`
-Agilai - Zero-knowledge AI orchestration (v${currentVersion})
+AiDesigner - Zero-knowledge AI orchestration (v${currentVersion})
 
 Usage:
-  npx agilai@latest <command> [options]
+  npx aidesigner@latest <command> [options]
 
 Options:
   --assistant=<assistant>    Launch specified CLI front-end (claude, codex, opencode)
@@ -659,12 +659,12 @@ Options:
 Commands:
 
   start                🚀 ONE-COMMAND SETUP: init + install + prompt for assistant choice
-  init                 Initialize Agilai in current project
+  init                 Initialize AiDesigner in current project
   chat                 Start conversational interface with Claude CLI (Anthropic/GLM)
   codex                Start conversational interface with Codex CLI
   opencode             Start conversational interface with OpenCode CLI
 
-  install              Install Agilai globally
+  install              Install AiDesigner globally
   build                Build MCP server
   test                 Run test suite
   validate             Validate configuration
@@ -672,25 +672,25 @@ Commands:
 
 Examples:
 
-  npx agilai@latest start      # 🚀 Do everything in one command!
+  npx aidesigner@latest start      # 🚀 Do everything in one command!
 
   # Claude CLI (supports: anthropic, glm)
-  npx agilai@latest start --assistant=claude --provider=glm
+  npx aidesigner@latest start --assistant=claude --provider=glm
                                       # Launch Claude CLI with GLM API
-  npx agilai@latest start --assistant=claude-glm
+  npx aidesigner@latest start --assistant=claude-glm
                                       # Combined flag also supported
 
   # Codex CLI (supports: openai only)
-  npx agilai@latest start --assistant=codex --provider=openai
+  npx aidesigner@latest start --assistant=codex --provider=openai
                                       # Launch Codex CLI with OpenAI/GPT
 
   # OpenCode CLI (supports: anthropic, glm, openai, gemini)
-  npx agilai@latest start --assistant=opencode --provider=glm
+  npx aidesigner@latest start --assistant=opencode --provider=glm
                                       # Launch OpenCode with GLM API
 
-  npx agilai@latest start --glm
+  npx aidesigner@latest start --glm
                                       # Use GLM with AGILAI_GLM_API_KEY (preferred)
-  npx agilai@latest init       # Setup in current project
+  npx aidesigner@latest init       # Setup in current project
   npm run codex                        # Start conversation (after install)
 
 
@@ -700,13 +700,13 @@ Flags:
 
 
 💡 Tip: Always use @latest to get the newest version:
-   npx agilai@latest start
+   npx aidesigner@latest start
 
 Environment:
   Set AGILAI_GLM_API_KEY (preferred) or legacy GLM_API_KEY/ZHIPUAI_API_KEY and optionally LLM_MODEL when using --glm.
   Use --anthropic or LLM_PROVIDER=claude to switch back to Anthropic defaults.
 
-For more information: https://github.com/bacoco/Agilai
+For more information: https://github.com/bacoco/AiDesigner
 `);
 };
 
@@ -986,7 +986,7 @@ const promptForMcpServers = async () => {
 // Command handlers
 const commands = {
   start: async () => {
-    console.log('🚀 Starting Agilai setup...\n');
+    console.log('🚀 Starting AiDesigner setup...\n');
 
     consumeLlmOptionsFromArgs();
 
@@ -1063,7 +1063,7 @@ const commands = {
     const assistantName = formatAssistantName(assistant);
     const providerLabel = resolvedProvider ? ` (${resolvedProvider})` : '';
     console.log(
-      `\n🎯 Starting Agilai Orchestrator with ${assistantName}${providerLabel}...\n`,
+      `\n🎯 Starting AiDesigner Orchestrator with ${assistantName}${providerLabel}...\n`,
     );
 
     if (assistant === 'claude') {
@@ -1084,7 +1084,7 @@ const commands = {
   },
 
   init: async () => {
-    console.log('🚀 Initializing Agilai...\n');
+    console.log('🚀 Initializing AiDesigner...\n');
 
     let projectName;
     let projectRoot;
@@ -1123,7 +1123,7 @@ const commands = {
         const { overwrite } = await inquirer.prompt([{
           type: 'confirm',
           name: 'overwrite',
-          message: `Directory "${projectName}" already exists. Initialize Agilai here?`,
+          message: `Directory "${projectName}" already exists. Initialize AiDesigner here?`,
           default: true
         }]);
 
@@ -1150,7 +1150,7 @@ const commands = {
       const defaultPackage = {
         name: projectName,
         version: '1.0.0',
-        description: 'Project powered by Agilai',
+        description: 'Project powered by AiDesigner',
         scripts: {},
         keywords: [],
         author: '',
@@ -1160,11 +1160,11 @@ const commands = {
       console.log('✅ Created package.json');
     }
 
-    // Create .agilai directory
-    const agilaiDir = path.join(projectRoot, '.agilai');
-    if (!fs.existsSync(agilaiDir)) {
-      fs.mkdirSync(agilaiDir, { recursive: true });
-      console.log('✅ Created .agilai directory');
+    // Create .aidesigner directory
+    const aidesignerDir = path.join(projectRoot, '.aidesigner');
+    if (!fs.existsSync(aidesignerDir)) {
+      fs.mkdirSync(aidesignerDir, { recursive: true });
+      console.log('✅ Created .aidesigner directory');
     }
 
     // Create .claude directory for MCP config
@@ -1194,16 +1194,16 @@ const commands = {
     }
 
     const orchestratorKey = 'aidesigner';
-    const legacyOrchestratorKey = 'agilai-invisible-orchestrator';
+    const legacyOrchestratorKey = 'aidesigner-invisible-orchestrator';
     const orchestratorArgs = ['node_modules/aidesigner/dist/mcp/mcp/server.js'];
     const legacyOrchestratorArgs = new Set([
       'dist/mcp/mcp/server.js',
       './node_modules/aidesigner/dist/mcp/mcp/server.js',
       "require('aidesigner/dist/mcp/mcp/server.js')",
       "require('aidesigner/.dev/dist/mcp/mcp/server.js')",
-      './node_modules/agilai/dist/mcp/mcp/server.js',
-      "require('agilai/dist/mcp/mcp/server.js')",
-      "require('agilai/.dev/dist/mcp/mcp/server.js')",
+      './node_modules/aidesigner/dist/mcp/mcp/server.js',
+      "require('aidesigner/dist/mcp/mcp/server.js')",
+      "require('aidesigner/.dev/dist/mcp/mcp/server.js')",
     ]);
     const orchestratorConfig = {
       command: 'node',
@@ -1606,7 +1606,7 @@ const commands = {
     const readmePath = path.join(projectRoot, 'README.md');
     const readmeContent = `# ${projectName}
 
-Welcome to your Agilai project! This project follows the **BMAD-METHOD™** (Breakthrough Method of Agile AI-driven Development) - a universal AI agent framework that orchestrates specialized AI agents through structured workflows.
+Welcome to your AiDesigner project! This project follows the **BMAD-METHOD™** (Breakthrough Method of Agile AI-driven Development) - a universal AI agent framework that orchestrates specialized AI agents through structured workflows.
 
 ## 🚀 Quick Start
 
@@ -1618,10 +1618,10 @@ npm install
 ### 2. Start Development
 \`\`\`bash
 # Launch Codex CLI for interactive development
-npm run agilai:codex
+npm run aidesigner:codex
 
 # Or use Claude chat
-npm run agilai:claude
+npm run aidesigner:claude
 \`\`\`
 
 ## 📁 Project Structure
@@ -1635,7 +1635,7 @@ ${projectName}/
 │   └── qa/                 # QA assessments and gates
 │       ├── assessments/
 │       └── gates/
-├── .agilai/                # Agilai metadata
+├── .aidesigner/                # AiDesigner metadata
 └── .mcp.json               # MCP server configuration
 \`\`\`
 
@@ -1682,14 +1682,14 @@ BMAD provides specialized agents for different tasks:
 
 **Important**: You don't manually fill out templates! BMAD agents generate all documentation using:
 
-- **YAML Templates** (in \`agilai-core/templates/\`): Define document structure
+- **YAML Templates** (in \`aidesigner-core/templates/\`): Define document structure
 - **Agent Intelligence**: Agents use these templates to create tailored docs
 - **MCP Tools**: Model Context Protocol enables agents to create/modify files
 
 ### Example Agent Commands
 
 \`\`\`bash
-# In IDE with Agilai agent active:
+# In IDE with AiDesigner agent active:
 "Use PM agent to create a PRD for user authentication feature"
 "Use Architect agent to design the database schema"
 "Use SM agent to create stories for Epic 1"
@@ -1699,12 +1699,12 @@ BMAD provides specialized agents for different tasks:
 
 \`\`\`bash
 # Core Commands
-npm run agilai          # Start Agilai orchestrator
+npm run aidesigner          # Start AiDesigner orchestrator
 npm run codex           # Launch Codex CLI
-npm run agilai:codex    # Same as above
-npm run agilai:claude   # Launch Claude chat
-npm run agilai:opencode # Open code interface
-npm run agilai:build    # Build Agilai bundles
+npm run aidesigner:codex    # Same as above
+npm run aidesigner:claude   # Launch Claude chat
+npm run aidesigner:opencode # Open code interface
+npm run aidesigner:build    # Build AiDesigner bundles
 
 # Build & Development
 npm run build           # Build all agents and bundles
@@ -1722,7 +1722,7 @@ npm run test            # Run tests
 ### MCP Server Configuration
 Your MCP servers are configured in \`.mcp.json\`. To modify:
 \`\`\`bash
-npx agilai init  # Re-run to update MCP configuration
+npx aidesigner init  # Re-run to update MCP configuration
 \`\`\`
 
 ### LLM Provider Configuration
@@ -1744,17 +1744,17 @@ export GEMINI_API_KEY="your-key"
 
 ## 📚 Documentation & Resources
 
-- **BMAD Methodology**: [Core Architecture](https://github.com/bacoco/agilai)
+- **BMAD Methodology**: [Core Architecture](https://github.com/bacoco/aidesigner)
 - **User Guide**: Complete workflow walkthrough
 - **Expansion Packs**: Domain-specific extensions (game dev, creative writing, etc.)
-- **Community**: [Discord](https://discord.gg/agilai) for support and discussions
+- **Community**: [Discord](https://discord.gg/aidesigner) for support and discussions
 
 ## 🎓 Learning Path
 
 ### New to BMAD?
-1. Read the [BMAD User Guide](https://github.com/bacoco/agilai/blob/main/docs/user-guide.md)
-2. Try the [Quick Start Tutorial](https://github.com/bacoco/agilai/blob/main/docs/quickstart.md)
-3. Explore [Example Projects](https://github.com/bacoco/agilai/tree/main/examples)
+1. Read the [BMAD User Guide](https://github.com/bacoco/aidesigner/blob/main/docs/user-guide.md)
+2. Try the [Quick Start Tutorial](https://github.com/bacoco/aidesigner/blob/main/docs/quickstart.md)
+3. Explore [Example Projects](https://github.com/bacoco/aidesigner/tree/main/examples)
 
 ### Next Steps
 1. ✅ Run \`npm install\` to install dependencies
@@ -1764,7 +1764,7 @@ export GEMINI_API_KEY="your-key"
 
 ---
 
-**Powered by Agilai** | BMAD-METHOD™ Framework
+**Powered by AiDesigner** | BMAD-METHOD™ Framework
 `;
 
     if (!fs.existsSync(readmePath)) {
@@ -1774,12 +1774,12 @@ export GEMINI_API_KEY="your-key"
       console.warn('⚠️ README.md already exists. Leaving existing content untouched.');
     }
 
-    // Create .agilai/project.json metadata (.agilai directory already created earlier)
-    const projectMetadataPath = path.join(projectRoot, '.agilai', 'project.json');
+    // Create .aidesigner/project.json metadata (.aidesigner directory already created earlier)
+    const projectMetadataPath = path.join(projectRoot, '.aidesigner', 'project.json');
     const projectMetadata = {
       name: projectName,
       version: '1.0.0',
-      agilaiVersion: currentVersion,
+      aidesignerVersion: currentVersion,
       createdAt: new Date().toISOString(),
       config: {
         mcpServers: Object.keys(mcpConfig.mcpServers || {}).filter(
@@ -1790,16 +1790,16 @@ export GEMINI_API_KEY="your-key"
 
     if (!fs.existsSync(projectMetadataPath)) {
       fs.writeFileSync(projectMetadataPath, JSON.stringify(projectMetadata, null, 2) + '\n');
-      console.log('✅ Created .agilai/project.json metadata');
+      console.log('✅ Created .aidesigner/project.json metadata');
     }
 
     console.log(`
-✨ Agilai initialized successfully in: ${projectName}/
+✨ AiDesigner initialized successfully in: ${projectName}/
 
 📋 Created Structure:
    ✓ README.md - BMAD workflow guide
    ✓ docs/ - Documentation directory with BMAD structure
-   ✓ .agilai/ - Project metadata
+   ✓ .aidesigner/ - Project metadata
    ✓ .mcp.json - MCP server configuration
 
 🎯 BMAD Workflow Quick Start:
@@ -1831,16 +1831,16 @@ export GEMINI_API_KEY="your-key"
      cat README.md
 
   3. Start development with your chosen agent:
-     npm run agilai:codex    # Codex CLI
-     npm run agilai:claude   # Claude chat
+     npm run aidesigner:codex    # Codex CLI
+     npm run aidesigner:claude   # Claude chat
 
   4. Begin with PM Agent to create your PRD:
      "Use PM agent to create a PRD for [your project idea]"
 
 📚 Resources:
    • README.md - Full BMAD workflow guide (in ${projectName}/)
-   • https://github.com/bacoco/agilai - Complete documentation
-   • Discord: https://discord.gg/agilai - Community support
+   • https://github.com/bacoco/aidesigner - Complete documentation
+   • Discord: https://discord.gg/aidesigner - Community support
 
 Happy building with BMAD! 🚀
 `);
@@ -2055,7 +2055,7 @@ const run = (argv = process.argv) => {
   const handler = commands[command];
   if (!handler) {
     console.error(`❌ Unknown command: ${command}`);
-    console.log('Run "npx agilai help" for usage information.');
+    console.log('Run "npx aidesigner help" for usage information.');
     process.exit(1);
   }
 
