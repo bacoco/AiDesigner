@@ -12,7 +12,7 @@
 const { existsSync, mkdirSync, readdirSync, copyFileSync } = require('node:fs');
 const path = require('node:path');
 
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.resolve(__dirname, '..', '..');
 const distMcpDir = path.join(rootDir, 'dist', 'mcp');
 const serverEntry = path.join(distMcpDir, 'mcp', 'server.js');
 
