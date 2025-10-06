@@ -1193,18 +1193,21 @@ const commands = {
       }
     }
 
-    const orchestratorKey = 'agilai';
+    const orchestratorKey = 'aidesigner';
     const legacyOrchestratorKey = 'agilai-invisible-orchestrator';
-    const orchestratorArgs = ['node_modules/agilai/dist/mcp/mcp/server.js'];
+    const orchestratorArgs = ['node_modules/aidesigner/dist/mcp/mcp/server.js'];
     const legacyOrchestratorArgs = new Set([
       'dist/mcp/mcp/server.js',
+      './node_modules/aidesigner/dist/mcp/mcp/server.js',
+      "require('aidesigner/dist/mcp/mcp/server.js')",
+      "require('aidesigner/.dev/dist/mcp/mcp/server.js')",
       './node_modules/agilai/dist/mcp/mcp/server.js',
       "require('agilai/dist/mcp/mcp/server.js')",
       "require('agilai/.dev/dist/mcp/mcp/server.js')",
     ]);
     const orchestratorConfig = {
       command: 'node',
-      args: ['node_modules/agilai/dist/mcp/mcp/server.js'],
+      args: ['node_modules/aidesigner/dist/mcp/mcp/server.js'],
       disabled: false,
     };
 
@@ -1242,7 +1245,7 @@ const commands = {
 
     if (!mcpConfig.mcpServers[orchestratorKey]) {
       mcpConfig.mcpServers[orchestratorKey] = orchestratorConfig;
-      console.log('✅ Added Agilai orchestrator MCP server');
+      console.log('✅ Added AiDesigner orchestrator MCP server');
     } else if (!mcpConfig.mcpServers[legacyOrchestratorKey]) {
       // Ensure orchestrator is enabled during re-init (user may have disabled it)
       const existing = mcpConfig.mcpServers[orchestratorKey];
@@ -1260,7 +1263,7 @@ const commands = {
 
       if (needsUpdate) {
         existing.args = [...orchestratorArgs];
-        console.log('✅ Updated Agilai MCP server to latest path');
+        console.log('✅ Updated AiDesigner MCP server to latest path');
       }
     }
 
@@ -1431,12 +1434,12 @@ const commands = {
     packageJson.scripts = packageJson.scripts || {};
 
     const scriptsToAdd = {
-      agilai: 'agilai start',
-      codex: 'agilai codex',
-      'agilai:codex': 'agilai codex',
-      'agilai:claude': 'agilai chat',
-      'agilai:opencode': 'agilai opencode',
-      'agilai:build': 'agilai build',
+      aidesigner: 'aidesigner start',
+      codex: 'aidesigner codex',
+      'aidesigner:codex': 'aidesigner codex',
+      'aidesigner:claude': 'aidesigner chat',
+      'aidesigner:opencode': 'aidesigner opencode',
+      'aidesigner:build': 'aidesigner build',
     };
 
     let scriptsAdded = false;
@@ -1452,17 +1455,17 @@ const commands = {
       console.log('✅ Added npm scripts to package.json');
     }
 
-    // Add agilai as a dependency
+    // Add aidesigner as a dependency
     const desiredDependencyVersion = `^${currentVersion}`;
     const existingDependencyVersion =
-      packageJson.dependencies && packageJson.dependencies.agilai;
+      packageJson.dependencies && packageJson.dependencies.aidesigner;
     const needsDependencyUpdate = existingDependencyVersion !== desiredDependencyVersion;
 
     if (needsDependencyUpdate) {
       packageJson.dependencies = packageJson.dependencies || {};
-      packageJson.dependencies.agilai = desiredDependencyVersion;
+      packageJson.dependencies.aidesigner = desiredDependencyVersion;
       fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
-      console.log(`✅ Ensured agilai@${desiredDependencyVersion} is listed in dependencies`);
+      console.log(`✅ Ensured aidesigner@${desiredDependencyVersion} is listed in dependencies`);
     }
 
     // Only create components.json if shadcn MCP server is enabled
@@ -1846,14 +1849,14 @@ Happy building with BMAD! 🚀
   codex: async () => {
     consumeLlmOptionsFromArgs();
 
-    const localInstall = path.join(process.cwd(), 'node_modules', 'agilai');
+    const localInstall = path.join(process.cwd(), 'node_modules', 'aidesigner');
     const codexScript = fs.existsSync(localInstall)
-      ? path.join(localInstall, 'bin', 'agilai-codex')
-      : path.join(__dirname, 'agilai-codex');
+      ? path.join(localInstall, 'bin', 'aidesigner-codex')
+      : path.join(__dirname, 'aidesigner-codex');
 
     if (!fs.existsSync(codexScript)) {
-      console.error('❌ Agilai not found. Please run "npm install" first.');
-      console.error('   Or initialize with: npx agilai init && npm install');
+      console.error('❌ AiDesigner not found. Please run "npm install" first.');
+      console.error('   Or initialize with: npx aidesigner init && npm install');
       process.exit(1);
     }
 
@@ -1876,15 +1879,15 @@ Happy building with BMAD! 🚀
   chat: async () => {
     consumeLlmOptionsFromArgs();
 
-    // Check if agilai is installed locally first
-    const localInstall = path.join(process.cwd(), 'node_modules', 'agilai');
+    // Check if aidesigner is installed locally first
+    const localInstall = path.join(process.cwd(), 'node_modules', 'aidesigner');
     const chatScript = fs.existsSync(localInstall)
-      ? path.join(localInstall, 'bin', 'agilai-claude')
-      : path.join(__dirname, 'agilai-claude');
+      ? path.join(localInstall, 'bin', 'aidesigner-claude')
+      : path.join(__dirname, 'aidesigner-claude');
 
     if (!fs.existsSync(chatScript)) {
-      console.error('❌ Agilai not found. Please run "npm install" first.');
-      console.error('   Or initialize with: npx agilai init && npm install');
+      console.error('❌ AiDesigner not found. Please run "npm install" first.');
+      console.error('   Or initialize with: npx aidesigner init && npm install');
       process.exit(1);
     }
 
@@ -1943,17 +1946,17 @@ Happy building with BMAD! 🚀
   },
 
   install: async () => {
-    console.log('📦 Installing Agilai globally...\n');
+    console.log('📦 Installing AiDesigner globally...\n');
 
-    const child = spawn('npm', ['install', '-g', 'agilai'], {
+    const child = spawn('npm', ['install', '-g', 'aidesigner'], {
       stdio: 'inherit',
       shell: true,
     });
 
     child.on('exit', (code) => {
       if (code === 0) {
-        console.log('\n✅ Agilai installed globally!');
-        console.log('You can now use: agilai <command>');
+        console.log('\n✅ AiDesigner installed globally!');
+        console.log('You can now use: aidesigner <command>');
       }
       process.exit(code || 0);
     });
@@ -1963,7 +1966,7 @@ Happy building with BMAD! 🚀
     console.log('🔨 Building MCP server...\n');
 
     // Check if running from local install or global/npx
-    const localInstall = path.join(process.cwd(), 'node_modules', 'agilai');
+    const localInstall = path.join(process.cwd(), 'node_modules', 'aidesigner');
     const rootDir = fs.existsSync(localInstall) ? localInstall : path.join(__dirname, '..');
 
     // The MCP server is already pre-built in dist/, but we'll check TypeScript is available

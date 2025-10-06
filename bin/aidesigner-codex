@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Agilai Orchestrator - Codex Interface
+ * AiDesigner Orchestrator - Codex Interface
  * Launches Codex CLI with MCP server and orchestrator agent
  */
 
@@ -16,7 +16,7 @@ const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
 const rootDir = path.join(__dirname, '..');
 runIntegrityPreflight(rootDir, { silentOnMatch: true });
 const mcpConfigDir = path.join(rootDir, 'mcp');
-const newMcpConfigPath = path.join(mcpConfigDir, 'agilai-config.json');
+const newMcpConfigPath = path.join(mcpConfigDir, 'aidesigner-config.json');
 const legacyMcpConfigPath = path.join(mcpConfigDir, 'bmad-config.json');
 let mcpConfigPath = newMcpConfigPath;
 let usingLegacyMcpConfig = false;
@@ -51,12 +51,12 @@ if (fs.existsSync(newMcpConfigPath)) {
       console.error(`Error: Legacy config file ${legacyMcpConfigPath} is invalid or corrupted.`);
       console.error(error.message);
     }
-    console.error('Expected mcp/agilai-config.json. Run: npm run build:mcp');
+    console.error('Expected mcp/aidesigner-config.json. Run: npm run build:mcp');
     process.exit(1);
   }
 } else {
   // Neither config exists
-  console.error('Error: MCP config not found. Expected mcp/agilai-config.json. Run: npm run build:mcp');
+  console.error('Error: MCP config not found. Expected mcp/aidesigner-config.json. Run: npm run build:mcp');
   process.exit(1);
 }
 
@@ -104,8 +104,8 @@ async function main() {
   }
 
   // Codex CLI uses global MCP server configuration, not file-based config
-  // We need to ensure the Agilai MCP server is registered
-  const mcpServerName = 'agilai';
+  // We need to ensure the AiDesigner MCP server is registered
+  const mcpServerName = 'aidesigner';
 
   // Check if MCP server is already registered
   const checkResult = await new Promise((resolve) => {
@@ -124,7 +124,7 @@ async function main() {
   });
 
   if (!checkResult.registered) {
-    console.log('📡 Registering Agilai MCP server with Codex...');
+    console.log('📡 Registering AiDesigner MCP server with Codex...');
 
     // Register the MCP server
     const mcpServerPath = path.join(rootDir, 'dist', 'mcp', 'mcp', 'server.js');
@@ -162,9 +162,9 @@ async function main() {
     console.warn('⚠️  Using legacy MCP config mcp/bmad-config.json. Note: Codex uses global MCP server configuration.');
   }
 
-  console.log('🎯 Starting Agilai Orchestrator with Codex...');
-  console.log('📡 MCP Server: agilai (registered globally)');
-  console.log('🤖 Agent: Agilai Orchestrator');
+  console.log('🎯 Starting AiDesigner Orchestrator with Codex...');
+  console.log('📡 MCP Server: aidesigner (registered globally)');
+  console.log('🤖 Agent: AiDesigner Orchestrator');
   console.log('💬 Type your project idea to begin!\n');
 
   const codexBinary = codexCheck.binaryPath || 'codex';
