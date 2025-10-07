@@ -302,8 +302,8 @@ You are Google Nano Banana (Gemini 2.5 Flash Image). Render 3 concept options fo
 ${brandPalette}
 
 ### Typography
-- **Heading font**: ${typography.split(' ')[0] || 'Inter'} Bold
-- **Body font**: ${typography.split(' ')[0] || 'Inter'} Regular
+- **Heading font**: ${this.extractFontName(typography)} Bold
+- **Body font**: ${this.extractFontName(typography)} Regular
 - **Font scale**: 14px body, 18px subtitle, 24px heading
 
 ### Layout System
@@ -560,6 +560,27 @@ ${voiceGuidelines}
       return valueMatch[1].trim();
     }
     return 'improved productivity and efficiency';
+  }
+
+  /**
+   * Extract font name from typography string
+   * Handles various formats: "Inter Bold", "Modern sans-serif", etc.
+   */
+  extractFontName(typography) {
+    if (!typography || typeof typography !== 'string') {
+      return 'Inter';
+    }
+
+    // Extract first word, which is typically the font name
+    const fontName = typography.trim().split(/\s+/)[0];
+
+    // If it's a generic descriptor, return default
+    const genericTerms = ['modern', 'classic', 'elegant', 'bold', 'light'];
+    if (genericTerms.some(term => fontName.toLowerCase().includes(term))) {
+      return 'Inter';
+    }
+
+    return fontName || 'Inter';
   }
 
   /**
