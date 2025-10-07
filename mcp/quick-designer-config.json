@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "quick-designer-v4": {
+      "command": "node",
+      "args": ["dist/mcp/src/mcp-server/quick-designer-server.js"],
+      "disabled": false,
+      "env": {
+        "QUICK_DESIGNER_MODE": "ai-powered"
+      }
+    }
+  }
+}

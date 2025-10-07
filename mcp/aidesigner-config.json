@@ -5,6 +5,14 @@
       "args": ["dist/mcp/mcp/server.js"],
       "disabled": false
     },
+    "quick-designer-v4": {
+      "command": "node",
+      "args": ["dist/mcp/src/mcp-server/quick-designer-server.js"],
+      "disabled": false,
+      "env": {
+        "QUICK_DESIGNER_MODE": "ai-powered"
+      }
+    },
     "chrome-devtools": {
       "command": "npx",
       "args": ["-y", "chrome-devtools-mcp"]

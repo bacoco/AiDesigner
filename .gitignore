@@ -51,3 +51,15 @@ flattened-codebase.xml
 apps/aidesigner-poc/out/
 packages/*/dist/
 *.tsbuildinfo
+
+# Quick Designer V4 - Local files
+.design-library/
+.quick-designer-sessions/
+qd-*.html
+test-output/
+dog-sales-pages/
+generate-dog-pages.mjs
+quick-designer-tabs-demo.html
+test-mcp-commands.md
+test-mcp-direct.mjs
+docs/ui/test-mockup.html
