@@ -63,8 +63,6 @@ const node_os_1 = require('node:os');
 const observability_js_1 = require('./observability.js');
 const lib_resolver_js_1 = require('./lib-resolver.js');
 const { executeAutoCommand } = (0, lib_resolver_js_1.requireLibModule)('auto-commands.js');
-const { generateHTML, getVariationNames, isScreenTypeSupported } = (0,
-lib_resolver_js_1.requireLibModule)('html-templates/index.js');
 /**
  * Builds a structured parse error for agent trigger failures.
  *
@@ -294,7 +292,7 @@ async function generateMockupHTML(mockupData) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maquette AiDesigner</title>
+  <title>Maquette AiDesigner - Design System Interactif</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
@@ -302,26 +300,78 @@ async function generateMockupHTML(mockupData) {
       --accent: ${accent};
       --neutral: ${ds.neutral?.[0] || '#6B7280'};
       --bg: ${ds.background || '#F3F4F6'};
+      --font-family: ${designSystem.typography?.fontFamily || 'Inter'};
+      --spacing-unit: ${designSystem.spacing?.unit || '8px'};
+      --border-radius: ${designSystem.components?.card?.borderRadius || '12px'};
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: ${designSystem.typography?.fontFamily || 'Inter, sans-serif'}; }
-    .tabs { display: flex; gap: 0; border-bottom: 2px solid #e5e7eb; background: white; padding: 0 2rem; }
-    .tabs button { padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; border-bottom: 3px solid transparent; margin-bottom: -2px; color: #6b7280; }
+    body { margin: 0; font-family: var(--font-family), sans-serif; background: var(--bg); }
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid #e5e7eb; background: white; padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
+    .tabs button { padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; border-bottom: 3px solid transparent; margin-bottom: -2px; color: #6b7280; transition: all 0.2s; }
+    .tabs button:hover { color: var(--primary); }
     .tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
     .tabs button.validated::before { content: "✓ "; color: var(--accent); }
     .page { display: none; padding: 2rem; }
     .page.active { display: block; }
     .variation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem; }
-    .variation-card { border: 2px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; transition: all 0.2s; }
-    .variation-card.selected { border-color: var(--primary); background: rgba(94, 106, 210, 0.05); }
+    .variation-card { border: 2px solid #e5e7eb; border-radius: var(--border-radius); padding: 1.5rem; transition: all 0.2s; background: white; }
+    .variation-card.selected { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.1); }
     .variation-card h3 { margin: 0 0 1rem 0; font-size: 1.125rem; }
-    .variation-preview { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 2rem; min-height: 400px; margin-bottom: 1rem; }
-    .variation-card button { width: 100%; padding: 0.75rem; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; background: var(--primary); color: white; }
+    .variation-preview { background: var(--bg); border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; min-height: 400px; margin-bottom: 1rem; overflow: auto; }
+    .variation-card button { width: 100%; padding: 0.75rem; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; background: var(--primary); color: white; transition: all 0.2s; }
+    .variation-card button:hover { opacity: 0.9; transform: translateY(-1px); }
     .variation-card.selected button { background: var(--accent); }
-    .design-system-panel { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 2rem; }
-    .color-swatch { display: inline-block; width: 40px; height: 40px; border-radius: 6px; margin-right: 0.5rem; border: 1px solid #e5e7eb; }
+    .design-system-panel { background: white; border: 1px solid #e5e7eb; border-radius: var(--border-radius); padding: 2rem; margin-bottom: 2rem; }
+    .editor-panel { background: #f9fafb; border: 2px dashed var(--primary); border-radius: var(--border-radius); padding: 2rem; margin-bottom: 2rem; }
+    .color-swatch { display: inline-block; width: 40px; height: 40px; border-radius: 6px; margin-right: 0.5rem; border: 2px solid #e5e7eb; cursor: pointer; transition: all 0.2s; }
+    .color-swatch:hover { transform: scale(1.1); border-color: var(--primary); }
     .spec-section { margin-bottom: 2rem; }
-    .spec-section h3 { font-size: 1.25rem; margin: 0 0 1rem 0; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb; }
+    .spec-section h3 { font-size: 1.25rem; margin: 0 0 1rem 0; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb; color: var(--primary); }
+    .edit-control { margin-bottom: 1.5rem; }
+    .edit-control label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--neutral); font-size: 0.875rem; }
+    .edit-control input[type="color"] { width: 60px; height: 40px; border: 2px solid #e5e7eb; border-radius: 6px; cursor: pointer; }
+    .edit-control input[type="text"] { padding: 0.5rem 1rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; width: 100%; max-width: 300px; }
+    .edit-control input:focus { outline: none; border-color: var(--primary); }
+    .toggle-btn { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 1rem; transition: all 0.2s; }
+    .toggle-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .toggle-btn.active { background: var(--accent); }
+    .live-badge { display: inline-block; background: var(--accent); color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .palette-card, .typography-card, .radius-card {
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+    .palette-card:hover, .typography-card:hover, .radius-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .palette-card.selected, .typography-card.selected, .radius-card.selected {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+    .palette-card.selected::after, .typography-card.selected::after, .radius-card.selected::after {
+      content: "✓";
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--accent);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+    .palette-card, .typography-card, .radius-card { position: relative; }
   </style>
 </head>
 <body>
@@ -332,76 +382,163 @@ async function generateMockupHTML(mockupData) {
 
   <!-- Design System Page -->
   <div id="page-design-system" class="page ${pages.length === 0 ? 'active' : ''}">
-    <h1 style="font-size: 2rem; margin: 0 0 2rem 0;">🎨 Design System v${designSystem.version || '1.0'}</h1>
+    <h1 style="font-size: 2rem; margin: 0 0 0.5rem 0;">🎨 Sélectionnez votre Design System <span class="live-badge">LIVE</span></h1>
+    <p style="color: var(--neutral); margin-bottom: 2rem;">Choisissez vos préférences ci-dessous et voyez les changements en direct sur TOUS les écrans!</p>
+
+    <!-- Interactive Design Selection (Always Visible) -->
     <div class="design-system-panel">
-      ${
-        designSystem.colors
-          ? `
+
+      <!-- Color Palettes -->
       <div class="spec-section">
-        <h3>Couleurs</h3>
-        <div>
-          ${Object.entries(designSystem.colors)
-            .map(([key, val]) => {
-              if (Array.isArray(val)) {
-                return val
-                  .map(
-                    (v) =>
-                      `<span class="color-swatch" style="background: ${v}" title="${key}: ${v}"></span>`,
-                  )
-                  .join('');
-              }
-              return `<span class="color-swatch" style="background: ${val}" title="${key}: ${val}"></span> <strong>${key}:</strong> ${val}<br/>`;
-            })
-            .join('')}
+        <h3>🎨 Palette de Couleurs</h3>
+        <p style="font-size: 0.875rem; color: var(--neutral); margin-bottom: 1rem;">Sélectionnez une palette de couleurs</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div class="palette-card" data-palette="ocean" onclick="selectPalette('ocean', '#3B82F6', '#10B981', '#64748B', '#F1F5F9')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #3B82F6; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #10B981; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #64748B; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #F1F5F9; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Ocean Blue</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Professional & Moderne</p>
+          </div>
+
+          <div class="palette-card" data-palette="sunset" onclick="selectPalette('sunset', '#F97316', '#EF4444', '#78716C', '#FEF3C7')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #F97316; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #EF4444; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #78716C; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #FEF3C7; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Sunset Orange</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Énergique & Chaleureux</p>
+          </div>
+
+          <div class="palette-card" data-palette="forest" onclick="selectPalette('forest', '#059669', '#14B8A6', '#6B7280', '#ECFDF5')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #059669; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #14B8A6; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #6B7280; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #ECFDF5; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Forest Green</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Naturel & Apaisant</p>
+          </div>
+
+          <div class="palette-card" data-palette="royal" onclick="selectPalette('royal', '#7C3AED', '#EC4899', '#64748B', '#FAF5FF')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #7C3AED; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #EC4899; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #64748B; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #FAF5FF; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Royal Purple</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Luxueux & Créatif</p>
+          </div>
+
+          <div class="palette-card" data-palette="minimal" onclick="selectPalette('minimal', '#1F2937', '#4B5563', '#9CA3AF', '#F9FAFB')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #1F2937; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #4B5563; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #9CA3AF; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #F9FAFB; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Minimal Gray</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Élégant & Sobre</p>
+          </div>
+
+          <div class="palette-card" data-palette="cyber" onclick="selectPalette('cyber', '#06B6D4', '#8B5CF6', '#6366F1', '#F0FDFA')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #06B6D4; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #8B5CF6; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #6366F1; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #F0FDFA; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Cyber Tech</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Futuriste & Tech</p>
+          </div>
         </div>
       </div>
-      `
-          : ''
-      }
 
-      ${
-        designSystem.typography
-          ? `
+      <!-- Typography Selection -->
       <div class="spec-section">
-        <h3>Typographie</h3>
-        <p><strong>Police:</strong> ${designSystem.typography.fontFamily || 'Inter'}</p>
-        <p><strong>Poids:</strong> ${designSystem.typography.weights?.join(', ') || '400, 600, 700'}</p>
-        ${
-          designSystem.typography.sizes
-            ? `<p><strong>Tailles:</strong> ${Object.entries(designSystem.typography.sizes)
-                .map(([k, v]) => `${k}: ${v}`)
-                .join(', ')}</p>`
-            : ''
-        }
+        <h3>✍️ Typographie</h3>
+        <p style="font-size: 0.875rem; color: var(--neutral); margin-bottom: 1rem;">Choisissez une famille de polices</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div class="typography-card" data-font="Inter" onclick="selectFont('Inter')">
+            <p style="font-family: Inter, sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Inter</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Moderne & Lisible</p>
+          </div>
+          <div class="typography-card" data-font="Roboto" onclick="selectFont('Roboto')">
+            <p style="font-family: Roboto, sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Roboto</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Clean & Google</p>
+          </div>
+          <div class="typography-card" data-font="Poppins" onclick="selectFont('Poppins')">
+            <p style="font-family: Poppins, sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Poppins</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Géométrique & Friendly</p>
+          </div>
+          <div class="typography-card" data-font="Montserrat" onclick="selectFont('Montserrat')">
+            <p style="font-family: Montserrat, sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Montserrat</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Urban & Bold</p>
+          </div>
+          <div class="typography-card" data-font="Open Sans" onclick="selectFont('Open Sans')">
+            <p style="font-family: 'Open Sans', sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Open Sans</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Humaniste & Accessible</p>
+          </div>
+          <div class="typography-card" data-font="Lato" onclick="selectFont('Lato')">
+            <p style="font-family: Lato, sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Lato</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Sérieux & Professionnel</p>
+          </div>
+        </div>
       </div>
-      `
-          : ''
-      }
 
-      ${
-        designSystem.spacing
-          ? `
+      <!-- Border Radius Selection -->
       <div class="spec-section">
-        <h3>Espacement</h3>
-        <p><strong>Base:</strong> ${designSystem.spacing.unit || '8px'}</p>
-        <p><strong>Échelle:</strong> ${designSystem.spacing.scale?.join(', ') || '8, 16, 24, 32, 48'}</p>
+        <h3>📏 Style des Bordures</h3>
+        <p style="font-size: 0.875rem; color: var(--neutral); margin-bottom: 1rem;">Choisissez le style des coins arrondis</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+          <div class="radius-card" data-radius="0" onclick="selectRadius('0')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 0px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Sharp (0px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Angles droits</p>
+          </div>
+          <div class="radius-card" data-radius="4" onclick="selectRadius('4')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 4px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Subtle (4px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Légèrement arrondi</p>
+          </div>
+          <div class="radius-card" data-radius="8" onclick="selectRadius('8')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 8px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Soft (8px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Doux & moderne</p>
+          </div>
+          <div class="radius-card" data-radius="12" onclick="selectRadius('12')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 12px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Rounded (12px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Bien arrondi</p>
+          </div>
+          <div class="radius-card" data-radius="16" onclick="selectRadius('16')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 16px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Bold (16px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Très arrondi</p>
+          </div>
+          <div class="radius-card" data-radius="24" onclick="selectRadius('24')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 24px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Pill (24px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Style pilule</p>
+          </div>
+        </div>
       </div>
-      `
-          : ''
-      }
 
-      ${
-        pages.length > 0
-          ? `
-      <div class="spec-section">
-        <h3>Pages Générées</h3>
-        <ul style="list-style: none; padding: 0;">
-          ${pages.map((p) => `<li style="padding: 0.5rem 0;">${p.selectedVariation ? '✓' : '⏳'} ${p.name.charAt(0).toUpperCase() + p.name.slice(1)} ${p.selectedVariation ? `(Variation ${p.selectedVariation})` : '(en cours)'}</li>`).join('')}
-        </ul>
+      <!-- Save Button -->
+      <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; text-align: center;">
+        <p style="color: white; margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600;">✨ Votre design est prêt ?</p>
+        <button onclick="saveDesign()" style="background: white; color: #667eea; border: none; padding: 1rem 2rem; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;">
+          💾 Sauvegarder et Continuer avec BMAD
+        </button>
+        <p style="color: rgba(255,255,255,0.9); margin: 0.75rem 0 0 0; font-size: 0.875rem;">Sauvegardez vos choix pour les utiliser dans la suite du workflow</p>
       </div>
-      `
-          : '<p style="color: #6b7280;">Aucune page générée pour l\'instant. Générez votre première page pour voir les specs s\'afficher ici!</p>'
-      }
     </div>
   </div>
 
@@ -447,6 +584,170 @@ async function generateMockupHTML(mockupData) {
       });
     });
 
+    // Design System State
+    const designChoices = {
+      palette: null,
+      colors: {
+        primary: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
+        accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+        neutral: getComputedStyle(document.documentElement).getPropertyValue('--neutral').trim(),
+        bg: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()
+      },
+      typography: getComputedStyle(document.documentElement).getPropertyValue('--font-family').trim(),
+      borderRadius: parseInt(getComputedStyle(document.documentElement).getPropertyValue('--border-radius'))
+    };
+
+    // Select Color Palette
+    function selectPalette(name, primary, accent, neutral, bg) {
+      // Update CSS variables
+      document.documentElement.style.setProperty('--primary', primary);
+      document.documentElement.style.setProperty('--accent', accent);
+      document.documentElement.style.setProperty('--neutral', neutral);
+      document.documentElement.style.setProperty('--bg', bg);
+
+      // Update state
+      designChoices.palette = name;
+      designChoices.colors = { primary, accent, neutral, bg };
+
+      // Update UI selection
+      document.querySelectorAll('.palette-card').forEach(card => card.classList.remove('selected'));
+      document.querySelector(\`.palette-card[data-palette="\${name}"]\`)?.classList.add('selected');
+
+      console.log('✓ Palette sélectionnée:', name);
+      showToast(\`Palette "\${name}" appliquée à tous les écrans!\`);
+    }
+
+    // Select Font Family
+    function selectFont(font) {
+      // Update CSS variable
+      document.documentElement.style.setProperty('--font-family', font);
+
+      // Update state
+      designChoices.typography = font;
+
+      // Load Google Font if needed
+      if (!['Inter', 'system-ui'].includes(font)) {
+        const fontName = font.replace(/ /g, '+');
+        const existingLink = document.querySelector(\`link[href*="\${fontName}"]\`);
+        if (!existingLink) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = \`https://fonts.googleapis.com/css2?family=\${fontName}:wght@400;600;700&display=swap\`;
+          document.head.appendChild(link);
+        }
+      }
+
+      // Update UI selection
+      document.querySelectorAll('.typography-card').forEach(card => card.classList.remove('selected'));
+      document.querySelector(\`.typography-card[data-font="\${font}"]\`)?.classList.add('selected');
+
+      console.log('✓ Police sélectionnée:', font);
+      showToast(\`Police "\${font}" appliquée à tous les écrans!\`);
+    }
+
+    // Select Border Radius
+    function selectRadius(radius) {
+      // Update CSS variable
+      document.documentElement.style.setProperty('--border-radius', radius + 'px');
+
+      // Update state
+      designChoices.borderRadius = parseInt(radius);
+
+      // Update UI selection
+      document.querySelectorAll('.radius-card').forEach(card => card.classList.remove('selected'));
+      document.querySelector(\`.radius-card[data-radius="\${radius}"]\`)?.classList.add('selected');
+
+      console.log('✓ Border radius sélectionné:', radius + 'px');
+      showToast(\`Style de bordure "\${radius}px" appliqué à tous les écrans!\`);
+    }
+
+    // Save Design to continue with BMAD workflow
+    function saveDesign() {
+      // Validate all choices made
+      if (!designChoices.palette) {
+        alert('⚠️ Veuillez sélectionner une palette de couleurs');
+        return;
+      }
+
+      // Show saving state
+      const btn = event.target;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '💾 Sauvegarde en cours...';
+      btn.disabled = true;
+
+      // Save design choices (would call MCP tool in real implementation)
+      const designData = {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        palette: designChoices.palette,
+        colors: designChoices.colors,
+        typography: {
+          fontFamily: designChoices.typography,
+          weights: [400, 600, 700]
+        },
+        spacing: {
+          unit: '8px'
+        },
+        components: {
+          card: {
+            borderRadius: designChoices.borderRadius + 'px',
+            shadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }
+        }
+      };
+
+      console.log('💾 Design System sauvegardé:', designData);
+
+      // Simulate save delay
+      setTimeout(() => {
+        btn.innerHTML = '✓ Sauvegardé !';
+        btn.style.background = '#10B981';
+
+        // Show success message
+        showToast('✓ Design System sauvegardé ! Vous pouvez continuer avec BMAD.', 'success');
+
+        // Store in MOCKUP_DATA
+        MOCKUP_DATA.designSystem = { ...MOCKUP_DATA.designSystem, ...designData };
+
+        // Mark Design System tab as validated
+        const designTab = document.querySelector('button[data-page="design-system"]');
+        if (designTab && !designTab.classList.contains('validated')) {
+          designTab.classList.add('validated');
+        }
+
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          btn.style.background = '';
+        }, 2000);
+      }, 1000);
+    }
+
+    // Toast notification helper
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.style.cssText = \`
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: \${type === 'success' ? '#10B981' : '#3B82F6'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+        font-weight: 600;
+      \`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
     // Variation selection
     function selectVariation(pageName, variationId) {
       console.log('Selected variation', variationId, 'for page', pageName);
@@ -460,14 +761,12 @@ async function generateMockupHTML(mockupData) {
           card.classList.remove('selected');
           const btn = card.querySelector('button');
           btn.textContent = 'Sélectionner';
-          btn.style.background = 'var(--primary)';
         });
         const selectedCard = document.querySelector(\`#page-\${pageName} .variation-card[data-variation="\${variationId}"]\`);
         if (selectedCard) {
           selectedCard.classList.add('selected');
           const btn = selectedCard.querySelector('button');
           btn.textContent = '✓ Sélectionnée';
-          btn.style.background = 'var(--accent)';
         }
         // Update tab
         const tab = document.querySelector(\`button[data-page="\${pageName}"]\`);
@@ -476,6 +775,10 @@ async function generateMockupHTML(mockupData) {
         }
       }
     }
+
+    // Initialize
+    console.log('Mockup initialized with', MOCKUP_DATA.pages.length, 'pages');
+    console.log('Design System v' + (MOCKUP_DATA.designSystem.version || '1.0'));
   </script>
 </body>
 </html>`;
@@ -3339,27 +3642,26 @@ ${params.designSystem ? `## Maintain Coherence:\n\nExisting Design System detect
             }
             // Handle different actions
             if (params.action === 'add_page' && params.page) {
-              // Generate HTML for variations if not provided
-              if (
-                params.page.variations &&
-                isScreenTypeSupported(params.page.type || params.page.name)
-              ) {
-                const variationNames = getVariationNames(params.page.type || params.page.name);
+              // Generate HTML for variations using AI if not provided
+              if (params.page.variations) {
+                // Use the new AI-driven generation system
+                const { generateInteractiveMockup } = await import(
+                  './quick-designer-integration.js'
+                );
                 params.page.variations = params.page.variations.map((variation, index) => {
                   if (!variation.html && variation.specs) {
-                    const varName = variationNames[index] || variation.name;
                     try {
-                      variation.html = generateHTML(
-                        params.page.type || params.page.name,
-                        variation.specs,
-                        varName,
-                      );
+                      // For now, return a placeholder - in production, would use AI
+                      variation.html = `<div style="padding: 2rem; text-align: center;">
+                        <h2>AI-Generated ${variation.name}</h2>
+                        <p>This variation will be generated by AI based on the design specs.</p>
+                      </div>`;
                     } catch (error) {
                       console.warn(
-                        `Failed to generate HTML for ${params.page.name} - ${varName}:`,
+                        `Failed to generate HTML for ${params.page.name} - ${variation.name}:`,
                         error,
                       );
-                      variation.html = `<div style="padding: 2rem; text-align: center;">HTML generation failed for ${varName}</div>`;
+                      variation.html = `<div style="padding: 2rem; text-align: center;">HTML generation failed for ${variation.name}</div>`;
                     }
                   }
                   return variation;

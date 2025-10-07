@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maquette AiDesigner - Design System Interactif</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary: #3B82F6,#2563EB,#1E40AF;
+      --accent: #10B981,#059669,#047857;
+      --neutral: #6B7280;
+      --bg: #F3F4F6;
+      --font-family: Inter;
+      --spacing-unit: 8px;
+      --border-radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font-family), sans-serif; background: var(--bg); }
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid #e5e7eb; background: white; padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
+    .tabs button { padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; border-bottom: 3px solid transparent; margin-bottom: -2px; color: #6b7280; transition: all 0.2s; }
+    .tabs button:hover { color: var(--primary); }
+    .tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tabs button.validated::before { content: "✓ "; color: var(--accent); }
+    .page { display: none; padding: 2rem; }
+    .page.active { display: block; }
+    .variation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem; }
+    .variation-card { border: 2px solid #e5e7eb; border-radius: var(--border-radius); padding: 1.5rem; transition: all 0.2s; background: white; }
+    .variation-card.selected { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.1); }
+    .variation-card h3 { margin: 0 0 1rem 0; font-size: 1.125rem; }
+    .variation-preview { background: var(--bg); border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; min-height: 400px; margin-bottom: 1rem; overflow: auto; }
+    .variation-card button { width: 100%; padding: 0.75rem; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; background: var(--primary); color: white; transition: all 0.2s; }
+    .variation-card button:hover { opacity: 0.9; transform: translateY(-1px); }
+    .variation-card.selected button { background: var(--accent); }
+    .design-system-panel { background: white; border: 1px solid #e5e7eb; border-radius: var(--border-radius); padding: 2rem; margin-bottom: 2rem; }
+    .editor-panel { background: #f9fafb; border: 2px dashed var(--primary); border-radius: var(--border-radius); padding: 2rem; margin-bottom: 2rem; }
+    .color-swatch { display: inline-block; width: 40px; height: 40px; border-radius: 6px; margin-right: 0.5rem; border: 2px solid #e5e7eb; cursor: pointer; transition: all 0.2s; }
+    .color-swatch:hover { transform: scale(1.1); border-color: var(--primary); }
+    .spec-section { margin-bottom: 2rem; }
+    .spec-section h3 { font-size: 1.25rem; margin: 0 0 1rem 0; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb; color: var(--primary); }
+    .edit-control { margin-bottom: 1.5rem; }
+    .edit-control label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--neutral); font-size: 0.875rem; }
+    .edit-control input[type="color"] { width: 60px; height: 40px; border: 2px solid #e5e7eb; border-radius: 6px; cursor: pointer; }
+    .edit-control input[type="text"] { padding: 0.5rem 1rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; width: 100%; max-width: 300px; }
+    .edit-control input:focus { outline: none; border-color: var(--primary); }
+    .toggle-btn { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 1rem; transition: all 0.2s; }
+    .toggle-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .toggle-btn.active { background: var(--accent); }
+    .live-badge { display: inline-block; background: var(--accent); color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .palette-card, .typography-card, .radius-card {
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+    .palette-card:hover, .typography-card:hover, .radius-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .palette-card.selected, .typography-card.selected, .radius-card.selected {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+    .palette-card.selected::after, .typography-card.selected::after, .radius-card.selected::after {
+      content: "✓";
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--accent);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+    .palette-card, .typography-card, .radius-card { position: relative; }
+  </style>
+</head>
+<body>
+  <nav class="tabs">
+    <button data-page="design-system" >Design System</button>
+    <button data-page="login" class="active">Login</button>
+    <button data-page="dashboard" >Dashboard</button>
+    <button data-page="settings" >Settings</button>
+    <button data-page="pricing" >Pricing</button>
+    <button data-page="signup" >Signup</button>
+  </nav>
+
+  <!-- Design System Page -->
+  <div id="page-design-system" class="page ">
+    <h1 style="font-size: 2rem; margin: 0 0 0.5rem 0;">🎨 Sélectionnez votre Design System <span class="live-badge">LIVE</span></h1>
+    <p style="color: var(--neutral); margin-bottom: 2rem;">Choisissez vos préférences ci-dessous et voyez les changements en direct sur TOUS les écrans!</p>
+
+    <!-- Interactive Design Selection (Always Visible) -->
+    <div class="design-system-panel">
+
+      <!-- Color Palettes -->
+      <div class="spec-section">
+        <h3>🎨 Palette de Couleurs</h3>
+        <p style="font-size: 0.875rem; color: var(--neutral); margin-bottom: 1rem;">Sélectionnez une palette de couleurs</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div class="palette-card" data-palette="ocean" onclick="selectPalette('ocean', '#3B82F6', '#10B981', '#64748B', '#F1F5F9')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #3B82F6; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #10B981; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #64748B; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #F1F5F9; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Ocean Blue</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Professional & Moderne</p>
+          </div>
+
+          <div class="palette-card" data-palette="sunset" onclick="selectPalette('sunset', '#F97316', '#EF4444', '#78716C', '#FEF3C7')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #F97316; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #EF4444; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #78716C; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #FEF3C7; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Sunset Orange</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Énergique & Chaleureux</p>
+          </div>
+
+          <div class="palette-card" data-palette="forest" onclick="selectPalette('forest', '#059669', '#14B8A6', '#6B7280', '#ECFDF5')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #059669; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #14B8A6; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #6B7280; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #ECFDF5; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Forest Green</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Naturel & Apaisant</p>
+          </div>
+
+          <div class="palette-card" data-palette="royal" onclick="selectPalette('royal', '#7C3AED', '#EC4899', '#64748B', '#FAF5FF')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #7C3AED; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #EC4899; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #64748B; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #FAF5FF; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Royal Purple</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Luxueux & Créatif</p>
+          </div>
+
+          <div class="palette-card" data-palette="minimal" onclick="selectPalette('minimal', '#1F2937', '#4B5563', '#9CA3AF', '#F9FAFB')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #1F2937; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #4B5563; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #9CA3AF; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #F9FAFB; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Minimal Gray</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Élégant & Sobre</p>
+          </div>
+
+          <div class="palette-card" data-palette="cyber" onclick="selectPalette('cyber', '#06B6D4', '#8B5CF6', '#6366F1', '#F0FDFA')">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 50px; height: 50px; background: #06B6D4; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #8B5CF6; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #6366F1; border-radius: 8px;"></div>
+              <div style="width: 50px; height: 50px; background: #F0FDFA; border-radius: 8px;"></div>
+            </div>
+            <p style="font-weight: 600; margin: 0;">Cyber Tech</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Futuriste & Tech</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typography Selection -->
+      <div class="spec-section">
+        <h3>✍️ Typographie</h3>
+        <p style="font-size: 0.875rem; color: var(--neutral); margin-bottom: 1rem;">Choisissez une famille de polices</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div class="typography-card" data-font="Inter" onclick="selectFont('Inter')">
+            <p style="font-family: Inter, sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Inter</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Moderne & Lisible</p>
+          </div>
+          <div class="typography-card" data-font="Roboto" onclick="selectFont('Roboto')">
+            <p style="font-family: Roboto, sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Roboto</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Clean & Google</p>
+          </div>
+          <div class="typography-card" data-font="Poppins" onclick="selectFont('Poppins')">
+            <p style="font-family: Poppins, sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Poppins</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Géométrique & Friendly</p>
+          </div>
+          <div class="typography-card" data-font="Montserrat" onclick="selectFont('Montserrat')">
+            <p style="font-family: Montserrat, sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Montserrat</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Urban & Bold</p>
+          </div>
+          <div class="typography-card" data-font="Open Sans" onclick="selectFont('Open Sans')">
+            <p style="font-family: 'Open Sans', sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Open Sans</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Humaniste & Accessible</p>
+          </div>
+          <div class="typography-card" data-font="Lato" onclick="selectFont('Lato')">
+            <p style="font-family: Lato, sans-serif; font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0;">Lato</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0;">Sérieux & Professionnel</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Border Radius Selection -->
+      <div class="spec-section">
+        <h3>📏 Style des Bordures</h3>
+        <p style="font-size: 0.875rem; color: var(--neutral); margin-bottom: 1rem;">Choisissez le style des coins arrondis</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+          <div class="radius-card" data-radius="0" onclick="selectRadius('0')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 0px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Sharp (0px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Angles droits</p>
+          </div>
+          <div class="radius-card" data-radius="4" onclick="selectRadius('4')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 4px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Subtle (4px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Légèrement arrondi</p>
+          </div>
+          <div class="radius-card" data-radius="8" onclick="selectRadius('8')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 8px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Soft (8px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Doux & moderne</p>
+          </div>
+          <div class="radius-card" data-radius="12" onclick="selectRadius('12')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 12px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Rounded (12px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Bien arrondi</p>
+          </div>
+          <div class="radius-card" data-radius="16" onclick="selectRadius('16')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 16px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Bold (16px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Très arrondi</p>
+          </div>
+          <div class="radius-card" data-radius="24" onclick="selectRadius('24')">
+            <div style="width: 100%; height: 80px; background: var(--primary); border-radius: 24px; margin-bottom: 0.5rem;"></div>
+            <p style="font-weight: 600; margin: 0;">Pill (24px)</p>
+            <p style="font-size: 0.75rem; color: var(--neutral); margin: 0.25rem 0 0 0;">Style pilule</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; text-align: center;">
+        <p style="color: white; margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600;">✨ Votre design est prêt ?</p>
+        <button onclick="saveDesign()" style="background: white; color: #667eea; border: none; padding: 1rem 2rem; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;">
+          💾 Sauvegarder et Continuer avec BMAD
+        </button>
+        <p style="color: rgba(255,255,255,0.9); margin: 0.75rem 0 0 0; font-size: 0.875rem;">Sauvegardez vos choix pour les utiliser dans la suite du workflow</p>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Page: login -->
+  <div id="page-login" class="page active">
+    <h2 style="font-size: 1.75rem; margin: 0 0 1rem 0;">Login - Sélectionnez une variation</h2>
+    <div class="variation-grid">
+      
+      <div class="variation-card " data-variation="1">
+        <h3>Simple Login </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
+
+    <h1 style="margin: 0 0 1rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;">
+      Connexion
+    </h1>
+
+    <form>
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Email
+        </label>
+        <input
+          type="email"
+          placeholder="vous@example.com"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Mot de passe
+        </label>
+        <input
+          type="password"
+          placeholder="••••••••"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+      </div>
+
+      <div style="margin-bottom: 1.5rem; text-align: right;">
+        <a href="#" style="font-size: 0.875rem; color: #5E6AD2; text-decoration: none;">
+          Mot de passe oublié?
+        </a>
+      </div>
+
+      <button
+        type="submit"
+        style="width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;"
+      >
+        Se connecter
+      </button>
+
+      
+
+      <div style="margin-top: 2rem; text-align: center; font-size: 0.875rem; color: #6B7280;">
+        Pas encore de compte?
+        <a href="#" style="color: #5E6AD2; text-decoration: none; font-weight: 600;">
+          S'inscrire
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('login', 1)">Sélectionner</button>
+      </div>
+      
+      <div class="variation-card " data-variation="2">
+        <h3>Social Login </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
+
+    <h1 style="margin: 0 0 1rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;">
+      Connexion
+    </h1>
+
+    <form>
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Email
+        </label>
+        <input
+          type="email"
+          placeholder="vous@example.com"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Mot de passe
+        </label>
+        <input
+          type="password"
+          placeholder="••••••••"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+      </div>
+
+      <div style="margin-bottom: 1.5rem; text-align: right;">
+        <a href="#" style="font-size: 0.875rem; color: #5E6AD2; text-decoration: none;">
+          Mot de passe oublié?
+        </a>
+      </div>
+
+      <button
+        type="submit"
+        style="width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;"
+      >
+        Se connecter
+      </button>
+
+      
+
+      <div style="margin-top: 2rem; text-align: center; font-size: 0.875rem; color: #6B7280;">
+        Pas encore de compte?
+        <a href="#" style="color: #5E6AD2; text-decoration: none; font-weight: 600;">
+          S'inscrire
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('login', 2)">Sélectionner</button>
+      </div>
+      
+      <div class="variation-card " data-variation="3">
+        <h3>Enterprise Login </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
+
+    <h1 style="margin: 0 0 1rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;">
+      Connexion
+    </h1>
+
+    <form>
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Email
+        </label>
+        <input
+          type="email"
+          placeholder="vous@example.com"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Mot de passe
+        </label>
+        <input
+          type="password"
+          placeholder="••••••••"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+      </div>
+
+      <div style="margin-bottom: 1.5rem; text-align: right;">
+        <a href="#" style="font-size: 0.875rem; color: #5E6AD2; text-decoration: none;">
+          Mot de passe oublié?
+        </a>
+      </div>
+
+      <button
+        type="submit"
+        style="width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;"
+      >
+        Se connecter
+      </button>
+
+      
+
+      <div style="margin-top: 2rem; text-align: center; font-size: 0.875rem; color: #6B7280;">
+        Pas encore de compte?
+        <a href="#" style="color: #5E6AD2; text-decoration: none; font-weight: 600;">
+          S'inscrire
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('login', 3)">Sélectionner</button>
+      </div>
+      
+    </div>
+  </div>
+  
+
+  <!-- Page: dashboard -->
+  <div id="page-dashboard" class="page ">
+    <h2 style="font-size: 1.75rem; margin: 0 0 1rem 0;">Dashboard - Sélectionnez une variation</h2>
+    <div class="variation-grid">
+      
+      <div class="variation-card " data-variation="1">
+        <h3>Analytics Dashboard </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <!-- Header -->
+  <div style="margin-bottom: 2rem;">
+    <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;">
+      Tableau de bord
+    </h1>
+    <p style="margin: 0; color: #6B7280; font-size: 0.875rem;">
+      Vue d'ensemble de votre activité
+    </p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Stat 1 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Utilisateurs actifs
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        2,543
+      </div>
+      <div style="font-size: 0.75rem; color: #3D9970;">
+        ↑ 12% ce mois
+      </div>
+    </div>
+
+    <!-- Stat 2 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Revenus
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        45,231€
+      </div>
+      <div style="font-size: 0.75rem; color: #3D9970;">
+        ↑ 8% ce mois
+      </div>
+    </div>
+
+    
+    <!-- Stat 3 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Taux conversion
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        3.2%
+      </div>
+      <div style="font-size: 0.75rem; color: #EF4444;">
+        ↓ 2% ce mois
+      </div>
+    </div>
+
+    <!-- Stat 4 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Satisfaction
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        4.8
+      </div>
+      <div style="font-size: 0.75rem; color: #3D9970;">
+        ↑ 0.3 ce mois
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+</div>
+        </div>
+        <button onclick="selectVariation('dashboard', 1)">Sélectionner</button>
+      </div>
+      
+      <div class="variation-card " data-variation="2">
+        <h3>Simple Dashboard </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <!-- Header -->
+  <div style="margin-bottom: 2rem;">
+    <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;">
+      Tableau de bord
+    </h1>
+    <p style="margin: 0; color: #6B7280; font-size: 0.875rem;">
+      Vue d'ensemble de votre activité
+    </p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Stat 1 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Utilisateurs actifs
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        2,543
+      </div>
+      <div style="font-size: 0.75rem; color: #3D9970;">
+        ↑ 12% ce mois
+      </div>
+    </div>
+
+    <!-- Stat 2 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Revenus
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        45,231€
+      </div>
+      <div style="font-size: 0.75rem; color: #3D9970;">
+        ↑ 8% ce mois
+      </div>
+    </div>
+
+    
+    <!-- Stat 3 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Taux conversion
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        3.2%
+      </div>
+      <div style="font-size: 0.75rem; color: #EF4444;">
+        ↓ 2% ce mois
+      </div>
+    </div>
+
+    <!-- Stat 4 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Satisfaction
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        4.8
+      </div>
+      <div style="font-size: 0.75rem; color: #3D9970;">
+        ↑ 0.3 ce mois
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+</div>
+        </div>
+        <button onclick="selectVariation('dashboard', 2)">Sélectionner</button>
+      </div>
+      
+      <div class="variation-card " data-variation="3">
+        <h3>Detailed Dashboard </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <!-- Header -->
+  <div style="margin-bottom: 2rem;">
+    <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;">
+      Tableau de bord
+    </h1>
+    <p style="margin: 0; color: #6B7280; font-size: 0.875rem;">
+      Vue d'ensemble de votre activité
+    </p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Stat 1 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Utilisateurs actifs
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        2,543
+      </div>
+      <div style="font-size: 0.75rem; color: #3D9970;">
+        ↑ 12% ce mois
+      </div>
+    </div>
+
+    <!-- Stat 2 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Revenus
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        45,231€
+      </div>
+      <div style="font-size: 0.75rem; color: #3D9970;">
+        ↑ 8% ce mois
+      </div>
+    </div>
+
+    
+    <!-- Stat 3 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Taux conversion
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        3.2%
+      </div>
+      <div style="font-size: 0.75rem; color: #EF4444;">
+        ↓ 2% ce mois
+      </div>
+    </div>
+
+    <!-- Stat 4 -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;">
+        Satisfaction
+      </div>
+      <div style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;">
+        4.8
+      </div>
+      <div style="font-size: 0.75rem; color: #3D9970;">
+        ↑ 0.3 ce mois
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+</div>
+        </div>
+        <button onclick="selectVariation('dashboard', 3)">Sélectionner</button>
+      </div>
+      
+    </div>
+  </div>
+  
+
+  <!-- Page: settings -->
+  <div id="page-settings" class="page ">
+    <h2 style="font-size: 1.75rem; margin: 0 0 1rem 0;">Settings - Sélectionnez une variation</h2>
+    <div class="variation-grid">
+      
+      <div class="variation-card " data-variation="1">
+        <h3>User Settings </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <div style="max-width: 800px; margin: 0 auto;">
+
+    
+
+    <div style="flex: 1;">
+      <!-- Header -->
+      <div style="margin-bottom: 2rem;">
+        <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;">
+          Paramètres
+        </h1>
+        <p style="margin: 0; color: #6B7280; font-size: 0.875rem;">
+          Gérez vos préférences et paramètres de compte
+        </p>
+      </div>
+
+      
+
+      <!-- Profile Section -->
+      <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;">
+          Informations du profil
+        </h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Prénom
+            </label>
+            <input
+              type="text"
+              value="Jean"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Nom
+            </label>
+            <input
+              type="text"
+              value="Dupont"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Email
+          </label>
+          <input
+            type="email"
+            value="jean.dupont@example.com"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Bio
+          </label>
+          <textarea
+            rows="3"
+            style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem; font-family: Inter, sans-serif; resize: vertical;"
+          >Développeur passionné par les technologies web...</textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+          <button style="height: 40px; padding: 0 1.5rem; background: white; color: #6B7280; border: 1px solid #E5E7EB; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">
+            Annuler
+          </button>
+          <button style="height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">
+            Enregistrer
+          </button>
+        </div>
+      </div>
+
+      <!-- Security Section -->
+      <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;">
+          Sécurité
+        </h2>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Mot de passe actuel
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Nouveau mot de passe
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Confirmer mot de passe
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+        </div>
+
+        <button style="height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">
+          Mettre à jour le mot de passe
+        </button>
+      </div>
+
+      <!-- Notifications Section -->
+      <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h2 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;">
+          Notifications
+        </h2>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;">
+          <div>
+            <div style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;">
+              Notifications par email
+            </div>
+            <div style="font-size: 0.75rem; color: #6B7280;">
+              Recevez des mises à jour par email
+            </div>
+          </div>
+          <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #5E6AD2; border-radius: 24px; transition: 0.2s;"></span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;">
+          <div>
+            <div style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;">
+              Notifications push
+            </div>
+            <div style="font-size: 0.75rem; color: #6B7280;">
+              Notifications dans le navigateur
+            </div>
+          </div>
+          <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;"></span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+          <div>
+            <div style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;">
+              Notifications marketing
+            </div>
+            <div style="font-size: 0.75rem; color: #6B7280;">
+              Offres et actualités produit
+            </div>
+          </div>
+          <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('settings', 1)">Sélectionner</button>
+      </div>
+      
+      <div class="variation-card " data-variation="2">
+        <h3>Account Settings </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <div style="max-width: 800px; margin: 0 auto;">
+
+    
+
+    <div style="flex: 1;">
+      <!-- Header -->
+      <div style="margin-bottom: 2rem;">
+        <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;">
+          Paramètres
+        </h1>
+        <p style="margin: 0; color: #6B7280; font-size: 0.875rem;">
+          Gérez vos préférences et paramètres de compte
+        </p>
+      </div>
+
+      
+
+      <!-- Profile Section -->
+      <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;">
+          Informations du profil
+        </h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Prénom
+            </label>
+            <input
+              type="text"
+              value="Jean"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Nom
+            </label>
+            <input
+              type="text"
+              value="Dupont"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Email
+          </label>
+          <input
+            type="email"
+            value="jean.dupont@example.com"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Bio
+          </label>
+          <textarea
+            rows="3"
+            style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem; font-family: Inter, sans-serif; resize: vertical;"
+          >Développeur passionné par les technologies web...</textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+          <button style="height: 40px; padding: 0 1.5rem; background: white; color: #6B7280; border: 1px solid #E5E7EB; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">
+            Annuler
+          </button>
+          <button style="height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">
+            Enregistrer
+          </button>
+        </div>
+      </div>
+
+      <!-- Security Section -->
+      <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;">
+          Sécurité
+        </h2>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Mot de passe actuel
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Nouveau mot de passe
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Confirmer mot de passe
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+        </div>
+
+        <button style="height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">
+          Mettre à jour le mot de passe
+        </button>
+      </div>
+
+      <!-- Notifications Section -->
+      <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h2 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;">
+          Notifications
+        </h2>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;">
+          <div>
+            <div style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;">
+              Notifications par email
+            </div>
+            <div style="font-size: 0.75rem; color: #6B7280;">
+              Recevez des mises à jour par email
+            </div>
+          </div>
+          <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #5E6AD2; border-radius: 24px; transition: 0.2s;"></span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;">
+          <div>
+            <div style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;">
+              Notifications push
+            </div>
+            <div style="font-size: 0.75rem; color: #6B7280;">
+              Notifications dans le navigateur
+            </div>
+          </div>
+          <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;"></span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+          <div>
+            <div style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;">
+              Notifications marketing
+            </div>
+            <div style="font-size: 0.75rem; color: #6B7280;">
+              Offres et actualités produit
+            </div>
+          </div>
+          <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('settings', 2)">Sélectionner</button>
+      </div>
+      
+      <div class="variation-card " data-variation="3">
+        <h3>Admin Settings </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <div style="max-width: 800px; margin: 0 auto;">
+
+    
+
+    <div style="flex: 1;">
+      <!-- Header -->
+      <div style="margin-bottom: 2rem;">
+        <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;">
+          Paramètres
+        </h1>
+        <p style="margin: 0; color: #6B7280; font-size: 0.875rem;">
+          Gérez vos préférences et paramètres de compte
+        </p>
+      </div>
+
+      
+
+      <!-- Profile Section -->
+      <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;">
+          Informations du profil
+        </h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Prénom
+            </label>
+            <input
+              type="text"
+              value="Jean"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Nom
+            </label>
+            <input
+              type="text"
+              value="Dupont"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Email
+          </label>
+          <input
+            type="email"
+            value="jean.dupont@example.com"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Bio
+          </label>
+          <textarea
+            rows="3"
+            style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem; font-family: Inter, sans-serif; resize: vertical;"
+          >Développeur passionné par les technologies web...</textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+          <button style="height: 40px; padding: 0 1.5rem; background: white; color: #6B7280; border: 1px solid #E5E7EB; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">
+            Annuler
+          </button>
+          <button style="height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">
+            Enregistrer
+          </button>
+        </div>
+      </div>
+
+      <!-- Security Section -->
+      <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;">
+          Sécurité
+        </h2>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Mot de passe actuel
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Nouveau mot de passe
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+              Confirmer mot de passe
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+            />
+          </div>
+        </div>
+
+        <button style="height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">
+          Mettre à jour le mot de passe
+        </button>
+      </div>
+
+      <!-- Notifications Section -->
+      <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h2 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;">
+          Notifications
+        </h2>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;">
+          <div>
+            <div style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;">
+              Notifications par email
+            </div>
+            <div style="font-size: 0.75rem; color: #6B7280;">
+              Recevez des mises à jour par email
+            </div>
+          </div>
+          <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #5E6AD2; border-radius: 24px; transition: 0.2s;"></span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;">
+          <div>
+            <div style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;">
+              Notifications push
+            </div>
+            <div style="font-size: 0.75rem; color: #6B7280;">
+              Notifications dans le navigateur
+            </div>
+          </div>
+          <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;"></span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+          <div>
+            <div style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;">
+              Notifications marketing
+            </div>
+            <div style="font-size: 0.75rem; color: #6B7280;">
+              Offres et actualités produit
+            </div>
+          </div>
+          <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('settings', 3)">Sélectionner</button>
+      </div>
+      
+    </div>
+  </div>
+  
+
+  <!-- Page: pricing -->
+  <div id="page-pricing" class="page ">
+    <h2 style="font-size: 1.75rem; margin: 0 0 1rem 0;">Pricing - Sélectionnez une variation</h2>
+    <div class="variation-grid">
+      
+      <div class="variation-card " data-variation="1">
+        <h3>SaaS Pricing </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; background: #F3F4F6; padding: 4rem 2rem; font-family: Inter, sans-serif;">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 4rem;">
+      <h1 style="margin: 0 0 1rem 0; font-size: 2.5rem; font-weight: 700; color: #111827;">
+        Tarifs simples et transparents
+      </h1>
+      <p style="margin: 0; color: #6B7280; font-size: 1.125rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        Choisissez le plan qui correspond à vos besoins. Changez ou annulez à tout moment.
+      </p>
+    </div>
+
+    <!-- Billing Toggle (for Featured and Detailed) -->
+    
+
+    <!-- Pricing Cards -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; max-width: 800px; margin: 0 auto;">
+      
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;">
+
+          
+
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;">
+              Gratuit
+            </h3>
+            <p style="margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;">
+              Pour commencer
+            </p>
+            <div style="display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;">
+              <span style="font-size: 3rem; font-weight: 700; color: #111827;">
+                0
+              </span>
+              <span style="font-size: 1.25rem; color: #6B7280;">
+                €/mois
+              </span>
+            </div>
+            <button style="width: 100%; height: 44px; background: white; color: #5E6AD2; border: 2px solid #5E6AD2; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;">
+              Commencer gratuitement
+            </button>
+          </div>
+
+          <div style="border-top: 1px solid #E5E7EB; padding-top: 2rem;">
+            
+
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    5 projets
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    1 Go stockage
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Support communautaire
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Accès de base
+                  </span>
+                </li>
+              
+            </ul>
+          </div>
+
+        </div>
+      
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;">
+
+          
+
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;">
+              Pro
+            </h3>
+            <p style="margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;">
+              Pour professionnels
+            </p>
+            <div style="display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;">
+              <span style="font-size: 3rem; font-weight: 700; color: #111827;">
+                29
+              </span>
+              <span style="font-size: 1.25rem; color: #6B7280;">
+                €/mois
+              </span>
+            </div>
+            <button style="width: 100%; height: 44px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;">
+              Démarrer l'essai
+            </button>
+          </div>
+
+          <div style="border-top: 1px solid #E5E7EB; padding-top: 2rem;">
+            
+
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Projets illimités
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    100 Go stockage
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Support prioritaire
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Toutes les fonctionnalités
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Analyses avancées
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Intégrations
+                  </span>
+                </li>
+              
+            </ul>
+          </div>
+
+        </div>
+      
+    </div>
+
+    <!-- FAQ / Additional Info -->
+    
+
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('pricing', 1)">Sélectionner</button>
+      </div>
+      
+      <div class="variation-card " data-variation="2">
+        <h3>Simple Pricing </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; background: #F3F4F6; padding: 4rem 2rem; font-family: Inter, sans-serif;">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 4rem;">
+      <h1 style="margin: 0 0 1rem 0; font-size: 2.5rem; font-weight: 700; color: #111827;">
+        Tarifs simples et transparents
+      </h1>
+      <p style="margin: 0; color: #6B7280; font-size: 1.125rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        Choisissez le plan qui correspond à vos besoins. Changez ou annulez à tout moment.
+      </p>
+    </div>
+
+    <!-- Billing Toggle (for Featured and Detailed) -->
+    
+
+    <!-- Pricing Cards -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; max-width: 800px; margin: 0 auto;">
+      
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;">
+
+          
+
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;">
+              Gratuit
+            </h3>
+            <p style="margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;">
+              Pour commencer
+            </p>
+            <div style="display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;">
+              <span style="font-size: 3rem; font-weight: 700; color: #111827;">
+                0
+              </span>
+              <span style="font-size: 1.25rem; color: #6B7280;">
+                €/mois
+              </span>
+            </div>
+            <button style="width: 100%; height: 44px; background: white; color: #5E6AD2; border: 2px solid #5E6AD2; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;">
+              Commencer gratuitement
+            </button>
+          </div>
+
+          <div style="border-top: 1px solid #E5E7EB; padding-top: 2rem;">
+            
+
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    5 projets
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    1 Go stockage
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Support communautaire
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Accès de base
+                  </span>
+                </li>
+              
+            </ul>
+          </div>
+
+        </div>
+      
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;">
+
+          
+
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;">
+              Pro
+            </h3>
+            <p style="margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;">
+              Pour professionnels
+            </p>
+            <div style="display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;">
+              <span style="font-size: 3rem; font-weight: 700; color: #111827;">
+                29
+              </span>
+              <span style="font-size: 1.25rem; color: #6B7280;">
+                €/mois
+              </span>
+            </div>
+            <button style="width: 100%; height: 44px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;">
+              Démarrer l'essai
+            </button>
+          </div>
+
+          <div style="border-top: 1px solid #E5E7EB; padding-top: 2rem;">
+            
+
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Projets illimités
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    100 Go stockage
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Support prioritaire
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Toutes les fonctionnalités
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Analyses avancées
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Intégrations
+                  </span>
+                </li>
+              
+            </ul>
+          </div>
+
+        </div>
+      
+    </div>
+
+    <!-- FAQ / Additional Info -->
+    
+
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('pricing', 2)">Sélectionner</button>
+      </div>
+      
+      <div class="variation-card " data-variation="3">
+        <h3>Tiered Pricing </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; background: #F3F4F6; padding: 4rem 2rem; font-family: Inter, sans-serif;">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 4rem;">
+      <h1 style="margin: 0 0 1rem 0; font-size: 2.5rem; font-weight: 700; color: #111827;">
+        Tarifs simples et transparents
+      </h1>
+      <p style="margin: 0; color: #6B7280; font-size: 1.125rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        Choisissez le plan qui correspond à vos besoins. Changez ou annulez à tout moment.
+      </p>
+    </div>
+
+    <!-- Billing Toggle (for Featured and Detailed) -->
+    
+
+    <!-- Pricing Cards -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; max-width: 800px; margin: 0 auto;">
+      
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;">
+
+          
+
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;">
+              Gratuit
+            </h3>
+            <p style="margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;">
+              Pour commencer
+            </p>
+            <div style="display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;">
+              <span style="font-size: 3rem; font-weight: 700; color: #111827;">
+                0
+              </span>
+              <span style="font-size: 1.25rem; color: #6B7280;">
+                €/mois
+              </span>
+            </div>
+            <button style="width: 100%; height: 44px; background: white; color: #5E6AD2; border: 2px solid #5E6AD2; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;">
+              Commencer gratuitement
+            </button>
+          </div>
+
+          <div style="border-top: 1px solid #E5E7EB; padding-top: 2rem;">
+            
+
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    5 projets
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    1 Go stockage
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Support communautaire
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#3D9970">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Accès de base
+                  </span>
+                </li>
+              
+            </ul>
+          </div>
+
+        </div>
+      
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;">
+
+          
+
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;">
+              Pro
+            </h3>
+            <p style="margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;">
+              Pour professionnels
+            </p>
+            <div style="display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;">
+              <span style="font-size: 3rem; font-weight: 700; color: #111827;">
+                29
+              </span>
+              <span style="font-size: 1.25rem; color: #6B7280;">
+                €/mois
+              </span>
+            </div>
+            <button style="width: 100%; height: 44px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;">
+              Démarrer l'essai
+            </button>
+          </div>
+
+          <div style="border-top: 1px solid #E5E7EB; padding-top: 2rem;">
+            
+
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Projets illimités
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    100 Go stockage
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Support prioritaire
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Toutes les fonctionnalités
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Analyses avancées
+                  </span>
+                </li>
+              
+                <li style="display: flex; align-items: start; margin-bottom: 0.75rem;">
+                  <svg style="flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;" viewBox="0 0 20 20" fill="#5E6AD2">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; color: #6B7280;">
+                    Intégrations
+                  </span>
+                </li>
+              
+            </ul>
+          </div>
+
+        </div>
+      
+    </div>
+
+    <!-- FAQ / Additional Info -->
+    
+
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('pricing', 3)">Sélectionner</button>
+      </div>
+      
+    </div>
+  </div>
+  
+
+  <!-- Page: signup -->
+  <div id="page-signup" class="page ">
+    <h2 style="font-size: 1.75rem; margin: 0 0 1rem 0;">Signup - Sélectionnez une variation</h2>
+    <div class="variation-grid">
+      
+      <div class="variation-card " data-variation="1">
+        <h3>Simple Signup </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
+
+    <h1 style="margin: 0 0 0.5rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;">
+      Créer un compte
+    </h1>
+    <p style="margin: 0 0 1rem 0; color: #6B7280; font-size: 0.875rem;">
+      Commencez gratuitement dès aujourd'hui
+    </p>
+
+    
+
+    
+
+    <form>
+      <div style=" margin-bottom: 1rem;">
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Prénom
+          </label>
+          <input
+            type="text"
+            placeholder="Jean"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+
+        <div>
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Nom
+          </label>
+          <input
+            type="text"
+            placeholder="Dupont"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Email
+        </label>
+        <input
+          type="email"
+          placeholder="vous@example.com"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Mot de passe
+        </label>
+        <input
+          type="password"
+          placeholder="••••••••"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: #6B7280;">
+          Au moins 8 caractères avec lettres et chiffres
+        </p>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: flex; align-items: start; cursor: pointer;">
+          <input type="checkbox" style="margin-top: 0.25rem; margin-right: 0.5rem;" />
+          <span style="font-size: 0.75rem; color: #6B7280;">
+            J'accepte les <a href="#" style="color: #5E6AD2; text-decoration: none;">conditions d'utilisation</a> et la <a href="#" style="color: #5E6AD2; text-decoration: none;">politique de confidentialité</a>
+          </span>
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        style="width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer; margin-bottom: 1rem;"
+      >
+        Créer mon compte
+      </button>
+
+      <div style="text-align: center; font-size: 0.875rem; color: #6B7280;">
+        Vous avez déjà un compte?
+        <a href="#" style="color: #5E6AD2; text-decoration: none; font-weight: 600;">
+          Se connecter
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('signup', 1)">Sélectionner</button>
+      </div>
+      
+      <div class="variation-card " data-variation="2">
+        <h3>Social Signup </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
+
+    <h1 style="margin: 0 0 0.5rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;">
+      Créer un compte
+    </h1>
+    <p style="margin: 0 0 1rem 0; color: #6B7280; font-size: 0.875rem;">
+      Commencez gratuitement dès aujourd'hui
+    </p>
+
+    
+
+    
+
+    <form>
+      <div style=" margin-bottom: 1rem;">
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Prénom
+          </label>
+          <input
+            type="text"
+            placeholder="Jean"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+
+        <div>
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Nom
+          </label>
+          <input
+            type="text"
+            placeholder="Dupont"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Email
+        </label>
+        <input
+          type="email"
+          placeholder="vous@example.com"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Mot de passe
+        </label>
+        <input
+          type="password"
+          placeholder="••••••••"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: #6B7280;">
+          Au moins 8 caractères avec lettres et chiffres
+        </p>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: flex; align-items: start; cursor: pointer;">
+          <input type="checkbox" style="margin-top: 0.25rem; margin-right: 0.5rem;" />
+          <span style="font-size: 0.75rem; color: #6B7280;">
+            J'accepte les <a href="#" style="color: #5E6AD2; text-decoration: none;">conditions d'utilisation</a> et la <a href="#" style="color: #5E6AD2; text-decoration: none;">politique de confidentialité</a>
+          </span>
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        style="width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer; margin-bottom: 1rem;"
+      >
+        Créer mon compte
+      </button>
+
+      <div style="text-align: center; font-size: 0.875rem; color: #6B7280;">
+        Vous avez déjà un compte?
+        <a href="#" style="color: #5E6AD2; text-decoration: none; font-weight: 600;">
+          Se connecter
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('signup', 2)">Sélectionner</button>
+      </div>
+      
+      <div class="variation-card " data-variation="3">
+        <h3>Multi-step Signup </h3>
+        <div class="variation-preview">
+          <div style="min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;">
+  <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
+
+    <h1 style="margin: 0 0 0.5rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;">
+      Créer un compte
+    </h1>
+    <p style="margin: 0 0 1rem 0; color: #6B7280; font-size: 0.875rem;">
+      Commencez gratuitement dès aujourd'hui
+    </p>
+
+    
+
+    
+
+    <form>
+      <div style=" margin-bottom: 1rem;">
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Prénom
+          </label>
+          <input
+            type="text"
+            placeholder="Jean"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+
+        <div>
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+            Nom
+          </label>
+          <input
+            type="text"
+            placeholder="Dupont"
+            style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+          />
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Email
+        </label>
+        <input
+          type="email"
+          placeholder="vous@example.com"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;">
+          Mot de passe
+        </label>
+        <input
+          type="password"
+          placeholder="••••••••"
+          style="width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;"
+        />
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: #6B7280;">
+          Au moins 8 caractères avec lettres et chiffres
+        </p>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: flex; align-items: start; cursor: pointer;">
+          <input type="checkbox" style="margin-top: 0.25rem; margin-right: 0.5rem;" />
+          <span style="font-size: 0.75rem; color: #6B7280;">
+            J'accepte les <a href="#" style="color: #5E6AD2; text-decoration: none;">conditions d'utilisation</a> et la <a href="#" style="color: #5E6AD2; text-decoration: none;">politique de confidentialité</a>
+          </span>
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        style="width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer; margin-bottom: 1rem;"
+      >
+        Créer mon compte
+      </button>
+
+      <div style="text-align: center; font-size: 0.875rem; color: #6B7280;">
+        Vous avez déjà un compte?
+        <a href="#" style="color: #5E6AD2; text-decoration: none; font-weight: 600;">
+          Se connecter
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+        </div>
+        <button onclick="selectVariation('signup', 3)">Sélectionner</button>
+      </div>
+      
+    </div>
+  </div>
+  
+
+  <script>
+    const MOCKUP_DATA = {"designSystem":{"version":"1.0","colors":{"primary":["#3B82F6","#2563EB","#1E40AF"],"accent":["#10B981","#059669","#047857"],"neutral":["#6B7280","#4B5563","#374151"],"background":"#F3F4F6"},"typography":{"fontFamily":"Inter","fontSize":{"base":"16px","scale":1.25},"weights":[400,600,700]},"spacing":{"unit":"8px","scale":[0,0.5,1,1.5,2,3,4,6,8]},"components":{"card":{"borderRadius":"12px","shadow":"0 4px 6px rgba(0,0,0,0.1)"}}},"pages":[{"type":"login","name":"login","variations":[{"id":1,"name":"Simple Login","specs":{"title":"Welcome Back","subtitle":"Sign in to your account","fields":["email","password"],"actions":["login","forgotPassword"]},"html":"<div style=\"min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;\">\n\n    <h1 style=\"margin: 0 0 1rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;\">\n      Connexion\n    </h1>\n\n    <form>\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Email\n        </label>\n        <input\n          type=\"email\"\n          placeholder=\"vous@example.com\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n      </div>\n\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Mot de passe\n        </label>\n        <input\n          type=\"password\"\n          placeholder=\"••••••••\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n      </div>\n\n      <div style=\"margin-bottom: 1.5rem; text-align: right;\">\n        <a href=\"#\" style=\"font-size: 0.875rem; color: #5E6AD2; text-decoration: none;\">\n          Mot de passe oublié?\n        </a>\n      </div>\n\n      <button\n        type=\"submit\"\n        style=\"width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;\"\n      >\n        Se connecter\n      </button>\n\n      \n\n      <div style=\"margin-top: 2rem; text-align: center; font-size: 0.875rem; color: #6B7280;\">\n        Pas encore de compte?\n        <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none; font-weight: 600;\">\n          S'inscrire\n        </a>\n      </div>\n    </form>\n\n  </div>\n</div>"},{"id":2,"name":"Social Login","specs":{"title":"Welcome","subtitle":"Choose your login method","fields":["email","password"],"socialProviders":["google","github"],"actions":["login","forgotPassword"]},"html":"<div style=\"min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;\">\n\n    <h1 style=\"margin: 0 0 1rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;\">\n      Connexion\n    </h1>\n\n    <form>\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Email\n        </label>\n        <input\n          type=\"email\"\n          placeholder=\"vous@example.com\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n      </div>\n\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Mot de passe\n        </label>\n        <input\n          type=\"password\"\n          placeholder=\"••••••••\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n      </div>\n\n      <div style=\"margin-bottom: 1.5rem; text-align: right;\">\n        <a href=\"#\" style=\"font-size: 0.875rem; color: #5E6AD2; text-decoration: none;\">\n          Mot de passe oublié?\n        </a>\n      </div>\n\n      <button\n        type=\"submit\"\n        style=\"width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;\"\n      >\n        Se connecter\n      </button>\n\n      \n\n      <div style=\"margin-top: 2rem; text-align: center; font-size: 0.875rem; color: #6B7280;\">\n        Pas encore de compte?\n        <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none; font-weight: 600;\">\n          S'inscrire\n        </a>\n      </div>\n    </form>\n\n  </div>\n</div>"},{"id":3,"name":"Enterprise Login","specs":{"title":"Enterprise Portal","subtitle":"Secure access","fields":["email","password","mfa"],"actions":["login","ssoLogin"]},"html":"<div style=\"min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;\">\n\n    <h1 style=\"margin: 0 0 1rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;\">\n      Connexion\n    </h1>\n\n    <form>\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Email\n        </label>\n        <input\n          type=\"email\"\n          placeholder=\"vous@example.com\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n      </div>\n\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Mot de passe\n        </label>\n        <input\n          type=\"password\"\n          placeholder=\"••••••••\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n      </div>\n\n      <div style=\"margin-bottom: 1.5rem; text-align: right;\">\n        <a href=\"#\" style=\"font-size: 0.875rem; color: #5E6AD2; text-decoration: none;\">\n          Mot de passe oublié?\n        </a>\n      </div>\n\n      <button\n        type=\"submit\"\n        style=\"width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;\"\n      >\n        Se connecter\n      </button>\n\n      \n\n      <div style=\"margin-top: 2rem; text-align: center; font-size: 0.875rem; color: #6B7280;\">\n        Pas encore de compte?\n        <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none; font-weight: 600;\">\n          S'inscrire\n        </a>\n      </div>\n    </form>\n\n  </div>\n</div>"}]},{"type":"dashboard","name":"dashboard","variations":[{"id":1,"name":"Analytics Dashboard","specs":{"title":"Analytics Dashboard","widgets":[{"type":"metric","label":"Total Users","value":"12,345"},{"type":"metric","label":"Revenue","value":"$45,678"},{"type":"metric","label":"Growth","value":"+23%"},{"type":"chart","label":"Activity Over Time"}]},"html":"<div style=\"min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <!-- Header -->\n  <div style=\"margin-bottom: 2rem;\">\n    <h1 style=\"margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;\">\n      Tableau de bord\n    </h1>\n    <p style=\"margin: 0; color: #6B7280; font-size: 0.875rem;\">\n      Vue d'ensemble de votre activité\n    </p>\n  </div>\n\n  <!-- Stats Cards -->\n  <div style=\"display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;\">\n    <!-- Stat 1 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Utilisateurs actifs\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        2,543\n      </div>\n      <div style=\"font-size: 0.75rem; color: #3D9970;\">\n        ↑ 12% ce mois\n      </div>\n    </div>\n\n    <!-- Stat 2 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Revenus\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        45,231€\n      </div>\n      <div style=\"font-size: 0.75rem; color: #3D9970;\">\n        ↑ 8% ce mois\n      </div>\n    </div>\n\n    \n    <!-- Stat 3 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Taux conversion\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        3.2%\n      </div>\n      <div style=\"font-size: 0.75rem; color: #EF4444;\">\n        ↓ 2% ce mois\n      </div>\n    </div>\n\n    <!-- Stat 4 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Satisfaction\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        4.8\n      </div>\n      <div style=\"font-size: 0.75rem; color: #3D9970;\">\n        ↑ 0.3 ce mois\n      </div>\n    </div>\n    \n  </div>\n\n  \n\n  \n</div>"},{"id":2,"name":"Simple Dashboard","specs":{"title":"Overview","widgets":[{"type":"metric","label":"Active Projects","value":"8"},{"type":"metric","label":"Tasks","value":"24"}]},"html":"<div style=\"min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <!-- Header -->\n  <div style=\"margin-bottom: 2rem;\">\n    <h1 style=\"margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;\">\n      Tableau de bord\n    </h1>\n    <p style=\"margin: 0; color: #6B7280; font-size: 0.875rem;\">\n      Vue d'ensemble de votre activité\n    </p>\n  </div>\n\n  <!-- Stats Cards -->\n  <div style=\"display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;\">\n    <!-- Stat 1 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Utilisateurs actifs\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        2,543\n      </div>\n      <div style=\"font-size: 0.75rem; color: #3D9970;\">\n        ↑ 12% ce mois\n      </div>\n    </div>\n\n    <!-- Stat 2 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Revenus\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        45,231€\n      </div>\n      <div style=\"font-size: 0.75rem; color: #3D9970;\">\n        ↑ 8% ce mois\n      </div>\n    </div>\n\n    \n    <!-- Stat 3 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Taux conversion\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        3.2%\n      </div>\n      <div style=\"font-size: 0.75rem; color: #EF4444;\">\n        ↓ 2% ce mois\n      </div>\n    </div>\n\n    <!-- Stat 4 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Satisfaction\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        4.8\n      </div>\n      <div style=\"font-size: 0.75rem; color: #3D9970;\">\n        ↑ 0.3 ce mois\n      </div>\n    </div>\n    \n  </div>\n\n  \n\n  \n</div>"},{"id":3,"name":"Detailed Dashboard","specs":{"title":"Executive Dashboard","widgets":[{"type":"metric","label":"Revenue","value":"$125,000"},{"type":"metric","label":"Users","value":"45,678"},{"type":"metric","label":"Conversion","value":"3.2%"},{"type":"chart","label":"Sales Trend"},{"type":"chart","label":"User Growth"},{"type":"table","label":"Top Products"}]},"html":"<div style=\"min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <!-- Header -->\n  <div style=\"margin-bottom: 2rem;\">\n    <h1 style=\"margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;\">\n      Tableau de bord\n    </h1>\n    <p style=\"margin: 0; color: #6B7280; font-size: 0.875rem;\">\n      Vue d'ensemble de votre activité\n    </p>\n  </div>\n\n  <!-- Stats Cards -->\n  <div style=\"display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;\">\n    <!-- Stat 1 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Utilisateurs actifs\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        2,543\n      </div>\n      <div style=\"font-size: 0.75rem; color: #3D9970;\">\n        ↑ 12% ce mois\n      </div>\n    </div>\n\n    <!-- Stat 2 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Revenus\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        45,231€\n      </div>\n      <div style=\"font-size: 0.75rem; color: #3D9970;\">\n        ↑ 8% ce mois\n      </div>\n    </div>\n\n    \n    <!-- Stat 3 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Taux conversion\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        3.2%\n      </div>\n      <div style=\"font-size: 0.75rem; color: #EF4444;\">\n        ↓ 2% ce mois\n      </div>\n    </div>\n\n    <!-- Stat 4 -->\n    <div style=\"background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n      <div style=\"font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem;\">\n        Satisfaction\n      </div>\n      <div style=\"font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem;\">\n        4.8\n      </div>\n      <div style=\"font-size: 0.75rem; color: #3D9970;\">\n        ↑ 0.3 ce mois\n      </div>\n    </div>\n    \n  </div>\n\n  \n\n  \n</div>"}]},{"type":"settings","name":"settings","variations":[{"id":1,"name":"User Settings","specs":{"title":"User Settings","sections":[{"title":"Profile","fields":["name","email","avatar"]},{"title":"Preferences","fields":["language","timezone","notifications"]}]},"html":"<div style=\"min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"max-width: 800px; margin: 0 auto;\">\n\n    \n\n    <div style=\"flex: 1;\">\n      <!-- Header -->\n      <div style=\"margin-bottom: 2rem;\">\n        <h1 style=\"margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;\">\n          Paramètres\n        </h1>\n        <p style=\"margin: 0; color: #6B7280; font-size: 0.875rem;\">\n          Gérez vos préférences et paramètres de compte\n        </p>\n      </div>\n\n      \n\n      <!-- Profile Section -->\n      <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;\">\n        <h2 style=\"margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;\">\n          Informations du profil\n        </h2>\n\n        <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;\">\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Prénom\n            </label>\n            <input\n              type=\"text\"\n              value=\"Jean\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Nom\n            </label>\n            <input\n              type=\"text\"\n              value=\"Dupont\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n        </div>\n\n        <div style=\"margin-bottom: 1.5rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Email\n          </label>\n          <input\n            type=\"email\"\n            value=\"jean.dupont@example.com\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n\n        <div style=\"margin-bottom: 1.5rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Bio\n          </label>\n          <textarea\n            rows=\"3\"\n            style=\"width: 100%; padding: 0.75rem 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem; font-family: Inter, sans-serif; resize: vertical;\"\n          >Développeur passionné par les technologies web...</textarea>\n        </div>\n\n        <div style=\"display: flex; justify-content: flex-end; gap: 1rem;\">\n          <button style=\"height: 40px; padding: 0 1.5rem; background: white; color: #6B7280; border: 1px solid #E5E7EB; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;\">\n            Annuler\n          </button>\n          <button style=\"height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;\">\n            Enregistrer\n          </button>\n        </div>\n      </div>\n\n      <!-- Security Section -->\n      <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;\">\n        <h2 style=\"margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;\">\n          Sécurité\n        </h2>\n\n        <div style=\"margin-bottom: 1.5rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Mot de passe actuel\n          </label>\n          <input\n            type=\"password\"\n            placeholder=\"••••••••\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n\n        <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;\">\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Nouveau mot de passe\n            </label>\n            <input\n              type=\"password\"\n              placeholder=\"••••••••\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Confirmer mot de passe\n            </label>\n            <input\n              type=\"password\"\n              placeholder=\"••••••••\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n        </div>\n\n        <button style=\"height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;\">\n          Mettre à jour le mot de passe\n        </button>\n      </div>\n\n      <!-- Notifications Section -->\n      <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n        <h2 style=\"margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;\">\n          Notifications\n        </h2>\n\n        <div style=\"display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;\">\n          <div>\n            <div style=\"font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;\">\n              Notifications par email\n            </div>\n            <div style=\"font-size: 0.75rem; color: #6B7280;\">\n              Recevez des mises à jour par email\n            </div>\n          </div>\n          <label style=\"position: relative; display: inline-block; width: 44px; height: 24px;\">\n            <input type=\"checkbox\" checked style=\"opacity: 0; width: 0; height: 0;\">\n            <span style=\"position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #5E6AD2; border-radius: 24px; transition: 0.2s;\"></span>\n          </label>\n        </div>\n\n        <div style=\"display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;\">\n          <div>\n            <div style=\"font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;\">\n              Notifications push\n            </div>\n            <div style=\"font-size: 0.75rem; color: #6B7280;\">\n              Notifications dans le navigateur\n            </div>\n          </div>\n          <label style=\"position: relative; display: inline-block; width: 44px; height: 24px;\">\n            <input type=\"checkbox\" style=\"opacity: 0; width: 0; height: 0;\">\n            <span style=\"position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;\"></span>\n          </label>\n        </div>\n\n        <div style=\"display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;\">\n          <div>\n            <div style=\"font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;\">\n              Notifications marketing\n            </div>\n            <div style=\"font-size: 0.75rem; color: #6B7280;\">\n              Offres et actualités produit\n            </div>\n          </div>\n          <label style=\"position: relative; display: inline-block; width: 44px; height: 24px;\">\n            <input type=\"checkbox\" style=\"opacity: 0; width: 0; height: 0;\">\n            <span style=\"position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;\"></span>\n          </label>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"},{"id":2,"name":"Account Settings","specs":{"title":"Account Settings","sections":[{"title":"Security","fields":["password","twoFactor","sessions"]},{"title":"Privacy","fields":["dataSharing","cookies"]}]},"html":"<div style=\"min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"max-width: 800px; margin: 0 auto;\">\n\n    \n\n    <div style=\"flex: 1;\">\n      <!-- Header -->\n      <div style=\"margin-bottom: 2rem;\">\n        <h1 style=\"margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;\">\n          Paramètres\n        </h1>\n        <p style=\"margin: 0; color: #6B7280; font-size: 0.875rem;\">\n          Gérez vos préférences et paramètres de compte\n        </p>\n      </div>\n\n      \n\n      <!-- Profile Section -->\n      <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;\">\n        <h2 style=\"margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;\">\n          Informations du profil\n        </h2>\n\n        <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;\">\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Prénom\n            </label>\n            <input\n              type=\"text\"\n              value=\"Jean\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Nom\n            </label>\n            <input\n              type=\"text\"\n              value=\"Dupont\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n        </div>\n\n        <div style=\"margin-bottom: 1.5rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Email\n          </label>\n          <input\n            type=\"email\"\n            value=\"jean.dupont@example.com\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n\n        <div style=\"margin-bottom: 1.5rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Bio\n          </label>\n          <textarea\n            rows=\"3\"\n            style=\"width: 100%; padding: 0.75rem 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem; font-family: Inter, sans-serif; resize: vertical;\"\n          >Développeur passionné par les technologies web...</textarea>\n        </div>\n\n        <div style=\"display: flex; justify-content: flex-end; gap: 1rem;\">\n          <button style=\"height: 40px; padding: 0 1.5rem; background: white; color: #6B7280; border: 1px solid #E5E7EB; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;\">\n            Annuler\n          </button>\n          <button style=\"height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;\">\n            Enregistrer\n          </button>\n        </div>\n      </div>\n\n      <!-- Security Section -->\n      <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;\">\n        <h2 style=\"margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;\">\n          Sécurité\n        </h2>\n\n        <div style=\"margin-bottom: 1.5rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Mot de passe actuel\n          </label>\n          <input\n            type=\"password\"\n            placeholder=\"••••••••\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n\n        <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;\">\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Nouveau mot de passe\n            </label>\n            <input\n              type=\"password\"\n              placeholder=\"••••••••\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Confirmer mot de passe\n            </label>\n            <input\n              type=\"password\"\n              placeholder=\"••••••••\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n        </div>\n\n        <button style=\"height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;\">\n          Mettre à jour le mot de passe\n        </button>\n      </div>\n\n      <!-- Notifications Section -->\n      <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n        <h2 style=\"margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;\">\n          Notifications\n        </h2>\n\n        <div style=\"display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;\">\n          <div>\n            <div style=\"font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;\">\n              Notifications par email\n            </div>\n            <div style=\"font-size: 0.75rem; color: #6B7280;\">\n              Recevez des mises à jour par email\n            </div>\n          </div>\n          <label style=\"position: relative; display: inline-block; width: 44px; height: 24px;\">\n            <input type=\"checkbox\" checked style=\"opacity: 0; width: 0; height: 0;\">\n            <span style=\"position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #5E6AD2; border-radius: 24px; transition: 0.2s;\"></span>\n          </label>\n        </div>\n\n        <div style=\"display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;\">\n          <div>\n            <div style=\"font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;\">\n              Notifications push\n            </div>\n            <div style=\"font-size: 0.75rem; color: #6B7280;\">\n              Notifications dans le navigateur\n            </div>\n          </div>\n          <label style=\"position: relative; display: inline-block; width: 44px; height: 24px;\">\n            <input type=\"checkbox\" style=\"opacity: 0; width: 0; height: 0;\">\n            <span style=\"position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;\"></span>\n          </label>\n        </div>\n\n        <div style=\"display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;\">\n          <div>\n            <div style=\"font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;\">\n              Notifications marketing\n            </div>\n            <div style=\"font-size: 0.75rem; color: #6B7280;\">\n              Offres et actualités produit\n            </div>\n          </div>\n          <label style=\"position: relative; display: inline-block; width: 44px; height: 24px;\">\n            <input type=\"checkbox\" style=\"opacity: 0; width: 0; height: 0;\">\n            <span style=\"position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;\"></span>\n          </label>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"},{"id":3,"name":"Admin Settings","specs":{"title":"System Configuration","sections":[{"title":"General","fields":["siteName","logo","maintenance"]},{"title":"Integrations","fields":["api","webhooks","sso"]},{"title":"Advanced","fields":["database","cache","logging"]}]},"html":"<div style=\"min-height: 100%; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"max-width: 800px; margin: 0 auto;\">\n\n    \n\n    <div style=\"flex: 1;\">\n      <!-- Header -->\n      <div style=\"margin-bottom: 2rem;\">\n        <h1 style=\"margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 700; color: #111827;\">\n          Paramètres\n        </h1>\n        <p style=\"margin: 0; color: #6B7280; font-size: 0.875rem;\">\n          Gérez vos préférences et paramètres de compte\n        </p>\n      </div>\n\n      \n\n      <!-- Profile Section -->\n      <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;\">\n        <h2 style=\"margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;\">\n          Informations du profil\n        </h2>\n\n        <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;\">\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Prénom\n            </label>\n            <input\n              type=\"text\"\n              value=\"Jean\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Nom\n            </label>\n            <input\n              type=\"text\"\n              value=\"Dupont\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n        </div>\n\n        <div style=\"margin-bottom: 1.5rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Email\n          </label>\n          <input\n            type=\"email\"\n            value=\"jean.dupont@example.com\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n\n        <div style=\"margin-bottom: 1.5rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Bio\n          </label>\n          <textarea\n            rows=\"3\"\n            style=\"width: 100%; padding: 0.75rem 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem; font-family: Inter, sans-serif; resize: vertical;\"\n          >Développeur passionné par les technologies web...</textarea>\n        </div>\n\n        <div style=\"display: flex; justify-content: flex-end; gap: 1rem;\">\n          <button style=\"height: 40px; padding: 0 1.5rem; background: white; color: #6B7280; border: 1px solid #E5E7EB; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;\">\n            Annuler\n          </button>\n          <button style=\"height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;\">\n            Enregistrer\n          </button>\n        </div>\n      </div>\n\n      <!-- Security Section -->\n      <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;\">\n        <h2 style=\"margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;\">\n          Sécurité\n        </h2>\n\n        <div style=\"margin-bottom: 1.5rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Mot de passe actuel\n          </label>\n          <input\n            type=\"password\"\n            placeholder=\"••••••••\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n\n        <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;\">\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Nouveau mot de passe\n            </label>\n            <input\n              type=\"password\"\n              placeholder=\"••••••••\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n          <div>\n            <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n              Confirmer mot de passe\n            </label>\n            <input\n              type=\"password\"\n              placeholder=\"••••••••\"\n              style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n            />\n          </div>\n        </div>\n\n        <button style=\"height: 40px; padding: 0 1.5rem; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer;\">\n          Mettre à jour le mot de passe\n        </button>\n      </div>\n\n      <!-- Notifications Section -->\n      <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n        <h2 style=\"margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: #111827;\">\n          Notifications\n        </h2>\n\n        <div style=\"display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;\">\n          <div>\n            <div style=\"font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;\">\n              Notifications par email\n            </div>\n            <div style=\"font-size: 0.75rem; color: #6B7280;\">\n              Recevez des mises à jour par email\n            </div>\n          </div>\n          <label style=\"position: relative; display: inline-block; width: 44px; height: 24px;\">\n            <input type=\"checkbox\" checked style=\"opacity: 0; width: 0; height: 0;\">\n            <span style=\"position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #5E6AD2; border-radius: 24px; transition: 0.2s;\"></span>\n          </label>\n        </div>\n\n        <div style=\"display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #F3F4F6;\">\n          <div>\n            <div style=\"font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;\">\n              Notifications push\n            </div>\n            <div style=\"font-size: 0.75rem; color: #6B7280;\">\n              Notifications dans le navigateur\n            </div>\n          </div>\n          <label style=\"position: relative; display: inline-block; width: 44px; height: 24px;\">\n            <input type=\"checkbox\" style=\"opacity: 0; width: 0; height: 0;\">\n            <span style=\"position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;\"></span>\n          </label>\n        </div>\n\n        <div style=\"display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;\">\n          <div>\n            <div style=\"font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;\">\n              Notifications marketing\n            </div>\n            <div style=\"font-size: 0.75rem; color: #6B7280;\">\n              Offres et actualités produit\n            </div>\n          </div>\n          <label style=\"position: relative; display: inline-block; width: 44px; height: 24px;\">\n            <input type=\"checkbox\" style=\"opacity: 0; width: 0; height: 0;\">\n            <span style=\"position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #E5E7EB; border-radius: 24px; transition: 0.2s;\"></span>\n          </label>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"}]},{"type":"pricing","name":"pricing","variations":[{"id":1,"name":"SaaS Pricing","specs":{"title":"Choose Your Plan","subtitle":"Simple, transparent pricing","plans":[{"name":"Starter","price":"$9","period":"month","features":["5 Projects","10 GB Storage","Email Support"]},{"name":"Pro","price":"$29","period":"month","features":["Unlimited Projects","100 GB Storage","Priority Support","Advanced Analytics"],"highlighted":true},{"name":"Enterprise","price":"$99","period":"month","features":["Everything in Pro","Unlimited Storage","Dedicated Support","SLA","Custom Integration"]}]},"html":"<div style=\"min-height: 100%; background: #F3F4F6; padding: 4rem 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"max-width: 1200px; margin: 0 auto;\">\n    <!-- Header -->\n    <div style=\"text-align: center; margin-bottom: 4rem;\">\n      <h1 style=\"margin: 0 0 1rem 0; font-size: 2.5rem; font-weight: 700; color: #111827;\">\n        Tarifs simples et transparents\n      </h1>\n      <p style=\"margin: 0; color: #6B7280; font-size: 1.125rem; max-width: 600px; margin-left: auto; margin-right: auto;\">\n        Choisissez le plan qui correspond à vos besoins. Changez ou annulez à tout moment.\n      </p>\n    </div>\n\n    <!-- Billing Toggle (for Featured and Detailed) -->\n    \n\n    <!-- Pricing Cards -->\n    <div style=\"display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; max-width: 800px; margin: 0 auto;\">\n      \n        <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;\">\n\n          \n\n          <div style=\"text-align: center; margin-bottom: 2rem;\">\n            <h3 style=\"margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;\">\n              Gratuit\n            </h3>\n            <p style=\"margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;\">\n              Pour commencer\n            </p>\n            <div style=\"display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;\">\n              <span style=\"font-size: 3rem; font-weight: 700; color: #111827;\">\n                0\n              </span>\n              <span style=\"font-size: 1.25rem; color: #6B7280;\">\n                €/mois\n              </span>\n            </div>\n            <button style=\"width: 100%; height: 44px; background: white; color: #5E6AD2; border: 2px solid #5E6AD2; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;\">\n              Commencer gratuitement\n            </button>\n          </div>\n\n          <div style=\"border-top: 1px solid #E5E7EB; padding-top: 2rem;\">\n            \n\n            <ul style=\"list-style: none; padding: 0; margin: 0;\">\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    5 projets\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    1 Go stockage\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Support communautaire\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Accès de base\n                  </span>\n                </li>\n              \n            </ul>\n          </div>\n\n        </div>\n      \n        <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;\">\n\n          \n\n          <div style=\"text-align: center; margin-bottom: 2rem;\">\n            <h3 style=\"margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;\">\n              Pro\n            </h3>\n            <p style=\"margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;\">\n              Pour professionnels\n            </p>\n            <div style=\"display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;\">\n              <span style=\"font-size: 3rem; font-weight: 700; color: #111827;\">\n                29\n              </span>\n              <span style=\"font-size: 1.25rem; color: #6B7280;\">\n                €/mois\n              </span>\n            </div>\n            <button style=\"width: 100%; height: 44px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;\">\n              Démarrer l'essai\n            </button>\n          </div>\n\n          <div style=\"border-top: 1px solid #E5E7EB; padding-top: 2rem;\">\n            \n\n            <ul style=\"list-style: none; padding: 0; margin: 0;\">\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Projets illimités\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    100 Go stockage\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Support prioritaire\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Toutes les fonctionnalités\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Analyses avancées\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Intégrations\n                  </span>\n                </li>\n              \n            </ul>\n          </div>\n\n        </div>\n      \n    </div>\n\n    <!-- FAQ / Additional Info -->\n    \n\n  </div>\n</div>"},{"id":2,"name":"Simple Pricing","specs":{"title":"Pricing","plans":[{"name":"Basic","price":"$10","period":"month","features":["Basic Features","Email Support"]},{"name":"Premium","price":"$30","period":"month","features":["All Features","Priority Support"]}]},"html":"<div style=\"min-height: 100%; background: #F3F4F6; padding: 4rem 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"max-width: 1200px; margin: 0 auto;\">\n    <!-- Header -->\n    <div style=\"text-align: center; margin-bottom: 4rem;\">\n      <h1 style=\"margin: 0 0 1rem 0; font-size: 2.5rem; font-weight: 700; color: #111827;\">\n        Tarifs simples et transparents\n      </h1>\n      <p style=\"margin: 0; color: #6B7280; font-size: 1.125rem; max-width: 600px; margin-left: auto; margin-right: auto;\">\n        Choisissez le plan qui correspond à vos besoins. Changez ou annulez à tout moment.\n      </p>\n    </div>\n\n    <!-- Billing Toggle (for Featured and Detailed) -->\n    \n\n    <!-- Pricing Cards -->\n    <div style=\"display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; max-width: 800px; margin: 0 auto;\">\n      \n        <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;\">\n\n          \n\n          <div style=\"text-align: center; margin-bottom: 2rem;\">\n            <h3 style=\"margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;\">\n              Gratuit\n            </h3>\n            <p style=\"margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;\">\n              Pour commencer\n            </p>\n            <div style=\"display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;\">\n              <span style=\"font-size: 3rem; font-weight: 700; color: #111827;\">\n                0\n              </span>\n              <span style=\"font-size: 1.25rem; color: #6B7280;\">\n                €/mois\n              </span>\n            </div>\n            <button style=\"width: 100%; height: 44px; background: white; color: #5E6AD2; border: 2px solid #5E6AD2; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;\">\n              Commencer gratuitement\n            </button>\n          </div>\n\n          <div style=\"border-top: 1px solid #E5E7EB; padding-top: 2rem;\">\n            \n\n            <ul style=\"list-style: none; padding: 0; margin: 0;\">\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    5 projets\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    1 Go stockage\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Support communautaire\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Accès de base\n                  </span>\n                </li>\n              \n            </ul>\n          </div>\n\n        </div>\n      \n        <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;\">\n\n          \n\n          <div style=\"text-align: center; margin-bottom: 2rem;\">\n            <h3 style=\"margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;\">\n              Pro\n            </h3>\n            <p style=\"margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;\">\n              Pour professionnels\n            </p>\n            <div style=\"display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;\">\n              <span style=\"font-size: 3rem; font-weight: 700; color: #111827;\">\n                29\n              </span>\n              <span style=\"font-size: 1.25rem; color: #6B7280;\">\n                €/mois\n              </span>\n            </div>\n            <button style=\"width: 100%; height: 44px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;\">\n              Démarrer l'essai\n            </button>\n          </div>\n\n          <div style=\"border-top: 1px solid #E5E7EB; padding-top: 2rem;\">\n            \n\n            <ul style=\"list-style: none; padding: 0; margin: 0;\">\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Projets illimités\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    100 Go stockage\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Support prioritaire\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Toutes les fonctionnalités\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Analyses avancées\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Intégrations\n                  </span>\n                </li>\n              \n            </ul>\n          </div>\n\n        </div>\n      \n    </div>\n\n    <!-- FAQ / Additional Info -->\n    \n\n  </div>\n</div>"},{"id":3,"name":"Tiered Pricing","specs":{"title":"Flexible Pricing","subtitle":"Pay for what you need","plans":[{"name":"Free","price":"$0","period":"forever","features":["1 Project","5 GB Storage"]},{"name":"Starter","price":"$15","period":"month","features":["10 Projects","50 GB Storage","Email Support"]},{"name":"Business","price":"$49","period":"month","features":["Unlimited Projects","500 GB Storage","Phone Support"],"highlighted":true},{"name":"Enterprise","price":"Custom","period":"","features":["Custom Everything","Dedicated Account Manager"]}]},"html":"<div style=\"min-height: 100%; background: #F3F4F6; padding: 4rem 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"max-width: 1200px; margin: 0 auto;\">\n    <!-- Header -->\n    <div style=\"text-align: center; margin-bottom: 4rem;\">\n      <h1 style=\"margin: 0 0 1rem 0; font-size: 2.5rem; font-weight: 700; color: #111827;\">\n        Tarifs simples et transparents\n      </h1>\n      <p style=\"margin: 0; color: #6B7280; font-size: 1.125rem; max-width: 600px; margin-left: auto; margin-right: auto;\">\n        Choisissez le plan qui correspond à vos besoins. Changez ou annulez à tout moment.\n      </p>\n    </div>\n\n    <!-- Billing Toggle (for Featured and Detailed) -->\n    \n\n    <!-- Pricing Cards -->\n    <div style=\"display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; max-width: 800px; margin: 0 auto;\">\n      \n        <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;\">\n\n          \n\n          <div style=\"text-align: center; margin-bottom: 2rem;\">\n            <h3 style=\"margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;\">\n              Gratuit\n            </h3>\n            <p style=\"margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;\">\n              Pour commencer\n            </p>\n            <div style=\"display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;\">\n              <span style=\"font-size: 3rem; font-weight: 700; color: #111827;\">\n                0\n              </span>\n              <span style=\"font-size: 1.25rem; color: #6B7280;\">\n                €/mois\n              </span>\n            </div>\n            <button style=\"width: 100%; height: 44px; background: white; color: #5E6AD2; border: 2px solid #5E6AD2; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;\">\n              Commencer gratuitement\n            </button>\n          </div>\n\n          <div style=\"border-top: 1px solid #E5E7EB; padding-top: 2rem;\">\n            \n\n            <ul style=\"list-style: none; padding: 0; margin: 0;\">\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    5 projets\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    1 Go stockage\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Support communautaire\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#3D9970\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Accès de base\n                  </span>\n                </li>\n              \n            </ul>\n          </div>\n\n        </div>\n      \n        <div style=\"background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;\">\n\n          \n\n          <div style=\"text-align: center; margin-bottom: 2rem;\">\n            <h3 style=\"margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #111827;\">\n              Pro\n            </h3>\n            <p style=\"margin: 0 0 1.5rem 0; color: #6B7280; font-size: 0.875rem;\">\n              Pour professionnels\n            </p>\n            <div style=\"display: flex; align-items: baseline; justify-content: center; margin-bottom: 1.5rem;\">\n              <span style=\"font-size: 3rem; font-weight: 700; color: #111827;\">\n                29\n              </span>\n              <span style=\"font-size: 1.25rem; color: #6B7280;\">\n                €/mois\n              </span>\n            </div>\n            <button style=\"width: 100%; height: 44px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer;\">\n              Démarrer l'essai\n            </button>\n          </div>\n\n          <div style=\"border-top: 1px solid #E5E7EB; padding-top: 2rem;\">\n            \n\n            <ul style=\"list-style: none; padding: 0; margin: 0;\">\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Projets illimités\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    100 Go stockage\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Support prioritaire\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Toutes les fonctionnalités\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Analyses avancées\n                  </span>\n                </li>\n              \n                <li style=\"display: flex; align-items: start; margin-bottom: 0.75rem;\">\n                  <svg style=\"flex-shrink: 0; width: 20px; height: 20px; margin-right: 0.75rem; margin-top: 0.125rem;\" viewBox=\"0 0 20 20\" fill=\"#5E6AD2\">\n                    <path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"/>\n                  </svg>\n                  <span style=\"font-size: 0.875rem; color: #6B7280;\">\n                    Intégrations\n                  </span>\n                </li>\n              \n            </ul>\n          </div>\n\n        </div>\n      \n    </div>\n\n    <!-- FAQ / Additional Info -->\n    \n\n  </div>\n</div>"}]},{"type":"signup","name":"signup","variations":[{"id":1,"name":"Simple Signup","specs":{"title":"Create Account","subtitle":"Join us today","fields":["name","email","password"],"actions":["signup","loginLink"]},"html":"<div style=\"min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;\">\n\n    <h1 style=\"margin: 0 0 0.5rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;\">\n      Créer un compte\n    </h1>\n    <p style=\"margin: 0 0 1rem 0; color: #6B7280; font-size: 0.875rem;\">\n      Commencez gratuitement dès aujourd'hui\n    </p>\n\n    \n\n    \n\n    <form>\n      <div style=\" margin-bottom: 1rem;\">\n        <div style=\"margin-bottom: 1rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Prénom\n          </label>\n          <input\n            type=\"text\"\n            placeholder=\"Jean\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n\n        <div>\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Nom\n          </label>\n          <input\n            type=\"text\"\n            placeholder=\"Dupont\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n      </div>\n\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Email\n        </label>\n        <input\n          type=\"email\"\n          placeholder=\"vous@example.com\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n      </div>\n\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Mot de passe\n        </label>\n        <input\n          type=\"password\"\n          placeholder=\"••••••••\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n        <p style=\"margin: 0.5rem 0 0 0; font-size: 0.75rem; color: #6B7280;\">\n          Au moins 8 caractères avec lettres et chiffres\n        </p>\n      </div>\n\n      <div style=\"margin-bottom: 1.5rem;\">\n        <label style=\"display: flex; align-items: start; cursor: pointer;\">\n          <input type=\"checkbox\" style=\"margin-top: 0.25rem; margin-right: 0.5rem;\" />\n          <span style=\"font-size: 0.75rem; color: #6B7280;\">\n            J'accepte les <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none;\">conditions d'utilisation</a> et la <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none;\">politique de confidentialité</a>\n          </span>\n        </label>\n      </div>\n\n      <button\n        type=\"submit\"\n        style=\"width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer; margin-bottom: 1rem;\"\n      >\n        Créer mon compte\n      </button>\n\n      <div style=\"text-align: center; font-size: 0.875rem; color: #6B7280;\">\n        Vous avez déjà un compte?\n        <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none; font-weight: 600;\">\n          Se connecter\n        </a>\n      </div>\n    </form>\n\n  </div>\n</div>"},{"id":2,"name":"Social Signup","specs":{"title":"Get Started","subtitle":"Choose your signup method","fields":["name","email","password"],"socialProviders":["google","github","facebook"],"actions":["signup","loginLink"]},"html":"<div style=\"min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;\">\n\n    <h1 style=\"margin: 0 0 0.5rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;\">\n      Créer un compte\n    </h1>\n    <p style=\"margin: 0 0 1rem 0; color: #6B7280; font-size: 0.875rem;\">\n      Commencez gratuitement dès aujourd'hui\n    </p>\n\n    \n\n    \n\n    <form>\n      <div style=\" margin-bottom: 1rem;\">\n        <div style=\"margin-bottom: 1rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Prénom\n          </label>\n          <input\n            type=\"text\"\n            placeholder=\"Jean\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n\n        <div>\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Nom\n          </label>\n          <input\n            type=\"text\"\n            placeholder=\"Dupont\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n      </div>\n\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Email\n        </label>\n        <input\n          type=\"email\"\n          placeholder=\"vous@example.com\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n      </div>\n\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Mot de passe\n        </label>\n        <input\n          type=\"password\"\n          placeholder=\"••••••••\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n        <p style=\"margin: 0.5rem 0 0 0; font-size: 0.75rem; color: #6B7280;\">\n          Au moins 8 caractères avec lettres et chiffres\n        </p>\n      </div>\n\n      <div style=\"margin-bottom: 1.5rem;\">\n        <label style=\"display: flex; align-items: start; cursor: pointer;\">\n          <input type=\"checkbox\" style=\"margin-top: 0.25rem; margin-right: 0.5rem;\" />\n          <span style=\"font-size: 0.75rem; color: #6B7280;\">\n            J'accepte les <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none;\">conditions d'utilisation</a> et la <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none;\">politique de confidentialité</a>\n          </span>\n        </label>\n      </div>\n\n      <button\n        type=\"submit\"\n        style=\"width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer; margin-bottom: 1rem;\"\n      >\n        Créer mon compte\n      </button>\n\n      <div style=\"text-align: center; font-size: 0.875rem; color: #6B7280;\">\n        Vous avez déjà un compte?\n        <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none; font-weight: 600;\">\n          Se connecter\n        </a>\n      </div>\n    </form>\n\n  </div>\n</div>"},{"id":3,"name":"Multi-step Signup","specs":{"title":"Create Your Account","subtitle":"Step 1 of 3","fields":["name","email","password","company","role"],"actions":["continue","loginLink"]},"html":"<div style=\"min-height: 100%; display: flex; align-items: center; justify-content: center; background: #F3F4F6; padding: 2rem; font-family: Inter, sans-serif;\">\n  <div style=\"background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;\">\n\n    <h1 style=\"margin: 0 0 0.5rem 0; font-size: 1.75rem; font-weight: 700; color: #6B7280;\">\n      Créer un compte\n    </h1>\n    <p style=\"margin: 0 0 1rem 0; color: #6B7280; font-size: 0.875rem;\">\n      Commencez gratuitement dès aujourd'hui\n    </p>\n\n    \n\n    \n\n    <form>\n      <div style=\" margin-bottom: 1rem;\">\n        <div style=\"margin-bottom: 1rem;\">\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Prénom\n          </label>\n          <input\n            type=\"text\"\n            placeholder=\"Jean\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n\n        <div>\n          <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n            Nom\n          </label>\n          <input\n            type=\"text\"\n            placeholder=\"Dupont\"\n            style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n          />\n        </div>\n      </div>\n\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Email\n        </label>\n        <input\n          type=\"email\"\n          placeholder=\"vous@example.com\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n      </div>\n\n      <div style=\"margin-bottom: 1rem;\">\n        <label style=\"display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #6B7280;\">\n          Mot de passe\n        </label>\n        <input\n          type=\"password\"\n          placeholder=\"••••••••\"\n          style=\"width: 100%; height: 40px; padding: 0 1rem; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem;\"\n        />\n        <p style=\"margin: 0.5rem 0 0 0; font-size: 0.75rem; color: #6B7280;\">\n          Au moins 8 caractères avec lettres et chiffres\n        </p>\n      </div>\n\n      <div style=\"margin-bottom: 1.5rem;\">\n        <label style=\"display: flex; align-items: start; cursor: pointer;\">\n          <input type=\"checkbox\" style=\"margin-top: 0.25rem; margin-right: 0.5rem;\" />\n          <span style=\"font-size: 0.75rem; color: #6B7280;\">\n            J'accepte les <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none;\">conditions d'utilisation</a> et la <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none;\">politique de confidentialité</a>\n          </span>\n        </label>\n      </div>\n\n      <button\n        type=\"submit\"\n        style=\"width: 100%; height: 40px; background: #5E6AD2; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer; margin-bottom: 1rem;\"\n      >\n        Créer mon compte\n      </button>\n\n      <div style=\"text-align: center; font-size: 0.875rem; color: #6B7280;\">\n        Vous avez déjà un compte?\n        <a href=\"#\" style=\"color: #5E6AD2; text-decoration: none; font-weight: 600;\">\n          Se connecter\n        </a>\n      </div>\n    </form>\n\n  </div>\n</div>"}]}]};
+
+    // Tab navigation
+    document.querySelectorAll('.tabs button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const pageName = e.target.dataset.page;
+        document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + pageName).classList.add('active');
+      });
+    });
+
+    // Design System State
+    const designChoices = {
+      palette: null,
+      colors: {
+        primary: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
+        accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+        neutral: getComputedStyle(document.documentElement).getPropertyValue('--neutral').trim(),
+        bg: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()
+      },
+      typography: getComputedStyle(document.documentElement).getPropertyValue('--font-family').trim(),
+      borderRadius: parseInt(getComputedStyle(document.documentElement).getPropertyValue('--border-radius'))
+    };
+
+    // Select Color Palette
+    function selectPalette(name, primary, accent, neutral, bg) {
+      // Update CSS variables
+      document.documentElement.style.setProperty('--primary', primary);
+      document.documentElement.style.setProperty('--accent', accent);
+      document.documentElement.style.setProperty('--neutral', neutral);
+      document.documentElement.style.setProperty('--bg', bg);
+
+      // Update state
+      designChoices.palette = name;
+      designChoices.colors = { primary, accent, neutral, bg };
+
+      // Update UI selection
+      document.querySelectorAll('.palette-card').forEach(card => card.classList.remove('selected'));
+      document.querySelector(`.palette-card[data-palette="${name}"]`)?.classList.add('selected');
+
+      console.log('✓ Palette sélectionnée:', name);
+      showToast(`Palette "${name}" appliquée à tous les écrans!`);
+    }
+
+    // Select Font Family
+    function selectFont(font) {
+      // Update CSS variable
+      document.documentElement.style.setProperty('--font-family', font);
+
+      // Update state
+      designChoices.typography = font;
+
+      // Load Google Font if needed
+      if (!['Inter', 'system-ui'].includes(font)) {
+        const fontName = font.replace(/ /g, '+');
+        const existingLink = document.querySelector(`link[href*="${fontName}"]`);
+        if (!existingLink) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = `https://fonts.googleapis.com/css2?family=${fontName}:wght@400;600;700&display=swap`;
+          document.head.appendChild(link);
+        }
+      }
+
+      // Update UI selection
+      document.querySelectorAll('.typography-card').forEach(card => card.classList.remove('selected'));
+      document.querySelector(`.typography-card[data-font="${font}"]`)?.classList.add('selected');
+
+      console.log('✓ Police sélectionnée:', font);
+      showToast(`Police "${font}" appliquée à tous les écrans!`);
+    }
+
+    // Select Border Radius
+    function selectRadius(radius) {
+      // Update CSS variable
+      document.documentElement.style.setProperty('--border-radius', radius + 'px');
+
+      // Update state
+      designChoices.borderRadius = parseInt(radius);
+
+      // Update UI selection
+      document.querySelectorAll('.radius-card').forEach(card => card.classList.remove('selected'));
+      document.querySelector(`.radius-card[data-radius="${radius}"]`)?.classList.add('selected');
+
+      console.log('✓ Border radius sélectionné:', radius + 'px');
+      showToast(`Style de bordure "${radius}px" appliqué à tous les écrans!`);
+    }
+
+    // Save Design to continue with BMAD workflow
+    function saveDesign() {
+      // Validate all choices made
+      if (!designChoices.palette) {
+        alert('⚠️ Veuillez sélectionner une palette de couleurs');
+        return;
+      }
+
+      // Show saving state
+      const btn = event.target;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '💾 Sauvegarde en cours...';
+      btn.disabled = true;
+
+      // Save design choices (would call MCP tool in real implementation)
+      const designData = {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        palette: designChoices.palette,
+        colors: designChoices.colors,
+        typography: {
+          fontFamily: designChoices.typography,
+          weights: [400, 600, 700]
+        },
+        spacing: {
+          unit: '8px'
+        },
+        components: {
+          card: {
+            borderRadius: designChoices.borderRadius + 'px',
+            shadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }
+        }
+      };
+
+      console.log('💾 Design System sauvegardé:', designData);
+
+      // Simulate save delay
+      setTimeout(() => {
+        btn.innerHTML = '✓ Sauvegardé !';
+        btn.style.background = '#10B981';
+
+        // Show success message
+        showToast('✓ Design System sauvegardé ! Vous pouvez continuer avec BMAD.', 'success');
+
+        // Store in MOCKUP_DATA
+        MOCKUP_DATA.designSystem = { ...MOCKUP_DATA.designSystem, ...designData };
+
+        // Mark Design System tab as validated
+        const designTab = document.querySelector('button[data-page="design-system"]');
+        if (designTab && !designTab.classList.contains('validated')) {
+          designTab.classList.add('validated');
+        }
+
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          btn.style.background = '';
+        }, 2000);
+      }, 1000);
+    }
+
+    // Toast notification helper
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10B981' : '#3B82F6'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+        font-weight: 600;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Variation selection
+    function selectVariation(pageName, variationId) {
+      console.log('Selected variation', variationId, 'for page', pageName);
+      // In real implementation, this would call back to MCP to update selection
+      // For now, just visually update
+      const pageData = MOCKUP_DATA.pages.find(p => p.name === pageName);
+      if (pageData) {
+        pageData.selectedVariation = variationId;
+        // Update UI
+        document.querySelectorAll(`#page-${pageName} .variation-card`).forEach(card => {
+          card.classList.remove('selected');
+          const btn = card.querySelector('button');
+          btn.textContent = 'Sélectionner';
+        });
+        const selectedCard = document.querySelector(`#page-${pageName} .variation-card[data-variation="${variationId}"]`);
+        if (selectedCard) {
+          selectedCard.classList.add('selected');
+          const btn = selectedCard.querySelector('button');
+          btn.textContent = '✓ Sélectionnée';
+        }
+        // Update tab
+        const tab = document.querySelector(`button[data-page="${pageName}"]`);
+        if (tab && !tab.classList.contains('validated')) {
+          tab.classList.add('validated');
+        }
+      }
+    }
+
+    // Initialize
+    console.log('Mockup initialized with', MOCKUP_DATA.pages.length, 'pages');
+    console.log('Design System v' + (MOCKUP_DATA.designSystem.version || '1.0'));
+  </script>
+</body>
+</html>
