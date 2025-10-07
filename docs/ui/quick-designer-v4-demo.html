@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quick Designer v4 - AI-Generated Mockup</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Quick Designer v4 - Pattern Remix System (No AI)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Consolas&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #635BFF;
-      --accent: #00D4FF;
-      --neutral: #425466;
-      --bg: #F6F9FC;
-      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --border-radius: 8px;
+      --primary: #000000;
+      --accent: #00FF00;
+      --neutral: #6B7280;
+      --bg: #000000;
+      --font-family: Consolas, monospace;
+      --border-radius: 0px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -56,36 +56,40 @@
       margin-bottom: 0.75rem;
     }
 
-    .palette-grid {
+    .pattern-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
     }
 
-    .palette-option {
-      padding: 0.5rem;
-      border: 2px solid transparent;
-      border-radius: 6px;
+    .pattern-option {
+      padding: 0.75rem;
+      border: 2px solid #E5E7EB;
+      border-radius: 8px;
       cursor: pointer;
-      text-align: center;
-      font-size: 0.75rem;
       transition: all 0.2s;
+      background: white;
     }
 
-    .palette-option:hover {
+    .pattern-option:hover {
       border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.05);
     }
 
-    .palette-option.selected {
+    .pattern-option.selected {
       border-color: var(--primary);
       background: rgba(59, 130, 246, 0.1);
     }
 
-    .color-preview {
-      width: 100%;
-      height: 24px;
-      border-radius: 4px;
+    .pattern-name {
+      font-weight: 600;
+      font-size: 0.875rem;
       margin-bottom: 0.25rem;
+    }
+
+    .pattern-desc {
+      font-size: 0.75rem;
+      color: var(--neutral);
     }
 
     /* Main Content Area */
@@ -139,7 +143,7 @@
 
     .variations {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
       gap: 2rem;
     }
 
@@ -154,6 +158,9 @@
       padding: 1rem;
       background: #F9FAFB;
       border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .variation-name {
@@ -162,7 +169,7 @@
     }
 
     .variation-preview {
-      height: 400px;
+      height: 500px;
       position: relative;
       overflow: hidden;
     }
@@ -173,16 +180,59 @@
       border: none;
     }
 
-    /* Status Badge */
-    .badge {
+    /* Style Badges */
+    .style-badge {
       display: inline-block;
       padding: 0.25rem 0.75rem;
-      background: var(--accent);
+      background: #111827;
       color: white;
       border-radius: 9999px;
       font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .style-badge.bloomberg {
+      background: #000;
+      color: #0F0;
+    }
+
+    .style-badge.stripe {
+      background: #635BFF;
+    }
+
+    .style-badge.apple {
+      background: #000;
+    }
+
+    .style-badge.spotify {
+      background: #1DB954;
+    }
+
+    .style-badge.linear {
+      background: #5E6AD2;
+    }
+
+    /* Chrome MCP Status */
+    .mcp-status {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #F0FDF4;
+      border: 1px solid #86EFAC;
+      border-radius: 8px;
+    }
+
+    .mcp-status-title {
       font-weight: 600;
-      margin-left: 0.5rem;
+      color: #166534;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .mcp-status-desc {
+      font-size: 0.75rem;
+      color: #15803D;
     }
 
     /* Toast Notification */
@@ -213,54 +263,54 @@
   <div id="app">
     <!-- Design System Sidebar -->
     <div class="design-system">
-      <h2>🎨 Design System</h2>
+      <h2>🎨 Pattern Remix System</h2>
 
-      <!-- Color Palettes -->
+      <!-- Pattern Selection -->
       <div class="control-group">
-        <label>Palette de couleurs</label>
-        <div class="palette-grid">
-          <div class="palette-option selected" onclick="selectPalette('ocean')">
-            <div class="color-preview" style="background: linear-gradient(90deg, #3B82F6, #06B6D4);"></div>
-            Ocean
+        <label>Design Patterns (No AI)</label>
+        <div class="pattern-grid">
+          <div class="pattern-option selected" onclick="selectPattern('bloomberg')">
+            <div class="pattern-name">Bloomberg Terminal</div>
+            <div class="pattern-desc">Dense financial data, green on black, monospace</div>
           </div>
-          <div class="palette-option" onclick="selectPalette('sunset')">
-            <div class="color-preview" style="background: linear-gradient(90deg, #F59E0B, #EF4444);"></div>
-            Sunset
+          <div class="pattern-option" onclick="selectPattern('stripe')">
+            <div class="pattern-name">Stripe Modern</div>
+            <div class="pattern-desc">Clean SaaS, purple accent, card-based</div>
           </div>
-          <div class="palette-option" onclick="selectPalette('forest')">
-            <div class="color-preview" style="background: linear-gradient(90deg, #10B981, #059669);"></div>
-            Forest
+          <div class="pattern-option" onclick="selectPattern('apple')">
+            <div class="pattern-name">Apple Minimalist</div>
+            <div class="pattern-desc">Spacious luxury, massive whitespace</div>
+          </div>
+          <div class="pattern-option" onclick="selectPattern('spotify')">
+            <div class="pattern-name">Spotify Playful</div>
+            <div class="pattern-desc">Dark theme, green accent, music-focused</div>
+          </div>
+          <div class="pattern-option" onclick="selectPattern('linear')">
+            <div class="pattern-name">Linear Developer</div>
+            <div class="pattern-desc">Minimal dev tool, subtle grays</div>
           </div>
         </div>
       </div>
 
-      <!-- Typography -->
-      <div class="control-group">
-        <label>Typographie</label>
-        <select onchange="selectFont(this.value)" style="width: 100%; padding: 0.5rem; border: 1px solid #E5E7EB; border-radius: 6px;">
-          <option value="Inter">Inter</option>
-          <option value="Roboto">Roboto</option>
-          <option value="Playfair Display">Playfair Display</option>
-          <option value="Space Mono">Space Mono</option>
-        </select>
-      </div>
-
-      <!-- Border Radius -->
-      <div class="control-group">
-        <label>Arrondi des coins</label>
-        <input type="range" min="0" max="24" value="8" onchange="updateRadius(this.value)" style="width: 100%;">
-        <div style="text-align: center; margin-top: 0.5rem; font-size: 0.875rem; color: var(--neutral);">
-          <span id="radiusValue">8</span>px
+      <!-- Chrome MCP Status -->
+      <div class="mcp-status">
+        <div class="mcp-status-title">
+          <span>🌐</span>
+          <span>Chrome MCP Integration</span>
+        </div>
+        <div class="mcp-status-desc">
+          Extracting real HTML/CSS patterns from websites. No LLM API calls required.
         </div>
       </div>
 
-      <!-- AI Status -->
-      <div style="margin-top: 2rem; padding: 1rem; background: #F0F9FF; border-radius: 8px;">
-        <div style="font-weight: 600; color: #0369A1; margin-bottom: 0.5rem;">
-          🤖 AI Generation
+      <!-- Web Search Status -->
+      <div class="mcp-status" style="margin-top: 1rem; background: #FEF3C7; border-color: #FCD34D;">
+        <div class="mcp-status-title" style="color: #92400E;">
+          <span>🔍</span>
+          <span>Web Search Active</span>
         </div>
-        <div style="font-size: 0.75rem; color: #0C4A6E;">
-          Pages are generated dynamically using AI based on your design system choices.
+        <div class="mcp-status-desc" style="color: #78350F;">
+          Finding and remixing design patterns from the web.
         </div>
       </div>
     </div>
@@ -281,52 +331,42 @@
                 <div class="variation-card">
                   <div class="variation-header">
                     <span class="variation-name">Minimal</span>
-                    <span class="badge">Recommandé</span>
+                    <span class="style-badge apple">Apple Style</span>
                   </div>
                   <div class="variation-preview">
                     <iframe srcdoc="<!DOCTYPE html>
-<html>
+<html lang=&quot;en&quot;>
 <head>
   <meta charset=&quot;UTF-8&quot;>
   <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-  <title>AI Generated Page</title>
+  <title>Apple Minimalist - login</title>
   <style>
-    :root {
-      --primary: #635BFF;
-      --accent: #00D4FF;
-      --neutral: #425466;
-      --bg: #F6F9FC;
-      --surface: #FFFFFF;
-      --font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
-      --border-radius: 8px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: var(--bg);
-      font-family: var(--font-family), sans-serif;
-      padding: 2rem;
-      color: #111827;
-    }
-    .container { max-width: 1200px; margin: 0 auto; }
-    h1 { font-size: 2rem; margin-bottom: 2rem; }
-    .content {
-      background: var(--surface);
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-family: -apple-system, BlinkMacSystemFont, &quot;SF Pro Display&quot;, sans-serif;
+      background: #FFFFFF;
+      color: #1D1D1F;
     }
   </style>
 </head>
 <body>
-  <div class=&quot;container&quot;>
-    <h1>AI-Generated Interface</h1>
-    <div class=&quot;content&quot;>
-      <p>This page was generated dynamically by AI based on your specifications.</p>
-      <p style=&quot;margin-top: 1rem; color: var(--neutral);&quot;>Prompt: Generate a complete HTML page with the following specifications:
-      
-        Create a minimal cen...</p>
-    </div>
-  </div>
+  
+        <div style=&quot;background: #F5F5F7; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: -apple-system, sans-serif;&quot;>
+          <div style=&quot;text-align: center; max-width: 320px;&quot;>
+            <div style=&quot;font-size: 56px; margin-bottom: 40px;&quot;>🔐</div>
+            <h1 style=&quot;font-size: 32px; font-weight: 600; color: #1D1D1F; margin-bottom: 8px;&quot;>Sign In</h1>
+            <p style=&quot;color: #86868B; font-size: 17px; margin-bottom: 40px;&quot;>Enter your credentials to continue</p>
+            <form>
+              <input type=&quot;email&quot; placeholder=&quot;Email&quot; style=&quot;width: 100%; padding: 16px; border: 1px solid #D2D2D7; border-radius: 12px; font-size: 17px; margin-bottom: 16px;&quot;>
+              <input type=&quot;password&quot; placeholder=&quot;Password&quot; style=&quot;width: 100%; padding: 16px; border: 1px solid #D2D2D7; border-radius: 12px; font-size: 17px; margin-bottom: 32px;&quot;>
+              <button style=&quot;width: 100%; background: #000; color: white; padding: 16px; border: none; border-radius: 12px; font-size: 17px; font-weight: 500; cursor: pointer;&quot;>Continue</button>
+            </form>
+          </div>
+        </div>
 </body>
 </html>"></iframe>
                   </div>
@@ -335,52 +375,44 @@
                 <div class="variation-card">
                   <div class="variation-header">
                     <span class="variation-name">Split Screen</span>
-                    
+                    <span class="style-badge stripe">Stripe Style</span>
                   </div>
                   <div class="variation-preview">
                     <iframe srcdoc="<!DOCTYPE html>
-<html>
+<html lang=&quot;en&quot;>
 <head>
   <meta charset=&quot;UTF-8&quot;>
   <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-  <title>AI Generated Page</title>
+  <title>Stripe Modern - login</title>
   <style>
-    :root {
-      --primary: #635BFF;
-      --accent: #00D4FF;
-      --neutral: #425466;
-      --bg: #F6F9FC;
-      --surface: #FFFFFF;
-      --font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
-      --border-radius: 8px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: var(--bg);
-      font-family: var(--font-family), sans-serif;
-      padding: 2rem;
-      color: #111827;
-    }
-    .container { max-width: 1200px; margin: 0 auto; }
-    h1 { font-size: 2rem; margin-bottom: 2rem; }
-    .content {
-      background: var(--surface);
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
+      background: #FFFFFF;
+      color: #425466;
     }
   </style>
 </head>
 <body>
-  <div class=&quot;container&quot;>
-    <h1>AI-Generated Interface</h1>
-    <div class=&quot;content&quot;>
-      <p>This page was generated dynamically by AI based on your specifications.</p>
-      <p style=&quot;margin-top: 1rem; color: var(--neutral);&quot;>Prompt: Generate a complete HTML page with the following specifications:
-      
-        Create a split-scree...</p>
-    </div>
-  </div>
+  
+        <div style=&quot;background: linear-gradient(150deg, #635BFF 15%, #00D4FF); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: -apple-system, sans-serif;&quot;>
+          <div style=&quot;background: white; border-radius: 8px; padding: 48px; box-shadow: 0 10px 40px rgba(0,0,0,0.12); width: 400px;&quot;>
+            <h1 style=&quot;color: #425466; font-size: 28px; margin-bottom: 32px;&quot;>Welcome back</h1>
+            <form>
+              <div style=&quot;margin-bottom: 24px;&quot;>
+                <input type=&quot;email&quot; placeholder=&quot;Email&quot; style=&quot;width: 100%; padding: 12px; border: 1px solid #E3E8EE; border-radius: 6px; font-size: 16px;&quot;>
+              </div>
+              <div style=&quot;margin-bottom: 32px;&quot;>
+                <input type=&quot;password&quot; placeholder=&quot;Password&quot; style=&quot;width: 100%; padding: 12px; border: 1px solid #E3E8EE; border-radius: 6px; font-size: 16px;&quot;>
+              </div>
+              <button style=&quot;width: 100%; background: #635BFF; color: white; padding: 12px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer;&quot;>Sign in</button>
+            </form>
+          </div>
+        </div>
 </body>
 </html>"></iframe>
                   </div>
@@ -389,52 +421,43 @@
                 <div class="variation-card">
                   <div class="variation-header">
                     <span class="variation-name">Card Floating</span>
-                    
+                    <span class="style-badge stripe">Stripe Style</span>
                   </div>
                   <div class="variation-preview">
                     <iframe srcdoc="<!DOCTYPE html>
-<html>
+<html lang=&quot;en&quot;>
 <head>
   <meta charset=&quot;UTF-8&quot;>
   <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-  <title>AI Generated Page</title>
+  <title>Spotify Playful - login</title>
   <style>
-    :root {
-      --primary: #635BFF;
-      --accent: #00D4FF;
-      --neutral: #425466;
-      --bg: #F6F9FC;
-      --surface: #FFFFFF;
-      --font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
-      --border-radius: 8px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: var(--bg);
-      font-family: var(--font-family), sans-serif;
-      padding: 2rem;
-      color: #111827;
-    }
-    .container { max-width: 1200px; margin: 0 auto; }
-    h1 { font-size: 2rem; margin-bottom: 2rem; }
-    .content {
-      background: var(--surface);
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-family: Circular, -apple-system, sans-serif;
+      background: #121212;
+      color: #FFFFFF;
     }
   </style>
 </head>
 <body>
-  <div class=&quot;container&quot;>
-    <h1>AI-Generated Interface</h1>
-    <div class=&quot;content&quot;>
-      <p>This page was generated dynamically by AI based on your specifications.</p>
-      <p style=&quot;margin-top: 1rem; color: var(--neutral);&quot;>Prompt: Generate a complete HTML page with the following specifications:
-      
-        Create a floating ca...</p>
-    </div>
-  </div>
+  
+        <div style=&quot;background: linear-gradient(to bottom, #1DB954 0%, #191414 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: -apple-system, sans-serif;&quot;>
+          <div style=&quot;background: #000; border-radius: 8px; padding: 48px; width: 400px;&quot;>
+            <div style=&quot;text-align: center; margin-bottom: 32px;&quot;>
+              <div style=&quot;font-size: 40px; font-weight: bold; color: #1DB954;&quot;>●●● Spotify</div>
+            </div>
+            <button style=&quot;width: 100%; background: #1DB954; color: white; padding: 14px; border: none; border-radius: 24px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 16px;&quot;>Continue with Facebook</button>
+            <button style=&quot;width: 100%; background: white; color: #000; padding: 14px; border: none; border-radius: 24px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 16px;&quot;>Continue with Apple</button>
+            <button style=&quot;width: 100%; background: transparent; color: white; padding: 14px; border: 1px solid #535353; border-radius: 24px; font-size: 16px; font-weight: bold; cursor: pointer;&quot;>Continue with Google</button>
+            <div style=&quot;text-align: center; color: #535353; margin: 24px 0;&quot;>OR</div>
+            <input type=&quot;email&quot; placeholder=&quot;Email address&quot; style=&quot;width: 100%; background: transparent; border: 1px solid #535353; color: white; padding: 14px; border-radius: 4px; margin-bottom: 16px;&quot;>
+            <button style=&quot;width: 100%; background: #1DB954; color: white; padding: 14px; border: none; border-radius: 24px; font-size: 16px; font-weight: bold; cursor: pointer;&quot;>Log In</button>
+          </div>
+        </div>
 </body>
 </html>"></iframe>
                   </div>
@@ -449,90 +472,52 @@
                 <div class="variation-card">
                   <div class="variation-header">
                     <span class="variation-name">Analytics Focus</span>
-                    <span class="badge">Recommandé</span>
+                    <span class="style-badge bloomberg">Bloomberg Style</span>
                   </div>
                   <div class="variation-preview">
                     <iframe srcdoc="<!DOCTYPE html>
-<html>
+<html lang=&quot;en&quot;>
 <head>
   <meta charset=&quot;UTF-8&quot;>
   <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-  <title>Analytics Dashboard</title>
+  <title>Bloomberg Terminal - dashboard</title>
   <style>
-    :root {
-      --primary: #635BFF;
-      --accent: #00D4FF;
-      --neutral: #425466;
-      --bg: #F6F9FC;
-      --surface: #FFFFFF;
-      --font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
-      --border-radius: 8px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg); font-family: var(--font-family), sans-serif; }
-    .dashboard { padding: 2rem; }
-    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
-    .kpi-card { background: var(--surface); padding: 1.5rem; border-radius: var(--border-radius); }
-    .kpi-value { font-size: 2rem; font-weight: 700; color: var(--primary); }
-    .kpi-label { color: var(--neutral); font-size: 0.875rem; margin-bottom: 0.5rem; }
-    .kpi-trend { color: var(--accent); font-size: 0.75rem; }
-    .chart-area { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
-    .main-chart { background: var(--surface); padding: 2rem; border-radius: var(--border-radius); height: 400px; display: flex; align-items: center; justify-content: center; }
-    .side-charts { display: flex; flex-direction: column; gap: 1rem; }
-    .small-chart { background: var(--surface); padding: 1.5rem; border-radius: var(--border-radius); height: 190px; display: flex; align-items: center; justify-content: center; }
+    body {
+      font-family: Consolas, &quot;Courier New&quot;, monospace;
+      background: #000000;
+      color: #00FF00;
+    }
   </style>
 </head>
 <body>
-  <div class=&quot;dashboard&quot;>
-    <h1 style=&quot;margin-bottom: 2rem;&quot;>Analytics Dashboard</h1>
-    <div class=&quot;kpi-row&quot;>
-      <div class=&quot;kpi-card&quot;>
-        <div class=&quot;kpi-label&quot;>Total Revenue</div>
-        <div class=&quot;kpi-value&quot;>$124.5K</div>
-        <div class=&quot;kpi-trend&quot;>↑ 12.5% from last month</div>
-      </div>
-      <div class=&quot;kpi-card&quot;>
-        <div class=&quot;kpi-label&quot;>Active Users</div>
-        <div class=&quot;kpi-value&quot;>8,492</div>
-        <div class=&quot;kpi-trend&quot;>↑ 8.3% from last week</div>
-      </div>
-      <div class=&quot;kpi-card&quot;>
-        <div class=&quot;kpi-label&quot;>Conversion Rate</div>
-        <div class=&quot;kpi-value&quot;>3.24%</div>
-        <div class=&quot;kpi-trend&quot;>↓ 0.5% from yesterday</div>
-      </div>
-      <div class=&quot;kpi-card&quot;>
-        <div class=&quot;kpi-label&quot;>Avg Session</div>
-        <div class=&quot;kpi-value&quot;>5m 42s</div>
-        <div class=&quot;kpi-trend&quot;>↑ 23s from average</div>
-      </div>
-    </div>
-    <div class=&quot;chart-area&quot;>
-      <div class=&quot;main-chart&quot;>
-        <svg width=&quot;100%&quot; height=&quot;100%&quot; viewBox=&quot;0 0 400 200&quot;>
-          <polyline points=&quot;20,180 60,160 100,140 140,120 180,100 220,90 260,70 300,60 340,40 380,20&quot;
-                    fill=&quot;none&quot; stroke=&quot;var(--primary)&quot; stroke-width=&quot;2&quot;/>
-        </svg>
-      </div>
-      <div class=&quot;side-charts&quot;>
-        <div class=&quot;small-chart&quot;>
-          <svg width=&quot;100&quot; height=&quot;100&quot;>
-            <circle cx=&quot;50&quot; cy=&quot;50&quot; r=&quot;40&quot; fill=&quot;none&quot; stroke=&quot;var(--neutral)&quot; stroke-width=&quot;8&quot;/>
-            <circle cx=&quot;50&quot; cy=&quot;50&quot; r=&quot;40&quot; fill=&quot;none&quot; stroke=&quot;var(--primary)&quot; stroke-width=&quot;8&quot;
-                    stroke-dasharray=&quot;125.6&quot; stroke-dashoffset=&quot;31.4&quot; transform=&quot;rotate(-90 50 50)&quot;/>
-          </svg>
-        </div>
-        <div class=&quot;small-chart&quot;>
-          <div style=&quot;display: flex; justify-content: space-around; align-items: flex-end; height: 100px;&quot;>
-            <div style=&quot;width: 20px; height: 60%; background: var(--primary);&quot;></div>
-            <div style=&quot;width: 20px; height: 80%; background: var(--accent);&quot;></div>
-            <div style=&quot;width: 20px; height: 40%; background: var(--neutral);&quot;></div>
-            <div style=&quot;width: 20px; height: 70%; background: var(--primary);&quot;></div>
+  
+        <div style=&quot;background: #000; color: #0F0; font-family: monospace; padding: 0;&quot;>
+          <div style=&quot;display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: #0F0;&quot;>
+            <div style=&quot;background: #000; padding: 8px;&quot;>
+              <div style=&quot;font-size: 10px; color: #999;&quot;>TICKER</div>
+              <div style=&quot;font-size: 14px; color: #0F0;&quot;>SPX</div>
+              <div style=&quot;font-size: 12px; color: #F00;&quot;>-1.23%</div>
+            </div>
+            <div style=&quot;background: #000; padding: 8px;&quot;>
+              <div style=&quot;font-size: 10px; color: #999;&quot;>NASDAQ</div>
+              <div style=&quot;font-size: 14px; color: #0F0;&quot;>14,235.12</div>
+              <div style=&quot;font-size: 12px; color: #0F0;&quot;>+0.45%</div>
+            </div>
           </div>
+          <pre style=&quot;color: #0F0; background: #111; padding: 10px; margin: 10px 0;&quot;>
+┌─────────────┬──────────┬─────────┬──────────┐
+│ Symbol      │ Price    │ Change  │ Volume   │
+├─────────────┼──────────┼─────────┼──────────┤
+│ AAPL        │ 182.52   │ +1.23%  │ 52.3M    │
+│ GOOGL       │ 139.85   │ -0.45%  │ 23.1M    │
+└─────────────┴──────────┴─────────┴──────────┘
+          </pre>
         </div>
-      </div>
-    </div>
-  </div>
 </body>
 </html>"></iframe>
                   </div>
@@ -541,126 +526,68 @@
                 <div class="variation-card">
                   <div class="variation-header">
                     <span class="variation-name">Data Table Focus</span>
-                    
+                    <span class="style-badge stripe">Stripe Style</span>
                   </div>
                   <div class="variation-preview">
                     <iframe srcdoc="<!DOCTYPE html>
-<html>
+<html lang=&quot;en&quot;>
 <head>
   <meta charset=&quot;UTF-8&quot;>
   <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-  <title>Data Management Dashboard</title>
+  <title>Linear Developer - dashboard</title>
   <style>
-    :root {
-      --primary: #635BFF;
-      --accent: #00D4FF;
-      --neutral: #425466;
-      --bg: #F6F9FC;
-      --surface: #FFFFFF;
-      --font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
-      --border-radius: 8px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg); font-family: var(--font-family), sans-serif; padding: 2rem; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-    .filters { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
-    .filter { padding: 0.5rem 1rem; background: var(--surface); border: 1px solid var(--neutral); border-radius: var(--border-radius); }
-    .data-table { background: var(--surface); border-radius: var(--border-radius); overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; }
-    th { background: var(--primary); color: white; padding: 1rem; text-align: left; font-weight: 600; }
-    td { padding: 1rem; border-bottom: 1px solid #e5e7eb; }
-    tr:hover { background: rgba(59, 130, 246, 0.05); }
-    .pagination { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--surface); }
-    .stats-bar { display: flex; gap: 2rem; padding: 1rem; background: var(--surface); border-bottom: 1px solid #e5e7eb; }
-    .stat { display: flex; flex-direction: column; }
-    .stat-value { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
-    .stat-label { font-size: 0.75rem; color: var(--neutral); }
+    body {
+      font-family: Inter, -apple-system, sans-serif;
+      background: #FFFFFF;
+      color: #2E3338;
+    }
   </style>
 </head>
 <body>
-  <div class=&quot;header&quot;>
-    <h1>Data Management</h1>
-    <button style=&quot;padding: 0.75rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer;&quot;>Export Data</button>
-  </div>
-
-  <div class=&quot;filters&quot;>
-    <select class=&quot;filter&quot;>
-      <option>All Status</option>
-      <option>Active</option>
-      <option>Pending</option>
-    </select>
-    <select class=&quot;filter&quot;>
-      <option>All Categories</option>
-      <option>Sales</option>
-      <option>Marketing</option>
-    </select>
-    <input type=&quot;text&quot; placeholder=&quot;Search...&quot; class=&quot;filter&quot; style=&quot;flex: 1;&quot;>
-  </div>
-
-  <div class=&quot;data-table&quot;>
-    <div class=&quot;stats-bar&quot;>
-      <div class=&quot;stat&quot;>
-        <span class=&quot;stat-value&quot;>1,234</span>
-        <span class=&quot;stat-label&quot;>Total Records</span>
-      </div>
-      <div class=&quot;stat&quot;>
-        <span class=&quot;stat-value&quot;>892</span>
-        <span class=&quot;stat-label&quot;>Active</span>
-      </div>
-      <div class=&quot;stat&quot;>
-        <span class=&quot;stat-value&quot;>342</span>
-        <span class=&quot;stat-label&quot;>Pending</span>
-      </div>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Category</th>
-          <th>Status</th>
-          <th>Date</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>#1234</td>
-          <td>Product Launch Campaign</td>
-          <td>Marketing</td>
-          <td><span style=&quot;color: var(--accent);&quot;>Active</span></td>
-          <td>2024-01-15</td>
-          <td><button style=&quot;padding: 0.25rem 0.75rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;&quot;>Edit</button></td>
-        </tr>
-        <tr>
-          <td>#1235</td>
-          <td>Q4 Sales Report</td>
-          <td>Sales</td>
-          <td><span style=&quot;color: var(--neutral);&quot;>Pending</span></td>
-          <td>2024-01-14</td>
-          <td><button style=&quot;padding: 0.25rem 0.75rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;&quot;>Edit</button></td>
-        </tr>
-        <tr>
-          <td>#1236</td>
-          <td>Customer Feedback Analysis</td>
-          <td>Research</td>
-          <td><span style=&quot;color: var(--accent);&quot;>Active</span></td>
-          <td>2024-01-13</td>
-          <td><button style=&quot;padding: 0.25rem 0.75rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;&quot;>Edit</button></td>
-        </tr>
-      </tbody>
-    </table>
-    <div class=&quot;pagination&quot;>
-      <span>Showing 1-10 of 1,234</span>
-      <div style=&quot;display: flex; gap: 0.5rem;&quot;>
-        <button style=&quot;padding: 0.5rem 1rem; background: var(--bg); border: 1px solid var(--neutral); border-radius: 4px;&quot;>Previous</button>
-        <button style=&quot;padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 4px;&quot;>1</button>
-        <button style=&quot;padding: 0.5rem 1rem; background: var(--bg); border: 1px solid var(--neutral); border-radius: 4px;&quot;>2</button>
-        <button style=&quot;padding: 0.5rem 1rem; background: var(--bg); border: 1px solid var(--neutral); border-radius: 4px;&quot;>3</button>
-        <button style=&quot;padding: 0.5rem 1rem; background: var(--bg); border: 1px solid var(--neutral); border-radius: 4px;&quot;>Next</button>
-      </div>
-    </div>
-  </div>
+  
+        <div style=&quot;background: #FCFCFD; min-height: 100vh; font-family: Inter, -apple-system, sans-serif;&quot;>
+          <div style=&quot;background: white; border-bottom: 1px solid #E5E7EB; padding: 12px 24px;&quot;>
+            <div style=&quot;display: flex; align-items: center; gap: 24px;&quot;>
+              <div style=&quot;font-weight: 600; color: #2E3338;&quot;>Linear</div>
+              <input type=&quot;search&quot; placeholder=&quot;Search&quot; style=&quot;flex: 1; max-width: 400px; padding: 6px 12px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 14px;&quot;>
+            </div>
+          </div>
+          <div style=&quot;padding: 24px;&quot;>
+            <h1 style=&quot;font-size: 24px; font-weight: 600; color: #2E3338; margin-bottom: 24px;&quot;>Issues</h1>
+            <div style=&quot;background: white; border: 1px solid #E5E7EB; border-radius: 6px;&quot;>
+              <div style=&quot;padding: 16px; border-bottom: 1px solid #F7F8F9;&quot;>
+                <div style=&quot;display: flex; align-items: center; gap: 12px;&quot;>
+                  <div style=&quot;width: 20px; height: 20px; border: 2px solid #5E6AD2; border-radius: 50%;&quot;></div>
+                  <div style=&quot;flex: 1;&quot;>
+                    <div style=&quot;font-weight: 500; color: #2E3338; margin-bottom: 4px;&quot;>Fix navigation bug on mobile</div>
+                    <div style=&quot;display: flex; gap: 8px; font-size: 13px; color: #6B7280;&quot;>
+                      <span style=&quot;background: #F3F4F6; padding: 2px 6px; border-radius: 4px;&quot;>BUG-123</span>
+                      <span>High priority</span>
+                      <span>Due tomorrow</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style=&quot;padding: 16px; border-bottom: 1px solid #F7F8F9;&quot;>
+                <div style=&quot;display: flex; align-items: center; gap: 12px;&quot;>
+                  <div style=&quot;width: 20px; height: 20px; border: 2px solid #10B981; border-radius: 50%; background: #10B981;&quot;></div>
+                  <div style=&quot;flex: 1;&quot;>
+                    <div style=&quot;font-weight: 500; color: #2E3338; margin-bottom: 4px; text-decoration: line-through; opacity: 0.5;&quot;>Implement dark mode</div>
+                    <div style=&quot;display: flex; gap: 8px; font-size: 13px; color: #6B7280;&quot;>
+                      <span style=&quot;background: #F3F4F6; padding: 2px 6px; border-radius: 4px;&quot;>FEAT-456</span>
+                      <span>Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 </body>
 </html>"></iframe>
                   </div>
@@ -669,78 +596,50 @@
                 <div class="variation-card">
                   <div class="variation-header">
                     <span class="variation-name">Minimal Cards</span>
-                    
+                    <span class="style-badge apple">Apple Style</span>
                   </div>
                   <div class="variation-preview">
                     <iframe srcdoc="<!DOCTYPE html>
-<html>
+<html lang=&quot;en&quot;>
 <head>
   <meta charset=&quot;UTF-8&quot;>
   <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-  <title>Overview Dashboard</title>
+  <title>Apple Minimalist - dashboard</title>
   <style>
-    :root {
-      --primary: #635BFF;
-      --accent: #00D4FF;
-      --neutral: #425466;
-      --bg: #F6F9FC;
-      --surface: #FFFFFF;
-      --font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
-      --border-radius: 8px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg); font-family: var(--font-family), sans-serif; padding: 3rem; }
-    h1 { font-size: 2.5rem; margin-bottom: 3rem; font-weight: 300; letter-spacing: -0.02em; }
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
-    .card { background: var(--surface); padding: 2rem; border-radius: var(--border-radius); transition: transform 0.2s; }
-    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-    .card-icon { width: 48px; height: 48px; background: var(--primary); opacity: 0.1; border-radius: 8px; margin-bottom: 1.5rem; }
-    .card-label { color: var(--neutral); font-size: 0.875rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .card-value { font-size: 2.5rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem; }
-    .card-change { color: var(--accent); font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem; }
-    .card-change.negative { color: #ef4444; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, &quot;SF Pro Display&quot;, sans-serif;
+      background: #FFFFFF;
+      color: #1D1D1F;
+    }
   </style>
 </head>
 <body>
-  <h1>Dashboard Overview</h1>
-  <div class=&quot;cards-grid&quot;>
-    <div class=&quot;card&quot;>
-      <div class=&quot;card-icon&quot;></div>
-      <div class=&quot;card-label&quot;>Revenue</div>
-      <div class=&quot;card-value&quot;>$48,292</div>
-      <div class=&quot;card-change&quot;>↑ 12% from last month</div>
-    </div>
-    <div class=&quot;card&quot;>
-      <div class=&quot;card-icon&quot; style=&quot;background: var(--accent); opacity: 0.1;&quot;></div>
-      <div class=&quot;card-label&quot;>Customers</div>
-      <div class=&quot;card-value&quot;>3,428</div>
-      <div class=&quot;card-change&quot;>↑ 5.2% this week</div>
-    </div>
-    <div class=&quot;card&quot;>
-      <div class=&quot;card-icon&quot; style=&quot;background: var(--neutral); opacity: 0.1;&quot;></div>
-      <div class=&quot;card-label&quot;>Orders</div>
-      <div class=&quot;card-value&quot;>892</div>
-      <div class=&quot;card-change negative&quot;>↓ 2.1% today</div>
-    </div>
-    <div class=&quot;card&quot;>
-      <div class=&quot;card-icon&quot;></div>
-      <div class=&quot;card-label&quot;>Conversion</div>
-      <div class=&quot;card-value&quot;>4.8%</div>
-      <div class=&quot;card-change&quot;>↑ 0.3% improvement</div>
-    </div>
-    <div class=&quot;card&quot;>
-      <div class=&quot;card-icon&quot; style=&quot;background: var(--accent); opacity: 0.1;&quot;></div>
-      <div class=&quot;card-label&quot;>Avg Order Value</div>
-      <div class=&quot;card-value&quot;>$127</div>
-      <div class=&quot;card-change&quot;>↑ $12 increase</div>
-    </div>
-    <div class=&quot;card&quot;>
-      <div class=&quot;card-icon&quot; style=&quot;background: var(--neutral); opacity: 0.1;&quot;></div>
-      <div class=&quot;card-label&quot;>Active Sessions</div>
-      <div class=&quot;card-value&quot;>284</div>
-      <div class=&quot;card-change&quot;>Live now</div>
-    </div>
-  </div>
+  
+        <div style=&quot;background: #F5F5F7; min-height: 100vh; font-family: -apple-system, sans-serif;&quot;>
+          <div style=&quot;background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); padding: 16px 40px; border-bottom: 1px solid rgba(0,0,0,0.1);&quot;>
+            <div style=&quot;display: flex; justify-content: space-between; align-items: center;&quot;>
+              <h1 style=&quot;font-size: 22px; font-weight: 600; color: #1D1D1F; margin: 0;&quot;>Overview</h1>
+              <button style=&quot;background: #0071E3; color: white; border: none; padding: 8px 20px; border-radius: 20px; font-size: 14px;&quot;>New</button>
+            </div>
+          </div>
+          <div style=&quot;padding: 60px 40px;&quot;>
+            <div style=&quot;display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px;&quot;>
+              <div style=&quot;background: white; border-radius: 18px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);&quot;>
+                <h2 style=&quot;font-size: 48px; font-weight: 600; color: #1D1D1F; margin: 0;&quot;>24</h2>
+                <p style=&quot;color: #86868B; font-size: 17px; margin: 16px 0 0;&quot;>Active Projects</p>
+              </div>
+              <div style=&quot;background: white; border-radius: 18px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);&quot;>
+                <h2 style=&quot;font-size: 48px; font-weight: 600; color: #1D1D1F; margin: 0;&quot;>98%</h2>
+                <p style=&quot;color: #86868B; font-size: 17px; margin: 16px 0 0;&quot;>Satisfaction Rate</p>
+              </div>
+            </div>
+          </div>
+        </div>
 </body>
 </html>"></iframe>
                   </div>
@@ -755,52 +654,52 @@
                 <div class="variation-card">
                   <div class="variation-header">
                     <span class="variation-name">Simple</span>
-                    <span class="badge">Recommandé</span>
+                    <span class="style-badge linear">Linear Style</span>
                   </div>
                   <div class="variation-preview">
                     <iframe srcdoc="<!DOCTYPE html>
-<html>
+<html lang=&quot;en&quot;>
 <head>
   <meta charset=&quot;UTF-8&quot;>
   <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-  <title>AI Generated Page</title>
+  <title>Stripe Modern - pricing</title>
   <style>
-    :root {
-      --primary: #635BFF;
-      --accent: #00D4FF;
-      --neutral: #425466;
-      --bg: #F6F9FC;
-      --surface: #FFFFFF;
-      --font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
-      --border-radius: 8px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: var(--bg);
-      font-family: var(--font-family), sans-serif;
-      padding: 2rem;
-      color: #111827;
-    }
-    .container { max-width: 1200px; margin: 0 auto; }
-    h1 { font-size: 2rem; margin-bottom: 2rem; }
-    .content {
-      background: var(--surface);
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
+      background: #FFFFFF;
+      color: #425466;
     }
   </style>
 </head>
 <body>
-  <div class=&quot;container&quot;>
-    <h1>AI-Generated Interface</h1>
-    <div class=&quot;content&quot;>
-      <p>This page was generated dynamically by AI based on your specifications.</p>
-      <p style=&quot;margin-top: 1rem; color: var(--neutral);&quot;>Prompt: Generate a complete HTML page with the following specifications:
-      
-        Create three-tier pr...</p>
-    </div>
-  </div>
+  
+        <div style=&quot;background: #F6F9FC; min-height: 100vh; font-family: -apple-system, sans-serif;&quot;>
+          <div style=&quot;background: white; padding: 24px; border-bottom: 1px solid #E3E8EE;&quot;>
+            <h1 style=&quot;margin: 0; color: #425466; font-size: 24px;&quot;>Dashboard</h1>
+          </div>
+          <div style=&quot;padding: 32px;&quot;>
+            <div style=&quot;display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;&quot;>
+              <div style=&quot;background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);&quot;>
+                <div style=&quot;display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;&quot;>
+                  <span style=&quot;color: #8792A2; font-size: 14px;&quot;>Revenue</span>
+                  <span style=&quot;background: #D4EDDA; color: #155724; padding: 2px 8px; border-radius: 12px; font-size: 12px;&quot;>+12%</span>
+                </div>
+                <div style=&quot;font-size: 32px; font-weight: 600; color: #425466;&quot;>$84,232</div>
+                <div style=&quot;height: 60px; margin-top: 16px; background: linear-gradient(to top, #635BFF33, transparent); border-radius: 4px;&quot;></div>
+              </div>
+              <div style=&quot;background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);&quot;>
+                <div style=&quot;color: #8792A2; font-size: 14px; margin-bottom: 16px;&quot;>Customers</div>
+                <div style=&quot;font-size: 32px; font-weight: 600; color: #425466;&quot;>1,234</div>
+                <div style=&quot;color: #00D4FF; font-size: 14px; margin-top: 8px;&quot;>↑ 89 this week</div>
+              </div>
+            </div>
+          </div>
+        </div>
 </body>
 </html>"></iframe>
                   </div>
@@ -809,52 +708,52 @@
                 <div class="variation-card">
                   <div class="variation-header">
                     <span class="variation-name">Featured</span>
-                    
+                    <span class="style-badge spotify">Spotify Style</span>
                   </div>
                   <div class="variation-preview">
                     <iframe srcdoc="<!DOCTYPE html>
-<html>
+<html lang=&quot;en&quot;>
 <head>
   <meta charset=&quot;UTF-8&quot;>
   <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-  <title>AI Generated Page</title>
+  <title>Stripe Modern - pricing</title>
   <style>
-    :root {
-      --primary: #635BFF;
-      --accent: #00D4FF;
-      --neutral: #425466;
-      --bg: #F6F9FC;
-      --surface: #FFFFFF;
-      --font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
-      --border-radius: 8px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: var(--bg);
-      font-family: var(--font-family), sans-serif;
-      padding: 2rem;
-      color: #111827;
-    }
-    .container { max-width: 1200px; margin: 0 auto; }
-    h1 { font-size: 2rem; margin-bottom: 2rem; }
-    .content {
-      background: var(--surface);
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
+      background: #FFFFFF;
+      color: #425466;
     }
   </style>
 </head>
 <body>
-  <div class=&quot;container&quot;>
-    <h1>AI-Generated Interface</h1>
-    <div class=&quot;content&quot;>
-      <p>This page was generated dynamically by AI based on your specifications.</p>
-      <p style=&quot;margin-top: 1rem; color: var(--neutral);&quot;>Prompt: Generate a complete HTML page with the following specifications:
-      
-        Create a comparison ...</p>
-    </div>
-  </div>
+  
+        <div style=&quot;background: #F6F9FC; min-height: 100vh; font-family: -apple-system, sans-serif;&quot;>
+          <div style=&quot;background: white; padding: 24px; border-bottom: 1px solid #E3E8EE;&quot;>
+            <h1 style=&quot;margin: 0; color: #425466; font-size: 24px;&quot;>Dashboard</h1>
+          </div>
+          <div style=&quot;padding: 32px;&quot;>
+            <div style=&quot;display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;&quot;>
+              <div style=&quot;background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);&quot;>
+                <div style=&quot;display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;&quot;>
+                  <span style=&quot;color: #8792A2; font-size: 14px;&quot;>Revenue</span>
+                  <span style=&quot;background: #D4EDDA; color: #155724; padding: 2px 8px; border-radius: 12px; font-size: 12px;&quot;>+12%</span>
+                </div>
+                <div style=&quot;font-size: 32px; font-weight: 600; color: #425466;&quot;>$84,232</div>
+                <div style=&quot;height: 60px; margin-top: 16px; background: linear-gradient(to top, #635BFF33, transparent); border-radius: 4px;&quot;></div>
+              </div>
+              <div style=&quot;background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);&quot;>
+                <div style=&quot;color: #8792A2; font-size: 14px; margin-bottom: 16px;&quot;>Customers</div>
+                <div style=&quot;font-size: 32px; font-weight: 600; color: #425466;&quot;>1,234</div>
+                <div style=&quot;color: #00D4FF; font-size: 14px; margin-top: 8px;&quot;>↑ 89 this week</div>
+              </div>
+            </div>
+          </div>
+        </div>
 </body>
 </html>"></iframe>
                   </div>
@@ -863,52 +762,52 @@
                 <div class="variation-card">
                   <div class="variation-header">
                     <span class="variation-name">Detailed</span>
-                    
+                    <span class="style-badge stripe">Stripe Style</span>
                   </div>
                   <div class="variation-preview">
                     <iframe srcdoc="<!DOCTYPE html>
-<html>
+<html lang=&quot;en&quot;>
 <head>
   <meta charset=&quot;UTF-8&quot;>
   <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-  <title>AI Generated Page</title>
+  <title>Stripe Modern - pricing</title>
   <style>
-    :root {
-      --primary: #635BFF;
-      --accent: #00D4FF;
-      --neutral: #425466;
-      --bg: #F6F9FC;
-      --surface: #FFFFFF;
-      --font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
-      --border-radius: 8px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: var(--bg);
-      font-family: var(--font-family), sans-serif;
-      padding: 2rem;
-      color: #111827;
-    }
-    .container { max-width: 1200px; margin: 0 auto; }
-    h1 { font-size: 2rem; margin-bottom: 2rem; }
-    .content {
-      background: var(--surface);
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
+      background: #FFFFFF;
+      color: #425466;
     }
   </style>
 </head>
 <body>
-  <div class=&quot;container&quot;>
-    <h1>AI-Generated Interface</h1>
-    <div class=&quot;content&quot;>
-      <p>This page was generated dynamically by AI based on your specifications.</p>
-      <p style=&quot;margin-top: 1rem; color: var(--neutral);&quot;>Prompt: Generate a complete HTML page with the following specifications:
-      
-        Create a detailed pr...</p>
-    </div>
-  </div>
+  
+        <div style=&quot;background: #F6F9FC; min-height: 100vh; font-family: -apple-system, sans-serif;&quot;>
+          <div style=&quot;background: white; padding: 24px; border-bottom: 1px solid #E3E8EE;&quot;>
+            <h1 style=&quot;margin: 0; color: #425466; font-size: 24px;&quot;>Dashboard</h1>
+          </div>
+          <div style=&quot;padding: 32px;&quot;>
+            <div style=&quot;display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;&quot;>
+              <div style=&quot;background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);&quot;>
+                <div style=&quot;display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;&quot;>
+                  <span style=&quot;color: #8792A2; font-size: 14px;&quot;>Revenue</span>
+                  <span style=&quot;background: #D4EDDA; color: #155724; padding: 2px 8px; border-radius: 12px; font-size: 12px;&quot;>+12%</span>
+                </div>
+                <div style=&quot;font-size: 32px; font-weight: 600; color: #425466;&quot;>$84,232</div>
+                <div style=&quot;height: 60px; margin-top: 16px; background: linear-gradient(to top, #635BFF33, transparent); border-radius: 4px;&quot;></div>
+              </div>
+              <div style=&quot;background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);&quot;>
+                <div style=&quot;color: #8792A2; font-size: 14px; margin-bottom: 16px;&quot;>Customers</div>
+                <div style=&quot;font-size: 32px; font-weight: 600; color: #425466;&quot;>1,234</div>
+                <div style=&quot;color: #00D4FF; font-size: 14px; margin-top: 8px;&quot;>↑ 89 this week</div>
+              </div>
+            </div>
+          </div>
+        </div>
 </body>
 </html>"></iframe>
                   </div>
@@ -922,26 +821,10 @@
   </div>
 
   <script>
-    const MOCKUP_DATA = {"pages":[{"name":"Login","type":"login","variations":[{"name":"Minimal","specs":{"colors":{"primary":"#635BFF","accent":"#00D4FF","neutral":["#425466","#697386","#8792A2"],"background":"#F6F9FC","surface":"#FFFFFF"},"typography":{"fontFamily":"-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif","scale":1.25},"spacing":{"unit":"8px","scale":[4,8,12,16,24,32,48,64]},"components":{"borderRadius":"8px","shadowScale":["0 1px 3px rgba(0,0,0,0.12)","0 4px 6px rgba(0,0,0,0.12)","0 10px 20px rgba(0,0,0,0.12)"]}},"html":"<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>AI Generated Page</title>\n  <style>\n    :root {\n      --primary: #635BFF;\n      --accent: #00D4FF;\n      --neutral: #425466;\n      --bg: #F6F9FC;\n      --surface: #FFFFFF;\n      --font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      --border-radius: 8px;\n    }\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      background: var(--bg);\n      font-family: var(--font-family), sans-serif;\n      padding: 2rem;\n      color: #111827;\n    }\n    .container { max-width: 1200px; margin: 0 auto; }\n    h1 { font-size: 2rem; margin-bottom: 2rem; }\n    .content {\n      background: var(--surface);\n      padding: 2rem;\n      border-radius: var(--border-radius);\n      box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>AI-Generated Interface</h1>\n    <div class=\"content\">\n      <p>This page was generated dynamically by AI based on your specifications.</p>\n      <p style=\"margin-top: 1rem; color: var(--neutral);\">Prompt: Generate a complete HTML page with the following specifications:\n      \n        Create a minimal cen...</p>\n    </div>\n  </div>\n</body>\n</html>"},{"name":"Split Screen","specs":{"colors":{"primary":"#635BFF","accent":"#00D4FF","neutral":["#425466","#697386","#8792A2"],"background":"#F6F9FC","surface":"#FFFFFF"},"typography":{"fontFamily":"-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif","scale":1.25},"spacing":{"unit":"8px","scale":[4,8,12,16,24,32,48,64]},"components":{"borderRadius":"8px","shadowScale":["0 1px 3px rgba(0,0,0,0.12)","0 4px 6px rgba(0,0,0,0.12)","0 10px 20px rgba(0,0,0,0.12)"]}},"html":"<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>AI Generated Page</title>\n  <style>\n    :root {\n      --primary: #635BFF;\n      --accent: #00D4FF;\n      --neutral: #425466;\n      --bg: #F6F9FC;\n      --surface: #FFFFFF;\n      --font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      --border-radius: 8px;\n    }\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      background: var(--bg);\n      font-family: var(--font-family), sans-serif;\n      padding: 2rem;\n      color: #111827;\n    }\n    .container { max-width: 1200px; margin: 0 auto; }\n    h1 { font-size: 2rem; margin-bottom: 2rem; }\n    .content {\n      background: var(--surface);\n      padding: 2rem;\n      border-radius: var(--border-radius);\n      box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>AI-Generated Interface</h1>\n    <div class=\"content\">\n      <p>This page was generated dynamically by AI based on your specifications.</p>\n      <p style=\"margin-top: 1rem; color: var(--neutral);\">Prompt: Generate a complete HTML page with the following specifications:\n      \n        Create a split-scree...</p>\n    </div>\n  </div>\n</body>\n</html>"},{"name":"Card Floating","specs":{"colors":{"primary":"#635BFF","accent":"#00D4FF","neutral":["#425466","#697386","#8792A2"],"background":"#F6F9FC","surface":"#FFFFFF"},"typography":{"fontFamily":"-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif","scale":1.25},"spacing":{"unit":"8px","scale":[4,8,12,16,24,32,48,64]},"components":{"borderRadius":"8px","shadowScale":["0 1px 3px rgba(0,0,0,0.12)","0 4px 6px rgba(0,0,0,0.12)","0 10px 20px rgba(0,0,0,0.12)"]}},"html":"<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>AI Generated Page</title>\n  <style>\n    :root {\n      --primary: #635BFF;\n      --accent: #00D4FF;\n      --neutral: #425466;\n      --bg: #F6F9FC;\n      --surface: #FFFFFF;\n      --font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      --border-radius: 8px;\n    }\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      background: var(--bg);\n      font-family: var(--font-family), sans-serif;\n      padding: 2rem;\n      color: #111827;\n    }\n    .container { max-width: 1200px; margin: 0 auto; }\n    h1 { font-size: 2rem; margin-bottom: 2rem; }\n    .content {\n      background: var(--surface);\n      padding: 2rem;\n      border-radius: var(--border-radius);\n      box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>AI-Generated Interface</h1>\n    <div class=\"content\">\n      <p>This page was generated dynamically by AI based on your specifications.</p>\n      <p style=\"margin-top: 1rem; color: var(--neutral);\">Prompt: Generate a complete HTML page with the following specifications:\n      \n        Create a floating ca...</p>\n    </div>\n  </div>\n</body>\n</html>"}]},{"name":"Dashboard","type":"dashboard","variations":[{"name":"Analytics Focus","specs":{"colors":{"primary":"#635BFF","accent":"#00D4FF","neutral":["#425466","#697386","#8792A2"],"background":"#F6F9FC","surface":"#FFFFFF"},"typography":{"fontFamily":"-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif","scale":1.25},"spacing":{"unit":"8px","scale":[4,8,12,16,24,32,48,64]},"components":{"borderRadius":"8px","shadowScale":["0 1px 3px rgba(0,0,0,0.12)","0 4px 6px rgba(0,0,0,0.12)","0 10px 20px rgba(0,0,0,0.12)"]}},"html":"<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Analytics Dashboard</title>\n  <style>\n    :root {\n      --primary: #635BFF;\n      --accent: #00D4FF;\n      --neutral: #425466;\n      --bg: #F6F9FC;\n      --surface: #FFFFFF;\n      --font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      --border-radius: 8px;\n    }\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { background: var(--bg); font-family: var(--font-family), sans-serif; }\n    .dashboard { padding: 2rem; }\n    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }\n    .kpi-card { background: var(--surface); padding: 1.5rem; border-radius: var(--border-radius); }\n    .kpi-value { font-size: 2rem; font-weight: 700; color: var(--primary); }\n    .kpi-label { color: var(--neutral); font-size: 0.875rem; margin-bottom: 0.5rem; }\n    .kpi-trend { color: var(--accent); font-size: 0.75rem; }\n    .chart-area { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }\n    .main-chart { background: var(--surface); padding: 2rem; border-radius: var(--border-radius); height: 400px; display: flex; align-items: center; justify-content: center; }\n    .side-charts { display: flex; flex-direction: column; gap: 1rem; }\n    .small-chart { background: var(--surface); padding: 1.5rem; border-radius: var(--border-radius); height: 190px; display: flex; align-items: center; justify-content: center; }\n  </style>\n</head>\n<body>\n  <div class=\"dashboard\">\n    <h1 style=\"margin-bottom: 2rem;\">Analytics Dashboard</h1>\n    <div class=\"kpi-row\">\n      <div class=\"kpi-card\">\n        <div class=\"kpi-label\">Total Revenue</div>\n        <div class=\"kpi-value\">$124.5K</div>\n        <div class=\"kpi-trend\">↑ 12.5% from last month</div>\n      </div>\n      <div class=\"kpi-card\">\n        <div class=\"kpi-label\">Active Users</div>\n        <div class=\"kpi-value\">8,492</div>\n        <div class=\"kpi-trend\">↑ 8.3% from last week</div>\n      </div>\n      <div class=\"kpi-card\">\n        <div class=\"kpi-label\">Conversion Rate</div>\n        <div class=\"kpi-value\">3.24%</div>\n        <div class=\"kpi-trend\">↓ 0.5% from yesterday</div>\n      </div>\n      <div class=\"kpi-card\">\n        <div class=\"kpi-label\">Avg Session</div>\n        <div class=\"kpi-value\">5m 42s</div>\n        <div class=\"kpi-trend\">↑ 23s from average</div>\n      </div>\n    </div>\n    <div class=\"chart-area\">\n      <div class=\"main-chart\">\n        <svg width=\"100%\" height=\"100%\" viewBox=\"0 0 400 200\">\n          <polyline points=\"20,180 60,160 100,140 140,120 180,100 220,90 260,70 300,60 340,40 380,20\"\n                    fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"2\"/>\n        </svg>\n      </div>\n      <div class=\"side-charts\">\n        <div class=\"small-chart\">\n          <svg width=\"100\" height=\"100\">\n            <circle cx=\"50\" cy=\"50\" r=\"40\" fill=\"none\" stroke=\"var(--neutral)\" stroke-width=\"8\"/>\n            <circle cx=\"50\" cy=\"50\" r=\"40\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"8\"\n                    stroke-dasharray=\"125.6\" stroke-dashoffset=\"31.4\" transform=\"rotate(-90 50 50)\"/>\n          </svg>\n        </div>\n        <div class=\"small-chart\">\n          <div style=\"display: flex; justify-content: space-around; align-items: flex-end; height: 100px;\">\n            <div style=\"width: 20px; height: 60%; background: var(--primary);\"></div>\n            <div style=\"width: 20px; height: 80%; background: var(--accent);\"></div>\n            <div style=\"width: 20px; height: 40%; background: var(--neutral);\"></div>\n            <div style=\"width: 20px; height: 70%; background: var(--primary);\"></div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</body>\n</html>"},{"name":"Data Table Focus","specs":{"colors":{"primary":"#635BFF","accent":"#00D4FF","neutral":["#425466","#697386","#8792A2"],"background":"#F6F9FC","surface":"#FFFFFF"},"typography":{"fontFamily":"-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif","scale":1.25},"spacing":{"unit":"8px","scale":[4,8,12,16,24,32,48,64]},"components":{"borderRadius":"8px","shadowScale":["0 1px 3px rgba(0,0,0,0.12)","0 4px 6px rgba(0,0,0,0.12)","0 10px 20px rgba(0,0,0,0.12)"]}},"html":"<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Data Management Dashboard</title>\n  <style>\n    :root {\n      --primary: #635BFF;\n      --accent: #00D4FF;\n      --neutral: #425466;\n      --bg: #F6F9FC;\n      --surface: #FFFFFF;\n      --font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      --border-radius: 8px;\n    }\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { background: var(--bg); font-family: var(--font-family), sans-serif; padding: 2rem; }\n    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }\n    .filters { display: flex; gap: 1rem; margin-bottom: 1.5rem; }\n    .filter { padding: 0.5rem 1rem; background: var(--surface); border: 1px solid var(--neutral); border-radius: var(--border-radius); }\n    .data-table { background: var(--surface); border-radius: var(--border-radius); overflow: hidden; }\n    table { width: 100%; border-collapse: collapse; }\n    th { background: var(--primary); color: white; padding: 1rem; text-align: left; font-weight: 600; }\n    td { padding: 1rem; border-bottom: 1px solid #e5e7eb; }\n    tr:hover { background: rgba(59, 130, 246, 0.05); }\n    .pagination { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--surface); }\n    .stats-bar { display: flex; gap: 2rem; padding: 1rem; background: var(--surface); border-bottom: 1px solid #e5e7eb; }\n    .stat { display: flex; flex-direction: column; }\n    .stat-value { font-size: 1.25rem; font-weight: 700; color: var(--primary); }\n    .stat-label { font-size: 0.75rem; color: var(--neutral); }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>Data Management</h1>\n    <button style=\"padding: 0.75rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer;\">Export Data</button>\n  </div>\n\n  <div class=\"filters\">\n    <select class=\"filter\">\n      <option>All Status</option>\n      <option>Active</option>\n      <option>Pending</option>\n    </select>\n    <select class=\"filter\">\n      <option>All Categories</option>\n      <option>Sales</option>\n      <option>Marketing</option>\n    </select>\n    <input type=\"text\" placeholder=\"Search...\" class=\"filter\" style=\"flex: 1;\">\n  </div>\n\n  <div class=\"data-table\">\n    <div class=\"stats-bar\">\n      <div class=\"stat\">\n        <span class=\"stat-value\">1,234</span>\n        <span class=\"stat-label\">Total Records</span>\n      </div>\n      <div class=\"stat\">\n        <span class=\"stat-value\">892</span>\n        <span class=\"stat-label\">Active</span>\n      </div>\n      <div class=\"stat\">\n        <span class=\"stat-value\">342</span>\n        <span class=\"stat-label\">Pending</span>\n      </div>\n    </div>\n    <table>\n      <thead>\n        <tr>\n          <th>ID</th>\n          <th>Name</th>\n          <th>Category</th>\n          <th>Status</th>\n          <th>Date</th>\n          <th>Actions</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr>\n          <td>#1234</td>\n          <td>Product Launch Campaign</td>\n          <td>Marketing</td>\n          <td><span style=\"color: var(--accent);\">Active</span></td>\n          <td>2024-01-15</td>\n          <td><button style=\"padding: 0.25rem 0.75rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;\">Edit</button></td>\n        </tr>\n        <tr>\n          <td>#1235</td>\n          <td>Q4 Sales Report</td>\n          <td>Sales</td>\n          <td><span style=\"color: var(--neutral);\">Pending</span></td>\n          <td>2024-01-14</td>\n          <td><button style=\"padding: 0.25rem 0.75rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;\">Edit</button></td>\n        </tr>\n        <tr>\n          <td>#1236</td>\n          <td>Customer Feedback Analysis</td>\n          <td>Research</td>\n          <td><span style=\"color: var(--accent);\">Active</span></td>\n          <td>2024-01-13</td>\n          <td><button style=\"padding: 0.25rem 0.75rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;\">Edit</button></td>\n        </tr>\n      </tbody>\n    </table>\n    <div class=\"pagination\">\n      <span>Showing 1-10 of 1,234</span>\n      <div style=\"display: flex; gap: 0.5rem;\">\n        <button style=\"padding: 0.5rem 1rem; background: var(--bg); border: 1px solid var(--neutral); border-radius: 4px;\">Previous</button>\n        <button style=\"padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 4px;\">1</button>\n        <button style=\"padding: 0.5rem 1rem; background: var(--bg); border: 1px solid var(--neutral); border-radius: 4px;\">2</button>\n        <button style=\"padding: 0.5rem 1rem; background: var(--bg); border: 1px solid var(--neutral); border-radius: 4px;\">3</button>\n        <button style=\"padding: 0.5rem 1rem; background: var(--bg); border: 1px solid var(--neutral); border-radius: 4px;\">Next</button>\n      </div>\n    </div>\n  </div>\n</body>\n</html>"},{"name":"Minimal Cards","specs":{"colors":{"primary":"#635BFF","accent":"#00D4FF","neutral":["#425466","#697386","#8792A2"],"background":"#F6F9FC","surface":"#FFFFFF"},"typography":{"fontFamily":"-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif","scale":1.25},"spacing":{"unit":"8px","scale":[4,8,12,16,24,32,48,64]},"components":{"borderRadius":"8px","shadowScale":["0 1px 3px rgba(0,0,0,0.12)","0 4px 6px rgba(0,0,0,0.12)","0 10px 20px rgba(0,0,0,0.12)"]}},"html":"<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Overview Dashboard</title>\n  <style>\n    :root {\n      --primary: #635BFF;\n      --accent: #00D4FF;\n      --neutral: #425466;\n      --bg: #F6F9FC;\n      --surface: #FFFFFF;\n      --font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      --border-radius: 8px;\n    }\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { background: var(--bg); font-family: var(--font-family), sans-serif; padding: 3rem; }\n    h1 { font-size: 2.5rem; margin-bottom: 3rem; font-weight: 300; letter-spacing: -0.02em; }\n    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }\n    .card { background: var(--surface); padding: 2rem; border-radius: var(--border-radius); transition: transform 0.2s; }\n    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }\n    .card-icon { width: 48px; height: 48px; background: var(--primary); opacity: 0.1; border-radius: 8px; margin-bottom: 1.5rem; }\n    .card-label { color: var(--neutral); font-size: 0.875rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }\n    .card-value { font-size: 2.5rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem; }\n    .card-change { color: var(--accent); font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem; }\n    .card-change.negative { color: #ef4444; }\n  </style>\n</head>\n<body>\n  <h1>Dashboard Overview</h1>\n  <div class=\"cards-grid\">\n    <div class=\"card\">\n      <div class=\"card-icon\"></div>\n      <div class=\"card-label\">Revenue</div>\n      <div class=\"card-value\">$48,292</div>\n      <div class=\"card-change\">↑ 12% from last month</div>\n    </div>\n    <div class=\"card\">\n      <div class=\"card-icon\" style=\"background: var(--accent); opacity: 0.1;\"></div>\n      <div class=\"card-label\">Customers</div>\n      <div class=\"card-value\">3,428</div>\n      <div class=\"card-change\">↑ 5.2% this week</div>\n    </div>\n    <div class=\"card\">\n      <div class=\"card-icon\" style=\"background: var(--neutral); opacity: 0.1;\"></div>\n      <div class=\"card-label\">Orders</div>\n      <div class=\"card-value\">892</div>\n      <div class=\"card-change negative\">↓ 2.1% today</div>\n    </div>\n    <div class=\"card\">\n      <div class=\"card-icon\"></div>\n      <div class=\"card-label\">Conversion</div>\n      <div class=\"card-value\">4.8%</div>\n      <div class=\"card-change\">↑ 0.3% improvement</div>\n    </div>\n    <div class=\"card\">\n      <div class=\"card-icon\" style=\"background: var(--accent); opacity: 0.1;\"></div>\n      <div class=\"card-label\">Avg Order Value</div>\n      <div class=\"card-value\">$127</div>\n      <div class=\"card-change\">↑ $12 increase</div>\n    </div>\n    <div class=\"card\">\n      <div class=\"card-icon\" style=\"background: var(--neutral); opacity: 0.1;\"></div>\n      <div class=\"card-label\">Active Sessions</div>\n      <div class=\"card-value\">284</div>\n      <div class=\"card-change\">Live now</div>\n    </div>\n  </div>\n</body>\n</html>"}]},{"name":"Pricing","type":"pricing","variations":[{"name":"Simple","specs":{"colors":{"primary":"#635BFF","accent":"#00D4FF","neutral":["#425466","#697386","#8792A2"],"background":"#F6F9FC","surface":"#FFFFFF"},"typography":{"fontFamily":"-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif","scale":1.25},"spacing":{"unit":"8px","scale":[4,8,12,16,24,32,48,64]},"components":{"borderRadius":"8px","shadowScale":["0 1px 3px rgba(0,0,0,0.12)","0 4px 6px rgba(0,0,0,0.12)","0 10px 20px rgba(0,0,0,0.12)"]}},"html":"<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>AI Generated Page</title>\n  <style>\n    :root {\n      --primary: #635BFF;\n      --accent: #00D4FF;\n      --neutral: #425466;\n      --bg: #F6F9FC;\n      --surface: #FFFFFF;\n      --font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      --border-radius: 8px;\n    }\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      background: var(--bg);\n      font-family: var(--font-family), sans-serif;\n      padding: 2rem;\n      color: #111827;\n    }\n    .container { max-width: 1200px; margin: 0 auto; }\n    h1 { font-size: 2rem; margin-bottom: 2rem; }\n    .content {\n      background: var(--surface);\n      padding: 2rem;\n      border-radius: var(--border-radius);\n      box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>AI-Generated Interface</h1>\n    <div class=\"content\">\n      <p>This page was generated dynamically by AI based on your specifications.</p>\n      <p style=\"margin-top: 1rem; color: var(--neutral);\">Prompt: Generate a complete HTML page with the following specifications:\n      \n        Create three-tier pr...</p>\n    </div>\n  </div>\n</body>\n</html>"},{"name":"Featured","specs":{"colors":{"primary":"#635BFF","accent":"#00D4FF","neutral":["#425466","#697386","#8792A2"],"background":"#F6F9FC","surface":"#FFFFFF"},"typography":{"fontFamily":"-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif","scale":1.25},"spacing":{"unit":"8px","scale":[4,8,12,16,24,32,48,64]},"components":{"borderRadius":"8px","shadowScale":["0 1px 3px rgba(0,0,0,0.12)","0 4px 6px rgba(0,0,0,0.12)","0 10px 20px rgba(0,0,0,0.12)"]}},"html":"<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>AI Generated Page</title>\n  <style>\n    :root {\n      --primary: #635BFF;\n      --accent: #00D4FF;\n      --neutral: #425466;\n      --bg: #F6F9FC;\n      --surface: #FFFFFF;\n      --font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      --border-radius: 8px;\n    }\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      background: var(--bg);\n      font-family: var(--font-family), sans-serif;\n      padding: 2rem;\n      color: #111827;\n    }\n    .container { max-width: 1200px; margin: 0 auto; }\n    h1 { font-size: 2rem; margin-bottom: 2rem; }\n    .content {\n      background: var(--surface);\n      padding: 2rem;\n      border-radius: var(--border-radius);\n      box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>AI-Generated Interface</h1>\n    <div class=\"content\">\n      <p>This page was generated dynamically by AI based on your specifications.</p>\n      <p style=\"margin-top: 1rem; color: var(--neutral);\">Prompt: Generate a complete HTML page with the following specifications:\n      \n        Create a comparison ...</p>\n    </div>\n  </div>\n</body>\n</html>"},{"name":"Detailed","specs":{"colors":{"primary":"#635BFF","accent":"#00D4FF","neutral":["#425466","#697386","#8792A2"],"background":"#F6F9FC","surface":"#FFFFFF"},"typography":{"fontFamily":"-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif","scale":1.25},"spacing":{"unit":"8px","scale":[4,8,12,16,24,32,48,64]},"components":{"borderRadius":"8px","shadowScale":["0 1px 3px rgba(0,0,0,0.12)","0 4px 6px rgba(0,0,0,0.12)","0 10px 20px rgba(0,0,0,0.12)"]}},"html":"<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>AI Generated Page</title>\n  <style>\n    :root {\n      --primary: #635BFF;\n      --accent: #00D4FF;\n      --neutral: #425466;\n      --bg: #F6F9FC;\n      --surface: #FFFFFF;\n      --font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      --border-radius: 8px;\n    }\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      background: var(--bg);\n      font-family: var(--font-family), sans-serif;\n      padding: 2rem;\n      color: #111827;\n    }\n    .container { max-width: 1200px; margin: 0 auto; }\n    h1 { font-size: 2rem; margin-bottom: 2rem; }\n    .content {\n      background: var(--surface);\n      padding: 2rem;\n      border-radius: var(--border-radius);\n      box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>AI-Generated Interface</h1>\n    <div class=\"content\">\n      <p>This page was generated dynamically by AI based on your specifications.</p>\n      <p style=\"margin-top: 1rem; color: var(--neutral);\">Prompt: Generate a complete HTML page with the following specifications:\n      \n        Create a detailed pr...</p>\n    </div>\n  </div>\n</body>\n</html>"}]}],"designSystem":{"colors":{"primary":"#635BFF","accent":"#00D4FF","neutral":["#425466","#697386","#8792A2"],"background":"#F6F9FC","surface":"#FFFFFF"},"typography":{"fontFamily":"-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif","scale":1.25},"spacing":{"unit":"8px","scale":[4,8,12,16,24,32,48,64]},"components":{"borderRadius":"8px","shadowScale":["0 1px 3px rgba(0,0,0,0.12)","0 4px 6px rgba(0,0,0,0.12)","0 10px 20px rgba(0,0,0,0.12)"]}}};
+    const MOCKUP_DATA = {"pages":[{"name":"Login","type":"login","variations":[{"name":"Minimal","html":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Apple Minimalist - login</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, \"SF Pro Display\", sans-serif;\n      background: #FFFFFF;\n      color: #1D1D1F;\n    }\n  </style>\n</head>\n<body>\n  \n        <div style=\"background: #F5F5F7; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: -apple-system, sans-serif;\">\n          <div style=\"text-align: center; max-width: 320px;\">\n            <div style=\"font-size: 56px; margin-bottom: 40px;\">🔐</div>\n            <h1 style=\"font-size: 32px; font-weight: 600; color: #1D1D1F; margin-bottom: 8px;\">Sign In</h1>\n            <p style=\"color: #86868B; font-size: 17px; margin-bottom: 40px;\">Enter your credentials to continue</p>\n            <form>\n              <input type=\"email\" placeholder=\"Email\" style=\"width: 100%; padding: 16px; border: 1px solid #D2D2D7; border-radius: 12px; font-size: 17px; margin-bottom: 16px;\">\n              <input type=\"password\" placeholder=\"Password\" style=\"width: 100%; padding: 16px; border: 1px solid #D2D2D7; border-radius: 12px; font-size: 17px; margin-bottom: 32px;\">\n              <button style=\"width: 100%; background: #000; color: white; padding: 16px; border: none; border-radius: 12px; font-size: 17px; font-weight: 500; cursor: pointer;\">Continue</button>\n            </form>\n          </div>\n        </div>\n</body>\n</html>"},{"name":"Split Screen","html":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Stripe Modern - login</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      background: #FFFFFF;\n      color: #425466;\n    }\n  </style>\n</head>\n<body>\n  \n        <div style=\"background: linear-gradient(150deg, #635BFF 15%, #00D4FF); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: -apple-system, sans-serif;\">\n          <div style=\"background: white; border-radius: 8px; padding: 48px; box-shadow: 0 10px 40px rgba(0,0,0,0.12); width: 400px;\">\n            <h1 style=\"color: #425466; font-size: 28px; margin-bottom: 32px;\">Welcome back</h1>\n            <form>\n              <div style=\"margin-bottom: 24px;\">\n                <input type=\"email\" placeholder=\"Email\" style=\"width: 100%; padding: 12px; border: 1px solid #E3E8EE; border-radius: 6px; font-size: 16px;\">\n              </div>\n              <div style=\"margin-bottom: 32px;\">\n                <input type=\"password\" placeholder=\"Password\" style=\"width: 100%; padding: 12px; border: 1px solid #E3E8EE; border-radius: 6px; font-size: 16px;\">\n              </div>\n              <button style=\"width: 100%; background: #635BFF; color: white; padding: 12px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer;\">Sign in</button>\n            </form>\n          </div>\n        </div>\n</body>\n</html>"},{"name":"Card Floating","html":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Spotify Playful - login</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n    body {\n      font-family: Circular, -apple-system, sans-serif;\n      background: #121212;\n      color: #FFFFFF;\n    }\n  </style>\n</head>\n<body>\n  \n        <div style=\"background: linear-gradient(to bottom, #1DB954 0%, #191414 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: -apple-system, sans-serif;\">\n          <div style=\"background: #000; border-radius: 8px; padding: 48px; width: 400px;\">\n            <div style=\"text-align: center; margin-bottom: 32px;\">\n              <div style=\"font-size: 40px; font-weight: bold; color: #1DB954;\">●●● Spotify</div>\n            </div>\n            <button style=\"width: 100%; background: #1DB954; color: white; padding: 14px; border: none; border-radius: 24px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 16px;\">Continue with Facebook</button>\n            <button style=\"width: 100%; background: white; color: #000; padding: 14px; border: none; border-radius: 24px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 16px;\">Continue with Apple</button>\n            <button style=\"width: 100%; background: transparent; color: white; padding: 14px; border: 1px solid #535353; border-radius: 24px; font-size: 16px; font-weight: bold; cursor: pointer;\">Continue with Google</button>\n            <div style=\"text-align: center; color: #535353; margin: 24px 0;\">OR</div>\n            <input type=\"email\" placeholder=\"Email address\" style=\"width: 100%; background: transparent; border: 1px solid #535353; color: white; padding: 14px; border-radius: 4px; margin-bottom: 16px;\">\n            <button style=\"width: 100%; background: #1DB954; color: white; padding: 14px; border: none; border-radius: 24px; font-size: 16px; font-weight: bold; cursor: pointer;\">Log In</button>\n          </div>\n        </div>\n</body>\n</html>"}]},{"name":"Dashboard","type":"dashboard","variations":[{"name":"Analytics Focus","html":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Bloomberg Terminal - dashboard</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n    body {\n      font-family: Consolas, \"Courier New\", monospace;\n      background: #000000;\n      color: #00FF00;\n    }\n  </style>\n</head>\n<body>\n  \n        <div style=\"background: #000; color: #0F0; font-family: monospace; padding: 0;\">\n          <div style=\"display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: #0F0;\">\n            <div style=\"background: #000; padding: 8px;\">\n              <div style=\"font-size: 10px; color: #999;\">TICKER</div>\n              <div style=\"font-size: 14px; color: #0F0;\">SPX</div>\n              <div style=\"font-size: 12px; color: #F00;\">-1.23%</div>\n            </div>\n            <div style=\"background: #000; padding: 8px;\">\n              <div style=\"font-size: 10px; color: #999;\">NASDAQ</div>\n              <div style=\"font-size: 14px; color: #0F0;\">14,235.12</div>\n              <div style=\"font-size: 12px; color: #0F0;\">+0.45%</div>\n            </div>\n          </div>\n          <pre style=\"color: #0F0; background: #111; padding: 10px; margin: 10px 0;\">\n┌─────────────┬──────────┬─────────┬──────────┐\n│ Symbol      │ Price    │ Change  │ Volume   │\n├─────────────┼──────────┼─────────┼──────────┤\n│ AAPL        │ 182.52   │ +1.23%  │ 52.3M    │\n│ GOOGL       │ 139.85   │ -0.45%  │ 23.1M    │\n└─────────────┴──────────┴─────────┴──────────┘\n          </pre>\n        </div>\n</body>\n</html>"},{"name":"Data Table Focus","html":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Linear Developer - dashboard</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n    body {\n      font-family: Inter, -apple-system, sans-serif;\n      background: #FFFFFF;\n      color: #2E3338;\n    }\n  </style>\n</head>\n<body>\n  \n        <div style=\"background: #FCFCFD; min-height: 100vh; font-family: Inter, -apple-system, sans-serif;\">\n          <div style=\"background: white; border-bottom: 1px solid #E5E7EB; padding: 12px 24px;\">\n            <div style=\"display: flex; align-items: center; gap: 24px;\">\n              <div style=\"font-weight: 600; color: #2E3338;\">Linear</div>\n              <input type=\"search\" placeholder=\"Search\" style=\"flex: 1; max-width: 400px; padding: 6px 12px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 14px;\">\n            </div>\n          </div>\n          <div style=\"padding: 24px;\">\n            <h1 style=\"font-size: 24px; font-weight: 600; color: #2E3338; margin-bottom: 24px;\">Issues</h1>\n            <div style=\"background: white; border: 1px solid #E5E7EB; border-radius: 6px;\">\n              <div style=\"padding: 16px; border-bottom: 1px solid #F7F8F9;\">\n                <div style=\"display: flex; align-items: center; gap: 12px;\">\n                  <div style=\"width: 20px; height: 20px; border: 2px solid #5E6AD2; border-radius: 50%;\"></div>\n                  <div style=\"flex: 1;\">\n                    <div style=\"font-weight: 500; color: #2E3338; margin-bottom: 4px;\">Fix navigation bug on mobile</div>\n                    <div style=\"display: flex; gap: 8px; font-size: 13px; color: #6B7280;\">\n                      <span style=\"background: #F3F4F6; padding: 2px 6px; border-radius: 4px;\">BUG-123</span>\n                      <span>High priority</span>\n                      <span>Due tomorrow</span>\n                    </div>\n                  </div>\n                </div>\n              </div>\n              <div style=\"padding: 16px; border-bottom: 1px solid #F7F8F9;\">\n                <div style=\"display: flex; align-items: center; gap: 12px;\">\n                  <div style=\"width: 20px; height: 20px; border: 2px solid #10B981; border-radius: 50%; background: #10B981;\"></div>\n                  <div style=\"flex: 1;\">\n                    <div style=\"font-weight: 500; color: #2E3338; margin-bottom: 4px; text-decoration: line-through; opacity: 0.5;\">Implement dark mode</div>\n                    <div style=\"display: flex; gap: 8px; font-size: 13px; color: #6B7280;\">\n                      <span style=\"background: #F3F4F6; padding: 2px 6px; border-radius: 4px;\">FEAT-456</span>\n                      <span>Completed</span>\n                    </div>\n                  </div>\n                </div>\n              </div>\n            </div>\n          </div>\n        </div>\n</body>\n</html>"},{"name":"Minimal Cards","html":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Apple Minimalist - dashboard</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, \"SF Pro Display\", sans-serif;\n      background: #FFFFFF;\n      color: #1D1D1F;\n    }\n  </style>\n</head>\n<body>\n  \n        <div style=\"background: #F5F5F7; min-height: 100vh; font-family: -apple-system, sans-serif;\">\n          <div style=\"background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); padding: 16px 40px; border-bottom: 1px solid rgba(0,0,0,0.1);\">\n            <div style=\"display: flex; justify-content: space-between; align-items: center;\">\n              <h1 style=\"font-size: 22px; font-weight: 600; color: #1D1D1F; margin: 0;\">Overview</h1>\n              <button style=\"background: #0071E3; color: white; border: none; padding: 8px 20px; border-radius: 20px; font-size: 14px;\">New</button>\n            </div>\n          </div>\n          <div style=\"padding: 60px 40px;\">\n            <div style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px;\">\n              <div style=\"background: white; border-radius: 18px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);\">\n                <h2 style=\"font-size: 48px; font-weight: 600; color: #1D1D1F; margin: 0;\">24</h2>\n                <p style=\"color: #86868B; font-size: 17px; margin: 16px 0 0;\">Active Projects</p>\n              </div>\n              <div style=\"background: white; border-radius: 18px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);\">\n                <h2 style=\"font-size: 48px; font-weight: 600; color: #1D1D1F; margin: 0;\">98%</h2>\n                <p style=\"color: #86868B; font-size: 17px; margin: 16px 0 0;\">Satisfaction Rate</p>\n              </div>\n            </div>\n          </div>\n        </div>\n</body>\n</html>"}]},{"name":"Pricing","type":"pricing","variations":[{"name":"Simple","html":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Stripe Modern - pricing</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      background: #FFFFFF;\n      color: #425466;\n    }\n  </style>\n</head>\n<body>\n  \n        <div style=\"background: #F6F9FC; min-height: 100vh; font-family: -apple-system, sans-serif;\">\n          <div style=\"background: white; padding: 24px; border-bottom: 1px solid #E3E8EE;\">\n            <h1 style=\"margin: 0; color: #425466; font-size: 24px;\">Dashboard</h1>\n          </div>\n          <div style=\"padding: 32px;\">\n            <div style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;\">\n              <div style=\"background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);\">\n                <div style=\"display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;\">\n                  <span style=\"color: #8792A2; font-size: 14px;\">Revenue</span>\n                  <span style=\"background: #D4EDDA; color: #155724; padding: 2px 8px; border-radius: 12px; font-size: 12px;\">+12%</span>\n                </div>\n                <div style=\"font-size: 32px; font-weight: 600; color: #425466;\">$84,232</div>\n                <div style=\"height: 60px; margin-top: 16px; background: linear-gradient(to top, #635BFF33, transparent); border-radius: 4px;\"></div>\n              </div>\n              <div style=\"background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);\">\n                <div style=\"color: #8792A2; font-size: 14px; margin-bottom: 16px;\">Customers</div>\n                <div style=\"font-size: 32px; font-weight: 600; color: #425466;\">1,234</div>\n                <div style=\"color: #00D4FF; font-size: 14px; margin-top: 8px;\">↑ 89 this week</div>\n              </div>\n            </div>\n          </div>\n        </div>\n</body>\n</html>"},{"name":"Featured","html":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Stripe Modern - pricing</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      background: #FFFFFF;\n      color: #425466;\n    }\n  </style>\n</head>\n<body>\n  \n        <div style=\"background: #F6F9FC; min-height: 100vh; font-family: -apple-system, sans-serif;\">\n          <div style=\"background: white; padding: 24px; border-bottom: 1px solid #E3E8EE;\">\n            <h1 style=\"margin: 0; color: #425466; font-size: 24px;\">Dashboard</h1>\n          </div>\n          <div style=\"padding: 32px;\">\n            <div style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;\">\n              <div style=\"background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);\">\n                <div style=\"display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;\">\n                  <span style=\"color: #8792A2; font-size: 14px;\">Revenue</span>\n                  <span style=\"background: #D4EDDA; color: #155724; padding: 2px 8px; border-radius: 12px; font-size: 12px;\">+12%</span>\n                </div>\n                <div style=\"font-size: 32px; font-weight: 600; color: #425466;\">$84,232</div>\n                <div style=\"height: 60px; margin-top: 16px; background: linear-gradient(to top, #635BFF33, transparent); border-radius: 4px;\"></div>\n              </div>\n              <div style=\"background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);\">\n                <div style=\"color: #8792A2; font-size: 14px; margin-bottom: 16px;\">Customers</div>\n                <div style=\"font-size: 32px; font-weight: 600; color: #425466;\">1,234</div>\n                <div style=\"color: #00D4FF; font-size: 14px; margin-top: 8px;\">↑ 89 this week</div>\n              </div>\n            </div>\n          </div>\n        </div>\n</body>\n</html>"},{"name":"Detailed","html":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Stripe Modern - pricing</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n      background: #FFFFFF;\n      color: #425466;\n    }\n  </style>\n</head>\n<body>\n  \n        <div style=\"background: #F6F9FC; min-height: 100vh; font-family: -apple-system, sans-serif;\">\n          <div style=\"background: white; padding: 24px; border-bottom: 1px solid #E3E8EE;\">\n            <h1 style=\"margin: 0; color: #425466; font-size: 24px;\">Dashboard</h1>\n          </div>\n          <div style=\"padding: 32px;\">\n            <div style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;\">\n              <div style=\"background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);\">\n                <div style=\"display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;\">\n                  <span style=\"color: #8792A2; font-size: 14px;\">Revenue</span>\n                  <span style=\"background: #D4EDDA; color: #155724; padding: 2px 8px; border-radius: 12px; font-size: 12px;\">+12%</span>\n                </div>\n                <div style=\"font-size: 32px; font-weight: 600; color: #425466;\">$84,232</div>\n                <div style=\"height: 60px; margin-top: 16px; background: linear-gradient(to top, #635BFF33, transparent); border-radius: 4px;\"></div>\n              </div>\n              <div style=\"background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.07);\">\n                <div style=\"color: #8792A2; font-size: 14px; margin-bottom: 16px;\">Customers</div>\n                <div style=\"font-size: 32px; font-weight: 600; color: #425466;\">1,234</div>\n                <div style=\"color: #00D4FF; font-size: 14px; margin-top: 8px;\">↑ 89 this week</div>\n              </div>\n            </div>\n          </div>\n        </div>\n</body>\n</html>"}]}],"designSystem":{"colors":{"primary":"#000000","accent":"#00FF00","background":"#000000"},"typography":{"fontFamily":"Consolas, monospace"},"components":{"borderRadius":"0px"}}};
 
-    // Palette definitions
-    const PALETTES = {
-      ocean: {
-        primary: '#3B82F6',
-        accent: '#06B6D4',
-        neutral: '#64748B'
-      },
-      sunset: {
-        primary: '#F59E0B',
-        accent: '#EF4444',
-        neutral: '#78716C'
-      },
-      forest: {
-        primary: '#10B981',
-        accent: '#059669',
-        neutral: '#6B7280'
-      }
-    };
+    // Current selected pattern
+    let currentPattern = 'bloomberg';
 
     // Switch between tabs
     function switchTab(pageName) {
@@ -956,71 +839,18 @@
       });
     }
 
-    // Select color palette
-    function selectPalette(paletteName) {
-      const palette = PALETTES[paletteName];
-      if (!palette) return;
-
-      // Update CSS variables
-      document.documentElement.style.setProperty('--primary', palette.primary);
-      document.documentElement.style.setProperty('--accent', palette.accent);
-      document.documentElement.style.setProperty('--neutral', palette.neutral);
+    // Select design pattern
+    function selectPattern(patternName) {
+      currentPattern = patternName;
 
       // Update UI
-      document.querySelectorAll('.palette-option').forEach(option => {
-        option.classList.toggle('selected', option.textContent.trim().toLowerCase() === paletteName);
+      document.querySelectorAll('.pattern-option').forEach(option => {
+        const isSelected = option.querySelector('.pattern-name').textContent.toLowerCase().includes(patternName);
+        option.classList.toggle('selected', isSelected);
       });
 
-      // Update all iframes
-      updateAllPreviews();
-
-      showToast('Palette ' + paletteName + ' appliquée');
-    }
-
-    // Select font
-    function selectFont(fontName) {
-      document.documentElement.style.setProperty('--font-family', fontName);
-
-      // Load font from Google Fonts if needed
-      if (fontName !== 'Inter') {
-        const link = document.createElement('link');
-        link.href = 'https://fonts.googleapis.com/css2?family=' + fontName.replace(' ', '+') + ':wght@400;500;600;700&display=swap';
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-      }
-
-      updateAllPreviews();
-      showToast('Police ' + fontName + ' appliquée');
-    }
-
-    // Update border radius
-    function updateRadius(value) {
-      document.documentElement.style.setProperty('--border-radius', value + 'px');
-      document.getElementById('radiusValue').textContent = value;
-      updateAllPreviews();
-    }
-
-    // Update all preview iframes with new styles
-    function updateAllPreviews() {
-      const styles = getComputedStyle(document.documentElement);
-      const cssVars = {
-        primary: styles.getPropertyValue('--primary'),
-        accent: styles.getPropertyValue('--accent'),
-        neutral: styles.getPropertyValue('--neutral'),
-        bg: styles.getPropertyValue('--bg'),
-        fontFamily: styles.getPropertyValue('--font-family'),
-        borderRadius: styles.getPropertyValue('--border-radius')
-      };
-
-      document.querySelectorAll('iframe').forEach(iframe => {
-        const doc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (doc) {
-          // Update CSS variables in iframe
-          Object.entries(cssVars).forEach(([key, value]) => {
-            doc.documentElement.style.setProperty('--' + key.replace(/([A-Z])/g, '-$1').toLowerCase(), value);
-          });
-        }
-      });
+      // NOTE: In real implementation, this would reload variations with new pattern
+      showToast('Pattern ' + patternName + ' selected - variations will be regenerated');
     }
 
     // Show toast notification
@@ -1030,7 +860,7 @@
         position: fixed;
         top: 20px;
         right: 20px;
-        background: var(--primary);
+        background: #111827;
         color: white;
         padding: 1rem 1.5rem;
         border-radius: 8px;
@@ -1049,7 +879,10 @@
     }
 
     // Initialize
-    console.log('Quick Designer v4 - AI-Driven System Initialized');
+    console.log('Quick Designer v4 - Pattern Remix System (NO AI REQUIRED)');
+    console.log('Chrome MCP: Active');
+    console.log('Web Search: Active');
+    console.log('LLM APIs: DISABLED');
     console.log('Pages:', MOCKUP_DATA.pages.length);
   </script>
 </body>
