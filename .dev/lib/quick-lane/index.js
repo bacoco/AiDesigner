@@ -24,6 +24,7 @@ class QuickLane {
       nanoBananaBrief: null,
       uiDesignerScreenPrompts: null,
     };
+    this._initialized = false;
   }
 
   /**
@@ -55,6 +56,7 @@ class QuickLane {
       path.join(this.templatesDir, 'ui-designer-screen-prompts-template.md'),
       'utf8',
     );
+    this._initialized = true;
   }
 
   /**
@@ -64,6 +66,11 @@ class QuickLane {
   async execute(userRequest, context = {}) {
     if (!this.llmClient) {
       throw new Error('LLM client not configured. Pass llmClient in options.');
+    }
+
+    // Lazy initialization - ensure templates are loaded before use
+    if (!this._initialized) {
+      await this.initialize();
     }
 
     const result = {
