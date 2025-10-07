@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "quick-designer": {
+      "command": "node",
+      "args": ["/Users/loic/develop/BMAD-invisible/quick-designer-standalone.mjs"]
+    }
+  }
+}

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Designer V4 - Démonstration MCP pour Claude CLI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .command-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f3f5;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .icon {
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .variations-preview {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .variation-thumb {
+            aspect-ratio: 16/9;
+            background: linear-gradient(45deg, #f1f3f5 25%, transparent 25%, transparent 75%, #f1f3f5 75%, #f1f3f5),
+                        linear-gradient(45deg, #f1f3f5 25%, transparent 25%, transparent 75%, #f1f3f5 75%, #f1f3f5);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            position: relative;
+            overflow: hidden;
+        }
+        .variation-thumb::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 0.25rem;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+        .full-width-card {
+            grid-column: 1 / -1;
+        }
+        .cta-section {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .cta-section h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #dee2e6;
+        }
+        .tech-stack {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .tech-badge {
+            background: #e9ecef;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Quick Designer V4</h1>
+            <p class="subtitle">Moteur de génération UI conversationnel pour Claude CLI avec plan MAX</p>
+        </header>
+
+        <div class="demo-grid">
+            <div class="card">
+                <h2><span class="icon">⚡</span> Génération Instantanée</h2>
+                <p>Utilise des patterns pré-construits pour générer des variations sans appel LLM externe</p>
+                <div class="command-box">
+                    claude "Use quick_designer_instant to generate a dashboard"
+                </div>
+                <ul class="feature-list">
+                    <li><span class="icon">✓</span> 3 variations par défaut</li>
+                    <li><span class="icon">✓</span> Réponse immédiate</li>
+                    <li><span class="icon">✓</span> Design System cohérent</li>
+                    <li><span class="icon">✓</span> Patterns optimisés</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">🤖</span> Génération avec IA</h2>
+                <p>Exploite ton plan Claude MAX pour créer jusqu'à 8 variations uniques</p>
+                <div class="command-box">
+                    claude "Use quick_designer_generate_with_ai to create 8 variations"
+                </div>
+                <ul class="feature-list">
+                    <li><span class="icon">✓</span> Jusqu'à 8 variations</li>
+                    <li><span class="icon">✓</span> Personnalisation avancée</li>
+                    <li><span class="icon">✓</span> Prompts contextuels</li>
+                    <li><span class="icon">✓</span> Styles adaptatifs</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">📦</span> Génération Batch</h2>
+                <p>Crée des applications complètes avec plusieurs écrans en une seule commande</p>
+                <div class="command-box">
+                    claude "Use quick_designer_batch_generate for complete app"
+                </div>
+                <div class="variations-preview">
+                    <div class="variation-thumb" data-label="Login"></div>
+                    <div class="variation-thumb" data-label="Dashboard"></div>
+                    <div class="variation-thumb" data-label="Settings"></div>
+                    <div class="variation-thumb" data-label="Profile"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">🎨</span> Design System Unifié</h2>
+                <p>Maintient la cohérence à travers toutes les variations générées</p>
+                <ul class="feature-list">
+                    <li><span class="icon">🎨</span> Palette de couleurs</li>
+                    <li><span class="icon">📐</span> Système de spacing</li>
+                    <li><span class="icon">🔤</span> Typographie</li>
+                    <li><span class="icon">🎯</span> Composants réutilisables</li>
+                </ul>
+                <div class="tech-stack">
+                    <span class="tech-badge">Tokens CSS</span>
+                    <span class="tech-badge">Variables</span>
+                    <span class="tech-badge">Thèmes</span>
+                </div>
+            </div>
+
+            <div class="card full-width-card">
+                <h2><span class="icon">🛠️</span> Commandes MCP Disponibles</h2>
+                <p>7 outils exposés via le protocole MCP pour Claude CLI</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
+                    <div>
+                        <h3 style="color: #495057; margin-bottom: 0.5rem;">Génération</h3>
+                        <ul class="feature-list">
+                            <li><code>quick_designer_instant</code> - Pattern-based</li>
+                            <li><code>quick_designer_generate_with_ai</code> - AI-powered</li>
+                            <li><code>quick_designer_batch_generate</code> - Multi-screen</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color: #495057; margin-bottom: 0.5rem;">Workflow</h3>
+                        <ul class="feature-list">
+                            <li><code>quick_designer_refine</code> - Améliorer</li>
+                            <li><code>quick_designer_validate</code> - Valider</li>
+                            <li><code>quick_designer_show_system</code> - Afficher</li>
+                            <li><code>quick_designer_list_designs</code> - Lister</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="variations-preview" style="margin-top: 2rem;">
+                    <div class="variation-thumb" data-label="Variation 1"></div>
+                    <div class="variation-thumb" data-label="Variation 2"></div>
+                    <div class="variation-thumb" data-label="Variation 3"></div>
+                    <div class="variation-thumb" data-label="Variation 4"></div>
+                    <div class="variation-thumb" data-label="Variation 5"></div>
+                    <div class="variation-thumb" data-label="Variation 6"></div>
+                    <div class="variation-thumb" data-label="Variation 7"></div>
+                    <div class="variation-thumb" data-label="Variation 8"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2>🎯 Prêt à générer des UI incroyables ?</h2>
+            <p style="font-size: 1.1rem; color: #6c757d; margin-bottom: 1rem;">
+                Quick Designer V4 est intégré dans la stack AiDesigner MCP et prêt à l'emploi
+            </p>
+
+            <div class="command-box" style="max-width: 600px; margin: 2rem auto;">
+                # Lancer le serveur MCP<br>
+                ./launch-quick-designer.sh<br><br>
+                # Utiliser avec Claude CLI<br>
+                claude "Generate a modern SaaS dashboard with Quick Designer"
+            </div>
+
+            <div class="button-group">
+                <a href="#" class="btn btn-primary" onclick="alert('Server MCP lancé ! Utilisez Claude CLI pour générer.')">
+                    Démarrer Quick Designer
+                </a>
+                <a href="test-output/dashboard-variations.html" class="btn btn-secondary">
+                    Voir Démo HTML
+                </a>
+            </div>
+
+            <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #dee2e6;">
+                <h3 style="color: #495057; margin-bottom: 1rem;">Architecture Technique</h3>
+                <div class="tech-stack" style="justify-content: center;">
+                    <span class="tech-badge">MCP Protocol</span>
+                    <span class="tech-badge">TypeScript</span>
+                    <span class="tech-badge">Pattern Library</span>
+                    <span class="tech-badge">Chrome MCP</span>
+                    <span class="tech-badge">Claude API</span>
+                    <span class="tech-badge">Session Management</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animation des variations au survol
+        document.querySelectorAll('.variation-thumb').forEach(thumb => {
+            thumb.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05)';
+                this.style.transition = 'transform 0.2s';
+            });
+            thumb.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+
+        // Simulation de génération
+        let generating = false;
+        function simulateGeneration() {
+            if (generating) return;
+            generating = true;
+
+            const thumbs = document.querySelectorAll('.variation-thumb');
+            thumbs.forEach((thumb, index) => {
+                setTimeout(() => {
+                    thumb.style.background = `linear-gradient(135deg, #667eea ${index * 15}%, #764ba2 ${100 - index * 10}%)`;
+                    thumb.style.animation = 'pulse 0.5s';
+                }, index * 100);
+            });
+
+            setTimeout(() => {
+                generating = false;
+                thumbs.forEach(thumb => {
+                    thumb.style.animation = '';
+                });
+            }, thumbs.length * 100 + 500);
+        }
+    </script>
+</body>
+</html>

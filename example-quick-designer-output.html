@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Designer V4 - Exemple de Sortie Générée</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background: #f8f9fa;
+        }
+
+        /* Design System Tokens */
+        :root {
+            --primary: #667eea;
+            --secondary: #48bb78;
+            --accent: #ed64a6;
+            --dark: #2d3748;
+            --gray: #718096;
+            --light: #f7fafc;
+            --bg: #ffffff;
+            --surface: #ffffff;
+            --border-radius: 8px;
+            --spacing-unit: 8px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .demo-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .demo-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .variations-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .variation-wrapper {
+            margin-bottom: 4rem;
+        }
+
+        .variation-header {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .variation-header h2 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .variation-header p {
+            color: var(--gray);
+        }
+
+        .variation-frame {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .browser-bar {
+            background: #e2e8f0;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #cbd5e0;
+        }
+
+        .browser-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #cbd5e0;
+        }
+
+        .browser-dot.red { background: #fc8181; }
+        .browser-dot.yellow { background: #f6e05e; }
+        .browser-dot.green { background: #68d391; }
+
+        .variation-content {
+            height: 600px;
+            overflow: auto;
+        }
+
+        /* Variation 1: Cards Dashboard */
+        .dashboard-cards {
+            padding: 2rem;
+            background: #f7fafc;
+            min-height: 600px;
+        }
+
+        .dashboard-cards .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card .label {
+            font-size: 0.875rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-card .change {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .stat-card .change.negative {
+            color: #f56565;
+        }
+
+        /* Variation 2: Analytics Dashboard */
+        .dashboard-analytics {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            height: 600px;
+        }
+
+        .dashboard-analytics .main-content {
+            padding: 2rem;
+            background: #f7fafc;
+        }
+
+        .dashboard-analytics .sidebar {
+            background: white;
+            border-left: 1px solid #e2e8f0;
+            padding: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-container h3 {
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background: linear-gradient(90deg, #edf2f7 0%, #e2e8f0 50%, #edf2f7 100%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+        }
+
+        /* Variation 3: Data Table Dashboard */
+        .dashboard-table {
+            padding: 2rem;
+            background: white;
+            height: 600px;
+            overflow: auto;
+        }
+
+        .dashboard-table .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-table h2 {
+            color: var(--dark);
+            font-size: 1.5rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: #f7fafc;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 0.875rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: var(--dark);
+        }
+
+        .data-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-badge.pending {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <h1>🎨 Quick Designer V4 - Sortie Exemple</h1>
+        <p>Voici les 3 variations générées avec le même Design System unifié</p>
+    </div>
+
+    <div class="variations-container">
+        <!-- Variation 1 -->
+        <div class="variation-wrapper">
+            <div class="variation-header">
+                <h2>Variation 1: Dashboard avec Cartes</h2>
+                <p>Vue orientée métriques avec cartes de statistiques et indicateurs clés</p>
+            </div>
+            <div class="variation-frame">
+                <div class="browser-bar">
+                    <div class="browser-dot red"></div>
+                    <div class="browser-dot yellow"></div>
+                    <div class="browser-dot green"></div>
+                    <span style="margin-left: 1rem; color: #718096;">app.example.com/dashboard</span>
+                </div>
+                <div class="variation-content">
+                    <div class="dashboard-cards">
+                        <h2 style="color: var(--dark); margin-bottom: 1.5rem;">Tableau de Bord</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="label">Utilisateurs Actifs</div>
+                                <div class="value">12,485</div>
+                                <div class="change">↑ 12.5% ce mois</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="label">Revenus</div>
+                                <div class="value">€84,329</div>
+                                <div class="change">↑ 23.1% ce mois</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="label">Taux de Conversion</div>
+                                <div class="value">3.42%</div>
+                                <div class="change negative">↓ 2.1% ce mois</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="label">Sessions</div>
+                                <div class="value">458K</div>
+                                <div class="change">↑ 18.7% ce mois</div>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                            <div class="chart-container">
+                                <h3>Évolution des Ventes</h3>
+                                <div class="chart-placeholder">Graphique en Ligne</div>
+                            </div>
+                            <div class="chart-container">
+                                <h3>Répartition</h3>
+                                <div class="chart-placeholder">Graphique Circulaire</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variation 2 -->
+        <div class="variation-wrapper">
+            <div class="variation-header">
+                <h2>Variation 2: Dashboard Analytique</h2>
+                <p>Vue centrée sur les graphiques avec sidebar d'informations</p>
+            </div>
+            <div class="variation-frame">
+                <div class="browser-bar">
+                    <div class="browser-dot red"></div>
+                    <div class="browser-dot yellow"></div>
+                    <div class="browser-dot green"></div>
+                    <span style="margin-left: 1rem; color: #718096;">app.example.com/analytics</span>
+                </div>
+                <div class="variation-content">
+                    <div class="dashboard-analytics">
+                        <div class="main-content">
+                            <h2 style="color: var(--dark); margin-bottom: 1.5rem;">Analyse des Performances</h2>
+                            <div class="chart-container">
+                                <h3>Trafic Mensuel</h3>
+                                <div class="chart-placeholder" style="height: 250px;">Graphique en Barres</div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="chart-container">
+                                    <h3>Sources</h3>
+                                    <div class="chart-placeholder">Heatmap</div>
+                                </div>
+                                <div class="chart-container">
+                                    <h3>Tendances</h3>
+                                    <div class="chart-placeholder">Sparklines</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sidebar">
+                            <h3 style="color: var(--dark); margin-bottom: 1rem;">Résumé</h3>
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="color: var(--gray); font-size: 0.875rem; margin-bottom: 0.25rem;">Total Visites</div>
+                                <div style="color: var(--dark); font-size: 1.5rem; font-weight: 600;">1.2M</div>
+                            </div>
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="color: var(--gray); font-size: 0.875rem; margin-bottom: 0.25rem;">Durée Moyenne</div>
+                                <div style="color: var(--dark); font-size: 1.5rem; font-weight: 600;">4:32</div>
+                            </div>
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="color: var(--gray); font-size: 0.875rem; margin-bottom: 0.25rem;">Taux de Rebond</div>
+                                <div style="color: var(--dark); font-size: 1.5rem; font-weight: 600;">32.1%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variation 3 -->
+        <div class="variation-wrapper">
+            <div class="variation-header">
+                <h2>Variation 3: Dashboard Table de Données</h2>
+                <p>Vue orientée gestion avec tableau de données et actions</p>
+            </div>
+            <div class="variation-frame">
+                <div class="browser-bar">
+                    <div class="browser-dot red"></div>
+                    <div class="browser-dot yellow"></div>
+                    <div class="browser-dot green"></div>
+                    <span style="margin-left: 1rem; color: #718096;">app.example.com/manage</span>
+                </div>
+                <div class="variation-content">
+                    <div class="dashboard-table">
+                        <div class="header">
+                            <h2>Gestion des Projets</h2>
+                            <div class="actions">
+                                <button class="btn btn-primary">+ Nouveau Projet</button>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom du Projet</th>
+                                    <th>Client</th>
+                                    <th>Statut</th>
+                                    <th>Progression</th>
+                                    <th>Date Limite</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Refonte Site Web</strong></td>
+                                    <td>TechCorp</td>
+                                    <td><span class="status-badge active">En Cours</span></td>
+                                    <td>75%</td>
+                                    <td>15 Oct 2024</td>
+                                    <td><button class="btn" style="padding: 0.25rem 0.5rem;">Voir</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Application Mobile</strong></td>
+                                    <td>StartupXYZ</td>
+                                    <td><span class="status-badge active">En Cours</span></td>
+                                    <td>45%</td>
+                                    <td>30 Oct 2024</td>
+                                    <td><button class="btn" style="padding: 0.25rem 0.5rem;">Voir</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Dashboard Analytics</strong></td>
+                                    <td>DataCo</td>
+                                    <td><span class="status-badge pending">En Attente</span></td>
+                                    <td>10%</td>
+                                    <td>15 Nov 2024</td>
+                                    <td><button class="btn" style="padding: 0.25rem 0.5rem;">Voir</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>API Integration</strong></td>
+                                    <td>CloudServ</td>
+                                    <td><span class="status-badge active">En Cours</span></td>
+                                    <td>90%</td>
+                                    <td>8 Oct 2024</td>
+                                    <td><button class="btn" style="padding: 0.25rem 0.5rem;">Voir</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>E-Commerce Platform</strong></td>
+                                    <td>ShopMax</td>
+                                    <td><span class="status-badge pending">En Attente</span></td>
+                                    <td>5%</td>
+                                    <td>1 Dec 2024</td>
+                                    <td><button class="btn" style="padding: 0.25rem 0.5rem;">Voir</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animation des cartes statistiques
+        const statCards = document.querySelectorAll('.stat-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '0';
+                    entry.target.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        entry.target.style.transition = 'all 0.5s ease';
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }, 100);
+                }
+            });
+        });
+
+        statCards.forEach(card => observer.observe(card));
+    </script>
+</body>
+</html>
