@@ -63,6 +63,8 @@ const node_os_1 = require('node:os');
 const observability_js_1 = require('./observability.js');
 const lib_resolver_js_1 = require('./lib-resolver.js');
 const { executeAutoCommand } = (0, lib_resolver_js_1.requireLibModule)('auto-commands.js');
+const { generateHTML, getVariationNames, isScreenTypeSupported } = (0,
+lib_resolver_js_1.requireLibModule)('html-templates/index.js');
 /**
  * Builds a structured parse error for agent trigger failures.
  *
@@ -279,6 +281,205 @@ const REVIEW_CHECKPOINTS = {
 };
 const STORY_CONTEXT_VALIDATION_CHECKPOINT = 'story_context_validation';
 const REVIEW_CHECKPOINT_NAMES = Object.freeze(Object.keys(REVIEW_CHECKPOINTS));
+/**
+ * Generate complete mockup.html from mockup data
+ */
+async function generateMockupHTML(mockupData) {
+  const { pages = [], designSystem = {} } = mockupData;
+  const ds = designSystem.colors || {};
+  const primary = ds.primary || '#5E6AD2';
+  const accent = ds.accent || '#3D9970';
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maquette AiDesigner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary: ${primary};
+      --accent: ${accent};
+      --neutral: ${ds.neutral?.[0] || '#6B7280'};
+      --bg: ${ds.background || '#F3F4F6'};
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ${designSystem.typography?.fontFamily || 'Inter, sans-serif'}; }
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid #e5e7eb; background: white; padding: 0 2rem; }
+    .tabs button { padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; border-bottom: 3px solid transparent; margin-bottom: -2px; color: #6b7280; }
+    .tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tabs button.validated::before { content: "✓ "; color: var(--accent); }
+    .page { display: none; padding: 2rem; }
+    .page.active { display: block; }
+    .variation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem; }
+    .variation-card { border: 2px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; transition: all 0.2s; }
+    .variation-card.selected { border-color: var(--primary); background: rgba(94, 106, 210, 0.05); }
+    .variation-card h3 { margin: 0 0 1rem 0; font-size: 1.125rem; }
+    .variation-preview { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 2rem; min-height: 400px; margin-bottom: 1rem; }
+    .variation-card button { width: 100%; padding: 0.75rem; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; background: var(--primary); color: white; }
+    .variation-card.selected button { background: var(--accent); }
+    .design-system-panel { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 2rem; }
+    .color-swatch { display: inline-block; width: 40px; height: 40px; border-radius: 6px; margin-right: 0.5rem; border: 1px solid #e5e7eb; }
+    .spec-section { margin-bottom: 2rem; }
+    .spec-section h3 { font-size: 1.25rem; margin: 0 0 1rem 0; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb; }
+  </style>
+</head>
+<body>
+  <nav class="tabs">
+    <button data-page="design-system" ${pages.length === 0 ? 'class="active"' : ''}>Design System</button>
+    ${pages.map((p, i) => `<button data-page="${p.name}" ${p.selectedVariation ? 'class="validated' + (i === 0 && pages.length > 0 ? ' active' : '') + '"' : i === 0 && pages.length > 0 ? 'class="active"' : ''}>${p.name.charAt(0).toUpperCase() + p.name.slice(1)}</button>`).join('\n    ')}
+  </nav>
+
+  <!-- Design System Page -->
+  <div id="page-design-system" class="page ${pages.length === 0 ? 'active' : ''}">
+    <h1 style="font-size: 2rem; margin: 0 0 2rem 0;">🎨 Design System v${designSystem.version || '1.0'}</h1>
+    <div class="design-system-panel">
+      ${
+        designSystem.colors
+          ? `
+      <div class="spec-section">
+        <h3>Couleurs</h3>
+        <div>
+          ${Object.entries(designSystem.colors)
+            .map(([key, val]) => {
+              if (Array.isArray(val)) {
+                return val
+                  .map(
+                    (v) =>
+                      `<span class="color-swatch" style="background: ${v}" title="${key}: ${v}"></span>`,
+                  )
+                  .join('');
+              }
+              return `<span class="color-swatch" style="background: ${val}" title="${key}: ${val}"></span> <strong>${key}:</strong> ${val}<br/>`;
+            })
+            .join('')}
+        </div>
+      </div>
+      `
+          : ''
+      }
+
+      ${
+        designSystem.typography
+          ? `
+      <div class="spec-section">
+        <h3>Typographie</h3>
+        <p><strong>Police:</strong> ${designSystem.typography.fontFamily || 'Inter'}</p>
+        <p><strong>Poids:</strong> ${designSystem.typography.weights?.join(', ') || '400, 600, 700'}</p>
+        ${
+          designSystem.typography.sizes
+            ? `<p><strong>Tailles:</strong> ${Object.entries(designSystem.typography.sizes)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(', ')}</p>`
+            : ''
+        }
+      </div>
+      `
+          : ''
+      }
+
+      ${
+        designSystem.spacing
+          ? `
+      <div class="spec-section">
+        <h3>Espacement</h3>
+        <p><strong>Base:</strong> ${designSystem.spacing.unit || '8px'}</p>
+        <p><strong>Échelle:</strong> ${designSystem.spacing.scale?.join(', ') || '8, 16, 24, 32, 48'}</p>
+      </div>
+      `
+          : ''
+      }
+
+      ${
+        pages.length > 0
+          ? `
+      <div class="spec-section">
+        <h3>Pages Générées</h3>
+        <ul style="list-style: none; padding: 0;">
+          ${pages.map((p) => `<li style="padding: 0.5rem 0;">${p.selectedVariation ? '✓' : '⏳'} ${p.name.charAt(0).toUpperCase() + p.name.slice(1)} ${p.selectedVariation ? `(Variation ${p.selectedVariation})` : '(en cours)'}</li>`).join('')}
+        </ul>
+      </div>
+      `
+          : '<p style="color: #6b7280;">Aucune page générée pour l\'instant. Générez votre première page pour voir les specs s\'afficher ici!</p>'
+      }
+    </div>
+  </div>
+
+  ${pages
+    .map(
+      (page, pageIdx) => `
+  <!-- Page: ${page.name} -->
+  <div id="page-${page.name}" class="page ${pageIdx === 0 && pages.length > 0 ? 'active' : ''}">
+    <h2 style="font-size: 1.75rem; margin: 0 0 1rem 0;">${page.name.charAt(0).toUpperCase() + page.name.slice(1)} - Sélectionnez une variation</h2>
+    <div class="variation-grid">
+      ${
+        page.variations
+          ?.map(
+            (v) => `
+      <div class="variation-card ${page.selectedVariation === v.id ? 'selected' : ''}" data-variation="${v.id}">
+        <h3>${v.name} ${page.selectedVariation === v.id ? '✓' : ''}</h3>
+        <div class="variation-preview">
+          ${v.html || `<p style="color: #6b7280; text-align: center; padding: 2rem;">Preview de ${v.name}</p>`}
+        </div>
+        <button onclick="selectVariation('${page.name}', ${v.id})">${page.selectedVariation === v.id ? '✓ Sélectionnée' : 'Sélectionner'}</button>
+      </div>
+      `,
+          )
+          .join('') || '<p>Aucune variation disponible</p>'
+      }
+    </div>
+  </div>
+  `,
+    )
+    .join('\n')}
+
+  <script>
+    const MOCKUP_DATA = ${JSON.stringify(mockupData)};
+
+    // Tab navigation
+    document.querySelectorAll('.tabs button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const pageName = e.target.dataset.page;
+        document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + pageName).classList.add('active');
+      });
+    });
+
+    // Variation selection
+    function selectVariation(pageName, variationId) {
+      console.log('Selected variation', variationId, 'for page', pageName);
+      // In real implementation, this would call back to MCP to update selection
+      // For now, just visually update
+      const pageData = MOCKUP_DATA.pages.find(p => p.name === pageName);
+      if (pageData) {
+        pageData.selectedVariation = variationId;
+        // Update UI
+        document.querySelectorAll(\`#page-\${pageName} .variation-card\`).forEach(card => {
+          card.classList.remove('selected');
+          const btn = card.querySelector('button');
+          btn.textContent = 'Sélectionner';
+          btn.style.background = 'var(--primary)';
+        });
+        const selectedCard = document.querySelector(\`#page-\${pageName} .variation-card[data-variation="\${variationId}"]\`);
+        if (selectedCard) {
+          selectedCard.classList.add('selected');
+          const btn = selectedCard.querySelector('button');
+          btn.textContent = '✓ Sélectionnée';
+          btn.style.background = 'var(--accent)';
+        }
+        // Update tab
+        const tab = document.querySelector(\`button[data-page="\${pageName}"]\`);
+        if (tab && !tab.classList.contains('validated')) {
+          tab.classList.add('validated');
+        }
+      }
+    }
+  </script>
+</body>
+</html>`;
+}
 async function getDefaultLLMClientCtor() {
   const mod = await (0, lib_resolver_js_1.importLibModule)('llm-client.js');
   return mod.LLMClient;
@@ -1120,6 +1321,62 @@ async function runOrchestratorServer(options = {}) {
             },
           },
           required: ['prompt', 'iterationNumber'],
+        },
+      },
+      {
+        name: 'extract_design_specs_from_concepts',
+        description:
+          'Extract design specifications (colors, typography, spacing, components) from generated Gemini concept images. Returns normalized specs for each variation.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            imageUrls: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'URLs or paths to Gemini-generated concept images',
+            },
+            screenType: {
+              type: 'string',
+              description: 'Type of screen (login, dashboard, settings, etc.)',
+            },
+            designSystem: {
+              type: 'object',
+              description: 'Existing design system to maintain coherence (optional)',
+            },
+          },
+          required: ['imageUrls', 'screenType'],
+        },
+      },
+      {
+        name: 'update_mockup',
+        description:
+          'Create or update the single mockup.html file with new pages, variations, and design system. Handles tab navigation, variation selection, and live preview.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            action: {
+              type: 'string',
+              enum: ['add_page', 'select_variation', 'update_design_system'],
+              description: 'Action to perform on mockup',
+            },
+            page: {
+              type: 'object',
+              description: 'Page data with name, type, and variations',
+            },
+            variationId: {
+              type: 'number',
+              description: 'Variation ID to select (for select_variation action)',
+            },
+            pageName: {
+              type: 'string',
+              description: 'Page name (for select_variation action)',
+            },
+            designSystem: {
+              type: 'object',
+              description: 'Design system specs to inject',
+            },
+          },
+          required: ['action'],
         },
       },
     ],
@@ -2916,6 +3173,267 @@ Once concepts are generated and captured:
                       success: false,
                       error: error instanceof Error ? error.message : String(error),
                       fallback: 'Use manual workflow: Copy prompt to https://aistudio.google.com/',
+                    },
+                    null,
+                    2,
+                  ),
+                },
+              ],
+            };
+          }
+          break;
+        }
+        case 'extract_design_specs_from_concepts': {
+          const params = args;
+          try {
+            // NOTE: This tool analyzes Gemini-generated images and extracts design specs
+            // For now, it returns a structured template that the LLM should populate
+            // based on visual analysis of the images
+            const extractionInstructions = {
+              action: 'analyze_and_extract_specs',
+              screenType: params.screenType,
+              imageCount: params.imageUrls.length,
+              instructions: `# Design Spec Extraction Instructions
+
+Analyze the ${params.imageUrls.length} Gemini-generated concept images for "${params.screenType}" screen.
+
+## For Each Variation (1, 2, 3):
+
+### Extract Colors:
+- Primary color (buttons, CTAs, links)
+- Accent color (highlights, success states)
+- Neutral colors (text, backgrounds, borders)
+- Semantic colors (success, error, warning if visible)
+
+### Extract Typography:
+- Font family (or closest web-safe alternative)
+- Font weights used (400, 600, 700, etc.)
+- Font sizes (heading, body, labels)
+
+### Extract Spacing:
+- Base spacing unit (4px, 8px, etc.)
+- Common spacing values used
+- Padding in containers/cards
+- Margins between elements
+
+### Extract Components:
+For each component visible (button, input, card, etc.):
+- Dimensions (height, width if applicable)
+- Border radius
+- Padding
+- Border style
+- Shadow (if any)
+- States visible (hover, focus, active)
+
+## Output Format:
+
+Return a JSON structure like this:
+
+\`\`\`json
+{
+  "variations": [
+    {
+      "id": 1,
+      "name": "Minimal",
+      "specs": {
+        "colors": {
+          "primary": "#...",
+          "accent": "#...",
+          "neutral": ["#...", "#..."],
+          "background": "#..."
+        },
+        "typography": {
+          "fontFamily": "Inter",
+          "weights": [400, 600, 700],
+          "sizes": {
+            "xs": "12px",
+            "sm": "14px",
+            "base": "16px",
+            "lg": "18px",
+            "xl": "24px"
+          }
+        },
+        "spacing": {
+          "unit": "8px",
+          "scale": [8, 16, 24, 32, 48]
+        },
+        "components": {
+          "button": {
+            "height": "40px",
+            "borderRadius": "8px",
+            "padding": "12px 24px"
+          },
+          "input": {
+            "height": "40px",
+            "borderRadius": "6px",
+            "border": "1px solid #..."
+          },
+          "card": {
+            "borderRadius": "12px",
+            "padding": "24px",
+            "shadow": "0 4px 6px rgba(0,0,0,0.1)"
+          }
+        }
+      }
+    },
+    // ... variations 2 and 3
+  ]
+}
+\`\`\`
+
+${params.designSystem ? `## Maintain Coherence:\n\nExisting Design System detected. Ensure extracted specs are COHERENT with:\n- Colors: ${JSON.stringify(params.designSystem.colors)}\n- Typography: ${JSON.stringify(params.designSystem.typography)}\n- Spacing: ${JSON.stringify(params.designSystem.spacing)}` : ''}
+`,
+              imageUrls: params.imageUrls,
+            };
+            response = {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(extractionInstructions, null, 2),
+                },
+              ],
+            };
+          } catch (error) {
+            response = {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(
+                    {
+                      success: false,
+                      error: error instanceof Error ? error.message : String(error),
+                    },
+                    null,
+                    2,
+                  ),
+                },
+              ],
+            };
+          }
+          break;
+        }
+        case 'update_mockup': {
+          const params = args;
+          try {
+            const mockupPath = path.join(
+              projectState.state.projectRoot || process.cwd(),
+              'docs',
+              'ui',
+              'mockup.html',
+            );
+            // Ensure directory exists
+            await fs.ensureDir(path.dirname(mockupPath));
+            let mockupExists = await fs.pathExists(mockupPath);
+            let mockupData = {
+              pages: [],
+              designSystem: params.designSystem || {},
+            };
+            // Load existing mockup if exists
+            if (mockupExists) {
+              // Read existing mockup and parse data from script tag
+              const existingHTML = await fs.readFile(mockupPath, 'utf-8');
+              const dataMatch = existingHTML.match(/const MOCKUP_DATA = ({[\s\S]*?});/);
+              if (dataMatch) {
+                mockupData = JSON.parse(dataMatch[1]);
+              }
+            }
+            // Handle different actions
+            if (params.action === 'add_page' && params.page) {
+              // Generate HTML for variations if not provided
+              if (
+                params.page.variations &&
+                isScreenTypeSupported(params.page.type || params.page.name)
+              ) {
+                const variationNames = getVariationNames(params.page.type || params.page.name);
+                params.page.variations = params.page.variations.map((variation, index) => {
+                  if (!variation.html && variation.specs) {
+                    const varName = variationNames[index] || variation.name;
+                    try {
+                      variation.html = generateHTML(
+                        params.page.type || params.page.name,
+                        variation.specs,
+                        varName,
+                      );
+                    } catch (error) {
+                      console.warn(
+                        `Failed to generate HTML for ${params.page.name} - ${varName}:`,
+                        error,
+                      );
+                      variation.html = `<div style="padding: 2rem; text-align: center;">HTML generation failed for ${varName}</div>`;
+                    }
+                  }
+                  return variation;
+                });
+              }
+              // Add or update page
+              const existingPageIndex = mockupData.pages.findIndex(
+                (p) => p.name === params.page.name,
+              );
+              if (existingPageIndex >= 0) {
+                mockupData.pages[existingPageIndex] = params.page;
+              } else {
+                mockupData.pages.push(params.page);
+              }
+            } else if (
+              params.action === 'select_variation' &&
+              params.pageName &&
+              params.variationId
+            ) {
+              // Mark variation as selected
+              const pageIndex = mockupData.pages.findIndex((p) => p.name === params.pageName);
+              if (pageIndex >= 0) {
+                mockupData.pages[pageIndex].selectedVariation = params.variationId;
+                // Update design system with selected variation specs
+                if (mockupData.pages[pageIndex].variations) {
+                  const selectedVar = mockupData.pages[pageIndex].variations.find(
+                    (v) => v.id === params.variationId,
+                  );
+                  if (selectedVar && selectedVar.specs) {
+                    mockupData.designSystem = {
+                      ...mockupData.designSystem,
+                      ...selectedVar.specs,
+                      version: (parseFloat(mockupData.designSystem.version || '1.0') + 0.1).toFixed(
+                        1,
+                      ),
+                      lastUpdated: new Date().toISOString(),
+                    };
+                  }
+                }
+              }
+            } else if (params.action === 'update_design_system' && params.designSystem) {
+              mockupData.designSystem = params.designSystem;
+            }
+            // Generate mockup HTML
+            const mockupHTML = await generateMockupHTML(mockupData);
+            // Write to file
+            await fs.writeFile(mockupPath, mockupHTML, 'utf-8');
+            response = {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(
+                    {
+                      success: true,
+                      mockupPath,
+                      action: params.action,
+                      pagesCount: mockupData.pages.length,
+                      message: `Mockup ${mockupExists ? 'updated' : 'created'} successfully`,
+                    },
+                    null,
+                    2,
+                  ),
+                },
+              ],
+            };
+          } catch (error) {
+            response = {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(
+                    {
+                      success: false,
+                      error: error instanceof Error ? error.message : String(error),
                     },
                     null,
                     2,
