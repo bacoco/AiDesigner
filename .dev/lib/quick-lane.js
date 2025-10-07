@@ -536,12 +536,12 @@ ${voiceGuidelines}
     }
 
     if (Array.isArray(brandPalette)) {
-      const lines = brandPalette
-        .filter(Boolean)
+      const filteredPalette = brandPalette.filter(Boolean);
+      const lines = filteredPalette
         .map((value, index) => `- Color ${index + 1}: ${value}`)
         .join('\n');
       return {
-        summary: lines || brandPalette.join(', ') || defaults.summary,
+        summary: lines || filteredPalette.join(', ') || defaults.summary,
         cssVariables: '',
       };
     }
@@ -889,10 +889,14 @@ ${voiceGuidelines}
     }
 
     const normalized = font.trim();
-    if (
-      new RegExp(weight, 'i').test(normalized) ||
-      /\b(light|regular|medium|bold|black)\b/i.test(normalized)
-    ) {
+    // Use static regex for common font weights for performance
+    const hasWeightPattern = /\b(light|regular|medium|bold|black)\b/i;
+
+    // Check if weight already exists (case insensitive, escape special regex chars)
+    const escapedWeight = weight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const weightPattern = new RegExp(escapedWeight, 'i');
+
+    if (weightPattern.test(normalized) || hasWeightPattern.test(normalized)) {
       return normalized;
     }
 
