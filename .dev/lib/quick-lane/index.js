@@ -31,32 +31,43 @@ class QuickLane {
    * Initialize and load templates
    */
   async initialize() {
+    // Skip if already initialized (idempotent)
+    if (this._initialized) {
+      return;
+    }
+
     await fs.ensureDir(this.docsDir);
     await fs.ensureDir(this.storiesDir);
     await fs.ensureDir(this.uiDir);
 
-    // Load templates
-    this.templates.spec = await fs.readFile(
-      path.join(this.templatesDir, 'spec-template.md'),
-      'utf8',
-    );
-    this.templates.plan = await fs.readFile(
-      path.join(this.templatesDir, 'plan-template.md'),
-      'utf8',
-    );
-    this.templates.tasks = await fs.readFile(
-      path.join(this.templatesDir, 'tasks-template.md'),
-      'utf8',
-    );
-    this.templates.nanoBananaBrief = await fs.readFile(
-      path.join(this.templatesDir, 'nano-banana-brief-template.md'),
-      'utf8',
-    );
-    this.templates.uiDesignerScreenPrompts = await fs.readFile(
-      path.join(this.templatesDir, 'ui-designer-screen-prompts-template.md'),
-      'utf8',
-    );
-    this._initialized = true;
+    // Load templates with error handling
+    try {
+      this.templates.spec = await fs.readFile(
+        path.join(this.templatesDir, 'spec-template.md'),
+        'utf8',
+      );
+      this.templates.plan = await fs.readFile(
+        path.join(this.templatesDir, 'plan-template.md'),
+        'utf8',
+      );
+      this.templates.tasks = await fs.readFile(
+        path.join(this.templatesDir, 'tasks-template.md'),
+        'utf8',
+      );
+      this.templates.nanoBananaBrief = await fs.readFile(
+        path.join(this.templatesDir, 'nano-banana-brief-template.md'),
+        'utf8',
+      );
+      this.templates.uiDesignerScreenPrompts = await fs.readFile(
+        path.join(this.templatesDir, 'ui-designer-screen-prompts-template.md'),
+        'utf8',
+      );
+      this._initialized = true;
+    } catch (error) {
+      throw new Error(
+        `Failed to load Quick Lane templates from ${this.templatesDir}: ${error.message}`,
+      );
+    }
   }
 
   /**
@@ -129,11 +140,30 @@ class QuickLane {
 
     const systemPrompt = `You are a technical specification writer. Generate a clear, concise specification based on the template provided. Fill in all sections with specific, actionable details. Focus on WHAT and WHY, not implementation details.`;
 
+    // Extract only relevant context fields to avoid token bloat and prevent sensitive data leakage
+    const relevantContext = {
+      projectName: context.projectName,
+      projectDescription: context.projectDescription,
+      primaryUsers: context.primaryUsers,
+      coreValue: context.coreValue,
+      brandPalette: context.brandPalette,
+      typography: context.typography,
+      layoutPrinciples: context.layoutPrinciples,
+      illustrationStyle: context.illustrationStyle,
+      experienceTone: context.experienceTone,
+      voiceGuidelines: context.voiceGuidelines,
+    };
+
+    // Remove undefined fields to keep context clean
+    Object.keys(relevantContext).forEach(
+      (key) => relevantContext[key] === undefined && delete relevantContext[key],
+    );
+
     const response = await this.llmClient.chat(
       [
         {
           role: 'user',
-          content: `${prompt}\n\nAdditional context: ${JSON.stringify(context, null, 2)}`,
+          content: `${prompt}\n\nAdditional context: ${JSON.stringify(relevantContext, null, 2)}`,
         },
       ],
       {
@@ -411,8 +441,9 @@ ${voiceGuidelines}
     ];
 
     // Try to extract user stories that hint at journey steps
+    // Pattern handles: plain "As a...", "*As a...", "**As a...", and strips markdown formatting
     const userStoryPattern =
-      /\*\*?As (?:a|an) (.+?),?\s*I want to (.+?)\s*(?:so that|in order to)?\s*(.+?)(?:\.|$|\n)/gi;
+      /(?:\*{1,2}|_{1,2})?As (?:a|an) ([^,]+),?\s*I want to ([^.]+?)(?:\s+(?:so (?:that)?|in order to)\s+(.+?))?(?:\*{1,2})?(?:\.|$|\n)/gi;
     const matches = [...specification.matchAll(userStoryPattern)];
 
     if (matches.length >= 3) {
