@@ -208,14 +208,16 @@ class QuickLane {
     const signinSecurity = context.signinSecurity || 'secure authentication and data protection';
 
     // Brand and visual defaults for modern SaaS
-    const brandPalette =
-      context.brandPalette || 'Deep blue #1E40AF, vibrant teal #14B8A6, neutral grays #6B7280';
-    const typography = context.typography || 'Modern sans-serif with clear hierarchy';
+    const brandPaletteTokens = this.normalizeBrandPalette(context.brandPalette);
+    const brandPalette = [brandPaletteTokens.summary, brandPaletteTokens.cssVariables]
+      .filter(Boolean)
+      .join('\n\n');
+    const typographyTokens = this.normalizeTypography(context.typography);
+    const typography = typographyTokens.summary;
     const illustrationStyle = context.illustrationStyle || 'Flat design with subtle gradients';
     const experienceTone = context.experienceTone || 'Professional yet approachable';
-    const layoutPrinciples =
-      context.layoutPrinciples ||
-      'Card-based layouts with generous whitespace and clear visual hierarchy';
+    const layoutTokens = this.normalizeLayout(context.layoutPrinciples, context.layoutSystem);
+    const layoutPrinciples = layoutTokens.summary;
     const voiceGuidelines = context.voiceGuidelines || 'Concise and action-oriented';
 
     // Replace all placeholders in template
@@ -244,7 +246,11 @@ class QuickLane {
    */
   async generateUIDesignerScreenPrompts(userRequest, specification, context = {}) {
     // Extract or infer journey steps from PRD
-    const journeySteps = context.journeySteps || this.inferJourneySteps(specification);
+    const inferredSteps = Array.isArray(context.journeySteps)
+      ? context.journeySteps
+      : this.inferJourneySteps(specification);
+    const journeySteps =
+      inferredSteps && inferredSteps.length > 0 ? inferredSteps : this.getDefaultJourneySteps();
 
     // Extract project context (same as nano banana brief)
     const projectName = context.projectName || this.extractProjectName(userRequest, specification);
@@ -254,14 +260,16 @@ class QuickLane {
     const coreValue = context.coreValue || this.extractCoreValue(specification);
 
     // Visual system (with sensible defaults)
-    const brandPalette =
-      context.brandPalette || 'Deep blue #1E40AF, vibrant teal #14B8A6, neutral grays #6B7280';
-    const typography = context.typography || 'Modern sans-serif with clear hierarchy';
+    const brandPaletteTokens = this.normalizeBrandPalette(context.brandPalette);
+    const brandPalette = [brandPaletteTokens.summary, brandPaletteTokens.cssVariables]
+      .filter(Boolean)
+      .join('\n\n');
+    const typographyTokens = this.normalizeTypography(context.typography);
+    const typographySummary = typographyTokens.summary;
     const illustrationStyle = context.illustrationStyle || 'Flat design with subtle gradients';
     const experienceTone = context.experienceTone || 'Professional yet approachable';
-    const layoutPrinciples =
-      context.layoutPrinciples ||
-      'Card-based layouts with generous whitespace and clear visual hierarchy';
+    const layoutTokens = this.normalizeLayout(context.layoutPrinciples, context.layoutSystem);
+    const layoutSummary = layoutTokens.summary;
     const voiceGuidelines = context.voiceGuidelines || 'Concise and action-oriented';
 
     // Build journey summary
@@ -302,14 +310,15 @@ You are Google Nano Banana (Gemini 2.5 Flash Image). Render 3 concept options fo
 ${brandPalette}
 
 ### Typography
-- **Heading font**: ${typography.split(' ')[0] || 'Inter'} Bold
-- **Body font**: ${typography.split(' ')[0] || 'Inter'} Regular
-- **Font scale**: 14px body, 18px subtitle, 24px heading
+- **Heading font**: ${typographyTokens.headingFont}
+- **Body font**: ${typographyTokens.bodyFont}
+- **Font scale**: ${typographyTokens.scale}
 
 ### Layout System
-- **Structure**: ${layoutPrinciples}
-- **Spacing scale**: 8px, 16px, 24px, 32px, 48px, 64px
-- **Container max-width**: 1200px
+- **Structure**: ${layoutTokens.structure}
+- **Spacing scale**: ${layoutTokens.spacingScale}
+- **Container max-width**: ${layoutTokens.maxWidth}
+- **Grid pattern**: ${layoutTokens.gridPattern}
 
 ### Icon & Illustration Style
 ${illustrationStyle}
@@ -358,8 +367,8 @@ ${voiceGuidelines}
       .replace(/\{\{JOURNEY_STEPS\}\}/g, journeyList)
       .replace(/\{\{JOURNEY_COUNT\}\}/g, journeySteps.length.toString())
       .replace(/\{\{BRAND_PALETTE\}\}/g, brandPalette)
-      .replace(/\{\{TYPOGRAPHY\}\}/g, typography)
-      .replace(/\{\{LAYOUT_PRINCIPLES\}\}/g, layoutPrinciples)
+      .replace(/\{\{TYPOGRAPHY\}\}/g, typographySummary)
+      .replace(/\{\{LAYOUT_PRINCIPLES\}\}/g, layoutSummary)
       .replace(/\{\{ILLUSTRATION_STYLE\}\}/g, illustrationStyle)
       .replace(/\{\{EXPERIENCE_TONE\}\}/g, experienceTone)
       .replace(/\{\{SCREEN_PROMPTS_SECTION\}\}/g, screenPromptsSection);
@@ -372,36 +381,7 @@ ${voiceGuidelines}
    */
   inferJourneySteps(specification) {
     // Default journey steps for modern SaaS if we can't infer from PRD
-    const defaultSteps = [
-      {
-        stepName: 'Browse / Explore',
-        screenPersona: 'New user exploring the product',
-        screenGoal: 'Discover available options and build interest',
-        requiredComponents: 'Navigation, featured content, search/filter',
-        emotionTags: 'Curious, excited',
-      },
-      {
-        stepName: 'Search & Filter',
-        screenPersona: 'User with specific needs',
-        screenGoal: 'Find relevant items efficiently',
-        requiredComponents: 'Search bar, filter controls, results list',
-        emotionTags: 'Focused, goal-oriented',
-      },
-      {
-        stepName: 'Create / Compose',
-        screenPersona: 'User ready to take action',
-        screenGoal: 'Input new content or data',
-        requiredComponents: 'Form fields, input controls, save/submit button',
-        emotionTags: 'Engaged, productive',
-      },
-      {
-        stepName: 'Review / Confirm',
-        screenPersona: 'User finalizing their action',
-        screenGoal: 'Verify details before committing',
-        requiredComponents: 'Summary view, edit link, confirmation button',
-        emotionTags: 'Confident, assured',
-      },
-    ];
+    const defaultSteps = this.getDefaultJourneySteps();
 
     // Try to extract user stories that hint at journey steps
     const userStoryPattern =
@@ -497,6 +477,430 @@ ${voiceGuidelines}
     if (index === total - 1) return 'Final step - completion/confirmation';
     if (index < total / 2) return 'Early journey - exploration phase';
     return 'Late journey - commitment phase';
+  }
+
+  /**
+   * Default journey steps used when inference returns no results
+   */
+  getDefaultJourneySteps() {
+    return [
+      {
+        stepName: 'Browse / Explore',
+        screenPersona: 'New user exploring the product',
+        screenGoal: 'Discover available options and build interest',
+        requiredComponents: 'Navigation, featured content, search/filter',
+        emotionTags: 'Curious, excited',
+      },
+      {
+        stepName: 'Search & Filter',
+        screenPersona: 'User with specific needs',
+        screenGoal: 'Find relevant items efficiently',
+        requiredComponents: 'Search bar, filter controls, results list',
+        emotionTags: 'Focused, goal-oriented',
+      },
+      {
+        stepName: 'Create / Compose',
+        screenPersona: 'User ready to take action',
+        screenGoal: 'Input new content or data',
+        requiredComponents: 'Form fields, input controls, save/submit button',
+        emotionTags: 'Engaged, productive',
+      },
+      {
+        stepName: 'Review / Confirm',
+        screenPersona: 'User finalizing their action',
+        screenGoal: 'Verify details before committing',
+        requiredComponents: 'Summary view, edit link, confirmation button',
+        emotionTags: 'Confident, assured',
+      },
+    ];
+  }
+
+  /**
+   * Normalize brand palette input into summary text and optional CSS token block
+   */
+  normalizeBrandPalette(brandPalette) {
+    const defaults = {
+      summary: 'Primary: #1E40AF\nAccent: #14B8A6\nNeutral: #6B7280',
+      cssVariables: '',
+    };
+
+    if (!brandPalette) {
+      return defaults;
+    }
+
+    if (typeof brandPalette === 'string') {
+      return {
+        summary: brandPalette.trim() || defaults.summary,
+        cssVariables: '',
+      };
+    }
+
+    if (Array.isArray(brandPalette)) {
+      const filteredPalette = brandPalette.filter(Boolean);
+      const lines = filteredPalette
+        .map((value, index) => `- Color ${index + 1}: ${value}`)
+        .join('\n');
+      return {
+        summary: lines || filteredPalette.join(', ') || defaults.summary,
+        cssVariables: '',
+      };
+    }
+
+    if (typeof brandPalette === 'object') {
+      const lines = [];
+      const keyMap = [
+        ['primary', 'Primary'],
+        ['secondary', 'Secondary'],
+        ['accent', 'Accent'],
+        ['neutral', 'Neutral'],
+        ['supporting', 'Supporting'],
+        ['background', 'Background'],
+        ['surface', 'Surface'],
+        ['success', 'Success'],
+        ['warning', 'Warning'],
+        ['danger', 'Danger'],
+      ];
+
+      keyMap.forEach(([key, label]) => {
+        if (brandPalette[key]) {
+          lines.push(`- ${label}: ${brandPalette[key]}`);
+        }
+      });
+
+      if (Array.isArray(brandPalette.colors)) {
+        brandPalette.colors.filter(Boolean).forEach((color, index) => {
+          lines.push(`- Color ${index + 1}: ${color}`);
+        });
+      }
+
+      if (brandPalette.notes) {
+        lines.push(`- Notes: ${brandPalette.notes}`);
+      }
+
+      const summary =
+        (typeof brandPalette.summary === 'string' && brandPalette.summary.trim()) ||
+        lines.join('\n') ||
+        defaults.summary;
+
+      return {
+        summary,
+        cssVariables: this.formatCssVariables(brandPalette.cssVariables),
+      };
+    }
+
+    return defaults;
+  }
+
+  /**
+   * Format CSS variables into markdown code block if provided
+   */
+  formatCssVariables(cssVariables) {
+    if (!cssVariables) {
+      return '';
+    }
+
+    if (typeof cssVariables === 'string') {
+      const trimmed = cssVariables.trim();
+      return trimmed;
+    }
+
+    if (typeof cssVariables === 'object') {
+      const entries = Object.entries(cssVariables)
+        .filter(([, value]) => value !== undefined && value !== null && value !== '')
+        .map(([name, value]) => `${name}: ${value};`);
+
+      if (entries.length === 0) {
+        return '';
+      }
+
+      return `\`\`\`css\n${entries.join('\n')}\n\`\`\``;
+    }
+
+    return '';
+  }
+
+  /**
+   * Normalize typography input to ensure prompt has concrete tokens
+   */
+  normalizeTypography(typography) {
+    const defaults = {
+      summary: 'Modern sans-serif with clear hierarchy',
+      headingFont: 'Inter Bold',
+      bodyFont: 'Inter Regular',
+      scale: '14px body, 18px subtitle, 24px heading',
+    };
+
+    if (!typography) {
+      return defaults;
+    }
+
+    if (typeof typography === 'string') {
+      const extracted = this.extractFontsFromText(typography);
+      const headingFont = extracted.headingFont
+        ? this.appendWeightIfMissing(extracted.headingFont, 'Bold')
+        : defaults.headingFont;
+      const bodyFont = extracted.bodyFont
+        ? this.appendWeightIfMissing(extracted.bodyFont, 'Regular')
+        : defaults.bodyFont;
+
+      return {
+        summary: typography.trim() || defaults.summary,
+        headingFont,
+        bodyFont,
+        scale: extracted.scale || defaults.scale,
+      };
+    }
+
+    if (typeof typography === 'object') {
+      const headingFont =
+        typography.headingFont ||
+        typography.heading?.family ||
+        typography.heading?.name ||
+        typography.displayFont ||
+        typography.display ||
+        typography.primary;
+      const bodyFont =
+        typography.bodyFont ||
+        typography.body?.family ||
+        typography.body?.name ||
+        typography.textFont ||
+        typography.body ||
+        typography.secondary;
+
+      const scale =
+        this.stringifyScale(typography.scale) ||
+        this.stringifyScale(typography.scaleTokens) ||
+        defaults.scale;
+
+      const normalizedHeading = headingFont
+        ? this.appendWeightIfMissing(headingFont, 'Bold')
+        : defaults.headingFont;
+      const normalizedBody = bodyFont
+        ? this.appendWeightIfMissing(bodyFont, 'Regular')
+        : defaults.bodyFont;
+
+      const summaryParts = [];
+      if (typeof typography.summary === 'string' && typography.summary.trim()) {
+        summaryParts.push(typography.summary.trim());
+      } else {
+        if (headingFont) summaryParts.push(`- Heading: ${normalizedHeading}`);
+        if (bodyFont) summaryParts.push(`- Body: ${normalizedBody}`);
+        if (scale) summaryParts.push(`- Scale: ${scale}`);
+      }
+
+      if (typography.notes) {
+        summaryParts.push(`- Notes: ${typography.notes}`);
+      }
+
+      return {
+        summary: summaryParts.join('\n') || defaults.summary,
+        headingFont: normalizedHeading,
+        bodyFont: normalizedBody,
+        scale,
+      };
+    }
+
+    return defaults;
+  }
+
+  /**
+   * Attempt to extract font families and scale information from descriptive text
+   */
+  extractFontsFromText(text) {
+    const result = {};
+    if (!text) {
+      return result;
+    }
+
+    const quotedFonts = [...text.matchAll(/["'`]{1,2}([^"'`]+)["'`]{1,2}/g)].map((match) =>
+      match[1].trim(),
+    );
+
+    if (quotedFonts.length >= 2) {
+      result.headingFont = quotedFonts[0];
+      result.bodyFont = quotedFonts[1];
+    } else if (quotedFonts.length === 1) {
+      result.headingFont = quotedFonts[0];
+      result.bodyFont = quotedFonts[0];
+    }
+
+    const scaleMatch = text.match(/(\d+px[^\n,]*)/g);
+    if (scaleMatch && scaleMatch.length >= 2) {
+      result.scale = scaleMatch
+        .map((segment, index) => {
+          const label = ['body', 'subtitle', 'heading'][index] || `level ${index + 1}`;
+          return `${segment.trim()} ${label}`;
+        })
+        .join(', ');
+    }
+
+    return result;
+  }
+
+  /**
+   * Convert scale representations into readable string
+   */
+  stringifyScale(scale) {
+    if (!scale) {
+      return '';
+    }
+
+    if (typeof scale === 'string') {
+      return scale.trim();
+    }
+
+    if (Array.isArray(scale)) {
+      return scale
+        .filter((value) => value !== undefined && value !== null && value !== '')
+        .map((value) => (typeof value === 'number' ? `${value}px` : String(value)))
+        .join(', ');
+    }
+
+    if (typeof scale === 'object') {
+      const entries = [];
+      if (scale.body) entries.push(`${scale.body} body`);
+      if (scale.subtitle) entries.push(`${scale.subtitle} subtitle`);
+      if (scale.heading) entries.push(`${scale.heading} heading`);
+
+      if (!entries.length) {
+        Object.entries(scale).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            const formatted = typeof value === 'number' ? `${value}px` : value;
+            entries.push(`${formatted} ${key}`);
+          }
+        });
+      }
+
+      return entries.join(', ');
+    }
+
+    return '';
+  }
+
+  /**
+   * Normalize layout guidance to ensure prompts include actionable spacing data
+   */
+  normalizeLayout(layoutPrinciples, layoutSystem) {
+    const defaults = {
+      summary: 'Card-based layouts with generous whitespace and clear visual hierarchy',
+      structure: 'Card-based layout with clear hierarchy',
+      spacingScale: '8px, 16px, 24px, 32px, 48px, 64px',
+      maxWidth: '1200px',
+      gridPattern: 'Responsive grid (3-col desktop, 1-col mobile)',
+    };
+
+    const layout = { ...defaults };
+
+    if (typeof layoutPrinciples === 'string' && layoutPrinciples.trim()) {
+      layout.summary = layoutPrinciples.trim();
+      layout.structure = layout.summary;
+    }
+
+    if (layoutSystem && typeof layoutSystem === 'object') {
+      if (typeof layoutSystem.summary === 'string' && layoutSystem.summary.trim()) {
+        layout.summary = layoutSystem.summary.trim();
+      }
+      if (layoutSystem.structure) {
+        layout.structure = layoutSystem.structure;
+      }
+
+      const spacing = this.formatSpacingScale(layoutSystem.spacingScale || layoutSystem.spacing);
+      if (spacing) {
+        layout.spacingScale = spacing;
+      }
+
+      if (layoutSystem.maxWidth !== undefined && layoutSystem.maxWidth !== null) {
+        layout.maxWidth = this.coerceMaxWidth(layoutSystem.maxWidth);
+      }
+
+      if (layoutSystem.gridPattern) {
+        layout.gridPattern = layoutSystem.gridPattern;
+      } else if (
+        layoutSystem.columns &&
+        layoutSystem.columns.desktop &&
+        layoutSystem.columns.mobile
+      ) {
+        layout.gridPattern = `${layoutSystem.columns.desktop}-column desktop, ${layoutSystem.columns.mobile}-column mobile`;
+      }
+    }
+
+    return layout;
+  }
+
+  /**
+   * Format spacing scales into readable string
+   */
+  formatSpacingScale(scale) {
+    if (!scale) {
+      return '';
+    }
+
+    if (typeof scale === 'string') {
+      return scale.trim();
+    }
+
+    if (Array.isArray(scale)) {
+      return scale
+        .filter((value) => value !== undefined && value !== null && value !== '')
+        .map((value) => (typeof value === 'number' ? `${value}px` : String(value)))
+        .join(', ');
+    }
+
+    if (typeof scale === 'object') {
+      const entries = Object.entries(scale)
+        .filter(([, value]) => value !== undefined && value !== null && value !== '')
+        .map(([key, value]) => {
+          const formatted = typeof value === 'number' ? `${value}px` : value;
+          return `${key}: ${formatted}`;
+        });
+
+      return entries.join(', ');
+    }
+
+    return '';
+  }
+
+  /**
+   * Ensure max-width is represented with unit suffix when necessary
+   */
+  coerceMaxWidth(value) {
+    if (value === undefined || value === null || value === '') {
+      return '1200px';
+    }
+
+    if (typeof value === 'number') {
+      return `${value}px`;
+    }
+
+    const trimmed = String(value).trim();
+    if (/^\d+$/.test(trimmed)) {
+      return `${trimmed}px`;
+    }
+
+    return trimmed;
+  }
+
+  /**
+   * Append font weight descriptor when not already present
+   */
+  appendWeightIfMissing(font, weight) {
+    if (!font) {
+      return weight;
+    }
+
+    const normalized = font.trim();
+    // Use static regex for common font weights for performance
+    const hasWeightPattern = /\b(light|regular|medium|bold|black)\b/i;
+
+    // Check if weight already exists (case insensitive, escape special regex chars)
+    const escapedWeight = weight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const weightPattern = new RegExp(escapedWeight, 'i');
+
+    if (weightPattern.test(normalized) || hasWeightPattern.test(normalized)) {
+      return normalized;
+    }
+
+    return `${normalized} ${weight}`.trim();
   }
 
   /**
