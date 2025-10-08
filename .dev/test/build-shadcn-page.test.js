@@ -44,7 +44,7 @@ describe('buildShadcnPage', () => {
 
   it('rejects attempts to escape the project root', async () => {
     await expect(buildShadcnPage(tokens, {}, path.join('..', 'outside-output'))).rejects.toThrow(
-      'Invalid output directory',
+      'Invalid output directory: path traversal detected',
     );
   });
 });
