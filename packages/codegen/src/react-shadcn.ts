@@ -3,9 +3,11 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 export async function buildShadcnPage(tokens: Tokens, comps: ComponentMap, outDir: string) {
-  // Validate and sanitize output directory
-  const resolvedOutDir = path.resolve(process.cwd(), outDir);
-  if (!resolvedOutDir.startsWith(process.cwd())) {
+  const projectRoot = process.cwd();
+  const resolvedOutDir = path.resolve(projectRoot, outDir);
+  const relativeOutDir = path.relative(projectRoot, resolvedOutDir);
+
+  if (relativeOutDir && (relativeOutDir.startsWith('..') || path.isAbsolute(relativeOutDir))) {
     throw new Error('Invalid output directory: path traversal detected');
   }
   const imports = `import { Button } from "@/components/ui/button"\nimport { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"`;
