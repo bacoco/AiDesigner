@@ -30,7 +30,7 @@ graph TD
     F --> F2{"UX Required?"}
     F2 -->|Yes| F3["UX Expert: Create Front End Spec"]
     F2 -->|No| H["Architect: Create Architecture from PRD"]
-    F3 --> F4["UX Expert: Generate UI Prompt for Lovable/Vaidesigner (Optional)"]
+    F3 --> F4["UX Expert: Generate UI Prompt for Lovable/AiDesigner (Optional)"]
     F4 --> H2["Architect: Create Architecture from PRD + UX Spec"]
     H --> Q{"Early Test Strategy? (Optional)"}
     H2 --> Q
@@ -46,30 +46,30 @@ graph TD
     N --> O["PO: Shard Documents"]
     O --> P["Ready for SM/Dev Cycle"]
 
-    style A fill:#f5f5f5,color:#aidesigneraidesigneraidesigner
-    style B fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style C fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
-    style C2 fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
-    style C3 fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
-    style D fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
-    style E fill:#fff3eaidesigner,color:#aidesigneraidesigneraidesigner
-    style E2 fill:#fff3eaidesigner,color:#aidesigneraidesigneraidesigner
-    style F fill:#fff3eaidesigner,color:#aidesigneraidesigneraidesigner
-    style F2 fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style F3 fill:#e1f5fe,color:#aidesigneraidesigneraidesigner
-    style F4 fill:#e1f5fe,color:#aidesigneraidesigneraidesigner
-    style G fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style H fill:#f3e5f5,color:#aidesigneraidesigneraidesigner
-    style H2 fill:#f3e5f5,color:#aidesigneraidesigneraidesigner
-    style Q fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style R fill:#ffd54f,color:#aidesigneraidesigneraidesigner
-    style I fill:#f9abaidesigneraidesigner,color:#fff
-    style J fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style A fill:#f5f5f5,color:#1f2933
+    style B fill:#e3f2fd,color:#1f2933
+    style C fill:#e8f5e9,color:#1f2933
+    style C2 fill:#e8f5e9,color:#1f2933
+    style C3 fill:#e8f5e9,color:#1f2933
+    style D fill:#e8f5e9,color:#1f2933
+    style E fill:#fff3e0,color:#1f2933
+    style E2 fill:#fff3e0,color:#1f2933
+    style F fill:#fff3e0,color:#1f2933
+    style F2 fill:#e3f2fd,color:#1f2933
+    style F3 fill:#e1f5fe,color:#1f2933
+    style F4 fill:#e1f5fe,color:#1f2933
+    style G fill:#e3f2fd,color:#1f2933
+    style H fill:#f3e5f5,color:#1f2933
+    style H2 fill:#f3e5f5,color:#1f2933
+    style Q fill:#e3f2fd,color:#1f2933
+    style R fill:#ffd54f,color:#1f2933
+    style I fill:#f9ab91,color:#fff
+    style J fill:#e3f2fd,color:#1f2933
     style K fill:#34a853,color:#fff
-    style L fill:#f9abaidesigneraidesigner,color:#fff
-    style M fill:#fff3eaidesigner,color:#aidesigneraidesigneraidesigner
+    style L fill:#f9ab91,color:#fff
+    style M fill:#fff3e0,color:#1f2933
     style N fill:#1a73e8,color:#fff
-    style O fill:#f9abaidesigneraidesigner,color:#fff
+    style O fill:#f9ab91,color:#fff
     style P fill:#34a853,color:#fff
 ```
 
@@ -154,31 +154,31 @@ graph TD
     Z --> K["Mark Story as Done"]
     K --> B
 
-    style A fill:#f5f5f5,color:#aidesigneraidesigneraidesigner
-    style B fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
-    style B2 fill:#e8f5e9,color:#aidesigneraidesigneraidesigner
-    style S fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style T fill:#ffd54f,color:#aidesigneraidesigneraidesigner
-    style U fill:#ffd54f,color:#aidesigneraidesigneraidesigner
-    style B3 fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style B4 fill:#fce4ec,color:#aidesigneraidesigneraidesigner
-    style C fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style D fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style E fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style V fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style W fill:#ffd54f,color:#aidesigneraidesigneraidesigner
-    style X fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style F fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style G fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style H fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style I fill:#f9abaidesigneraidesigner,color:#fff
-    style J fill:#ffd54f,color:#aidesigneraidesigneraidesigner
+    style A fill:#f5f5f5,color:#1f2933
+    style B fill:#e8f5e9,color:#1f2933
+    style B2 fill:#e8f5e9,color:#1f2933
+    style S fill:#e3f2fd,color:#1f2933
+    style T fill:#ffd54f,color:#1f2933
+    style U fill:#ffd54f,color:#1f2933
+    style B3 fill:#e3f2fd,color:#1f2933
+    style B4 fill:#fce4ec,color:#1f2933
+    style C fill:#e3f2fd,color:#1f2933
+    style D fill:#e3f2fd,color:#1f2933
+    style E fill:#e3f2fd,color:#1f2933
+    style V fill:#e3f2fd,color:#1f2933
+    style W fill:#ffd54f,color:#1f2933
+    style X fill:#e3f2fd,color:#1f2933
+    style F fill:#e3f2fd,color:#1f2933
+    style G fill:#e3f2fd,color:#1f2933
+    style H fill:#e3f2fd,color:#1f2933
+    style I fill:#f9ab91,color:#fff
+    style J fill:#ffd54f,color:#1f2933
     style K fill:#34a853,color:#fff
-    style L fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
+    style L fill:#e3f2fd,color:#1f2933
     style M fill:#ff5722,color:#fff
     style N fill:#d32f2f,color:#fff
-    style Y fill:#e3f2fd,color:#aidesigneraidesigneraidesigner
-    style Z fill:#ffd54f,color:#aidesigneraidesigneraidesigner
+    style Y fill:#e3f2fd,color:#1f2933
+    style Z fill:#ffd54f,color:#1f2933
 ```
 
 ## Prerequisites
