@@ -3213,6 +3213,28 @@ You are Google Nano Banana (Gemini 2.5 Flash Image). Render {{concept_variations
 
 {{motion_notes}}
 
+### Layout Planning & Responsive Flow
+
+1. **Box the layout before styling**: Treat every visible element (navigation, headers, cards, buttons, sidebars, text blocks, forms) as nested boxes. Describe how each box contains or aligns with others and how empty space flows between them so the structure stays balanced even before visuals are applied.
+2. **Plan for reordering without chaos**: Define how those boxes can rearrange naturally when space changes (e.g., columns collapsing into rows, cards stacking) while preserving hierarchy and rhythm.
+3. **Narrate responsive behavior**: Explain how the layout "breathes" as the viewport grows or shrinks—what rises above, what shifts below, what expands, and what compresses—so priority areas (hero, navigation, key actions) stay prominent and secondary zones gracefully step back.
+4. **Guard consistent spacing logic**: Use scalable margins and consistent gaps so reflow feels intentional rather than cramped.
+
+### Color Layering & Depth System
+
+- **Generate 3-4 shades per base color** from the brand palette or neutral system: Shade 1 = base −0.1 lightness, Shade 2 = base, Shade 3 = base +0.1, optional Shade 4 = base +0.2.
+- **Apply shades by hierarchy**: Shade 1 for page backgrounds, Shade 2 for containers/cards/navigation bases, Shade 3 for interactive elements (buttons, tabs, inputs) and highlighted cards, Shade 4 for selected/hover/active states.
+- **Compensate text & icons**: Whenever a lighter shade is used behind content, increase the foreground lightness equally to maintain contrast.
+- **Drop borders on light layers**: Remove borders from elements using Shades 3 or 4; rely on color contrast and depth for separation (use borders sparingly on Shade 1/2 only if absolutely required).
+- **Component specifics**: Tabs → Shade 2 base with Shade 3 selected; Cards → Shade 2 wrapper, Shade 3 important surfaces, Shade 3 + soft shadow when selected; Dropdowns/Buttons → Shade 2 default, Shade 3 primary/important, optional gradient + inner shadow for premium feel; Radios/Checkboxes → Shade 2 containers with Shade 3 selected states; Tables → Shade 1 backgrounds to recede.
+- **Control emphasis with lightness**: Lighter shades (3/4) pull elements forward, darker shades (1/2) push elements back, supporting the 60-30-10 balance (neutrals dominant, accents intentional).
+
+### Shadow & Gradient Depth Rules
+
+- **Two-layer shadows**: Apply a light inset/top layer (soft white glow) plus a darker drop shadow beneath. Choose intensity by component importance—small for subtle items (profile cards, nav tabs), medium for core cards/dropdowns/modals, large for hover/focus states or priority modals.
+- **Gradient enhancement** (when appropriate for premium feel): Use a top-to-bottom gradient with a lighter top (base +0.1–0.2) and slightly darker bottom (base −0.05–0.1). Add an inset 0 1px 0 highlight (white/light color at 0.2–0.4 opacity) and reinforce with the matching two-layer shadow.
+- **Consistency across states**: Ensure hover/active states increase elevation by stepping up shadow size or lightness rather than introducing new colors.
+
 ## Reference Inspiration
 
 {{#each reference_assets}}
