@@ -68,7 +68,12 @@ You are Google Nano Banana (Gemini 2.5 Flash Image). Render {{concept_variations
 - **Apply shades by hierarchy**: Shade 1 for page backgrounds, Shade 2 for containers/cards/navigation bases, Shade 3 for interactive elements (buttons, tabs, inputs) and highlighted cards, Shade 4 for selected/hover/active states.
 - **Compensate text & icons**: Whenever a lighter shade is used behind content, increase the foreground lightness equally to maintain contrast.
 - **Drop borders on light layers**: Remove borders from elements using Shades 3 or 4; rely on color contrast and depth for separation (use borders sparingly on Shade 1/2 only if absolutely required).
-- **Component specifics**: Tabs → Shade 2 base with Shade 3 selected; Cards → Shade 2 wrapper, Shade 3 important surfaces, Shade 3 + soft shadow when selected; Dropdowns/Buttons → Shade 2 default, Shade 3 primary/important, optional gradient + inner shadow for premium feel; Radios/Checkboxes → Shade 2 containers with Shade 3 selected states; Tables → Shade 1 backgrounds to recede.
+- **Component specifics**:
+  - **Tabs**: Shade 2 base, Shade 3 selected.
+  - **Cards**: Shade 2 wrapper, Shade 3 for important surfaces. When selected, use Shade 3 and add a soft shadow.
+  - **Dropdowns/Buttons**: Shade 2 for default states, Shade 3 for primary/important ones. For a premium feel, an optional gradient and inner shadow can be added.
+  - **Radios/Checkboxes**: Shade 2 for containers, with Shade 3 for selected states.
+  - **Tables**: Shade 1 for backgrounds to make them recede.
 - **Control emphasis with lightness**: Lighter shades (3/4) pull elements forward, darker shades (1/2) push elements back, supporting the 60-30-10 balance (neutrals dominant, accents intentional).
 
 ### Shadow & Gradient Depth Rules
