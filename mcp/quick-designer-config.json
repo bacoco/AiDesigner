@@ -7,6 +7,14 @@
       "env": {
         "QUICK_DESIGNER_MODE": "ai-powered"
       }
+    },
+    "vibe-check": {
+      "command": "npx",
+      "args": ["-y", "vibe-check-mcp-server"],
+      "env": {
+        "VIBE_CHECK_API_KEY": "${VIBE_CHECK_API_KEY}",
+        "VIBE_CHECK_MODEL": "claude-3-5-sonnet-20241022"
+      }
     }
   }
 }
