@@ -138,10 +138,6 @@ function isAllowedUrl(url: URL): boolean {
     }
   }
 
-  if (ipVersion === 4) {
-    return true;
-  }
-
   // Only allow HTTP(S) protocols
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     return false;
@@ -480,6 +476,8 @@ function parseArgList(raw?: string | null): string[] | undefined {
     // Ignore JSON parse failures and fall back to shell-style parsing
   }
 
+  // Basic shell-style argument parsing. For more complex cases with escaped quotes,
+  // consider using a library like 'shell-quote' or 'string-argv'.
   const matches = raw.match(/(?:"[^"]*"|'[^']*'|[^\s"'])+/g);
   if (!matches) {
     return undefined;
@@ -506,9 +504,10 @@ function parseEnv(raw?: string | null): Record<string, string> | undefined {
       for (const [key, value] of Object.entries(parsed)) {
         if (typeof value === 'string') {
           env[key] = value;
-        } else if (value !== undefined && value !== null) {
-          env[key] = JSON.stringify(value);
+        } else if (typeof value === 'number' || typeof value === 'boolean') {
+          env[key] = String(value);
         }
+        // Objects, arrays, null, and undefined are ignored to prevent unexpected behavior
       }
       return Object.keys(env).length > 0 ? env : undefined;
     }
