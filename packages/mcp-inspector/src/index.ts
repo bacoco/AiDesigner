@@ -6,6 +6,11 @@ export type InspectOptions = {
    * WebSocket URL for the MCP server.
    */
   url: string;
+  /**
+   * Legacy option preserved for compatibility with callers that previously
+   * controlled which visual states to capture during analysis.
+   */
+  states?: string[];
 };
 
 export type ToolInventoryItem = {
@@ -26,6 +31,19 @@ export type InspectionError = {
   toolName?: string;
 };
 
+type LegacyInspectionArtifacts = {
+  /**
+   * Maintained for compatibility with existing AiDesigner inference helpers.
+   * These are currently populated with empty structures because the runtime
+   * inspection workflow has not yet been re-implemented on top of MCP.
+   */
+  domSnapshot: Record<string, unknown>;
+  accessibilityTree: Record<string, unknown>;
+  cssom: Record<string, unknown>;
+  computedStyles: unknown[];
+  console: unknown[];
+};
+
 export type InspectResult = {
   tools: ToolInventoryItem[];
   errors: InspectionError[];
@@ -33,7 +51,7 @@ export type InspectResult = {
     name?: string;
     version?: string;
   };
-};
+} & LegacyInspectionArtifacts;
 
 const CLIENT_INFO = {
   name: 'AiDesigner MCP Inspector',
@@ -52,7 +70,7 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
   } catch (error) {
     errors.push({ stage: 'connect', message: formatErrorMessage(error) });
     await safeClose(transport, errors, connected);
-    return { tools: [], errors };
+    return withLegacyArtifacts({ tools: [], errors });
   }
 
   let toolResponse: Awaited<ReturnType<Client['listTools']>>;
@@ -61,7 +79,7 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
   } catch (error) {
     errors.push({ stage: 'list-tools', message: formatErrorMessage(error) });
     await safeClose(transport, errors, connected);
-    return { tools: [], errors, server: getServerInfo(client) };
+    return withLegacyArtifacts({ tools: [], errors, server: getServerInfo(client) });
   }
 
   const tools: ToolInventoryItem[] = [];
@@ -83,10 +101,23 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
 
   await safeClose(transport, errors, connected);
 
-  return {
+  return withLegacyArtifacts({
     tools,
     errors,
     server: getServerInfo(client),
+  });
+}
+
+function withLegacyArtifacts(
+  result: Omit<InspectResult, keyof LegacyInspectionArtifacts>,
+): InspectResult {
+  return {
+    domSnapshot: {},
+    accessibilityTree: {},
+    cssom: {},
+    computedStyles: [],
+    console: [],
+    ...result,
   };
 }
 
