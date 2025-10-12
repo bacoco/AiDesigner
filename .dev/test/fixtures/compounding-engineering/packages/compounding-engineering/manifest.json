@@ -1,0 +1,12 @@
+{
+  "name": "compounding-engineering",
+  "version": "0.1.0",
+  "commands": [
+    {
+      "name": "/create-tasks",
+      "description": "Create developer task graph from feature brief",
+      "command": ["node", "packages/compounding-engineering/cli.mjs"],
+      "args": ["--format", "json"]
+    }
+  ]
+}
