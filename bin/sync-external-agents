@@ -37,10 +37,9 @@ function ensureCliDependencies() {
     .map((dependency) => dependency.name);
 
   if (missing.length > 0) {
-    console.error(
+    throw new Error(
       `Missing CLI dependencies: ${missing.join(', ')}. Run \`npm install\` before executing this command.`,
     );
-    process.exit(1);
   }
 
   const commander = required[0].loader();
@@ -213,7 +212,7 @@ async function syncGitSource(source, context) {
         ),
       );
     } else {
-      console.log(chalk.gray(' • Git repository detected (fetch will be executed).'));
+      console.log(chalk.gray(' • Git repository detected (update will be handled by pipeline).'));
     }
     return;
   }
@@ -250,15 +249,6 @@ async function syncGitSource(source, context) {
     );
     return;
   }
-
-  await runCommand(
-    {
-      run: 'git',
-      args: ['fetch', '--all'],
-      cwd: targetDirectory,
-    },
-    context,
-  );
 }
 
 async function processPipeline(source, context) {
