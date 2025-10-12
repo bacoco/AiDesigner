@@ -120,6 +120,8 @@ export interface AdapterOptions {
 const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 const DEFAULT_CONFIG_PATH = path.join(PACKAGE_ROOT, 'config', 'compounding-engineering.json');
 const REPOSITORY_ENV_OVERRIDE = 'COMPOUNDING_ENGINEERING_ROOT';
+const TASK_ID_PREFIX = 'comp-eng';
+const SOURCE_NAME = 'compounding-engineering';
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
@@ -157,7 +159,7 @@ function resolveEnvironmentValue(alias: string, mapping: EnvironmentMapping | un
   }
 
   const sourceKey = mapping.source && mapping.source.trim().length > 0 ? mapping.source : alias;
-  const resolved = process.env[sourceKey ?? alias] ?? mapping.default;
+  const resolved = process.env[sourceKey] ?? mapping.default;
 
   if (!isNonEmptyString(resolved) && mapping.required) {
     throw new Error(
@@ -414,7 +416,7 @@ export class CompoundingEngineeringPlanningAdapter {
       tasks,
       edges,
       manifest: {
-        name: isNonEmptyString(manifest.name) ? manifest.name : 'compounding-engineering',
+        name: isNonEmptyString(manifest.name) ? manifest.name : SOURCE_NAME,
         version: isNonEmptyString(manifest.version) ? manifest.version : undefined,
         path: config.manifestAbsolutePath,
         fetchedAt: new Date().toISOString(),
@@ -451,7 +453,7 @@ export class CompoundingEngineeringPlanningAdapter {
     const dependencies = this.resolveTaskDependencies(task);
 
     const metadata: Record<string, unknown> = {
-      source: 'compounding-engineering',
+      source: SOURCE_NAME,
     };
 
     if (task.metadata) {
@@ -489,7 +491,7 @@ export class CompoundingEngineeringPlanningAdapter {
       }
     }
 
-    return `comp-eng-${crypto.randomUUID()}-${index}`;
+    return `${TASK_ID_PREFIX}-${crypto.randomUUID()}-${index}`;
   }
 
   private resolveTaskTitle(task: PluginTask, index: number): string {
@@ -603,7 +605,7 @@ export class CompoundingEngineeringPlanningAdapter {
       }
 
       const kind = normalizeDependencyKind(edge.kind ?? edge.type ?? edge.relationship);
-      if (!taskIndex.has(to) && !taskIndex.has(from)) {
+      if (!taskIndex.has(to) || !taskIndex.has(from)) {
         continue;
       }
 

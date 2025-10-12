@@ -668,7 +668,13 @@ const loadCompanionIntegrationConfig = () => {
 const resolveCompanionRepoPath = (config) => {
   const overrideRoot = process.env.COMPOUNDING_ENGINEERING_ROOT;
   if (overrideRoot && typeof overrideRoot === 'string' && overrideRoot.trim()) {
-    return path.resolve(overrideRoot);
+    const resolved = path.resolve(overrideRoot);
+    // Basic path validation: prevent path traversal attacks
+    if (resolved.includes('..') || !path.isAbsolute(resolved)) {
+      console.warn('⚠️  Warning: Potentially unsafe path detected in COMPOUNDING_ENGINEERING_ROOT');
+      return undefined;
+    }
+    return resolved;
   }
 
   if (!config || typeof config.repositoryPath !== 'string') {
@@ -676,9 +682,17 @@ const resolveCompanionRepoPath = (config) => {
   }
 
   const repositoryPath = config.repositoryPath;
-  return path.isAbsolute(repositoryPath)
+  const resolved = path.isAbsolute(repositoryPath)
     ? repositoryPath
     : path.join(__dirname, '..', repositoryPath);
+
+  // Basic path validation: ensure the resolved path doesn't contain suspicious patterns
+  if (resolved.includes('..') && !path.isAbsolute(repositoryPath)) {
+    console.warn('⚠️  Warning: Potentially unsafe path detected in repositoryPath');
+    return undefined;
+  }
+
+  return resolved;
 };
 
 const printHelp = () => {
@@ -2059,6 +2073,7 @@ Happy building with BMAD! 🚀
     } catch (pullError) {
       console.error('❌ Failed to update companion repository:', pullError.message || pullError);
       console.log('   Run git manually to resolve the issue.');
+      process.exit(1);
     }
   },
 
