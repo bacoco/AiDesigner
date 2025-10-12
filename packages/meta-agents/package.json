@@ -1,0 +1,27 @@
+{
+  "name": "@aidesigner/meta-agents",
+  "version": "0.1.0",
+  "description": "Meta-agent orchestration for Architect and Quasar within AiDesigner.",
+  "keywords": [
+    "aidesigner",
+    "meta-agents",
+    "architect",
+    "quasar"
+  ],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@kayvan/markdown-tree-parser": "^1.6.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
