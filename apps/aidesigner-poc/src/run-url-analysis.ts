@@ -57,54 +57,44 @@ export async function runUrlAnalysis(
 
     await Promise.all(
       captureEntries.map(async ([state, capture]) => {
-        const writes: Promise<void>[] = [];
+        const stateDir = path.join(evidenceDir, state);
+        const writes: Array<{ filename: string; payload: unknown }> = [];
+
         if (capture.domSnapshot !== undefined) {
-          writes.push(
-            fs.writeFile(
-              path.join(evidenceDir, state, 'domSnapshot.json'),
-              JSON.stringify(capture.domSnapshot, null, 2),
-            ),
-          );
+          writes.push({ filename: 'domSnapshot.json', payload: capture.domSnapshot });
         }
         if (capture.accessibilityTree !== undefined) {
-          writes.push(
-            fs.writeFile(
-              path.join(evidenceDir, state, 'accessibilityTree.json'),
-              JSON.stringify(capture.accessibilityTree, null, 2),
-            ),
-          );
+          writes.push({
+            filename: 'accessibilityTree.json',
+            payload: capture.accessibilityTree,
+          });
         }
         if (capture.cssom !== undefined) {
-          writes.push(
-            fs.writeFile(
-              path.join(evidenceDir, state, 'cssom.json'),
-              JSON.stringify(capture.cssom, null, 2),
-            ),
-          );
+          writes.push({ filename: 'cssom.json', payload: capture.cssom });
         }
         if (capture.console !== undefined) {
-          writes.push(
-            fs.writeFile(
-              path.join(evidenceDir, state, 'console.json'),
-              JSON.stringify(capture.console, null, 2),
-            ),
-          );
+          writes.push({ filename: 'console.json', payload: capture.console });
         }
         if (capture.computedStyles !== undefined) {
-          writes.push(
-            fs.writeFile(
-              path.join(evidenceDir, state, 'computedStyles.json'),
-              JSON.stringify(capture.computedStyles, null, 2),
-            ),
-          );
+          writes.push({
+            filename: 'computedStyles.json',
+            payload: capture.computedStyles,
+          });
         }
 
         if (writes.length === 0) {
           return;
         }
 
-        await fs.mkdir(path.join(evidenceDir, state), { recursive: true });
-        await Promise.all(writes);
+        await fs.mkdir(stateDir, { recursive: true });
+        await Promise.all(
+          writes.map(({ filename, payload }) =>
+            fs.writeFile(
+              path.join(stateDir, filename),
+              JSON.stringify(payload, null, 2),
+            ),
+          ),
+        );
       }),
     );
 
