@@ -1,15 +1,40 @@
 import process from 'node:process';
 
 const DEFAULT_COMMAND = '/create-tasks';
+const MAX_INPUT_SIZE = 1024 * 1024; // 1MB
+const STDIN_TIMEOUT_MS = 30000; // 30 seconds
+const MAX_SLUG_LENGTH = 40;
 
 const helpText = `Compounding Engineering CLI\n\nUsage:\n  node packages/compounding-engineering/cli.mjs /create-tasks [--format json]\n\nDescription:\n  Reads a feature brief from STDIN (JSON) and emits a sequenced task plan.\n`;
 
-const readStdin = async () =>
+const readStdin = async (timeoutMs = STDIN_TIMEOUT_MS) =>
   new Promise((resolve, reject) => {
     const chunks = [];
-    process.stdin.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-    process.stdin.on('error', (error) => reject(error));
-    process.stdin.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    let totalSize = 0;
+
+    const timeout = setTimeout(() => {
+      reject(new Error('STDIN read timeout'));
+    }, timeoutMs);
+
+    process.stdin.on('data', (chunk) => {
+      totalSize += chunk.length;
+      if (totalSize > MAX_INPUT_SIZE) {
+        clearTimeout(timeout);
+        reject(new Error('Input exceeds maximum size (1MB)'));
+        return;
+      }
+      chunks.push(Buffer.from(chunk));
+    });
+
+    process.stdin.on('error', (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+
+    process.stdin.on('end', () => {
+      clearTimeout(timeout);
+      resolve(Buffer.concat(chunks).toString('utf8'));
+    });
   });
 
 const parseFlags = (args) => {
@@ -36,7 +61,10 @@ const parseFlags = (args) => {
     }
 
     if (arg.startsWith('--format=')) {
-      flags.format = arg.split('=')[1] ?? flags.format;
+      const value = arg.split('=', 2)[1];
+      if (value) {
+        flags.format = value;
+      }
       continue;
     }
   }
@@ -60,7 +88,7 @@ const buildSlug = (value, fallback) => {
       .normalize('NFKD')
       .replaceAll(/[^a-z0-9]+/g, '-')
       .replaceAll(/^-+|-+$/g, '')
-      .slice(0, 40) || fallback
+      .slice(0, MAX_SLUG_LENGTH) || fallback
   );
 };
 
@@ -96,6 +124,10 @@ const deriveSignals = (request) => {
 };
 
 const createTasks = (request) => {
+  if (typeof request !== 'object' || request === null) {
+    throw new TypeError('Request must be a valid object');
+  }
+
   const title = sanitizeText(request?.title, 'Requested capability');
   const summary = sanitizeText(request?.summary, title);
   const slug = buildSlug(title, 'feature');
