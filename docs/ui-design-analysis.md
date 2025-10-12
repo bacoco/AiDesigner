@@ -12,7 +12,7 @@ The AiDesigner proof-of-concept orchestrates a streamlined pipeline that turns i
 # System Flow
 
 1. **CLI orchestration** – `apps/aidesigner-poc/src/cli.ts` wires the flow: capture target URL, derive tokens and component maps, generate React code, and compute reports. The CLI defends against missing arguments, isolates output per run, and surfaces high-level success or error status.
-2. **Inspection** – `analyzeWithMCP` in `packages/mcp-inspector/src/index.ts` is a placeholder shim around a Chrome DevTools MCP server. It defines required artifacts (DOM snapshot, accessibility tree, CSSOM, computed styles, console output, performance trace, screenshots) and documents the intended RPC shape.
+2. **Inspection** – `analyzeWithMCP` in `packages/mcp-inspector/src/index.ts` is a placeholder shim around a Chrome DevTools MCP server. It defines required artifacts (multi-state DOM snapshots, accessibility trees, CSSOM, computed styles, console output, performance trace, screenshots) and documents the intended RPC shape.
 3. **Inference** – `inferTokens` and `detectComponents` in `packages/inference/src` translate inspection results into domain-aware assets:
    - `inferTokens` fabricates a `Tokens` object with canonical primitives (color, space, font) and semantic references. Production notes call for clustering colors, spacing step analysis, and font extraction from computed styles.
    - `detectComponents` emits a `ComponentMap` describing detection heuristics, variant/state metadata, accessibility expectations, and mapping templates for downstream generators.

@@ -9,22 +9,43 @@ import type {
   StylesheetSummary,
 } from '@aidesigner/shared-types';
 
+export type InspectCaptureOptions = {
+  domSnapshot?: boolean;
+  accessibilityTree?: boolean;
+  cssom?: boolean;
+  console?: boolean;
+  computedStyles?: boolean;
+};
+
 export type InspectOptions = {
   /**
    * URL to capture.
    */
   url: string;
   /**
-   * Visual states to request from the caller (recorded for downstream steps).
+   * Optional list of UI states to capture. Defaults to `['default']` when
+   * capture options are provided but no explicit states are set.
    */
   states?: string[];
   /**
-   * Timeout in milliseconds for network fetches.
+   * Capture configuration. When omitted, no capture calls are made unless
+   * states are provided.
    */
-  timeoutMs?: number;
+  capture?: InspectCaptureOptions;
 };
 
-export type InspectionErrorStage = 'fetch-html' | 'fetch-stylesheet';
+export type ToolInventoryItem = {
+  name: string;
+  signature: string;
+  description?: string;
+};
+
+export type InspectionErrorStage =
+  | 'connect'
+  | 'list-tools'
+  | 'format'
+  | 'capture'
+  | 'disconnect';
 
 export type InspectionError = {
   stage: InspectionErrorStage;
@@ -32,26 +53,23 @@ export type InspectionError = {
   resource?: string;
 };
 
-export type InspectResult = InspectionArtifacts & {
-  errors: InspectionError[];
+export type InspectCapture = {
+  domSnapshot?: unknown;
+  accessibilityTree?: unknown;
+  cssom?: unknown;
+  console?: unknown;
+  computedStyles?: unknown[];
 };
 
-const DEFAULT_TIMEOUT_MS = 8000;
-const MAX_CONTENT_SIZE = 10 * 1024 * 1024; // 10MB limit to prevent memory exhaustion
-const MAX_HTML_SIZE_FOR_REGEX = 5 * 1024 * 1024; // 5MB limit for regex operations to prevent ReDoS
-const MAX_REGEX_MATCHES = 10000; // Limit number of regex matches to prevent DoS
-
-/**
- * Validates that a URL is safe to fetch (prevents SSRF attacks).
- */
-function isAllowedUrl(url: URL): boolean {
-  const hostname = url.hostname.toLowerCase();
-  const ipVersion = isIP(hostname);
-
-  // Block explicit localhost and all-zero bind address
-  if (hostname === '0.0.0.0' || hostname === 'localhost') {
-    return false;
-  }
+export type InspectResult = {
+  tools: ToolInventoryItem[];
+  errors: InspectionError[];
+  server?: {
+    name?: string;
+    version?: string;
+  };
+  captures?: Record<string, InspectCapture>;
+};
 
   // Block private IPv4 ranges
   if (
@@ -99,38 +117,245 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
   try {
     targetUrl = new URL(opts.url);
   } catch (error) {
-    throw new Error(`Invalid URL: ${formatErrorMessage(error)}`);
+    errors.push({ stage: 'connect', message: formatErrorMessage(error) });
+    await safeClose(transport, errors, connected);
+    return { tools: [], errors };
   }
 
-  if (!isAllowedUrl(targetUrl)) {
-    throw new Error('URL not allowed: potential SSRF risk (private IP, metadata endpoint, or unsupported protocol)');
+  let toolResponse: Awaited<ReturnType<Client['listTools']>>;
+  try {
+    toolResponse = await client.listTools();
+  } catch (error) {
+    errors.push({ stage: 'list-tools', message: formatErrorMessage(error) });
+    await safeClose(transport, errors, connected);
+    return { tools: [], errors, server: getServerInfo(client) };
   }
 
-  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const html = await fetchText(targetUrl, timeoutMs).catch((error) => {
-    throw new Error(`Failed to fetch HTML: ${formatErrorMessage(error)}`);
-  });
+  const tools: ToolInventoryItem[] = [];
+  for (const tool of toolResponse.tools) {
+    try {
+      tools.push({
+        name: tool.name,
+        description: tool.description || undefined,
+        signature: formatToolSignature(tool.name, tool.inputSchema, tool.outputSchema),
+      });
+    } catch (error) {
+      errors.push({
+        stage: 'format',
+        message: formatErrorMessage(error),
+        toolName: tool.name,
+      });
+    }
+  }
 
-  const stylesheets = await extractStylesheets(html, targetUrl, timeoutMs, errors);
-  const aggregatedCss = stylesheets.map((sheet) => sheet.content).join('\n');
-  const computedStyles = buildComputedStyles(aggregatedCss, html);
-  const accessibility = buildAccessibilitySummaries(html);
+  const captures = await captureStates(client, opts, errors);
 
-  const artifacts: InspectionArtifacts = {
-    url: targetUrl.href,
-    states: opts.states ?? [],
-    fetchedAt: new Date().toISOString(),
-    domSnapshot: { html },
-    cssom: { stylesheets, aggregated: aggregatedCss },
-    computedStyles,
-    accessibility,
-    console: [] satisfies ConsoleMessage[],
-  };
+  await safeClose(transport, errors, connected);
 
   return {
-    ...artifacts,
+    tools,
     errors,
+    server: getServerInfo(client),
+    captures: Object.keys(captures).length > 0 ? captures : undefined,
   };
+}
+
+const DEFAULT_CAPTURE_OPTIONS: Required<InspectCaptureOptions> = {
+  domSnapshot: true,
+  accessibilityTree: true,
+  cssom: true,
+  console: true,
+  computedStyles: true,
+};
+
+async function captureStates(
+  client: Client,
+  opts: InspectOptions,
+  errors: InspectionError[],
+): Promise<Record<string, InspectCapture>> {
+  const shouldCapture = Boolean(opts.capture) || (opts.states?.length ?? 0) > 0;
+  if (!shouldCapture) {
+    return {};
+  }
+
+  const captureOptions = { ...DEFAULT_CAPTURE_OPTIONS, ...(opts.capture ?? {}) };
+  const states = (opts.states && opts.states.length > 0 ? opts.states : ['default']).map(
+    (state) => state?.trim() || 'default',
+  );
+
+  const captures: Record<string, InspectCapture> = {};
+
+  for (const state of states) {
+    const stateArgs: Record<string, unknown> = { url: opts.url };
+    if (state !== 'default') {
+      stateArgs.state = state;
+    }
+
+    const errorCountBeforeOpen = errors.length;
+    await callToolSafely(client, 'browser.open', stateArgs, errors, state);
+    const openFailed = errors.length > errorCountBeforeOpen;
+
+    const capture: InspectCapture = {};
+    const toolArgs = state !== 'default' ? { state, url: opts.url } : { url: opts.url };
+
+    if (openFailed) {
+      continue;
+    }
+
+    if (captureOptions.domSnapshot) {
+      const domSnapshot = await callToolSafely(
+        client,
+        'devtools.dom_snapshot',
+        toolArgs,
+        errors,
+        state,
+      );
+      if (domSnapshot !== undefined) {
+        capture.domSnapshot = domSnapshot;
+      }
+    }
+
+    if (captureOptions.accessibilityTree) {
+      const accessibilityTree = await callToolSafely(
+        client,
+        'devtools.accessibility_tree',
+        toolArgs,
+        errors,
+        state,
+      );
+      if (accessibilityTree !== undefined) {
+        capture.accessibilityTree = accessibilityTree;
+      }
+    }
+
+    if (captureOptions.cssom) {
+      const cssom = await callToolSafely(client, 'devtools.cssom_dump', toolArgs, errors, state);
+      if (cssom !== undefined) {
+        capture.cssom = cssom;
+      }
+    }
+
+    if (captureOptions.console) {
+      const consoleMessages = await callToolSafely(
+        client,
+        'devtools.console_get_messages',
+        toolArgs,
+        errors,
+        state,
+      );
+      if (consoleMessages !== undefined) {
+        capture.console = consoleMessages;
+      }
+    }
+
+    if (captureOptions.computedStyles) {
+      const computedStyles = await callToolSafely(
+        client,
+        'devtools.computed_styles',
+        toolArgs,
+        errors,
+        state,
+      );
+      if (Array.isArray(computedStyles)) {
+        capture.computedStyles = computedStyles;
+      } else if (computedStyles !== undefined) {
+        capture.computedStyles = [computedStyles];
+      }
+    }
+
+    if (Object.keys(capture).length > 0) {
+      captures[state] = capture;
+    }
+  }
+
+  return captures;
+}
+
+type ToolCallResult = Awaited<ReturnType<Client['callTool']>>;
+
+async function callToolSafely(
+  client: Client,
+  toolName: string,
+  args: Record<string, unknown>,
+  errors: InspectionError[],
+  state: string,
+): Promise<unknown> {
+  try {
+    const result = await client.callTool({ name: toolName, arguments: args });
+    if (!result) {
+      return undefined;
+    }
+
+    if ('isError' in result && result.isError) {
+      const payload = extractToolPayload(result);
+      const message = payload !== undefined ? stringifyPayload(payload) : 'Unknown tool error';
+      errors.push({
+        stage: 'capture',
+        message: `Tool ${toolName} reported an error for state '${state}': ${message}`,
+        toolName,
+      });
+      return undefined;
+    }
+
+    return extractToolPayload(result);
+  } catch (error) {
+    errors.push({
+      stage: 'capture',
+      message: `Failed to call tool ${toolName} for state '${state}': ${formatErrorMessage(error)}`,
+      toolName,
+    });
+    return undefined;
+  }
+}
+
+function extractToolPayload(result: ToolCallResult): unknown {
+  if (!result) {
+    return undefined;
+  }
+
+  if ('structuredContent' in result && result.structuredContent !== undefined) {
+    return result.structuredContent;
+  }
+
+  if (Array.isArray((result as { content?: unknown }).content)) {
+    for (const item of (result as { content: unknown[] }).content) {
+      if (!item || typeof item !== 'object') {
+        continue;
+      }
+
+      const content = item as Record<string, unknown>;
+      const type = typeof content.type === 'string' ? (content.type as string) : undefined;
+
+      if (type === 'json' && content.json !== undefined) {
+        return content.json;
+      }
+
+      if (type === 'text' && typeof content.text === 'string') {
+        const text = content.text.trim();
+        if (!text) {
+          continue;
+        }
+        try {
+          return JSON.parse(text);
+        } catch {
+          return content.text;
+        }
+      }
+    }
+  }
+
+  return undefined;
+}
+
+function stringifyPayload(payload: unknown): string {
+  if (typeof payload === 'string') {
+    return payload;
+  }
+  try {
+    return JSON.stringify(payload);
+  } catch (error) {
+    return formatErrorMessage(error);
+  }
 }
 
 async function fetchText(url: URL, timeoutMs: number, redirectCount = 0): Promise<string> {

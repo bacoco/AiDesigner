@@ -122,11 +122,14 @@ npm run dev https://stripe.com
 # Output structure
 out/<timestamp>/
 ├── evidence/
-│   ├── domSnapshot.json
-│   ├── accessibility.json
-│   ├── cssom.json
-│   ├── console.json
-│   └── errors.json
+│   ├── default/
+│   │   ├── domSnapshot.json
+│   │   ├── accessibilityTree.json
+│   │   ├── cssom.json
+│   │   ├── console.json
+│   │   └── computedStyles.json
+│   └── hover/
+│       └── … (additional state captures)
 ├── data/
 │   ├── tokens.json
 │   └── components.map.json
@@ -154,7 +157,7 @@ Every component generation respects extracted tokens:
 
 Complete audit trail for every analysis:
 
-- DOM snapshots with accessibility data
+- Multi-state DOM snapshots with accessibility data
 - CSSOM dumps for style analysis
 - Console messages (errors, warnings)
 - Performance traces

@@ -53,9 +53,30 @@ export async function runUrlAnalysis(
   }
 
   try {
-    const res = await analyzeWithMCP({ url, states: ['default', 'hover', 'dark', 'md'] });
-    const tokens = inferTokens(res);
-    const comps = detectComponents(res);
+    const res = await analyzeWithMCP({
+      url,
+      states: ['default', 'hover', 'dark', 'md'],
+      capture: {
+        domSnapshot: true,
+        accessibilityTree: true,
+        cssom: true,
+        console: true,
+        computedStyles: true,
+      },
+    });
+
+    const captureEntries = Object.entries(res.captures ?? {});
+    const primaryCapture =
+      res.captures?.default ??
+      res.captures?.light ??
+      (captureEntries.length > 0 ? captureEntries[0][1] : undefined);
+
+    if (!primaryCapture) {
+      throw new Error('MCP capture returned no usable state data');
+    }
+
+    const tokens = inferTokens(primaryCapture);
+    const comps = detectComponents(primaryCapture);
 
     const evidenceDir = path.join(resolvedOutRoot, 'evidence');
     const dataDir = path.join(resolvedOutRoot, 'data');
@@ -67,20 +88,52 @@ export async function runUrlAnalysis(
     ]);
 
     await Promise.all([
-      fs.writeFile(
-        path.join(evidenceDir, 'domSnapshot.json'),
-        JSON.stringify(res.domSnapshot, null, 2),
-      ),
-      fs.writeFile(
-        path.join(evidenceDir, 'accessibility.json'),
-        JSON.stringify(res.accessibility, null, 2),
-      ),
-      fs.writeFile(path.join(evidenceDir, 'cssom.json'), JSON.stringify(res.cssom, null, 2)),
-      fs.writeFile(path.join(evidenceDir, 'console.json'), JSON.stringify(res.console, null, 2)),
-      fs.writeFile(path.join(evidenceDir, 'errors.json'), JSON.stringify(res.errors, null, 2)),
       fs.writeFile(path.join(dataDir, 'tokens.json'), JSON.stringify(tokens, null, 2)),
       fs.writeFile(path.join(dataDir, 'components.map.json'), JSON.stringify(comps, null, 2)),
     ]);
+
+    await Promise.all(
+      captureEntries.map(async ([state, capture]) => {
+        const stateDir = path.join(evidenceDir, state);
+        const writes: Array<{ filename: string; payload: unknown }> = [];
+
+        if (capture.domSnapshot !== undefined) {
+          writes.push({ filename: 'domSnapshot.json', payload: capture.domSnapshot });
+        }
+        if (capture.accessibilityTree !== undefined) {
+          writes.push({
+            filename: 'accessibilityTree.json',
+            payload: capture.accessibilityTree,
+          });
+        }
+        if (capture.cssom !== undefined) {
+          writes.push({ filename: 'cssom.json', payload: capture.cssom });
+        }
+        if (capture.console !== undefined) {
+          writes.push({ filename: 'console.json', payload: capture.console });
+        }
+        if (capture.computedStyles !== undefined) {
+          writes.push({
+            filename: 'computedStyles.json',
+            payload: capture.computedStyles,
+          });
+        }
+
+        if (writes.length === 0) {
+          return;
+        }
+
+        await fs.mkdir(stateDir, { recursive: true });
+        await Promise.all(
+          writes.map(({ filename, payload }) =>
+            fs.writeFile(
+              path.join(stateDir, filename),
+              JSON.stringify(payload, null, 2),
+            ),
+          ),
+        );
+      }),
+    );
 
     return { tokens, comps, evidence: evidenceDir };
   } catch (error) {

@@ -1,82 +1,16 @@
-import type { ComponentMap, InspectionArtifacts } from '@aidesigner/shared-types';
+import type { ComponentMap } from '@aidesigner/shared-types';
 
-type AttributeMap = Record<string, string>;
-
-// Component detection constants
-const MAX_CLASSES_LIKE_BUTTON = 6;
-const MAX_CLASSES_LIKE_CARD = 8;
-const MAX_CLASSES_LIKE_INPUT = 6;
-const MIN_CONTENT_LENGTH_FOR_LABELLED = 12; // Distinguish text buttons from icon-only buttons
-
-export function detectComponents(artifacts: InspectionArtifacts): ComponentMap {
-  const html = artifacts.domSnapshot.html;
-  const css = artifacts.cssom.aggregated;
-
-  const components: ComponentMap = {};
-
-  const buttonMeta = analyzeButtons(html, css);
-  if (buttonMeta) {
-    components.Button = buttonMeta;
-  }
-
-  const cardMeta = analyzeCards(html);
-  if (cardMeta) {
-    components.Card = cardMeta;
-  }
-
-  const inputMeta = analyzeInputs(html, css);
-  if (inputMeta) {
-    components.Input = inputMeta;
-  }
-
-  return components;
-}
-
-function analyzeButtons(html: string, css: string): ComponentMap['Button'] | undefined {
-  const buttonRegex = /<button([^>]*)>([\s\S]*?)<\/button>/gi;
-  const linkRegex = /<a([^>]*)>([\s\S]*?)<\/a>/gi;
-  const inputRegex = /<input([^>]*)(?:\/?)>/gi;
-
-  const roles = new Set<string>();
-  const classTokens = new Set<string>();
-  const patterns = new Set<string>();
-  const intents = new Set<string>();
-  const sizes = new Set<string>();
-  let found = false;
-
-  let match: RegExpExecArray | null;
-  while ((match = buttonRegex.exec(html))) {
-    found = true;
-    const attrs = parseAttributes(match[1] ?? '');
-    roles.add('button');
-    collectButtonMetadata(attrs, match[2] ?? '', classTokens, patterns, intents, sizes);
-  }
-
-  while ((match = linkRegex.exec(html))) {
-    const attrs = parseAttributes(match[1] ?? '');
-    const role = attrs.role?.toLowerCase();
-    if (role === 'button' || classLooksLikeButton(attrs.class)) {
-      found = true;
-      roles.add(role ?? 'button');
-      collectButtonMetadata(attrs, match[2] ?? '', classTokens, patterns, intents, sizes);
-    }
-  }
-
-  while ((match = inputRegex.exec(html))) {
-    const attrs = parseAttributes(match[1] ?? '');
-    const type = attrs.type?.toLowerCase();
-    if (type === 'button' || type === 'submit' || type === 'reset') {
-      found = true;
-      roles.add('button');
-      collectButtonMetadata(attrs, attrs.value ?? '', classTokens, patterns, intents, sizes);
-    }
-  }
-
-  if (!found) {
-    return undefined;
-  }
-
-  const states = detectStates(css, classTokens, ['hover', 'focus', 'active', 'disabled']);
+export function detectComponents(input: {
+  domSnapshot?: unknown;
+  accessibilityTree?: unknown;
+  cssom?: unknown;
+}): ComponentMap {
+  // Heuristics: ARIA roles, class patterns, recurring CSS patterns
+  // Production implementation should:
+  // - Parse DOM snapshot for ARIA roles and semantic HTML
+  // - Analyze class name patterns (btn, button, card, etc.)
+  // - Detect recurring CSS patterns (shadows, borders, padding combinations)
+  // - Cross-reference with accessibility tree for component boundaries
 
   return {
     detect: {

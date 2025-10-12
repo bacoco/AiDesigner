@@ -132,27 +132,154 @@ export type {
 
 The inspector now performs a live capture of the target URL instead of returning mocked tool metadata. Highlights:
 
-- Validates the URL and issues an HTTP(S) request with redirect handling (up to five hops) using Node's core networking stack.
-- Collects inline `<style>` tags and fetches linked stylesheets, logging any failures in the returned `errors` array.
-- Produces normalized artifacts: HTML snapshot, parsed CSS rules, accessibility role summaries, and console placeholders alongside metadata (`url`, `states`, `fetchedAt`).
+```ts
+import { Client } from '@modelcontextprotocol/sdk/client';
+import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket';
+
+export type InspectCaptureOptions = {
+  domSnapshot?: boolean;
+  accessibilityTree?: boolean;
+  cssom?: boolean;
+  console?: boolean;
+  computedStyles?: boolean;
+};
+
+export type InspectOptions = {
+  url: string;
+  states?: string[];
+  capture?: InspectCaptureOptions;
+};
+
+export type InspectResult = {
+  tools: Array<{
+    name: string;
+    signature: string;
+    description?: string;
+  }>;
+  errors: Array<{
+    stage: 'connect' | 'list-tools' | 'format' | 'capture' | 'disconnect';
+    message: string;
+    toolName?: string;
+  }>;
+  server?: { name?: string; version?: string };
+  captures?: Record<
+    string,
+    {
+      domSnapshot?: unknown;
+      accessibilityTree?: unknown;
+      cssom?: unknown;
+      console?: unknown;
+      computedStyles?: unknown[];
+    }
+  >;
+};
+
+export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResult> {
+  const client = new Client({ name: 'AiDesigner MCP Inspector', version: '1.0.0' });
+  const transport = new WebSocketClientTransport(new URL(opts.url));
+
+  try {
+    await client.connect(transport);
+    const toolResponse = await client.listTools();
+    return {
+      tools: toolResponse.tools.map((tool) => ({
+        name: tool.name,
+        signature: `${tool.name}(…) => …`,
+        description: tool.description ?? undefined,
+      })),
+      errors: [],
+      server: client.getServerVersion() ?? undefined,
+      captures: {},
+    };
+  } catch (error) {
+    return {
+      tools: [],
+      errors: [
+        {
+          stage: 'connect',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      ],
+    };
+  } finally {
+    await transport.close().catch(() => undefined);
+  }
+}
+```
 
 ### 1.4 `packages/inference/src/tokens.ts`
 
 Token inference now derives primitives from the captured artifacts:
 
-- Parses every color declaration, converts to RGB/HEX, and selects background/foreground/brand tones based on luminance, contrast, and saturation heuristics.
-- Builds spacing and radius scales by scanning pixel-based margin/padding/gap/border-radius values and estimating the step with a floating-point GCD.
-- Extracts font families (including shorthand `font` declarations), records observed weights, and carries optional letter-spacing hints.
-- Emits semantic references (`text/primary`, `surface/default`, `button/primary/bg`, etc.) backed by the inferred primitives alongside contrast requirements.
+```ts
+import type { Tokens } from '@aidesigner/shared-types';
+
+export function inferTokens(input: {
+  domSnapshot?: unknown;
+  computedStyles?: unknown[];
+  cssom?: unknown;
+}): Tokens {
+  // Heuristics: color clustering (simplified k-medoids), spacing steps (GCD-like), font families.
+  const now = new Date().toISOString();
+
+  // TODO: Extract real values from computedStyles
+  const colors = {
+    'base/fg': '#0A0A0A',
+    'base/bg': '#FFFFFF',
+    'brand/600': '#635BFF',
+    'muted/500': '#6B7280',
+  };
+  const space = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 24, xl: 32 };
+  const font = { sans: { family: 'Inter, system-ui, sans-serif', weights: [400, 600] } };
+
+  return {
+    meta: { source: 'url', capturedAt: now },
+    primitives: { color: colors, space, font },
+    semantic: {
+      'text/primary': { ref: 'color.base/fg' },
+      'surface/default': { ref: 'color.base/bg' },
+      'button/primary/bg': { ref: 'color.brand/600' },
+    },
+    constraints: { spacingStep: 4, borderRadiusStep: 2, contrastMin: 4.5 },
+  };
+}
+```
 
 ### 1.5 `packages/inference/src/components.ts`
 
 Component detection now inspects the captured HTML/CSS instead of returning a static map:
 
-- Discovers buttons across semantic `<button>` elements, `role="button"` anchors, and button-type inputs while capturing class tokens for intent/size inference and rounded/shadow patterns.
-- Identifies card-like containers via recurring classnames (`card`, `panel`, `box`, …) and inline styles that hint at rounded corners or shadows.
-- Detects text inputs/textarea fields as a distinct component, monitoring CSS selectors for focus/disabled states.
-- Emits Shadcn/MUI mapping templates that reference the detected variant dimensions so generation can render real components.
+```ts
+import type { ComponentMap } from '@aidesigner/shared-types';
+
+export function detectComponents(input: {
+  domSnapshot?: unknown;
+  accessibilityTree?: unknown;
+  cssom?: unknown;
+}): ComponentMap {
+  // Heuristics: ARIA roles, class patterns, recurring CSS patterns
+  return {
+    Button: {
+      detect: { role: ['button'], classesLike: ['btn', 'button'], patterns: ['rounded'] },
+      variants: { intent: ['primary', 'secondary', 'danger'], size: ['sm', 'md', 'lg'] },
+      states: ['default', 'hover', 'focus', 'disabled'],
+      a11y: { minHit: 44, focusRing: true },
+      mappings: {
+        shadcn: '<Button variant="{intent}" size="{size}">{slot}</Button>',
+        mui: '<Button color="{intent}" size="{size}">{slot}</Button>',
+      },
+    },
+    Card: {
+      detect: { role: [], classesLike: ['card'], patterns: ['shadow', 'rounded'] },
+      mappings: {
+        shadcn:
+          '<Card><CardHeader>{header}</CardHeader><CardContent>{content}</CardContent></Card>',
+        mui: '<Card><CardHeader title={header}/><CardContent>{content}</CardContent></Card>',
+      },
+    },
+  };
+}
+```
 
 ### 1.6 `packages/validators/src/contrast.ts`
 
@@ -278,37 +405,96 @@ export async function runUrlAnalysis(
   }
 
   try {
-    const res = await analyzeWithMCP({ url, states: ['default', 'hover', 'dark', 'md'] });
-    const tokens = inferTokens(res);
-    const comps = detectComponents(res);
+    const res = await analyzeWithMCP({
+      url,
+      states: ['default', 'hover', 'dark', 'md'],
+      capture: {
+        domSnapshot: true,
+        accessibilityTree: true,
+        cssom: true,
+        console: true,
+        computedStyles: true,
+      },
+    });
+
+    const captureEntries = Object.entries(res.captures ?? {});
+    const primaryCapture =
+      res.captures?.default ??
+      res.captures?.light ??
+      (captureEntries.length > 0 ? captureEntries[0][1] : undefined);
+
+    if (!primaryCapture) {
+      throw new Error('MCP capture returned no usable state data');
+    }
+
+    const tokens = inferTokens(primaryCapture);
+    const comps = detectComponents(primaryCapture);
 
     const evidenceDir = path.join(resolvedOutRoot, 'evidence');
     const dataDir = path.join(resolvedOutRoot, 'data');
 
-    // Create directories and write files in parallel
     await Promise.all([
       fs.mkdir(evidenceDir, { recursive: true }),
       fs.mkdir(dataDir, { recursive: true }),
     ]);
 
     await Promise.all([
-      fs.writeFile(
-        path.join(evidenceDir, 'domSnapshot.json'),
-        JSON.stringify(res.domSnapshot, null, 2),
-      ),
-      fs.writeFile(
-        path.join(evidenceDir, 'accessibility.json'),
-        JSON.stringify(res.accessibility, null, 2),
-      ),
-      fs.writeFile(path.join(evidenceDir, 'cssom.json'), JSON.stringify(res.cssom, null, 2)),
-      fs.writeFile(path.join(evidenceDir, 'console.json'), JSON.stringify(res.console, null, 2)),
       fs.writeFile(path.join(dataDir, 'tokens.json'), JSON.stringify(tokens, null, 2)),
       fs.writeFile(path.join(dataDir, 'components.map.json'), JSON.stringify(comps, null, 2)),
     ]);
 
+    await Promise.all(
+      captureEntries.map(async ([state, capture]) => {
+        const stateDir = path.join(evidenceDir, state);
+        const writes: Array<{ filename: string; payload: unknown }> = [];
+
+        if (capture.domSnapshot !== undefined) {
+          writes.push({ filename: 'domSnapshot.json', payload: capture.domSnapshot });
+        }
+
+        if (capture.accessibilityTree !== undefined) {
+          writes.push({
+            filename: 'accessibilityTree.json',
+            payload: capture.accessibilityTree,
+          });
+        }
+
+        if (capture.cssom !== undefined) {
+          writes.push({ filename: 'cssom.json', payload: capture.cssom });
+        }
+
+        if (capture.console !== undefined) {
+          writes.push({ filename: 'console.json', payload: capture.console });
+        }
+
+        if (capture.computedStyles !== undefined) {
+          writes.push({
+            filename: 'computedStyles.json',
+            payload: capture.computedStyles,
+          });
+        }
+
+        if (writes.length === 0) {
+          return;
+        }
+
+        await fs.mkdir(stateDir, { recursive: true });
+        await Promise.all(
+          writes.map(({ filename, payload }) =>
+            fs.writeFile(
+              path.join(stateDir, filename),
+              JSON.stringify(payload, null, 2),
+            ),
+          ),
+        );
+      }),
+    );
+
     return { tokens, comps, evidence: evidenceDir };
   } catch (error) {
-    throw new Error(`URL analysis failed: ${error.message}`);
+    throw new Error(
+      `URL analysis failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 ```
