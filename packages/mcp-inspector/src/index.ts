@@ -80,7 +80,7 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
   } catch (error) {
     errors.push({ stage: 'connect', message: formatErrorMessage(error) });
     await safeClose(transport, errors, connected);
-    return withLegacyArtifacts({ tools: [], errors });
+    return { tools: [], errors };
   }
 
   let toolResponse: Awaited<ReturnType<Client['listTools']>>;
@@ -89,7 +89,7 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
   } catch (error) {
     errors.push({ stage: 'list-tools', message: formatErrorMessage(error) });
     await safeClose(transport, errors, connected);
-    return withLegacyArtifacts({ tools: [], errors, server: getServerInfo(client) });
+    return { tools: [], errors, server: getServerInfo(client) };
   }
 
   const tools: ToolInventoryItem[] = [];
@@ -113,7 +113,7 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
 
   await safeClose(transport, errors, connected);
 
-  return withLegacyArtifacts({
+  return {
     tools,
     errors,
     server: getServerInfo(client),
