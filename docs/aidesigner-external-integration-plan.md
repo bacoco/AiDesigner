@@ -1,6 +1,6 @@
 ---
-title: "AiDesigner External Integration Plan"
-description: "Assessment of current integrations with Every Marketplace, Awesome UI, SuperDesign, and Vibe Check plus roadmap for combining their strengths."
+title: 'AiDesigner External Integration Plan'
+description: 'Assessment of current integrations with Every Marketplace, Awesome UI, SuperDesign, and Vibe Check plus roadmap for combining their strengths.'
 ---
 
 # Integration Assessment and Roadmap
@@ -9,10 +9,10 @@ description: "Assessment of current integrations with Every Marketplace, Awesome
 
 ### Every Marketplace — Compounding Engineering
 
-- **Status:** Partially integrated. The repo is declared as an optional dependency and the orchestrator includes a planning adapter that loads the plugin manifest and executes the `/create-tasks` command when available.
+- **Status:** Fully integrated. The planner manifest and CLI now ship inside the repository, and the orchestrator executes them without any external checkout.
 - **Evidence:**
-  - `package.json` lists `@everymarketplace/compounding-engineering` as an optional dependency, signaling the intended linkage.
-  - `docs/compounding-engineering-integration.md` documents how to clone the companion repository, configure environment variables, and invoke the planner through the AiDesigner CLI.  
+  - `packages/compounding-engineering/` vendors the manifest and CLI script invoked by the Architect planner.
+  - `docs/compounding-engineering-integration.md` documents how to verify the built-in assets and configure credentials.
   - `packages/meta-agents/src/planning/compounding-engineering.ts` implements the adapter that normalizes the returned task graph for the Architect orchestrator.
 
 ### Awesome UI Component Library
@@ -45,7 +45,7 @@ description: "Assessment of current integrations with Every Marketplace, Awesome
 ### Phase 0 – Foundations
 
 - Finalize the compounding-engineering adapter by adding automated tests that validate manifest parsing and command invocation fallbacks.
-- Wire the MCP inspector agent to flag when the companion repository is missing or stale, surfacing actionable sync instructions.
+- Wire the MCP inspector agent to flag when the vendored planner assets are missing, surfacing actionable repair instructions.
 
 ### Phase 1 – Knowledge Ingestion
 
@@ -73,7 +73,7 @@ description: "Assessment of current integrations with Every Marketplace, Awesome
 
 ## Immediate Next Steps (2-Week Sprint)
 
-1. Enable CI to run a smoke test verifying the compounding-engineering companion repository is reachable and the adapter can parse the manifest.
+1. Add a CI smoke test that executes the vendored compounding-engineering CLI to ensure JSON responses stay well-formed.
 2. Prototype an Awesome UI ingestion script that creates a lightweight JSON registry for React libraries, proving out metadata fields.
 3. Draft the SuperDesign API client interface (types, expected responses) and capture configuration needs (.env, API keys) for future implementation.
 4. Add a checklist item to the MCP inspector agent to confirm Vibe Check credentials are set before orchestration begins.
