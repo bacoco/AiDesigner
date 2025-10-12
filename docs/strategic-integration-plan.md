@@ -20,7 +20,7 @@ This document proposes a concrete roadmap for leveraging external agent reposito
 Any external integration must therefore:
 
 1. Preserve the separation of concerns—new knowledge flows into `aidesigner-core`/`agents`, executable components live in MCP servers.
-2. Expose capabilities through the MCP inspector pipeline so that every meta-agent can discover and utilise them automatically.
+2. Expose capabilities through the MCP inspector pipeline so that every meta-agent can discover and utilize them automatically.
 3. Ship with validation and QA loops aligned with the orchestrator and QA meta-agent definitions.
 
 ## Phase 1 – Assess and Fork the Target Repository
