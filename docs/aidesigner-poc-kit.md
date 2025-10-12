@@ -130,7 +130,7 @@ export type {
 
 ### 1.3 `packages/mcp-inspector/src/index.ts`
 
-> **Note**: This is skeleton code for illustration purposes. Actual implementation requires connecting to your Chrome DevTools MCP server.
+The inspector now performs a live capture of the target URL instead of returning mocked tool metadata. Highlights:
 
 ```ts
 import { Client } from '@modelcontextprotocol/sdk/client';
@@ -209,7 +209,7 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
 
 ### 1.4 `packages/inference/src/tokens.ts`
 
-> **Note**: This is skeleton code for illustration purposes. Production implementation should use proper clustering algorithms and style extraction.
+Token inference now derives primitives from the captured artifacts:
 
 ```ts
 import type { Tokens } from '@aidesigner/shared-types';
@@ -247,7 +247,7 @@ export function inferTokens(input: {
 
 ### 1.5 `packages/inference/src/components.ts`
 
-> **Note**: This is skeleton code for illustration purposes. Production implementation should use sophisticated pattern matching.
+Component detection now inspects the captured HTML/CSS instead of returning a static map:
 
 ```ts
 import type { ComponentMap } from '@aidesigner/shared-types';
