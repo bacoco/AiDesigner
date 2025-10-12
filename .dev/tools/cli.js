@@ -4,6 +4,7 @@ const V3ToV4Upgrader = require('./upgraders/v3-to-v4-upgrader');
 const IdeSetup = require('./installer/lib/ide-setup');
 const McpManager = require('./mcp-manager');
 const path = require('node:path');
+const fs = require('node:fs/promises');
 const { normalizeConfigTarget } = require('./shared/mcp-config');
 
 const program = new Command();
@@ -271,6 +272,96 @@ mcp
   .action(async (options) => {
     const manager = new McpManager({ rootDir: process.cwd() });
     await manager.audit(options);
+  });
+
+const metaAgent = program
+  .command('meta-agent')
+  .description('Interact with Architect and Quasar meta-agents');
+
+metaAgent
+  .command('run <agent>')
+  .description('Instantiate a meta-agent orchestrator')
+  .option('-f, --feature <feature>', 'Feature request to pass to the Architect meta-agent')
+  .option('-d, --directive <path>', 'Path to the directive markdown file')
+  .option('-h, --handoff <path>', 'Path to an Architect handoff JSON document for Quasar')
+  .action(async (agent, options) => {
+    const tsconfigPath = path.resolve(__dirname, '..', '..', 'tsconfig.aidesigner-ng.json');
+    require('ts-node').register({
+      transpileOnly: true,
+      project: tsconfigPath,
+    });
+
+    const metaAgentsModulePath = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      'packages',
+      'meta-agents',
+      'src',
+      'index.ts',
+    );
+    const {
+      createArchitectOrchestrator,
+      createQuasarOrchestrator,
+      listDirectiveHeadings,
+    } = require(metaAgentsModulePath);
+
+    const normalizedAgent = agent.toLowerCase();
+    try {
+      if (normalizedAgent === 'architect') {
+        if (!options.feature) {
+          throw new Error('A feature request is required when running the Architect.');
+        }
+
+        const directivePath = path.resolve(
+          options.directive ?? path.join(process.cwd(), 'agents', 'meta-agent-developer.md'),
+        );
+        const directiveMarkdown = await fs.readFile(directivePath, 'utf8');
+        const orchestrator = await createArchitectOrchestrator({
+          directiveMarkdown,
+          featureRequest: options.feature,
+        });
+
+        const headings = listDirectiveHeadings(orchestrator.getDirective());
+        console.log(`Architect meta-agent ready for feature: ${options.feature}`);
+        console.log(`Directive title: ${orchestrator.getDirective().title}`);
+        console.log(`Key sections: ${headings.join(', ')}`);
+        console.log(
+          'Use the meta-agents API to register tasks and call execute() to produce a handoff.',
+        );
+      } else if (normalizedAgent === 'quasar') {
+        if (!options.handoff) {
+          throw new Error('A handoff JSON path is required when running the Quasar.');
+        }
+
+        const directivePath = path.resolve(
+          options.directive ?? path.join(process.cwd(), 'agents', 'meta-agent-orchestrator.md'),
+        );
+        const directiveMarkdown = await fs.readFile(directivePath, 'utf8');
+        const handoffPath = path.resolve(options.handoff);
+        const handoffContent = await fs.readFile(handoffPath, 'utf8');
+        const handoff = JSON.parse(handoffContent);
+        const orchestrator = await createQuasarOrchestrator({
+          directiveMarkdown,
+          handoff,
+        });
+
+        const plan = orchestrator.getTestPlan();
+        console.log(`Quasar meta-agent ready. Generated ${plan.items.length} tester missions.`);
+        for (const item of plan.items) {
+          console.log(`- ${item.id}: ${item.mission}`);
+        }
+        console.log(
+          'Use executeTests() with custom tester executors to produce the Global Quality Report.',
+        );
+      } else {
+        throw new Error(`Unknown meta-agent "${agent}". Use "architect" or "quasar".`);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Meta-agent command failed:', message);
+      process.exitCode = 1;
+    }
   });
 
 program.parse();
