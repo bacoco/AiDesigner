@@ -1,0 +1,397 @@
+#!/usr/bin/env node
+
+/**
+ * Sync external agent ecosystems into the AiDesigner workspace.
+ *
+ * The command reads the expansion-packs/external-integrations/manifest.yaml file
+ * and optionally executes the configured pipelines for each source. By default
+ * the command runs in dry-run mode and only prints the planned operations.
+ */
+
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawn } = require('node:child_process');
+let Command;
+let yaml;
+let chalk;
+let ora;
+
+const ROOT_DIR = path.resolve(__dirname, '..');
+const DEFAULT_MANIFEST = path.join(
+  ROOT_DIR,
+  'expansion-packs',
+  'external-integrations',
+  'manifest.yaml',
+);
+
+function ensureCliDependencies() {
+  const required = [
+    { name: 'commander', loader: () => require('commander') },
+    { name: 'js-yaml', loader: () => require('js-yaml') },
+    { name: 'chalk', loader: () => require('chalk') },
+    { name: 'ora', loader: () => require('ora') },
+  ];
+
+  const missing = required
+    .filter((dependency) => !fs.existsSync(path.join(ROOT_DIR, 'node_modules', dependency.name)))
+    .map((dependency) => dependency.name);
+
+  if (missing.length > 0) {
+    console.error(
+      `Missing CLI dependencies: ${missing.join(', ')}. Run \`npm install\` before executing this command.`,
+    );
+    process.exit(1);
+  }
+
+  const commander = required[0].loader();
+  Command = commander.Command;
+  yaml = required[1].loader();
+  chalk = required[2].loader();
+  ora = required[3].loader();
+}
+
+ensureCliDependencies();
+
+const program = new Command();
+program
+  .name('sync-external-agents')
+  .description('Sync external AI agent ecosystems into the AiDesigner workspace.')
+  .option('-m, --manifest <path>', 'Path to the integrations manifest', DEFAULT_MANIFEST)
+  .option('-s, --source <ids...>', 'Limit execution to one or more source identifiers')
+  .option('--execute', 'Run commands instead of performing a dry run', false)
+  .option('--continue-on-error', 'Continue processing other sources if a command fails', false)
+  .option('--list', 'List all available sources and exit', false)
+  .option('--json', 'Emit machine-readable output for automation hooks', false)
+  .parse(process.argv);
+
+const options = program.opts();
+
+function loadManifest(manifestPath) {
+  const resolvedPath = path.resolve(manifestPath);
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`Manifest not found at ${resolvedPath}`);
+  }
+
+  const manifestContent = fs.readFileSync(resolvedPath, 'utf8');
+  const manifest = yaml.load(manifestContent, { json: true });
+
+  if (!manifest || typeof manifest !== 'object') {
+    throw new Error('Invalid manifest: expected an object.');
+  }
+
+  if (!Array.isArray(manifest.sources)) {
+    throw new Error('Invalid manifest: missing sources array.');
+  }
+
+  return {
+    ...manifest,
+    sources: manifest.sources.map((source) => ({ ...source, id: String(source.id) })),
+    manifestPath: resolvedPath,
+  };
+}
+
+function ensureArray(value) {
+  if (!value) {
+    return [];
+  }
+
+  return Array.isArray(value) ? value : [value];
+}
+
+function filterSources(manifest, sourceIds) {
+  if (!sourceIds || sourceIds.length === 0) {
+    return manifest.sources;
+  }
+
+  const normalized = sourceIds
+    .flatMap((value) => String(value).split(','))
+    .map((value) => value.trim());
+  const idSet = new Set(normalized.filter(Boolean));
+
+  return manifest.sources.filter((source) => idSet.has(source.id));
+}
+
+function formatCommand(command) {
+  const args = ensureArray(command.args).filter(Boolean);
+  return [command.run, ...args].filter(Boolean).join(' ');
+}
+
+function resolveCwd(command) {
+  if (!command.cwd) {
+    return ROOT_DIR;
+  }
+
+  if (path.isAbsolute(command.cwd)) {
+    return command.cwd;
+  }
+
+  return path.resolve(ROOT_DIR, command.cwd);
+}
+
+function resolveEnv(command) {
+  if (!command.env) {
+    return process.env;
+  }
+
+  return {
+    ...process.env,
+    ...command.env,
+  };
+}
+
+async function runCommand(command, { dryRun }) {
+  if (!command || !command.run) {
+    throw new Error('Command configuration is missing the "run" property.');
+  }
+  const args = ensureArray(command.args).map(String);
+  const cwd = resolveCwd(command);
+  const env = resolveEnv(command);
+
+  if (dryRun) {
+    console.log(
+      chalk.gray(`   ↳ ${formatCommand(command)} (cwd: ${path.relative(ROOT_DIR, cwd) || '.'})`),
+    );
+    return { status: 'skipped', command };
+  }
+
+  const spinner = ora(`Running ${formatCommand(command)}`).start();
+
+  try {
+    await new Promise((resolve, reject) => {
+      const child = spawn(command.run, args, {
+        cwd,
+        env,
+        stdio: 'inherit',
+      });
+
+      child.on('close', (code) => {
+        if (code === 0) {
+          resolve();
+          return;
+        }
+
+        const error = new Error(`${formatCommand(command)} exited with code ${code}`);
+        error.code = code;
+        reject(error);
+      });
+
+      child.on('error', reject);
+    });
+    spinner.succeed(`Completed ${formatCommand(command)}`);
+    return { status: 'completed', command };
+  } catch (error) {
+    const isOptional = Boolean(command.optional);
+    if (isOptional) {
+      spinner.warn(`${formatCommand(command)} failed but is marked optional`);
+      console.warn(chalk.yellow(`     ${error.message}`));
+      return { status: 'optional-failed', command, error };
+    }
+
+    spinner.fail(`${formatCommand(command)} failed`);
+    throw error;
+  }
+}
+
+async function syncGitSource(source, context) {
+  const targetDirectory = path.resolve(ROOT_DIR, source.targetDirectory);
+  const parentDirectory = path.dirname(targetDirectory);
+  const gitDirectory = path.join(targetDirectory, '.git');
+  const exists = fs.existsSync(targetDirectory);
+  const isGitRepository = exists && fs.existsSync(gitDirectory);
+
+  if (context.dryRun) {
+    if (!exists) {
+      console.log(
+        chalk.gray(
+          ` • Target directory ${path.relative(ROOT_DIR, targetDirectory)} does not exist (clone planned).`,
+        ),
+      );
+    } else if (!isGitRepository) {
+      console.log(
+        chalk.gray(
+          ` • Directory exists but is not a git repository (cleanup required before execution).`,
+        ),
+      );
+    } else {
+      console.log(chalk.gray(' • Git repository detected (fetch will be executed).'));
+    }
+    return;
+  }
+
+  if (!fs.existsSync(parentDirectory)) {
+    fs.mkdirSync(parentDirectory, { recursive: true });
+    console.log(
+      chalk.green(`   Created parent directory ${path.relative(ROOT_DIR, parentDirectory)}`),
+    );
+  }
+
+  if (exists && !isGitRepository) {
+    throw new Error(
+      `Target directory ${path.relative(
+        ROOT_DIR,
+        targetDirectory,
+      )} exists but is not a git repository. Move it before syncing.`,
+    );
+  }
+
+  if (!exists) {
+    console.log(
+      chalk.blue(
+        `   Cloning ${source.repository} into ${path.relative(ROOT_DIR, targetDirectory)}`,
+      ),
+    );
+    await runCommand(
+      {
+        run: 'git',
+        args: ['clone', source.repository, targetDirectory],
+        cwd: ROOT_DIR,
+      },
+      context,
+    );
+    return;
+  }
+
+  await runCommand(
+    {
+      run: 'git',
+      args: ['fetch', '--all'],
+      cwd: targetDirectory,
+    },
+    context,
+  );
+}
+
+async function processPipeline(source, context) {
+  const stages = ensureArray(source.pipeline);
+  for (const stage of stages) {
+    if (!stage) {
+      continue;
+    }
+
+    const header = stage.name ? `${stage.name}` : 'Pipeline stage';
+    console.log(chalk.cyan(` • ${header}`));
+    if (stage.description) {
+      console.log(chalk.gray(`   ${stage.description}`));
+    }
+
+    const commands = ensureArray(stage.commands);
+    for (const command of commands) {
+      try {
+        await runCommand(command, context);
+      } catch (error) {
+        if (context.continueOnError) {
+          console.error(chalk.red(`   ${error.message}`));
+          console.error(chalk.red('   Continuing due to --continue-on-error flag.'));
+          continue;
+        }
+        throw error;
+      }
+    }
+  }
+}
+
+async function syncSource(source, context) {
+  console.log(
+    chalk.bold(`
+⟡ ${source.name} (${source.id})`),
+  );
+  if (source.description) {
+    console.log(chalk.gray(`   ${source.description}`));
+  }
+  if (source.repository) {
+    console.log(chalk.gray(`   Repository: ${source.repository}`));
+  }
+  if (source.targetDirectory) {
+    console.log(
+      chalk.gray(
+        `   Target: ${path.relative(ROOT_DIR, path.resolve(ROOT_DIR, source.targetDirectory))}`,
+      ),
+    );
+  }
+
+  if (source.kind === 'git') {
+    await syncGitSource(source, context);
+  }
+
+  await processPipeline(source, context);
+}
+
+function listSources(manifest) {
+  const entries = manifest.sources.map((source) => ({
+    id: source.id,
+    name: source.name,
+    repository: source.repository,
+    targetDirectory: source.targetDirectory,
+    cadence: source.syncCadence || manifest.syncCadence,
+  }));
+
+  if (options.json) {
+    console.log(JSON.stringify(entries, null, 2));
+    return;
+  }
+
+  console.log(chalk.bold('Available external integrations'));
+  for (const entry of entries) {
+    console.log(` - ${entry.id}: ${entry.name}`);
+    if (entry.repository) {
+      console.log(chalk.gray(`    repo: ${entry.repository}`));
+    }
+    if (entry.targetDirectory) {
+      console.log(chalk.gray(`    target: ${entry.targetDirectory}`));
+    }
+  }
+}
+
+async function main() {
+  let manifest;
+  try {
+    manifest = loadManifest(options.manifest);
+  } catch (error) {
+    console.error(chalk.red(error.message));
+    process.exitCode = 1;
+    return;
+  }
+
+  if (options.list) {
+    listSources(manifest);
+    return;
+  }
+
+  const sources = filterSources(manifest, options.source);
+  if (sources.length === 0) {
+    console.error(chalk.red('No matching sources found for the provided filters.'));
+    process.exitCode = 1;
+    return;
+  }
+
+  const context = {
+    dryRun: !options.execute,
+    continueOnError: options.continueOnError,
+  };
+
+  const summary = [];
+  for (const source of sources) {
+    try {
+      await syncSource(source, context);
+      summary.push({ id: source.id, status: 'completed' });
+    } catch (error) {
+      summary.push({ id: source.id, status: 'failed', message: error.message });
+      console.error(
+        chalk.red(`
+✖ Sync failed for ${source.id}: ${error.message}`),
+      );
+      if (!context.continueOnError) {
+        break;
+      }
+    }
+  }
+
+  if (options.json) {
+    console.log(JSON.stringify(summary, null, 2));
+  }
+}
+
+main().catch((error) => {
+  console.error(chalk.red(error.stack || error.message));
+  process.exitCode = 1;
+});
