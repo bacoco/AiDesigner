@@ -641,6 +641,45 @@ const buildSpawnEnv = () => {
 // Get current package version
 const packageJsonPath = path.join(__dirname, '..', 'package.json');
 const currentVersion = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
+const COMPANION_REPO_URL = 'https://github.com/everymarketplace/compounding-engineering.git';
+
+const loadCompanionIntegrationConfig = () => {
+  const configPath = path.join(
+    __dirname,
+    '..',
+    'packages',
+    'meta-agents',
+    'config',
+    'compounding-engineering.json',
+  );
+
+  try {
+    const raw = fs.readFileSync(configPath, 'utf8');
+    return { path: configPath, config: JSON.parse(raw) };
+  } catch (error) {
+    return {
+      path: configPath,
+      config: undefined,
+      error,
+    };
+  }
+};
+
+const resolveCompanionRepoPath = (config) => {
+  const overrideRoot = process.env.COMPOUNDING_ENGINEERING_ROOT;
+  if (overrideRoot && typeof overrideRoot === 'string' && overrideRoot.trim()) {
+    return path.resolve(overrideRoot);
+  }
+
+  if (!config || typeof config.repositoryPath !== 'string') {
+    return undefined;
+  }
+
+  const repositoryPath = config.repositoryPath;
+  return path.isAbsolute(repositoryPath)
+    ? repositoryPath
+    : path.join(__dirname, '..', repositoryPath);
+};
 
 const printHelp = () => {
   console.log(`
@@ -665,6 +704,7 @@ Commands:
   opencode             Start conversational interface with OpenCode CLI
 
   install              Install AiDesigner globally
+  companion-sync       Clone or update the compounding-engineering companion repository
   build                Build MCP server
   test                 Run test suite
   validate             Validate configuration
@@ -1959,6 +1999,67 @@ Happy building with BMAD! 🚀
       }
       process.exit(code || 0);
     });
+  },
+
+  'companion-sync': async () => {
+    const { config, path: configPath, error } = loadCompanionIntegrationConfig();
+    if (!config) {
+      console.error('❌ Unable to load compounding-engineering integration config.');
+      if (error) {
+        console.error(`   Path: ${configPath}`);
+        console.error(`   Reason: ${error.message || error}`);
+      }
+      return;
+    }
+
+    const repoPath = resolveCompanionRepoPath(config);
+    if (!repoPath) {
+      console.error('❌ Invalid repository path in compounding-engineering configuration.');
+      console.error('   Update packages/meta-agents/config/compounding-engineering.json with a repositoryPath value.');
+      return;
+    }
+
+    const absoluteRepoPath = path.resolve(repoPath);
+    if (!fs.existsSync(absoluteRepoPath)) {
+      console.log('📁 Companion repository not found. Clone it with:');
+      console.log(`   git clone ${COMPANION_REPO_URL} ${absoluteRepoPath}`);
+      console.log('   (Set COMPOUNDING_ENGINEERING_ROOT to override the checkout location if needed.)');
+      return;
+    }
+
+    if (!fs.existsSync(path.join(absoluteRepoPath, '.git'))) {
+      console.error('❌ The companion directory exists but is not a git repository.');
+      console.log(`   Remove ${absoluteRepoPath} or clone the repository manually:`);
+      console.log(`   git clone ${COMPANION_REPO_URL} ${absoluteRepoPath}`);
+      return;
+    }
+
+    console.log(`🔄 Updating compounding-engineering companion at ${absoluteRepoPath}`);
+    try {
+      await new Promise((resolve, reject) => {
+        const child = spawn('git', ['pull', '--ff-only'], {
+          cwd: absoluteRepoPath,
+          stdio: 'inherit',
+        });
+
+        child.on('error', (spawnError) => {
+          reject(spawnError);
+        });
+
+        child.on('exit', (code) => {
+          if (code === 0) {
+            resolve(undefined);
+          } else {
+            reject(new Error(`git pull exited with code ${code}`));
+          }
+        });
+      });
+
+      console.log('✅ Companion repository is up to date.');
+    } catch (pullError) {
+      console.error('❌ Failed to update companion repository:', pullError.message || pullError);
+      console.log('   Run git manually to resolve the issue.');
+    }
   },
 
   build: async () => {

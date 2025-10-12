@@ -489,6 +489,7 @@ AI: "✓ PostgreSQL access configured!
 **Available integrations** (15+): GitHub, PostgreSQL, Filesystem, Chrome DevTools, Brave Search, Slack, AWS, and more.
 
 → **[MCP Management Guide](docs/mcp-management.md)** - Complete integration guide
+→ **[Compounding Engineering Integration](docs/compounding-engineering-integration.md)** - External planner setup and sync
 
 ## How It Works
 

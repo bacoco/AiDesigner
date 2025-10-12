@@ -1,0 +1,24 @@
+{
+  "repositoryPath": "external/compounding-engineering",
+  "manifestPath": "packages/compounding-engineering/manifest.json",
+  "defaultCommand": {
+    "command": "node",
+    "args": ["packages/compounding-engineering/cli.mjs"],
+    "appendCommandName": true
+  },
+  "commands": {
+    "/create-tasks": {
+      "args": ["--format", "json"]
+    }
+  },
+  "environment": {
+    "COMPOUNDING_ENGINEERING_API_KEY": {
+      "source": "COMPOUNDING_ENGINEERING_API_KEY",
+      "required": false
+    },
+    "COMPOUNDING_ENGINEERING_WORKSPACE_ID": {
+      "source": "COMPOUNDING_ENGINEERING_WORKSPACE_ID",
+      "required": false
+    }
+  }
+}
