@@ -10,8 +10,11 @@ export async function runUrlAnalysis(
   outRoot: string,
 ): Promise<{ tokens: Tokens; comps: ComponentMap; evidence: string }> {
   // Validate and sanitize output directory
-  const resolvedOutRoot = path.resolve(process.cwd(), outRoot);
-  if (!resolvedOutRoot.startsWith(process.cwd())) {
+  const projectRoot = process.cwd();
+  const resolvedOutRoot = path.resolve(projectRoot, outRoot);
+  const relativeOutRoot = path.relative(projectRoot, resolvedOutRoot);
+
+  if (relativeOutRoot && (relativeOutRoot.startsWith('..') || path.isAbsolute(relativeOutRoot))) {
     throw new Error('Invalid output directory: path traversal detected');
   }
 
