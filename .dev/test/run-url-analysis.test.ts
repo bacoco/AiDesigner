@@ -52,10 +52,53 @@ describe('runUrlAnalysis path validation', () => {
 
   it('rejects output directories that escape the project root', async () => {
     await expect(runUrlAnalysis(url, path.join('..', validOutDir))).rejects.toThrow(
-      'Invalid output directory: path traversal detected',
+      'Invalid output directory: path traversal detected or empty path',
     );
 
     expect(analyzeWithMCPMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects absolute paths outside project', async () => {
+    await expect(runUrlAnalysis(url, '/tmp/evil')).rejects.toThrow(
+      'Invalid output directory: path traversal detected or empty path',
+    );
+
+    expect(analyzeWithMCPMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects complex traversal attempts', async () => {
+    await expect(runUrlAnalysis(url, 'foo/../../..')).rejects.toThrow(
+      'Invalid output directory: path traversal detected or empty path',
+    );
+
+    expect(analyzeWithMCPMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects empty or project root path', async () => {
+    await expect(runUrlAnalysis(url, '.')).rejects.toThrow(
+      'Invalid output directory: path traversal detected or empty path',
+    );
+
+    expect(analyzeWithMCPMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects paths containing symbolic links', async () => {
+    const symlinkDir = path.join(process.cwd(), 'tmp-symlink-test');
+    const targetDir = path.join(process.cwd(), 'tmp-symlink-target');
+
+    try {
+      await fs.mkdir(targetDir, { recursive: true });
+      await fs.symlink(targetDir, symlinkDir, 'dir');
+
+      await expect(runUrlAnalysis(url, path.join('tmp-symlink-test', 'subdir'))).rejects.toThrow(
+        'Invalid output directory: path contains symbolic link',
+      );
+
+      expect(analyzeWithMCPMock).not.toHaveBeenCalled();
+    } finally {
+      await fs.rm(symlinkDir, { recursive: true, force: true });
+      await fs.rm(targetDir, { recursive: true, force: true });
+    }
   });
 
   it('allows output directories within the project root', async () => {
