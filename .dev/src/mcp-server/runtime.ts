@@ -10,6 +10,7 @@ import { performance } from "node:perf_hooks";
 import * as path from "node:path";
 import { tmpdir } from "node:os";
 import { createStructuredLogger, StructuredLogger } from "./observability.js";
+import { runVibeCheckGate } from "./vibe-check-gate";
 import {
   importFromPackageRoot,
   importLibModule,
@@ -2562,6 +2563,16 @@ export async function runOrchestratorServer(
               ...context,
             });
             await aidesignerBridge.executePhaseWorkflow("pm", context);
+            const vibeCheckResult = await runVibeCheckGate({
+              projectState,
+              logger,
+            });
+            if (vibeCheckResult.score !== undefined) {
+              outcomeFields.vibeCheckScore = vibeCheckResult.score;
+            }
+            if (vibeCheckResult.verdict) {
+              outcomeFields.vibeCheckVerdict = vibeCheckResult.verdict;
+            }
             await aidesignerBridge.executePhaseWorkflow("architect", context);
             await aidesignerBridge.executePhaseWorkflow("sm", context);
 
@@ -2571,6 +2582,13 @@ export async function runOrchestratorServer(
               files: ["docs/prd.md", "docs/architecture.md", "docs/stories/*.md"],
               message: "Complex workflow executed through aidesigner agents",
             };
+            if (vibeCheckResult.score !== undefined || vibeCheckResult.verdict) {
+              result.vibeCheck = {
+                score: vibeCheckResult.score,
+                verdict: vibeCheckResult.verdict,
+                suggestions: vibeCheckResult.suggestions,
+              };
+            }
             if (selectedQuickLane && !quickLaneActive) {
               result.quickLane = {
                 available: false,
