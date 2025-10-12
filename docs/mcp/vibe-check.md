@@ -27,10 +27,10 @@ The installer pulls the published profile and writes the configuration to both t
 Use the MCP security manager to encrypt credentials locally:
 
 ```bash
-npm run mcp:secure
+npm run mcp:secure set VIBE_CHECK_API_KEY
 ```
 
-This command scans your MCP configuration, identifies insecure credentials (including `VIBE_CHECK_API_KEY`), and migrates them to the AiDesigner vault. It replaces plaintext references in your configuration files with secure handles.
+This command stores the token in the AiDesigner vault and replaces references in your configuration files with secure handles.
 
 ## Manual Configuration
 

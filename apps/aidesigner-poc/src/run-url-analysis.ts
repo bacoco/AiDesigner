@@ -5,14 +5,51 @@ import { Tokens, ComponentMap } from './types';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+/**
+ * Analyzes a URL and extracts design tokens and components.
+ *
+ * @param url - The URL to analyze
+ * @param outRoot - Output directory path (must be within project root, no symlinks allowed)
+ * @returns Object containing tokens, components, and evidence directory path
+ * @throws {Error} If path traversal is detected, symlinks are found, or analysis fails
+ */
 export async function runUrlAnalysis(
   url: string,
   outRoot: string,
 ): Promise<{ tokens: Tokens; comps: ComponentMap; evidence: string }> {
   // Validate and sanitize output directory
-  const resolvedOutRoot = path.resolve(process.cwd(), outRoot);
-  if (!resolvedOutRoot.startsWith(process.cwd())) {
-    throw new Error('Invalid output directory: path traversal detected');
+  const projectRoot = process.cwd();
+  const resolvedOutRoot = path.resolve(projectRoot, outRoot);
+  const relativeOutRoot = path.relative(projectRoot, resolvedOutRoot);
+
+  // Reject paths that escape the project root
+  if (!relativeOutRoot || relativeOutRoot.startsWith('..') || path.isAbsolute(relativeOutRoot)) {
+    throw new Error('Invalid output directory: path traversal detected or empty path');
+  }
+
+  // Also, disallow symbolic links in the path to prevent writing outside the project root
+  const pathSegments = relativeOutRoot.split(path.sep);
+  let currentPath = projectRoot;
+  for (const segment of pathSegments) {
+    if (!segment || segment === '.') {
+      continue;
+    }
+    currentPath = path.join(currentPath, segment);
+    try {
+      const stats = await fs.lstat(currentPath);
+      if (stats.isSymbolicLink()) {
+        throw new Error(
+          `Invalid output directory: path contains symbolic link at '${currentPath}'`,
+        );
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        // This part of the path doesn't exist yet, which is fine.
+        // We've checked all existing parts for symlinks.
+        break;
+      }
+      throw error; // rethrow other errors
+    }
   }
 
   try {
