@@ -1,9 +1,9 @@
 import type { Tokens } from '@aidesigner/shared-types';
 
 export function inferTokens(input: {
-  domSnapshot: any;
-  computedStyles: any[];
-  cssom: any;
+  domSnapshot?: unknown;
+  computedStyles?: unknown[];
+  cssom?: unknown;
 }): Tokens {
   // Heuristics: color clustering (simplified k-medoids), spacing steps (GCD-like), font families.
   const now = new Date().toISOString();

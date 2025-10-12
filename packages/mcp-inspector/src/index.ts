@@ -1,11 +1,29 @@
 import { Client } from '@modelcontextprotocol/sdk/client';
 import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket';
 
+export type InspectCaptureOptions = {
+  domSnapshot?: boolean;
+  accessibilityTree?: boolean;
+  cssom?: boolean;
+  console?: boolean;
+  computedStyles?: boolean;
+};
+
 export type InspectOptions = {
   /**
    * WebSocket URL for the MCP server.
    */
   url: string;
+  /**
+   * Optional list of UI states to capture. Defaults to `['default']` when
+   * capture options are provided but no explicit states are set.
+   */
+  states?: string[];
+  /**
+   * Capture configuration. When omitted, no capture calls are made unless
+   * states are provided.
+   */
+  capture?: InspectCaptureOptions;
 };
 
 export type ToolInventoryItem = {
@@ -18,12 +36,21 @@ export type InspectionErrorStage =
   | 'connect'
   | 'list-tools'
   | 'format'
+  | 'capture'
   | 'disconnect';
 
 export type InspectionError = {
   stage: InspectionErrorStage;
   message: string;
   toolName?: string;
+};
+
+export type InspectCapture = {
+  domSnapshot?: unknown;
+  accessibilityTree?: unknown;
+  cssom?: unknown;
+  console?: unknown;
+  computedStyles?: unknown[];
 };
 
 export type InspectResult = {
@@ -33,6 +60,7 @@ export type InspectResult = {
     name?: string;
     version?: string;
   };
+  captures?: Record<string, InspectCapture>;
 };
 
 const CLIENT_INFO = {
@@ -96,13 +124,214 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
     }
   }
 
+  const captures = await captureStates(client, opts, errors);
+
   await safeClose(transport, errors, connected);
 
   return {
     tools,
     errors,
     server: getServerInfo(client),
+    captures: Object.keys(captures).length > 0 ? captures : undefined,
   };
+}
+
+const DEFAULT_CAPTURE_OPTIONS: Required<InspectCaptureOptions> = {
+  domSnapshot: true,
+  accessibilityTree: true,
+  cssom: true,
+  console: true,
+  computedStyles: true,
+};
+
+async function captureStates(
+  client: Client,
+  opts: InspectOptions,
+  errors: InspectionError[],
+): Promise<Record<string, InspectCapture>> {
+  const shouldCapture = Boolean(opts.capture) || (opts.states?.length ?? 0) > 0;
+  if (!shouldCapture) {
+    return {};
+  }
+
+  const captureOptions = { ...DEFAULT_CAPTURE_OPTIONS, ...(opts.capture ?? {}) };
+  const states = (opts.states && opts.states.length > 0 ? opts.states : ['default']).map(
+    (state) => state?.trim() || 'default',
+  );
+
+  const captures: Record<string, InspectCapture> = {};
+
+  for (const state of states) {
+    const stateArgs: Record<string, unknown> = { url: opts.url };
+    if (state !== 'default') {
+      stateArgs.state = state;
+    }
+
+    const errorCountBeforeOpen = errors.length;
+    await callToolSafely(client, 'browser.open', stateArgs, errors, state);
+    const openFailed = errors.length > errorCountBeforeOpen;
+
+    const capture: InspectCapture = {};
+    const toolArgs = state !== 'default' ? { state, url: opts.url } : { url: opts.url };
+
+    if (openFailed) {
+      continue;
+    }
+
+    if (captureOptions.domSnapshot) {
+      const domSnapshot = await callToolSafely(
+        client,
+        'devtools.dom_snapshot',
+        toolArgs,
+        errors,
+        state,
+      );
+      if (domSnapshot !== undefined) {
+        capture.domSnapshot = domSnapshot;
+      }
+    }
+
+    if (captureOptions.accessibilityTree) {
+      const accessibilityTree = await callToolSafely(
+        client,
+        'devtools.accessibility_tree',
+        toolArgs,
+        errors,
+        state,
+      );
+      if (accessibilityTree !== undefined) {
+        capture.accessibilityTree = accessibilityTree;
+      }
+    }
+
+    if (captureOptions.cssom) {
+      const cssom = await callToolSafely(client, 'devtools.cssom_dump', toolArgs, errors, state);
+      if (cssom !== undefined) {
+        capture.cssom = cssom;
+      }
+    }
+
+    if (captureOptions.console) {
+      const consoleMessages = await callToolSafely(
+        client,
+        'devtools.console_get_messages',
+        toolArgs,
+        errors,
+        state,
+      );
+      if (consoleMessages !== undefined) {
+        capture.console = consoleMessages;
+      }
+    }
+
+    if (captureOptions.computedStyles) {
+      const computedStyles = await callToolSafely(
+        client,
+        'devtools.computed_styles',
+        toolArgs,
+        errors,
+        state,
+      );
+      if (Array.isArray(computedStyles)) {
+        capture.computedStyles = computedStyles;
+      } else if (computedStyles !== undefined) {
+        capture.computedStyles = [computedStyles];
+      }
+    }
+
+    if (Object.keys(capture).length > 0) {
+      captures[state] = capture;
+    }
+  }
+
+  return captures;
+}
+
+type ToolCallResult = Awaited<ReturnType<Client['callTool']>>;
+
+async function callToolSafely(
+  client: Client,
+  toolName: string,
+  args: Record<string, unknown>,
+  errors: InspectionError[],
+  state: string,
+): Promise<unknown> {
+  try {
+    const result = await client.callTool({ name: toolName, arguments: args });
+    if (!result) {
+      return undefined;
+    }
+
+    if ('isError' in result && result.isError) {
+      const payload = extractToolPayload(result);
+      const message = payload !== undefined ? stringifyPayload(payload) : 'Unknown tool error';
+      errors.push({
+        stage: 'capture',
+        message: `Tool ${toolName} reported an error for state '${state}': ${message}`,
+        toolName,
+      });
+      return undefined;
+    }
+
+    return extractToolPayload(result);
+  } catch (error) {
+    errors.push({
+      stage: 'capture',
+      message: `Failed to call tool ${toolName} for state '${state}': ${formatErrorMessage(error)}`,
+      toolName,
+    });
+    return undefined;
+  }
+}
+
+function extractToolPayload(result: ToolCallResult): unknown {
+  if (!result) {
+    return undefined;
+  }
+
+  if ('structuredContent' in result && result.structuredContent !== undefined) {
+    return result.structuredContent;
+  }
+
+  if (Array.isArray((result as { content?: unknown }).content)) {
+    for (const item of (result as { content: unknown[] }).content) {
+      if (!item || typeof item !== 'object') {
+        continue;
+      }
+
+      const content = item as Record<string, unknown>;
+      const type = typeof content.type === 'string' ? (content.type as string) : undefined;
+
+      if (type === 'json' && content.json !== undefined) {
+        return content.json;
+      }
+
+      if (type === 'text' && typeof content.text === 'string') {
+        const text = content.text.trim();
+        if (!text) {
+          continue;
+        }
+        try {
+          return JSON.parse(text);
+        } catch {
+          return content.text;
+        }
+      }
+    }
+  }
+
+  return undefined;
+}
+
+function stringifyPayload(payload: unknown): string {
+  if (typeof payload === 'string') {
+    return payload;
+  }
+  try {
+    return JSON.stringify(payload);
+  } catch (error) {
+    return formatErrorMessage(error);
+  }
 }
 
 function getServerInfo(client: Client): InspectResult['server'] {

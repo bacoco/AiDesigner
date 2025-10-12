@@ -136,8 +136,18 @@ export type {
 import { Client } from '@modelcontextprotocol/sdk/client';
 import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket';
 
+export type InspectCaptureOptions = {
+  domSnapshot?: boolean;
+  accessibilityTree?: boolean;
+  cssom?: boolean;
+  console?: boolean;
+  computedStyles?: boolean;
+};
+
 export type InspectOptions = {
   url: string;
+  states?: string[];
+  capture?: InspectCaptureOptions;
 };
 
 export type InspectResult = {
@@ -147,10 +157,21 @@ export type InspectResult = {
     description?: string;
   }>;
   errors: Array<{
-    stage: 'connect' | 'list-tools' | 'format' | 'disconnect';
+    stage: 'connect' | 'list-tools' | 'format' | 'capture' | 'disconnect';
     message: string;
     toolName?: string;
   }>;
+  server?: { name?: string; version?: string };
+  captures?: Record<
+    string,
+    {
+      domSnapshot?: unknown;
+      accessibilityTree?: unknown;
+      cssom?: unknown;
+      console?: unknown;
+      computedStyles?: unknown[];
+    }
+  >;
 };
 
 export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResult> {
@@ -167,6 +188,8 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
         description: tool.description ?? undefined,
       })),
       errors: [],
+      server: client.getServerVersion() ?? undefined,
+      captures: {},
     };
   } catch (error) {
     return {
@@ -192,9 +215,9 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
 import type { Tokens } from '@aidesigner/shared-types';
 
 export function inferTokens(input: {
-  domSnapshot: any;
-  computedStyles: any[];
-  cssom: any;
+  domSnapshot?: unknown;
+  computedStyles?: unknown[];
+  cssom?: unknown;
 }): Tokens {
   // Heuristics: color clustering (simplified k-medoids), spacing steps (GCD-like), font families.
   const now = new Date().toISOString();
@@ -230,9 +253,9 @@ export function inferTokens(input: {
 import type { ComponentMap } from '@aidesigner/shared-types';
 
 export function detectComponents(input: {
-  domSnapshot: any;
-  accessibilityTree: any;
-  cssom: any;
+  domSnapshot?: unknown;
+  accessibilityTree?: unknown;
+  cssom?: unknown;
 }): ComponentMap {
   // Heuristics: ARIA roles, class patterns, recurring CSS patterns
   return {
@@ -382,37 +405,107 @@ export async function runUrlAnalysis(
   }
 
   try {
-    const res = await analyzeWithMCP({ url, states: ['default', 'hover', 'dark', 'md'] });
-    const tokens = inferTokens(res);
-    const comps = detectComponents(res);
+    const res = await analyzeWithMCP({
+      url,
+      states: ['default', 'hover', 'dark', 'md'],
+      capture: {
+        domSnapshot: true,
+        accessibilityTree: true,
+        cssom: true,
+        console: true,
+        computedStyles: true,
+      },
+    });
+
+    const captureEntries = Object.entries(res.captures ?? {});
+    const primaryCapture =
+      res.captures?.default ??
+      res.captures?.light ??
+      (captureEntries.length > 0 ? captureEntries[0][1] : undefined);
+
+    if (!primaryCapture) {
+      throw new Error('MCP capture returned no usable state data');
+    }
+
+    const tokens = inferTokens(primaryCapture);
+    const comps = detectComponents(primaryCapture);
 
     const evidenceDir = path.join(resolvedOutRoot, 'evidence');
     const dataDir = path.join(resolvedOutRoot, 'data');
 
-    // Create directories and write files in parallel
     await Promise.all([
       fs.mkdir(evidenceDir, { recursive: true }),
       fs.mkdir(dataDir, { recursive: true }),
     ]);
 
     await Promise.all([
-      fs.writeFile(
-        path.join(evidenceDir, 'domSnapshot.json'),
-        JSON.stringify(res.domSnapshot, null, 2),
-      ),
-      fs.writeFile(
-        path.join(evidenceDir, 'accessibilityTree.json'),
-        JSON.stringify(res.accessibilityTree, null, 2),
-      ),
-      fs.writeFile(path.join(evidenceDir, 'cssom.json'), JSON.stringify(res.cssom, null, 2)),
-      fs.writeFile(path.join(evidenceDir, 'console.json'), JSON.stringify(res.console, null, 2)),
       fs.writeFile(path.join(dataDir, 'tokens.json'), JSON.stringify(tokens, null, 2)),
       fs.writeFile(path.join(dataDir, 'components.map.json'), JSON.stringify(comps, null, 2)),
     ]);
 
+    await Promise.all(
+      captureEntries.map(async ([state, capture]) => {
+        const writes: Promise<void>[] = [];
+
+        if (capture.domSnapshot !== undefined) {
+          writes.push(
+            fs.writeFile(
+              path.join(evidenceDir, state, 'domSnapshot.json'),
+              JSON.stringify(capture.domSnapshot, null, 2),
+            ),
+          );
+        }
+
+        if (capture.accessibilityTree !== undefined) {
+          writes.push(
+            fs.writeFile(
+              path.join(evidenceDir, state, 'accessibilityTree.json'),
+              JSON.stringify(capture.accessibilityTree, null, 2),
+            ),
+          );
+        }
+
+        if (capture.cssom !== undefined) {
+          writes.push(
+            fs.writeFile(
+              path.join(evidenceDir, state, 'cssom.json'),
+              JSON.stringify(capture.cssom, null, 2),
+            ),
+          );
+        }
+
+        if (capture.console !== undefined) {
+          writes.push(
+            fs.writeFile(
+              path.join(evidenceDir, state, 'console.json'),
+              JSON.stringify(capture.console, null, 2),
+            ),
+          );
+        }
+
+        if (capture.computedStyles !== undefined) {
+          writes.push(
+            fs.writeFile(
+              path.join(evidenceDir, state, 'computedStyles.json'),
+              JSON.stringify(capture.computedStyles, null, 2),
+            ),
+          );
+        }
+
+        if (writes.length === 0) {
+          return;
+        }
+
+        await fs.mkdir(path.join(evidenceDir, state), { recursive: true });
+        await Promise.all(writes);
+      }),
+    );
+
     return { tokens, comps, evidence: evidenceDir };
   } catch (error) {
-    throw new Error(`URL analysis failed: ${error.message}`);
+    throw new Error(
+      `URL analysis failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 ```

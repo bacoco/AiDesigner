@@ -1,9 +1,9 @@
 import type { ComponentMap } from '@aidesigner/shared-types';
 
 export function detectComponents(input: {
-  domSnapshot: any;
-  accessibilityTree: any;
-  cssom: any;
+  domSnapshot?: unknown;
+  accessibilityTree?: unknown;
+  cssom?: unknown;
 }): ComponentMap {
   // Heuristics: ARIA roles, class patterns, recurring CSS patterns
   // Production implementation should:
