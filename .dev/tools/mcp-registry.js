@@ -43,6 +43,15 @@ class McpRegistry {
         envVars: ['GITHUB_TOKEN'],
       },
       {
+        id: 'vibe-check',
+        name: 'vibe-check-mcp-server',
+        category: 'Content Quality',
+        description: 'Score tone, energy, and audience alignment for brand copy',
+        installType: 'npx',
+        tags: ['tone', 'brand', 'analysis'],
+        envVars: ['VIBE_CHECK_API_KEY', 'VIBE_CHECK_MODEL'],
+      },
+      {
         id: 'sqlite',
         name: '@modelcontextprotocol/server-sqlite',
         category: 'Database',

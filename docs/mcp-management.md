@@ -35,6 +35,7 @@ Explore 15+ official MCP servers organized by category:
 - **Databases**: postgres, sqlite, memory
 - **Cloud Services**: aws-kb-retrieval, cloudflare
 - **Search & AI**: brave-search, fetch, everything
+- **Content Quality**: vibe-check
 - **Communication**: slack, sentry
 
 ### Install an MCP Server
@@ -47,6 +48,7 @@ Example:
 
 ```bash
 npm run mcp:install filesystem
+npm run mcp:install vibe-check
 ```
 
 The installer will:
