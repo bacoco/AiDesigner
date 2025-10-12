@@ -1,85 +1,102 @@
-import type { Stats } from 'node:fs';
-
-export type StageStatus = 'pending' | 'running' | 'complete';
-
-export interface ArtifactRecord {
-  path: string;
-  description: string;
+export interface DirectiveSection {
+  heading: string;
+  depth: number;
+  slug: string;
+  content: string;
 }
 
-export interface StageProgress {
-  id: string;
+export interface MetaAgentDirective {
   title: string;
-  status: StageStatus;
-  summary?: string;
-  artifacts: ArtifactRecord[];
+  sections: DirectiveSection[];
+  raw: string;
 }
 
-export interface MetaAgentResult {
-  id: string;
-  title: string;
-  description: string;
+export type ArchitectTaskStatus = 'pending' | 'running' | 'completed' | 'failed' | 'blocked';
+
+export interface ArchitectTaskOutput {
   summary: string;
-  startedAt: string;
-  completedAt: string;
-  artifacts: ArtifactRecord[];
-  stages: StageProgress[];
+  details?: string;
+  filesTouched?: string[];
+  artifacts?: Record<string, string>;
+  notes?: string;
 }
 
-export interface WorkflowSession extends MetaAgentResult {}
+export type ArchitectTaskExecutor = () => Promise<ArchitectTaskOutput> | ArchitectTaskOutput;
 
-export interface FileSystem {
-  ensureDir(path: string): Promise<void>;
-  writeFile(path: string, data: string, encoding?: BufferEncoding): Promise<void>;
-  readFile(path: string, encoding?: BufferEncoding): Promise<string>;
-  pathExists(path: string): Promise<boolean>;
-  readdir(path: string): Promise<string[]>;
-  stat(path: string): Promise<Stats>;
+export interface ArchitectSubAgentTaskConfig {
+  id: string;
+  title: string;
+  mission: string;
+  dependencies?: string[];
+  executor: ArchitectTaskExecutor;
 }
 
-export interface SupabaseQueryResult<Row> {
-  data: Row[] | null;
-  error?: { message?: string } | null;
+export interface ArchitectTaskState {
+  id: string;
+  title: string;
+  mission: string;
+  dependencies: string[];
+  status: ArchitectTaskStatus;
+  startedAt?: string;
+  finishedAt?: string;
+  output?: ArchitectTaskOutput;
+  error?: string;
 }
 
-export interface SupabaseColumnRow {
-  table_name: string;
-  column_name: string;
-  data_type: string;
-  is_nullable?: string;
-  column_default?: string | null;
+export interface ArchitectExecutionResult {
+  featureRequest: string;
+  directiveTitle: string;
+  tasks: ArchitectTaskState[];
+  filesTouched: string[];
+  handoffDocument: string;
 }
 
-export interface SupabaseClientLike {
-  from(table: string): {
-    select(columns: string): {
-      eq(column: string, value: string): Promise<SupabaseQueryResult<SupabaseColumnRow>>;
-    };
-  };
+export type ArchitectHandoff = ArchitectExecutionResult;
+
+export interface QuasarTestPlanItem {
+  id: string;
+  title: string;
+  mission: string;
+  targetTaskId: string;
+  relatedFiles: string[];
+  focusAreas: string[];
 }
 
-export interface MetaAgentRuntimeOptions {
-  projectRoot?: string;
-  fileSystem?: FileSystem;
-  supabaseClient?: SupabaseClientLike;
-  clock?: () => Date;
-  logger?: (message: string) => void;
+export interface QuasarTestPlan {
+  featureRequest: string;
+  directiveTitle: string;
+  items: QuasarTestPlanItem[];
 }
 
-export interface GenesisInput {
-  projectName: string;
-  projectType: string;
-  technologyStack: string[];
+export type QuasarTesterExecutor = (
+  item: QuasarTestPlanItem,
+) => Promise<QuasarTesterReport> | QuasarTesterReport;
+
+export type QuasarTesterStatus = 'pass' | 'fail' | 'skipped';
+
+export interface QuasarTesterReport {
+  id?: string;
+  status: QuasarTesterStatus;
+  findings: string;
+  defects?: string[];
+  evidence?: string;
 }
 
-export interface LibrarianInput {
-  scopePaths?: string[];
-  architectureEntryPoints?: string[];
-  apiFiles?: string[];
-  developmentGuidePath?: string;
+export interface QuasarAggregatedReport {
+  planItemId: string;
+  title: string;
+  mission: string;
+  status: QuasarTesterStatus;
+  findings: string;
+  defects: string[];
+  evidence?: string;
 }
 
-export interface RefactorInput {
-  scopePaths: string[];
-  dependencyFiles?: string[];
+export interface GlobalQualityReport {
+  overallStatus: 'SUCCESS' | 'FAILURE' | 'PARTIAL';
+  summary: string;
+  featureRequest: string;
+  plan: QuasarTestPlan;
+  reports: QuasarAggregatedReport[];
+  markdown: string;
 }
