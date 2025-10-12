@@ -1,13 +1,36 @@
 import http from 'node:http';
 import https from 'node:https';
 import { isIP } from 'node:net';
+import { Stream } from 'node:stream';
+import { Client } from '@modelcontextprotocol/sdk/client';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio';
+import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket';
 import type {
   AccessibilitySummary,
   ConsoleMessage,
-  InspectionArtifacts,
   StyleRuleSummary,
   StylesheetSummary,
 } from '@aidesigner/shared-types';
+
+const DEFAULT_STDIO_COMMAND = 'npx';
+const DEFAULT_STDIO_ARGS = ['-y', 'chrome-devtools-mcp'];
+const MCP_CONNECT_TIMEOUT_MS = 30_000;
+const MAX_CONTENT_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_HTML_SIZE_FOR_REGEX = 1 * 1024 * 1024; // 1MB guard for regex scanning
+const MAX_REGEX_MATCHES = 2_000;
+
+type ActiveTransport = StdioClientTransport | WebSocketClientTransport;
+
+type TransportInit = {
+  transport: ActiveTransport;
+  stderrStream?: Stream | null;
+};
+
+export type ScreenshotPayload = {
+  data: string;
+  mimeType?: string;
+  encoding?: string;
+};
 
 export type InspectCaptureOptions = {
   domSnapshot?: boolean;
@@ -15,6 +38,7 @@ export type InspectCaptureOptions = {
   cssom?: boolean;
   console?: boolean;
   computedStyles?: boolean;
+  screenshot?: boolean;
 };
 
 export type InspectOptions = {
@@ -45,12 +69,15 @@ export type InspectionErrorStage =
   | 'list-tools'
   | 'format'
   | 'capture'
-  | 'disconnect';
+  | 'disconnect'
+  | 'fetch-html'
+  | 'fetch-stylesheet';
 
 export type InspectionError = {
   stage: InspectionErrorStage;
   message: string;
   resource?: string;
+  toolName?: string;
 };
 
 export type InspectCapture = {
@@ -59,6 +86,7 @@ export type InspectCapture = {
   cssom?: unknown;
   console?: unknown;
   computedStyles?: unknown[];
+  screenshot?: ScreenshotPayload;
 };
 
 export type InspectResult = {
@@ -70,6 +98,14 @@ export type InspectResult = {
   };
   captures?: Record<string, InspectCapture>;
 };
+
+function isAllowedUrl(url: URL): boolean {
+  const hostname = url.hostname.toLowerCase();
+  const ipVersion = isIP(hostname);
+
+  if (!hostname || hostname === 'localhost') {
+    return false;
+  }
 
   // Block private IPv4 ranges
   if (
@@ -118,7 +154,43 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
     targetUrl = new URL(opts.url);
   } catch (error) {
     errors.push({ stage: 'connect', message: formatErrorMessage(error) });
-    await safeClose(transport, errors, connected);
+    return { tools: [], errors };
+  }
+
+  if (!isAllowedUrl(targetUrl)) {
+    errors.push({ stage: 'connect', message: `URL not allowed for capture: ${targetUrl.href}` });
+    return { tools: [], errors };
+  }
+
+  const client = new Client({ name: 'AiDesigner MCP Inspector', version: '1.0.0' });
+  let transportInit: TransportInit;
+  try {
+    transportInit = createTransport();
+  } catch (error) {
+    errors.push({ stage: 'connect', message: formatErrorMessage(error) });
+    return { tools: [], errors };
+  }
+
+  const { transport, stderrStream } = transportInit;
+  const stderrBuffer: string[] = [];
+  if (stderrStream) {
+    stderrStream.on('data', (chunk: Buffer | string) => {
+      const text = chunk.toString().trim();
+      if (text) {
+        stderrBuffer.push(text);
+      }
+    });
+  }
+
+  let connected = false;
+
+  try {
+    await client.connect(transport, { timeout: MCP_CONNECT_TIMEOUT_MS });
+    connected = true;
+  } catch (error) {
+    const stderrNote = stderrBuffer.length > 0 ? ` | stderr: ${truncate(stderrBuffer.join('\n'))}` : '';
+    errors.push({ stage: 'connect', message: `${formatErrorMessage(error)}${stderrNote}` });
+    await safeClose(transport, client, errors, connected);
     return { tools: [], errors };
   }
 
@@ -127,7 +199,7 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
     toolResponse = await client.listTools();
   } catch (error) {
     errors.push({ stage: 'list-tools', message: formatErrorMessage(error) });
-    await safeClose(transport, errors, connected);
+    await safeClose(transport, client, errors, connected);
     return { tools: [], errors, server: getServerInfo(client) };
   }
 
@@ -150,7 +222,7 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
 
   const captures = await captureStates(client, opts, errors);
 
-  await safeClose(transport, errors, connected);
+  await safeClose(transport, client, errors, connected);
 
   return {
     tools,
@@ -166,6 +238,7 @@ const DEFAULT_CAPTURE_OPTIONS: Required<InspectCaptureOptions> = {
   cssom: true,
   console: true,
   computedStyles: true,
+  screenshot: true,
 };
 
 async function captureStates(
@@ -263,6 +336,20 @@ async function captureStates(
       }
     }
 
+    if (captureOptions.screenshot) {
+      const screenshot = await callToolSafely(
+        client,
+        'browser.screenshot',
+        toolArgs,
+        errors,
+        state,
+      );
+      const normalizedScreenshot = normalizeScreenshot(screenshot);
+      if (normalizedScreenshot) {
+        capture.screenshot = normalizedScreenshot;
+      }
+    }
+
     if (Object.keys(capture).length > 0) {
       captures[state] = capture;
     }
@@ -306,6 +393,289 @@ async function callToolSafely(
     });
     return undefined;
   }
+}
+
+function normalizeScreenshot(value: unknown): ScreenshotPayload | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  if (typeof value === 'string') {
+    return { data: value };
+  }
+
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      const normalized = normalizeScreenshot(entry);
+      if (normalized) {
+        return normalized;
+      }
+    }
+    return undefined;
+  }
+
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    const dataCandidate =
+      typeof record.data === 'string'
+        ? record.data
+        : typeof record.base64 === 'string'
+          ? record.base64
+          : typeof record.content === 'string'
+            ? record.content
+            : typeof record.text === 'string'
+              ? record.text
+              : undefined;
+    if (dataCandidate) {
+      const mimeType = typeof record.mimeType === 'string' ? record.mimeType : undefined;
+      const encoding = typeof record.encoding === 'string' ? record.encoding : 'base64';
+      return { data: dataCandidate, mimeType, encoding };
+    }
+  }
+
+  return undefined;
+}
+
+function createTransport(): TransportInit {
+  const urlEnv =
+    process.env.AIDESIGNER_CHROME_MCP_URL ??
+    process.env.CHROME_DEVTOOLS_MCP_URL ??
+    process.env.CHROME_MCP_SERVER_URL;
+
+  if (urlEnv) {
+    try {
+      return { transport: new WebSocketClientTransport(new URL(urlEnv)) };
+    } catch (error) {
+      throw new Error(`Invalid MCP server URL '${urlEnv}': ${formatErrorMessage(error)}`);
+    }
+  }
+
+  const command =
+    process.env.AIDESIGNER_CHROME_MCP_COMMAND ??
+    process.env.CHROME_MCP_COMMAND ??
+    DEFAULT_STDIO_COMMAND;
+  const args =
+    parseArgList(process.env.AIDESIGNER_CHROME_MCP_ARGS ?? process.env.CHROME_MCP_ARGS) ?? DEFAULT_STDIO_ARGS;
+  const env = parseEnv(process.env.AIDESIGNER_CHROME_MCP_ENV ?? process.env.CHROME_MCP_ENV);
+
+  const transport = new StdioClientTransport({ command, args, env, stderr: 'pipe' });
+  return { transport, stderrStream: transport.stderr };
+}
+
+function parseArgList(raw?: string | null): string[] | undefined {
+  if (!raw) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+      return parsed as string[];
+    }
+  } catch {
+    // Ignore JSON parse failures and fall back to shell-style parsing
+  }
+
+  // Basic shell-style argument parsing. For more complex cases with escaped quotes,
+  // consider using a library like 'shell-quote' or 'string-argv'.
+  const matches = raw.match(/(?:"[^"]*"|'[^']*'|[^\s"'])+/g);
+  if (!matches) {
+    return undefined;
+  }
+
+  return matches.map((token) => {
+    const trimmed = token.trim();
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      return trimmed.slice(1, -1);
+    }
+    return trimmed;
+  });
+}
+
+function parseEnv(raw?: string | null): Record<string, string> | undefined {
+  if (!raw) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (parsed && typeof parsed === 'object') {
+      const env: Record<string, string> = {};
+      for (const [key, value] of Object.entries(parsed)) {
+        if (typeof value === 'string') {
+          env[key] = value;
+        } else if (typeof value === 'number' || typeof value === 'boolean') {
+          env[key] = String(value);
+        }
+        // Objects, arrays, null, and undefined are ignored to prevent unexpected behavior
+      }
+      return Object.keys(env).length > 0 ? env : undefined;
+    }
+  } catch {
+    // Fall back to parsing KEY=VALUE pairs
+  }
+
+  const env: Record<string, string> = {};
+  for (const pair of raw.split(/[,;\n]+/)) {
+    const trimmed = pair.trim();
+    if (!trimmed) {
+      continue;
+    }
+    const [key, ...rest] = trimmed.split('=');
+    if (!key) {
+      continue;
+    }
+    env[key.trim()] = rest.join('=').trim();
+  }
+
+  return Object.keys(env).length > 0 ? env : undefined;
+}
+
+async function safeClose(
+  transport: ActiveTransport | undefined,
+  client: Client,
+  errors: InspectionError[],
+  connected: boolean,
+): Promise<void> {
+  try {
+    await client.close();
+  } catch (error) {
+    errors.push({
+      stage: connected ? 'disconnect' : 'connect',
+      message: `Failed to close MCP client: ${formatErrorMessage(error)}`,
+    });
+  }
+
+  if (transport) {
+    await transport.close().catch(() => undefined);
+  }
+}
+
+function getServerInfo(client: Client): InspectResult['server'] {
+  const info = client.getServerVersion?.();
+  if (!info) {
+    return undefined;
+  }
+  const server = { name: info.name, version: info.version };
+  if (!server.name && !server.version) {
+    return undefined;
+  }
+  return server;
+}
+
+function truncate(value: string, maxLength = 500): string {
+  if (value.length <= maxLength) {
+    return value;
+  }
+  return `${value.slice(0, maxLength)}…`;
+}
+
+function formatToolSignature(name: string, inputSchema: unknown, outputSchema: unknown): string {
+  const args = formatSchemaArguments(inputSchema);
+  const returnType = describeJsonSchema(outputSchema);
+  return `${name}(${args}) => ${returnType}`;
+}
+
+type JsonSchema = {
+  type?: string | string[];
+  properties?: Record<string, JsonSchema>;
+  required?: string[];
+  items?: JsonSchema | JsonSchema[];
+  enum?: unknown[];
+  anyOf?: JsonSchema[];
+  oneOf?: JsonSchema[];
+  allOf?: JsonSchema[];
+  $ref?: string;
+};
+
+function asJsonSchema(value: unknown): JsonSchema | undefined {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+  return value as JsonSchema;
+}
+
+function formatSchemaArguments(schema: unknown): string {
+  const json = asJsonSchema(schema);
+  if (!json) {
+    return '';
+  }
+
+  if (json.type === 'object' && json.properties && Object.keys(json.properties).length > 0) {
+    const required = new Set(json.required ?? []);
+    return Object.entries(json.properties)
+      .map(([key, value]) => `${key}${required.has(key) ? '' : '?'}: ${describeJsonSchema(value)}`)
+      .join(', ');
+  }
+
+  if (json.type === 'array') {
+    return `items: ${describeJsonSchema(json.items)}`;
+  }
+
+  if (Array.isArray(json.type)) {
+    return json.type.join(' | ');
+  }
+
+  return typeof json.type === 'string' ? json.type : '';
+}
+
+function describeJsonSchema(schema: unknown): string {
+  const json = asJsonSchema(schema);
+  if (!json) {
+    return 'unknown';
+  }
+
+  if (json.enum && json.enum.length > 0) {
+    return json.enum.map((value) => JSON.stringify(value)).join(' | ');
+  }
+
+  if (json.anyOf && json.anyOf.length > 0) {
+    return json.anyOf.map(describeJsonSchema).join(' | ');
+  }
+
+  if (json.oneOf && json.oneOf.length > 0) {
+    return json.oneOf.map(describeJsonSchema).join(' | ');
+  }
+
+  if (json.allOf && json.allOf.length > 0) {
+    return json.allOf.map(describeJsonSchema).join(' & ');
+  }
+
+  if (json.type === 'object' && json.properties) {
+    const entries = Object.entries(json.properties);
+    if (entries.length === 0) {
+      return 'object';
+    }
+    const required = new Set(json.required ?? []);
+    const formatted = entries
+      .slice(0, 5)
+      .map(([key, value]) => `${key}${required.has(key) ? '' : '?'}: ${describeJsonSchema(value)}`)
+      .join(', ');
+    const suffix = entries.length > 5 ? ', …' : '';
+    return `{ ${formatted}${suffix} }`;
+  }
+
+  if (json.type === 'array') {
+    if (Array.isArray(json.items)) {
+      const variants = json.items.map(describeJsonSchema).join(' | ');
+      return `${variants}[]`;
+    }
+    return `${describeJsonSchema(json.items)}[]`;
+  }
+
+  if (Array.isArray(json.type)) {
+    return json.type.join(' | ');
+  }
+
+  if (typeof json.type === 'string' && json.type) {
+    return json.type;
+  }
+
+  if (json.$ref) {
+    return json.$ref;
+  }
+
+  return 'unknown';
 }
 
 function extractToolPayload(result: ToolCallResult): unknown {
