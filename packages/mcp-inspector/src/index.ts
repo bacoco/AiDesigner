@@ -6,6 +6,11 @@ export type InspectOptions = {
    * WebSocket URL for the MCP server.
    */
   url: string;
+  /**
+   * Legacy option preserved for compatibility with callers that previously
+   * controlled which visual states to capture during analysis.
+   */
+  states?: string[];
 };
 
 export type ToolInventoryItem = {
@@ -26,6 +31,19 @@ export type InspectionError = {
   toolName?: string;
 };
 
+type LegacyInspectionArtifacts = {
+  /**
+   * Maintained for compatibility with existing AiDesigner inference helpers.
+   * These are currently populated with empty structures because the runtime
+   * inspection workflow has not yet been re-implemented on top of MCP.
+   */
+  domSnapshot: Record<string, unknown>;
+  accessibilityTree: Record<string, unknown>;
+  cssom: Record<string, unknown>;
+  computedStyles: unknown[];
+  console: unknown[];
+};
+
 export type InspectResult = {
   tools: ToolInventoryItem[];
   errors: InspectionError[];
@@ -33,7 +51,7 @@ export type InspectResult = {
     name?: string;
     version?: string;
   };
-};
+} & LegacyInspectionArtifacts;
 
 const CLIENT_INFO = {
   name: 'AiDesigner MCP Inspector',
@@ -42,23 +60,8 @@ const CLIENT_INFO = {
 
 export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResult> {
   const errors: InspectionError[] = [];
-
-  // Validate URL
-  let url: URL;
-  try {
-    url = new URL(opts.url);
-    if (!['ws:', 'wss:'].includes(url.protocol)) {
-      throw new Error(`Invalid WebSocket protocol: ${url.protocol}. Expected 'ws:' or 'wss:'`);
-    }
-  } catch (error) {
-    return {
-      tools: [],
-      errors: [{ stage: 'connect', message: `Invalid URL: ${formatErrorMessage(error)}` }]
-    };
-  }
-
   const client = new Client(CLIENT_INFO);
-  const transport = new WebSocketClientTransport(url);
+  const transport = new WebSocketClientTransport(new URL(opts.url));
   let connected = false;
 
   try {
@@ -67,7 +70,7 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
   } catch (error) {
     errors.push({ stage: 'connect', message: formatErrorMessage(error) });
     await safeClose(transport, errors, connected);
-    return { tools: [], errors };
+    return withLegacyArtifacts({ tools: [], errors });
   }
 
   let toolResponse: Awaited<ReturnType<Client['listTools']>>;
@@ -76,7 +79,7 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
   } catch (error) {
     errors.push({ stage: 'list-tools', message: formatErrorMessage(error) });
     await safeClose(transport, errors, connected);
-    return { tools: [], errors, server: getServerInfo(client) };
+    return withLegacyArtifacts({ tools: [], errors, server: getServerInfo(client) });
   }
 
   const tools: ToolInventoryItem[] = [];
@@ -98,10 +101,23 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
 
   await safeClose(transport, errors, connected);
 
-  return {
+  return withLegacyArtifacts({
     tools,
     errors,
     server: getServerInfo(client),
+  });
+}
+
+function withLegacyArtifacts(
+  result: Omit<InspectResult, keyof LegacyInspectionArtifacts>,
+): InspectResult {
+  return {
+    domSnapshot: {},
+    accessibilityTree: {},
+    cssom: {},
+    computedStyles: [],
+    console: [],
+    ...result,
   };
 }
 
@@ -206,9 +222,8 @@ function describeSchema(schema: JsonSchema | undefined): string {
 
   if (schema.type === 'array') {
     if (Array.isArray(schema.items)) {
-      // Tuple type: [Type1, Type2, ...]
-      const types = schema.items.map(describeSchema).join(', ');
-      return `[${types}]`;
+      const types = schema.items.map(describeSchema).join(' | ');
+      return `Array<${types}>`;
     }
     return `Array<${describeSchema(schema.items)}>`;
   }
@@ -261,12 +276,5 @@ function formatErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
-  if (typeof error === 'string') {
-    return error;
-  }
-  try {
-    return JSON.stringify(error);
-  } catch {
-    return String(error);
-  }
+  return typeof error === 'string' ? error : JSON.stringify(error);
 }
