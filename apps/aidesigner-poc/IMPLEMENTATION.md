@@ -123,9 +123,10 @@ npm run dev https://stripe.com
 out/<timestamp>/
 ├── evidence/
 │   ├── domSnapshot.json
-│   ├── accessibilityTree.json
+│   ├── accessibility.json
 │   ├── cssom.json
-│   └── console.json
+│   ├── console.json
+│   └── errors.json
 ├── data/
 │   ├── tokens.json
 │   └── components.map.json

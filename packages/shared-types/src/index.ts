@@ -11,6 +11,38 @@ export type Tokens = {
   constraints?: { spacingStep?: number; borderRadiusStep?: number; contrastMin?: number };
 };
 
+export type StylesheetSummary = {
+  href: string | null;
+  content: string;
+};
+
+export type StyleRuleSummary = {
+  selector: string;
+  declarations: Record<string, string>;
+};
+
+export type AccessibilitySummary = {
+  role: string;
+  tagNames: string[];
+  count: number;
+};
+
+export type ConsoleMessage = {
+  type: 'log' | 'warn' | 'error';
+  message: string;
+};
+
+export type InspectionArtifacts = {
+  url: string;
+  states: string[];
+  fetchedAt: string;
+  domSnapshot: { html: string };
+  cssom: { stylesheets: StylesheetSummary[]; aggregated: string };
+  computedStyles: StyleRuleSummary[];
+  accessibility: AccessibilitySummary[];
+  console: ConsoleMessage[];
+};
+
 export type ComponentMap = {
   [componentName: string]: {
     detect: { role?: string[]; classesLike?: string[]; patterns?: string[] };

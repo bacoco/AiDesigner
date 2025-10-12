@@ -1,260 +1,402 @@
-import { Client } from '@modelcontextprotocol/sdk/client';
-import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket';
+import http from 'node:http';
+import https from 'node:https';
+import type {
+  AccessibilitySummary,
+  ConsoleMessage,
+  InspectionArtifacts,
+  StyleRuleSummary,
+  StylesheetSummary,
+} from '@aidesigner/shared-types';
 
 export type InspectOptions = {
   /**
-   * WebSocket URL for the MCP server.
+   * URL to capture.
    */
   url: string;
+  /**
+   * Visual states to request from the caller (recorded for downstream steps).
+   */
+  states?: string[];
+  /**
+   * Timeout in milliseconds for network fetches.
+   */
+  timeoutMs?: number;
 };
 
-export type ToolInventoryItem = {
-  name: string;
-  signature: string;
-  description?: string;
-};
-
-export type InspectionErrorStage =
-  | 'connect'
-  | 'list-tools'
-  | 'format'
-  | 'disconnect';
+export type InspectionErrorStage = 'fetch-html' | 'fetch-stylesheet';
 
 export type InspectionError = {
   stage: InspectionErrorStage;
   message: string;
-  toolName?: string;
+  resource?: string;
 };
 
-export type InspectResult = {
-  tools: ToolInventoryItem[];
+export type InspectResult = InspectionArtifacts & {
   errors: InspectionError[];
-  server?: {
-    name?: string;
-    version?: string;
-  };
 };
 
-const CLIENT_INFO = {
-  name: 'AiDesigner MCP Inspector',
-  version: '1.0.0',
-};
+const DEFAULT_TIMEOUT_MS = 8000;
 
 export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResult> {
   const errors: InspectionError[] = [];
 
-  // Validate URL
-  let url: URL;
+  let targetUrl: URL;
   try {
-    url = new URL(opts.url);
-    if (!['ws:', 'wss:'].includes(url.protocol)) {
-      throw new Error(`Invalid WebSocket protocol: ${url.protocol}. Expected 'ws:' or 'wss:'`);
-    }
+    targetUrl = new URL(opts.url);
   } catch (error) {
-    return {
-      tools: [],
-      errors: [{ stage: 'connect', message: `Invalid URL: ${formatErrorMessage(error)}` }]
-    };
+    throw new Error(`Invalid URL: ${formatErrorMessage(error)}`);
   }
 
-  const client = new Client(CLIENT_INFO);
-  const transport = new WebSocketClientTransport(url);
-  let connected = false;
-
-  try {
-    await client.connect(transport);
-    connected = true;
-  } catch (error) {
-    errors.push({ stage: 'connect', message: formatErrorMessage(error) });
-    await safeClose(transport, errors, connected);
-    return { tools: [], errors };
-  }
-
-  let toolResponse: Awaited<ReturnType<Client['listTools']>>;
-  try {
-    toolResponse = await client.listTools();
-  } catch (error) {
-    errors.push({ stage: 'list-tools', message: formatErrorMessage(error) });
-    await safeClose(transport, errors, connected);
-    return { tools: [], errors, server: getServerInfo(client) };
-  }
-
-  const tools: ToolInventoryItem[] = [];
-  for (const tool of toolResponse.tools) {
-    try {
-      tools.push({
-        name: tool.name,
-        description: tool.description || undefined,
-        signature: formatToolSignature(tool.name, tool.inputSchema, tool.outputSchema),
-      });
-    } catch (error) {
-      errors.push({
-        stage: 'format',
-        message: formatErrorMessage(error),
-        toolName: tool.name,
-      });
-    }
-  }
-
-  await safeClose(transport, errors, connected);
-
-  return {
-    tools,
-    errors,
-    server: getServerInfo(client),
-  };
-}
-
-function getServerInfo(client: Client): InspectResult['server'] {
-  const serverVersion = client.getServerVersion();
-  if (!serverVersion) {
-    return undefined;
-  }
-
-  return {
-    name: serverVersion.name,
-    version: serverVersion.version,
-  };
-}
-
-async function safeClose(
-  transport: WebSocketClientTransport,
-  errors: InspectionError[],
-  connected: boolean,
-): Promise<void> {
-  if (!connected) {
-    return;
-  }
-
-  try {
-    await transport.close();
-  } catch (error) {
-    errors.push({ stage: 'disconnect', message: formatErrorMessage(error) });
-  }
-}
-
-type JsonSchema = {
-  type?: string | string[];
-  description?: string;
-  enum?: unknown[];
-  const?: unknown;
-  format?: string;
-  items?: JsonSchema | JsonSchema[];
-  anyOf?: JsonSchema[];
-  oneOf?: JsonSchema[];
-  allOf?: JsonSchema[];
-  properties?: Record<string, JsonSchema>;
-  required?: string[];
-};
-
-function formatToolSignature(
-  name: string,
-  inputSchema: JsonSchema | undefined,
-  outputSchema: JsonSchema | undefined,
-): string {
-  const parameters = formatParameterObject(inputSchema);
-  const returnType = outputSchema ? describeSchema(outputSchema) : 'void';
-  return `${name}(${parameters}) => ${returnType}`;
-}
-
-function formatParameterObject(schema: JsonSchema | undefined): string {
-  if (!schema || schema.type !== 'object') {
-    return '{}';
-  }
-
-  const properties = schema.properties ?? {};
-  const required = new Set(schema.required ?? []);
-  const entries = Object.entries(properties);
-
-  if (entries.length === 0) {
-    return '{}';
-  }
-
-  const parts = entries.map(([key, definition]) => {
-    const isRequired = required.has(key);
-    const typeDescription = describeSchema(definition);
-    return `${key}${isRequired ? '' : '?'}: ${typeDescription}`;
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const html = await fetchText(targetUrl, timeoutMs).catch((error) => {
+    throw new Error(`Failed to fetch HTML: ${formatErrorMessage(error)}`);
   });
 
-  return `{ ${parts.join('; ')} }`;
+  const stylesheets = await extractStylesheets(html, targetUrl, timeoutMs, errors);
+  const aggregatedCss = stylesheets.map((sheet) => sheet.content).join('\n');
+  const computedStyles = buildComputedStyles(aggregatedCss, html);
+  const accessibility = buildAccessibilitySummaries(html);
+
+  const artifacts: InspectionArtifacts = {
+    url: targetUrl.href,
+    states: opts.states ?? [],
+    fetchedAt: new Date().toISOString(),
+    domSnapshot: { html },
+    cssom: { stylesheets, aggregated: aggregatedCss },
+    computedStyles,
+    accessibility,
+    console: [] satisfies ConsoleMessage[],
+  };
+
+  return {
+    ...artifacts,
+    errors,
+  };
 }
 
-function describeSchema(schema: JsonSchema | undefined): string {
-  if (!schema) {
-    return 'unknown';
+async function fetchText(url: URL, timeoutMs: number, redirectCount = 0): Promise<string> {
+  if (redirectCount > 5) {
+    throw new Error('Too many redirects while fetching resource');
   }
 
-  if (schema.const !== undefined) {
-    return JSON.stringify(schema.const);
-  }
+  const client = url.protocol === 'https:' ? https : http;
 
-  if (Array.isArray(schema.enum) && schema.enum.length > 0) {
-    return schema.enum.map((value) => JSON.stringify(value)).join(' | ');
-  }
+  return new Promise<string>((resolve, reject) => {
+    const request = client.request(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'AiDesigner-MCP-Inspector/1.0',
+          'Accept-Encoding': 'identity',
+        },
+      },
+      (response) => {
+        const { statusCode = 0, headers } = response;
 
-  if (schema.anyOf?.length) {
-    return schema.anyOf.map(describeSchema).join(' | ');
-  }
+        if (statusCode >= 300 && statusCode < 400 && headers.location) {
+          response.resume();
+          const nextUrl = new URL(headers.location, url);
+          fetchText(nextUrl, timeoutMs, redirectCount + 1)
+            .then(resolve)
+            .catch(reject);
+          return;
+        }
 
-  if (schema.oneOf?.length) {
-    return schema.oneOf.map(describeSchema).join(' | ');
-  }
+        if (statusCode < 200 || statusCode >= 300) {
+          response.resume();
+          reject(new Error(`Unexpected status ${statusCode}`));
+          return;
+        }
 
-  if (schema.allOf?.length) {
-    return schema.allOf.map(describeSchema).join(' & ');
-  }
+        let body = '';
+        response.setEncoding('utf8');
+        response.on('data', (chunk) => {
+          body += chunk;
+        });
+        response.on('end', () => resolve(body));
+        response.on('error', reject);
+      },
+    );
 
-  if (schema.type === 'array') {
-    if (Array.isArray(schema.items)) {
-      // Tuple type: [Type1, Type2, ...]
-      const types = schema.items.map(describeSchema).join(', ');
-      return `[${types}]`;
-    }
-    return `Array<${describeSchema(schema.items)}>`;
-  }
-
-  if (schema.type === 'object') {
-    const properties = schema.properties ?? {};
-    const required = new Set(schema.required ?? []);
-    const keys = Object.keys(properties);
-
-    if (keys.length === 0) {
-      return 'object';
-    }
-
-    const fields = keys.map((key) => {
-      const isRequired = required.has(key);
-      const typeDescription = describeSchema(properties[key]);
-      return `${key}${isRequired ? '' : '?'}: ${typeDescription}`;
+    request.setTimeout(timeoutMs, () => {
+      request.destroy(new Error('Request timed out'));
     });
 
-    return `{ ${fields.join('; ')} }`;
-  }
-
-  if (Array.isArray(schema.type)) {
-    return schema.type.map((type) => describePrimitive(type)).join(' | ');
-  }
-
-  if (typeof schema.type === 'string') {
-    return describePrimitive(schema.type, schema.format);
-  }
-
-  return 'unknown';
+    request.on('error', reject);
+    request.end();
+  });
 }
 
-function describePrimitive(type: string, format?: string): string {
-  switch (type) {
-    case 'integer':
-      return 'number';
-    case 'number':
-    case 'boolean':
-    case 'string':
-      return format ? `${type}(${format})` : type;
-    case 'null':
-      return 'null';
-    default:
-      return type;
+async function extractStylesheets(
+  html: string,
+  baseUrl: URL,
+  timeoutMs: number,
+  errors: InspectionError[],
+): Promise<StylesheetSummary[]> {
+  const stylesheets: StylesheetSummary[] = [];
+
+  const inlineRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+  let inlineMatch: RegExpExecArray | null;
+  while ((inlineMatch = inlineRegex.exec(html))) {
+    const content = inlineMatch[1]?.trim() ?? '';
+    if (content) {
+      stylesheets.push({ href: null, content });
+    }
   }
+
+  const linkRegex = /<link[^>]+rel=(?:"|')?stylesheet(?:"|')?[^>]*>/gi;
+  const fetches: Promise<void>[] = [];
+  let linkMatch: RegExpExecArray | null;
+  while ((linkMatch = linkRegex.exec(html))) {
+    const tag = linkMatch[0];
+    const hrefMatch = /href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(tag);
+    if (!hrefMatch) {
+      continue;
+    }
+
+    const rawHref = hrefMatch[1] ?? hrefMatch[2] ?? hrefMatch[3];
+    try {
+      const resolved = new URL(rawHref, baseUrl);
+      const fetchPromise = fetchText(resolved, timeoutMs)
+        .then((content) => {
+          if (content.trim()) {
+            stylesheets.push({ href: resolved.href, content });
+          }
+        })
+        .catch((error) => {
+          errors.push({
+            stage: 'fetch-stylesheet',
+            resource: resolved.href,
+            message: formatErrorMessage(error),
+          });
+        });
+      fetches.push(fetchPromise);
+    } catch (error) {
+      errors.push({
+        stage: 'fetch-stylesheet',
+        resource: rawHref,
+        message: `Invalid stylesheet URL: ${formatErrorMessage(error)}`,
+      });
+    }
+  }
+
+  await Promise.all(fetches);
+  return stylesheets;
+}
+
+function buildComputedStyles(css: string, html: string): StyleRuleSummary[] {
+  const cleanedCss = stripCssComments(css);
+  const rules: StyleRuleSummary[] = [];
+
+  const walker = createCssWalker(cleanedCss);
+  for (const block of walker) {
+    if (block.selector.startsWith('@')) {
+      const nested = buildComputedStyles(block.declarationsText, html);
+      rules.push(...nested);
+      continue;
+    }
+
+    const declarations = parseDeclarations(block.declarationsText);
+    if (Object.keys(declarations).length > 0) {
+      rules.push({ selector: block.selector, declarations });
+    }
+  }
+
+  const inlineRules = extractInlineStyles(html);
+  rules.push(...inlineRules);
+
+  return rules;
+}
+
+type CssBlock = { selector: string; declarationsText: string };
+
+function* createCssWalker(css: string): Generator<CssBlock> {
+  let index = 0;
+  const length = css.length;
+
+  while (index < length) {
+    const openIndex = css.indexOf('{', index);
+    if (openIndex === -1) {
+      break;
+    }
+
+    const selector = css.slice(index, openIndex).trim();
+    let depth = 1;
+    let cursor = openIndex + 1;
+
+    while (cursor < length && depth > 0) {
+      const char = css[cursor];
+      if (char === '{') {
+        depth += 1;
+      } else if (char === '}') {
+        depth -= 1;
+      }
+      cursor += 1;
+    }
+
+    const declarationsText = css.slice(openIndex + 1, cursor - 1).trim();
+    if (selector) {
+      yield { selector, declarationsText };
+    }
+
+    index = cursor;
+  }
+}
+
+function stripCssComments(input: string): string {
+  return input.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+function parseDeclarations(block: string): Record<string, string> {
+  const declarations: Record<string, string> = {};
+  const segments = block.split(';');
+  for (const segment of segments) {
+    const trimmed = segment.trim();
+    if (!trimmed) {
+      continue;
+    }
+    const colonIndex = trimmed.indexOf(':');
+    if (colonIndex === -1) {
+      continue;
+    }
+    const prop = trimmed.slice(0, colonIndex).trim();
+    const val = trimmed.slice(colonIndex + 1).trim();
+    if (prop && val) {
+      declarations[prop] = val;
+    }
+  }
+  return declarations;
+}
+
+function extractInlineStyles(html: string): StyleRuleSummary[] {
+  const results: StyleRuleSummary[] = [];
+  const regex = /<([a-zA-Z0-9-]+)([^>]*?)style\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html))) {
+    const tag = match[1].toLowerCase();
+    const attrs = parseAttributes(match[2] ?? '');
+    const styleText = match[3] ?? match[4] ?? '';
+    const declarations = parseDeclarations(styleText);
+    if (Object.keys(declarations).length === 0) {
+      continue;
+    }
+
+    const classTokens = (attrs.class ?? '')
+      .split(/\s+/)
+      .map((token) => token.trim())
+      .filter(Boolean);
+    const selectorParts = [tag];
+    if (attrs.id) {
+      selectorParts.push(`#${attrs.id}`);
+    }
+    for (const cls of classTokens) {
+      selectorParts.push(`.${cls}`);
+    }
+    const selector = selectorParts.join('');
+    results.push({ selector: selector || tag, declarations });
+  }
+  return results;
+}
+
+function parseAttributes(input: string): Record<string, string> {
+  const attributes: Record<string, string> = {};
+  const attrRegex = /([\w-:]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
+  let match: RegExpExecArray | null;
+  while ((match = attrRegex.exec(input))) {
+    const name = match[1];
+    const value = match[2] ?? match[3] ?? match[4] ?? '';
+    if (name) {
+      attributes[name] = value;
+    }
+  }
+  return attributes;
+}
+
+function buildAccessibilitySummaries(html: string): AccessibilitySummary[] {
+  const summaries = new Map<string, { count: number; tagNames: Set<string> }>();
+  const tagRegex = /<([a-zA-Z0-9-]+)([^>]*)>/g;
+  let match: RegExpExecArray | null;
+  while ((match = tagRegex.exec(html))) {
+    const rawTag = match[0];
+    if (rawTag.startsWith('</')) {
+      continue;
+    }
+
+    const tag = match[1].toLowerCase();
+    const attrs = parseAttributes(match[2] ?? '');
+    const role = attrs.role || inferImplicitRole(tag, attrs);
+    if (!role) {
+      continue;
+    }
+    const entry = summaries.get(role) ?? { count: 0, tagNames: new Set<string>() };
+    entry.count += 1;
+    entry.tagNames.add(tag);
+    summaries.set(role, entry);
+  }
+
+  return Array.from(summaries.entries())
+    .map<AccessibilitySummary>(([role, data]) => ({
+      role,
+      count: data.count,
+      tagNames: Array.from(data.tagNames).sort(),
+    }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function inferImplicitRole(tag: string, attrs: Record<string, string>): string | undefined {
+  if (tag === 'button') {
+    return 'button';
+  }
+  if (tag === 'a' && typeof attrs.href === 'string' && attrs.href.length > 0) {
+    return 'link';
+  }
+  if (tag === 'img') {
+    return 'img';
+  }
+  if (tag === 'input') {
+    const type = (attrs.type ?? '').toLowerCase();
+    if (type === 'button' || type === 'submit' || type === 'reset') {
+      return 'button';
+    }
+    if (type === 'checkbox') {
+      return 'checkbox';
+    }
+    if (type === 'radio') {
+      return 'radio';
+    }
+    if (type === 'text' || type === 'email' || type === 'search' || type === 'tel' || type === 'url') {
+      return 'textbox';
+    }
+  }
+  if (tag === 'textarea') {
+    return 'textbox';
+  }
+  if (tag === 'select') {
+    return 'listbox';
+  }
+  if (tag === 'nav') {
+    return 'navigation';
+  }
+  if (tag === 'header') {
+    return 'banner';
+  }
+  if (tag === 'footer') {
+    return 'contentinfo';
+  }
+  if (tag === 'main') {
+    return 'main';
+  }
+  if (tag === 'form') {
+    return 'form';
+  }
+  if (tag === 'aside') {
+    return 'complementary';
+  }
+  if (tag === 'section') {
+    return 'region';
+  }
+  return undefined;
 }
 
 function formatErrorMessage(error: unknown): string {
