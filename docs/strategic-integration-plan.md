@@ -80,7 +80,7 @@ Any external integration must therefore:
    - Update the MCP inspector documentation to mention the new toolset.
 4. **Agent Consumption Plan**
    - Define a specialist agent (e.g., `vibe-quality-analyst.md`) that depends on the new MCP for sentiment/context validation.
-   - Update meta-agents to call this specialist when emotional-tone or UX feedback is required.
+   - Update meta-agents to call this specialist when emotional tone or UX feedback is required.
 5. **Testing and QA**
    - Add integration tests invoking the MCP server through the CLI to ensure deterministic responses.
    - Document fallback behaviours when the MCP is unavailable (graceful degradation via orchestrator instructions).
