@@ -664,6 +664,8 @@ Commands:
   codex                Start conversational interface with Codex CLI
   opencode             Start conversational interface with OpenCode CLI
 
+  workflow start <id>  Run meta-agent workflow (genesis | librarian | refactor)
+
   install              Install AiDesigner globally
   build                Build MCP server
   test                 Run test suite
@@ -1942,6 +1944,173 @@ Happy building with BMAD! 🚀
     child.on('exit', (code) => {
       process.exit(code || 0);
     });
+  },
+
+  workflow: async () => {
+    if (args.length === 0) {
+      console.error('Usage: npx aidesigner workflow start <genesis|librarian|refactor>');
+      process.exit(1);
+    }
+
+    const [action, workflowId] = args;
+    if (action !== 'start') {
+      console.error(`Unknown workflow action: ${action}. Only "start" is supported.`);
+      process.exit(1);
+    }
+
+    const supported = new Set(['genesis', 'librarian', 'refactor']);
+    if (!supported.has(workflowId)) {
+      console.error('Unknown workflow id. Use one of: genesis, librarian, refactor.');
+      process.exit(1);
+    }
+
+    const { MetaAgentWorkflowService } = require('../common/workflows/meta-agent-workflows.js');
+
+    const parseList = (value, fallback = []) => {
+      if (typeof value !== 'string' || value.trim() === '') {
+        return fallback;
+      }
+      return value
+        .split(',')
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+    };
+
+    const interactive = isInteractiveTerminal();
+    let input;
+
+    if (workflowId === 'genesis') {
+      let answers = {
+        projectName: 'new-project',
+        projectType: 'Full-stack web app',
+        technologyStack: 'React, FastAPI, Supabase',
+      };
+      if (interactive) {
+        answers = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'projectName',
+            message: 'Project name',
+            default: answers.projectName,
+          },
+          {
+            type: 'input',
+            name: 'projectType',
+            message: 'Project type / focus',
+            default: answers.projectType,
+          },
+          {
+            type: 'input',
+            name: 'technologyStack',
+            message: 'Technology stack (comma separated)',
+            default: answers.technologyStack,
+          },
+        ]);
+      }
+
+      input = {
+        projectName: answers.projectName.trim() || 'new-project',
+        projectType: answers.projectType.trim() || 'Full-stack web app',
+        technologyStack: parseList(answers.technologyStack, ['React', 'FastAPI']),
+      };
+    } else if (workflowId === 'librarian') {
+      let answers = {
+        scopePaths: 'src',
+        apiFiles: '',
+        developmentGuidePath: 'DEVELOPMENT_GUIDE.md',
+      };
+      if (interactive) {
+        answers = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'scopePaths',
+            message: 'Documentation scope directories (comma separated)',
+            default: answers.scopePaths,
+          },
+          {
+            type: 'input',
+            name: 'apiFiles',
+            message: 'API entry files (comma separated, optional)',
+            default: answers.apiFiles,
+          },
+          {
+            type: 'input',
+            name: 'developmentGuidePath',
+            message: 'Development guide path',
+            default: answers.developmentGuidePath,
+          },
+        ]);
+      }
+
+      input = {
+        scopePaths: parseList(answers.scopePaths, ['src']),
+        apiFiles: parseList(answers.apiFiles),
+        developmentGuidePath: answers.developmentGuidePath?.trim() || 'DEVELOPMENT_GUIDE.md',
+      };
+    } else {
+      let answers = {
+        scopePaths: 'src',
+        dependencyFiles: 'package.json,requirements.txt',
+      };
+      if (interactive) {
+        answers = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'scopePaths',
+            message: 'Directories to analyze for technical debt (comma separated)',
+            default: answers.scopePaths,
+          },
+          {
+            type: 'input',
+            name: 'dependencyFiles',
+            message: 'Dependency manifest files (comma separated)',
+            default: answers.dependencyFiles,
+          },
+        ]);
+      }
+
+      input = {
+        scopePaths: parseList(answers.scopePaths, ['src']),
+        dependencyFiles: parseList(answers.dependencyFiles, ['package.json', 'requirements.txt']),
+      };
+    }
+
+    const service = new MetaAgentWorkflowService({
+      projectRoot: process.cwd(),
+      fileSystem: undefined,
+      supabaseClient: undefined,
+      logger: (message) => {
+        if (message) {
+          console.log(message);
+        }
+      },
+    });
+
+    const { sessionId, result } = await service.start(workflowId, input);
+
+    console.log(`\n✅ Workflow ${workflowId} completed (session ${sessionId}).`);
+    console.log('\n📊 Stage Results:');
+    for (const stage of result.stages) {
+      const mark = stage.status === 'complete' ? '✔' : '…';
+      console.log(`  ${mark} ${stage.title}`);
+      if (stage.summary) {
+        console.log(`    ↳ ${stage.summary}`);
+      }
+      for (const artifact of stage.artifacts ?? []) {
+        console.log(`    • ${artifact.path} — ${artifact.description}`);
+      }
+    }
+
+    console.log('\n📁 Artifacts saved:');
+    if (!result.artifacts.length) {
+      console.log('  (no artifacts recorded)');
+    } else {
+      for (const artifact of result.artifacts) {
+        console.log(`  • ${artifact.path} — ${artifact.description}`);
+      }
+    }
+
+    return result;
   },
 
   install: async () => {

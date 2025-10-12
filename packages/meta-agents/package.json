@@ -1,0 +1,19 @@
+{
+  "name": "@aidesigner/meta-agents",
+  "version": "0.1.0",
+  "description": "Meta-agent workflow implementations for Genesis, Librarian, and Refactor agents",
+  "license": "MIT",
+  "author": "AiDesigner",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json"
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^5.4.5"
+  }
+}
