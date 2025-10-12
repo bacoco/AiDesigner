@@ -42,8 +42,23 @@ const CLIENT_INFO = {
 
 export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResult> {
   const errors: InspectionError[] = [];
+
+  // Validate URL
+  let url: URL;
+  try {
+    url = new URL(opts.url);
+    if (!['ws:', 'wss:'].includes(url.protocol)) {
+      throw new Error(`Invalid WebSocket protocol: ${url.protocol}. Expected 'ws:' or 'wss:'`);
+    }
+  } catch (error) {
+    return {
+      tools: [],
+      errors: [{ stage: 'connect', message: `Invalid URL: ${formatErrorMessage(error)}` }]
+    };
+  }
+
   const client = new Client(CLIENT_INFO);
-  const transport = new WebSocketClientTransport(new URL(opts.url));
+  const transport = new WebSocketClientTransport(url);
   let connected = false;
 
   try {
@@ -107,14 +122,14 @@ async function safeClose(
   errors: InspectionError[],
   connected: boolean,
 ): Promise<void> {
-  if (!connected) {
-    return;
-  }
-
   try {
     await transport.close();
   } catch (error) {
-    errors.push({ stage: 'disconnect', message: formatErrorMessage(error) });
+    // Only report disconnect errors if we were actually connected
+    if (connected) {
+      errors.push({ stage: 'disconnect', message: formatErrorMessage(error) });
+    }
+    // Silently ignore close errors if connection never succeeded
   }
 }
 
@@ -191,8 +206,9 @@ function describeSchema(schema: JsonSchema | undefined): string {
 
   if (schema.type === 'array') {
     if (Array.isArray(schema.items)) {
-      const types = schema.items.map(describeSchema).join(' | ');
-      return `Array<${types}>`;
+      // Tuple type: [Type1, Type2, ...]
+      const types = schema.items.map(describeSchema).join(', ');
+      return `[${types}]`;
     }
     return `Array<${describeSchema(schema.items)}>`;
   }
