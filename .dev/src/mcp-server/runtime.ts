@@ -10,7 +10,7 @@ import { performance } from "node:perf_hooks";
 import * as path from "node:path";
 import { tmpdir } from "node:os";
 import { createStructuredLogger, StructuredLogger } from "./observability.js";
-import { runVibeCheckGate } from "./vibe-check-gate";
+import { runVibeCheckGate } from "./vibe-check-gate.js";
 import {
   importFromPackageRoot,
   importLibModule,

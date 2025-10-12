@@ -4,8 +4,8 @@ import type { ToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 export interface VibeCheckGateOptions {
   projectState: {
-    getAllDeliverables?: () => Record<string, Record<string, DeliverableRecord>>;
-    recordDecision?: (key: string, value: string, rationale?: string) => Promise<void> | void;
+    getAllDeliverables: () => Record<string, Record<string, DeliverableRecord>>;
+    recordDecision: (key: string, value: string, rationale?: string) => Promise<void> | void;
   };
   logger: Pick<Logger, "info" | "warn" | "error"> & Partial<Logger>;
   minScore?: number;
@@ -15,7 +15,7 @@ export interface VibeCheckGateOptions {
   args?: string[];
   env?: Record<string, string>;
   timeoutMs?: number;
-  clientFactory?: () => Promise<ClientHandle> | ClientHandle;
+  clientFactory?: () => ClientHandle;
 }
 
 export interface VibeCheckGateResult {
@@ -83,11 +83,7 @@ function parseArgs(raw?: string | null): string[] | undefined {
 
 function buildClient(options: VibeCheckGateOptions): ClientHandle {
   if (options.clientFactory) {
-    const handle = options.clientFactory();
-    if (handle && typeof (handle as Promise<ClientHandle>).then === "function") {
-      throw new Error("Async clientFactory detected. Provide a synchronous factory or pre-resolve it before calling runVibeCheckGate.");
-    }
-    return handle as ClientHandle;
+    return options.clientFactory();
   }
 
   const command = options.command ?? process.env.AIDESIGNER_VIBE_CHECK_COMMAND ?? DEFAULT_COMMAND;
@@ -105,7 +101,7 @@ function buildClient(options: VibeCheckGateOptions): ClientHandle {
 }
 
 function collectCopy(projectState: VibeCheckGateOptions["projectState"]): string {
-  const deliverables = projectState.getAllDeliverables?.() ?? {};
+  const deliverables = projectState.getAllDeliverables();
   const sections: string[] = [];
 
   for (const [phase, records] of Object.entries(deliverables)) {
@@ -157,7 +153,7 @@ function extractScore(result: unknown): number | undefined {
   }
 
   const score = (result as Record<string, unknown>).score;
-  if (typeof score !== "number" || Number.isNaN(score)) {
+  if (typeof score !== "number" || Number.isNaN(score) || !Number.isFinite(score)) {
     return undefined;
   }
 
@@ -217,7 +213,7 @@ function parseToolResult(result: ToolResult): unknown {
   return undefined;
 }
 
-async function closeClient(handle: ClientHandle, connected: boolean): Promise<void> {
+async function closeClient(handle: ClientHandle): Promise<void> {
   try {
     await handle.client.close();
   } catch {
@@ -258,8 +254,17 @@ export async function runVibeCheckGate(options: VibeCheckGateOptions): Promise<V
   });
 
   const minScore = options.minScore ?? parseFloat(process.env.AIDESIGNER_VIBE_CHECK_MIN_SCORE ?? "0.65");
+  if (Number.isNaN(minScore) || !Number.isFinite(minScore) || minScore < 0 || minScore > 1) {
+    throw new Error(`Invalid AIDESIGNER_VIBE_CHECK_MIN_SCORE: must be a number between 0 and 1, got ${minScore}`);
+  }
+
   const audience = options.audience ?? process.env.AIDESIGNER_VIBE_CHECK_AUDIENCE ?? "founder";
+
   const temperature = options.temperature ?? (process.env.AIDESIGNER_VIBE_CHECK_TEMPERATURE ? Number(process.env.AIDESIGNER_VIBE_CHECK_TEMPERATURE) : undefined);
+  if (temperature !== undefined && (Number.isNaN(temperature) || !Number.isFinite(temperature))) {
+    throw new Error(`Invalid AIDESIGNER_VIBE_CHECK_TEMPERATURE: must be a valid number, got ${temperature}`);
+  }
+
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
   logger.info("vibe_check_call_started", { audience, minScore, temperature });
@@ -336,6 +341,6 @@ export async function runVibeCheckGate(options: VibeCheckGateOptions): Promise<V
     }
     throw error;
   } finally {
-    await closeClient(handle, connected);
+    await closeClient(handle);
   }
 }
