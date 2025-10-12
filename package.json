@@ -85,6 +85,7 @@
     "release:patch": "gh workflow run \"Manual Release\" -f version_bump=patch",
     "release:watch": "gh run watch",
     "setup:hooks": "chmod +x .dev/tools/setup-hooks.sh && ./.dev/tools/setup-hooks.sh",
+    "sync:external": "node bin/sync-external-agents",
     "test": "jest --config .dev/config/jest.config.cjs --runInBand",
     "validate": "node .dev/tools/cli.js validate",
     "version:all": "node .dev/tools/bump-all-versions.js",

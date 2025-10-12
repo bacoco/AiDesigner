@@ -1,7 +1,7 @@
 ---
 title: 'Final Integration Execution Plan'
 status: active
-updated: 2024-07-05
+updated: 2025-02-15
 contributors: ['gpt-5-codex']
 ---
 
@@ -15,6 +15,20 @@ This document consolidates the most recent planning notes for external ecosystem
 - [External Integration Plan](aidesigner-external-integration-plan.md)
 - [Chrome MCP Integration Completion Plan](chrome-mcp-integration-plan.md)
 - [JIT Context Injection Integration Plan](jit-context-integration-plan.md)
+
+## Latest Implementation Updates
+
+> **2025-02-15** — Ingestion utilities and safety audits wired into the pipelines.
+>
+> - Landed `.dev/tools/external/*` scripts for Compounding Engine normalization, Awesome UI registry generation, SuperDesign manifest export, and Vibe Check credential auditing, all callable from the manifest pipelines.
+> - Codified workspace hygiene with ignore rules and a README under `expansion-packs/external-integrations/`, clarifying how mirrored repositories and generated artifacts are staged.
+> - Extended the Final Integration plan backlog to focus on wiring registry outputs into planners and surfacing credential audits to MCP inspector agents.
+
+> **2025-02-14** — External ecosystem groundwork landed.
+>
+> - Published the source-of-truth manifest at `expansion-packs/external-integrations/manifest.yaml`, capturing ownership, cadence, and ingestion pipelines for Compounding Engine, Awesome UI, SuperDesign, and Vibe Check assets.
+> - Introduced the dry-run friendly orchestration command `bin/sync-external-agents` (also available via `npm run sync:external`) to automate cloning/fetching, formatting, and optional validation passes per manifest pipeline.
+> - Established structured console and JSON output so MCP inspector agents can surface stale integrations inside planning reviews.
 
 ## Delivery Pillars
 
@@ -92,7 +106,7 @@ This document consolidates the most recent planning notes for external ecosystem
 2. Implement the initial Awesome UI ingestion script that generates `ui-components.registry.json` and annotate Architect planner tasks with component hints.
 3. Draft SuperDesign API client interfaces and configuration docs to unblock orchestration wiring in Phase 2.
 4. Build the `ChromeMCPClient` skeleton with connect/call/close lifecycle and swap the availability check to use the real handshake.
-5. Add MCP inspector checklist enforcement for Vibe Check credentials, ensuring the safety gate becomes a blocking requirement.
+5. Surface Vibe Check credential audit results to MCP inspector agents and decide when to enable strict failure gating by default.
 
 ## Governance & Reporting
 

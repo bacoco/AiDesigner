@@ -1,0 +1,5 @@
+# External integration clones and generated artifacts
+sources/*
+!sources/.gitkeep
+generated/*
+!generated/.gitkeep
