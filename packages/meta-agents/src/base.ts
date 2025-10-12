@@ -1,6 +1,7 @@
 import path from 'node:path';
 import type {
   ArtifactRecord,
+  FileSystem,
   MetaAgentResult,
   MetaAgentRuntimeOptions,
   StageProgress,
@@ -15,6 +16,7 @@ export abstract class BaseMetaAgent<Input, Result extends MetaAgentResult = Meta
   protected readonly description: string;
 
   protected readonly artifactManager: ArtifactManager;
+  protected readonly fileSystem: FileSystem;
   protected readonly projectRoot: string;
   protected readonly logger: (message: string) => void;
   protected readonly clock: () => Date;
@@ -38,8 +40,8 @@ export abstract class BaseMetaAgent<Input, Result extends MetaAgentResult = Meta
     this.description = description;
 
     this.projectRoot = options.projectRoot ?? process.cwd();
-    const fs = options.fileSystem ?? new NodeFileSystem();
-    this.artifactManager = new ArtifactManager(this.projectRoot, fs);
+    this.fileSystem = options.fileSystem ?? new NodeFileSystem();
+    this.artifactManager = new ArtifactManager(this.projectRoot, this.fileSystem);
 
     this.logger = options.logger ?? (() => undefined);
     this.clock = options.clock ?? (() => new Date());

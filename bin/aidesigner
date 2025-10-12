@@ -2086,31 +2086,41 @@ Happy building with BMAD! 🚀
       },
     });
 
-    const { sessionId, result } = await service.start(workflowId, input);
+    try {
+      const { sessionId, result } = await service.start(workflowId, input);
 
-    console.log(`\n✅ Workflow ${workflowId} completed (session ${sessionId}).`);
-    console.log('\n📊 Stage Results:');
-    for (const stage of result.stages) {
-      const mark = stage.status === 'complete' ? '✔' : '…';
-      console.log(`  ${mark} ${stage.title}`);
-      if (stage.summary) {
-        console.log(`    ↳ ${stage.summary}`);
+      console.log(`\n✅ Workflow ${workflowId} completed (session ${sessionId}).`);
+      console.log('\n📊 Stage Results:');
+      for (const stage of result.stages) {
+        const mark = stage.status === 'complete' ? '✔' : '…';
+        console.log(`  ${mark} ${stage.title}`);
+        if (stage.summary) {
+          console.log(`    ↳ ${stage.summary}`);
+        }
+        for (const artifact of stage.artifacts ?? []) {
+          console.log(`    • ${artifact.path} — ${artifact.description}`);
+        }
       }
-      for (const artifact of stage.artifacts ?? []) {
-        console.log(`    • ${artifact.path} — ${artifact.description}`);
+
+      console.log('\n📁 Artifacts saved:');
+      if (!result.artifacts.length) {
+        console.log('  (no artifacts recorded)');
+      } else {
+        for (const artifact of result.artifacts) {
+          console.log(`  • ${artifact.path} — ${artifact.description}`);
+        }
       }
+
+      return result;
+    } catch (error) {
+      console.error(`\n❌ Workflow ${workflowId} failed:\n`);
+      console.error(error.message);
+      if (error.stack) {
+        console.error('\nStack trace:');
+        console.error(error.stack);
+      }
+      process.exit(1);
     }
-
-    console.log('\n📁 Artifacts saved:');
-    if (!result.artifacts.length) {
-      console.log('  (no artifacts recorded)');
-    } else {
-      for (const artifact of result.artifacts) {
-        console.log(`  • ${artifact.path} — ${artifact.description}`);
-      }
-    }
-
-    return result;
   },
 
   install: async () => {

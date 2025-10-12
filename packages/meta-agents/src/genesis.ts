@@ -141,8 +141,20 @@ export class GenesisMetaAgent extends BaseMetaAgent<GenesisInput> {
   }
 
   protected async execute(): Promise<string> {
+    // Validate required inputs
+    if (!this.input.projectName?.trim()) {
+      throw new Error('projectName is required and cannot be empty');
+    }
+    if (!this.input.projectType?.trim()) {
+      throw new Error('projectType is required and cannot be empty');
+    }
+
     const { projectName, projectType } = this.input;
     const technologyStack = normalizeTechnologyStack(this.input.technologyStack);
+
+    if (technologyStack.length === 0) {
+      throw new Error('At least one technology must be specified in technologyStack');
+    }
 
     const domains = this.composeDomainBlueprint(technologyStack);
     const subAgents = SUB_AGENT_PLANS;

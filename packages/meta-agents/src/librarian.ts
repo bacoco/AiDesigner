@@ -35,17 +35,11 @@ export class LibrarianMetaAgent extends BaseMetaAgent<LibrarianInput> {
   private async listFiles(relativeDir: string): Promise<string[]> {
     const absoluteDir = path.join(this.projectRoot, relativeDir);
     try {
-      const entries = await this.options.fileSystem?.readdir(absoluteDir);
-      if (!entries) {
-        return [];
-      }
+      const entries = await this.fileSystem.readdir(absoluteDir);
       const files: string[] = [];
       for (const entry of entries) {
         const absolutePath = path.join(absoluteDir, entry);
-        const stats = await this.options.fileSystem?.stat(absolutePath);
-        if (!stats) {
-          continue;
-        }
+        const stats = await this.fileSystem.stat(absolutePath);
         if (stats.isDirectory()) {
           const nested = await this.listFiles(path.relative(this.projectRoot, absolutePath));
           files.push(...nested);
@@ -148,10 +142,7 @@ export class LibrarianMetaAgent extends BaseMetaAgent<LibrarianInput> {
     for (const file of apiFiles) {
       const absolutePath = path.join(this.projectRoot, file);
       try {
-        const content = await this.options.fileSystem?.readFile(absolutePath, 'utf8');
-        if (!content) {
-          continue;
-        }
+        const content = await this.fileSystem.readFile(absolutePath, 'utf8');
         const lines = content.split(/\r?\n/);
         for (const line of lines) {
           const endpoint = this.parseEndpointLine(line.trim());
@@ -227,7 +218,12 @@ export class LibrarianMetaAgent extends BaseMetaAgent<LibrarianInput> {
   }
 
   protected async execute(): Promise<string> {
+    // Validate inputs (scopePaths has a default but should be non-empty)
     const scopePaths = this.input.scopePaths ?? ['src'];
+    if (scopePaths.length === 0) {
+      throw new Error('scopePaths must contain at least one directory');
+    }
+
     const architectureDoc = await this.generateArchitectureDoc(scopePaths);
 
     await this.runStage('architecture', 'Generate architecture documentation', async () => {
@@ -281,11 +277,9 @@ export class LibrarianMetaAgent extends BaseMetaAgent<LibrarianInput> {
     let commands: string[] = [];
     try {
       const fullPath = path.join(this.projectRoot, developmentGuidePath);
-      const content = await this.options.fileSystem?.readFile(fullPath, 'utf8');
-      if (content) {
-        const tokens = tokenizeLines(content).join('\n');
-        commands = extractShellCommands(tokens);
-      }
+      const content = await this.fileSystem.readFile(fullPath, 'utf8');
+      const tokens = tokenizeLines(content).join('\n');
+      commands = extractShellCommands(tokens);
     } catch (error) {
       this.logger(`⚠️  Unable to analyze development guide: ${(error as Error).message}`);
     }

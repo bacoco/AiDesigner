@@ -39,6 +39,14 @@ export class ArtifactManager {
 
   async write(relativePath: string, contents: string, description: string): Promise<ArtifactRecord> {
     const destination = path.join(this.projectRoot, relativePath);
+    const normalized = path.normalize(destination);
+    const normalizedRoot = path.normalize(this.projectRoot);
+
+    // Ensure the resolved path is within projectRoot (prevent path traversal)
+    if (!normalized.startsWith(normalizedRoot + path.sep) && normalized !== normalizedRoot) {
+      throw new Error(`Path traversal detected: ${relativePath} escapes project root`);
+    }
+
     await this.fileSystem.ensureDir(path.dirname(destination));
     await this.fileSystem.writeFile(destination, contents, 'utf8');
     const record: ArtifactRecord = { path: relativePath, description };

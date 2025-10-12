@@ -42,17 +42,11 @@ export class RefactorMetaAgent extends BaseMetaAgent<RefactorInput> {
   private async listFiles(relativeDir: string): Promise<string[]> {
     const baseDir = path.join(this.projectRoot, relativeDir);
     try {
-      const entries = await this.options.fileSystem?.readdir(baseDir);
-      if (!entries) {
-        return [];
-      }
+      const entries = await this.fileSystem.readdir(baseDir);
       const files: string[] = [];
       for (const entry of entries) {
         const absolutePath = path.join(baseDir, entry);
-        const stats = await this.options.fileSystem?.stat(absolutePath);
-        if (!stats) {
-          continue;
-        }
+        const stats = await this.fileSystem.stat(absolutePath);
         if (stats.isDirectory()) {
           const nested = await this.listFiles(path.relative(this.projectRoot, absolutePath));
           files.push(...nested);
@@ -77,10 +71,8 @@ export class RefactorMetaAgent extends BaseMetaAgent<RefactorInput> {
         }
         const absolute = path.join(this.projectRoot, relative);
         try {
-          const content = await this.options.fileSystem?.readFile(absolute, 'utf8');
-          if (content) {
-            files.push({ path: relative, content });
-          }
+          const content = await this.fileSystem.readFile(absolute, 'utf8');
+          files.push({ path: relative, content });
         } catch (error) {
           this.logger(`⚠️  Failed to read ${relative}: ${(error as Error).message}`);
         }
@@ -142,34 +134,37 @@ export class RefactorMetaAgent extends BaseMetaAgent<RefactorInput> {
     for (const dependencyFile of files) {
       const absolute = path.join(this.projectRoot, dependencyFile);
       try {
-        const exists = await this.options.fileSystem?.pathExists(absolute);
+        const exists = await this.fileSystem.pathExists(absolute);
         if (!exists) {
           continue;
         }
         if (dependencyFile.endsWith('package.json')) {
-          const raw = await this.options.fileSystem?.readFile(absolute, 'utf8');
-          if (raw) {
-            const pkg = JSON.parse(raw) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
-            const all = { ...pkg.dependencies, ...pkg.devDependencies };
+          const raw = await this.fileSystem.readFile(absolute, 'utf8');
+          const pkg = JSON.parse(raw);
+          // Safely access dependencies with validation
+          if (pkg && typeof pkg === 'object') {
+            const dependencies = (pkg.dependencies && typeof pkg.dependencies === 'object') ? pkg.dependencies : {};
+            const devDependencies = (pkg.devDependencies && typeof pkg.devDependencies === 'object') ? pkg.devDependencies : {};
+            const all = { ...dependencies, ...devDependencies };
             for (const [name, version] of Object.entries(all)) {
-              if (/beta|alpha|rc/.test(version)) {
-                findings.push({ name, version, reason: 'Pre-release version detected' });
-              } else if (/^\^?0\./.test(version)) {
-                findings.push({ name, version, reason: 'Major version 0 indicates unstable API' });
+              if (typeof version === 'string') {
+                if (/beta|alpha|rc/.test(version)) {
+                  findings.push({ name, version, reason: 'Pre-release version detected' });
+                } else if (/^\^?0\./.test(version)) {
+                  findings.push({ name, version, reason: 'Major version 0 indicates unstable API' });
+                }
               }
             }
           }
         } else if (dependencyFile.endsWith('requirements.txt')) {
-          const raw = await this.options.fileSystem?.readFile(absolute, 'utf8');
-          if (raw) {
-            for (const line of raw.split(/\r?\n/)) {
-              const trimmed = line.trim();
-              if (!trimmed || trimmed.startsWith('#')) {
-                continue;
-              }
-              if (/(alpha|beta|rc)/i.test(trimmed)) {
-                findings.push({ name: trimmed, version: 'prerelease', reason: 'Pre-release dependency in requirements.txt' });
-              }
+          const raw = await this.fileSystem.readFile(absolute, 'utf8');
+          for (const line of raw.split(/\r?\n/)) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('#')) {
+              continue;
+            }
+            if (/(alpha|beta|rc)/i.test(trimmed)) {
+              findings.push({ name: trimmed, version: 'prerelease', reason: 'Pre-release dependency in requirements.txt' });
             }
           }
         }
@@ -227,6 +222,11 @@ export class RefactorMetaAgent extends BaseMetaAgent<RefactorInput> {
   }
 
   protected async execute(): Promise<string> {
+    // Validate required inputs
+    if (!this.input.scopePaths || this.input.scopePaths.length === 0) {
+      throw new Error('scopePaths is required and must contain at least one directory');
+    }
+
     const files = await this.loadSourceFiles();
     const duplications = this.detectDuplications(files);
     const complexity = this.analyzeComplexity(files);

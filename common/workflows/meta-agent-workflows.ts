@@ -71,7 +71,10 @@ export class MetaAgentWorkflowService {
     };
   }
 
-  private buildAgent(workflowId: MetaAgentWorkflowId, input: WorkflowInputMap[MetaAgentWorkflowId]) {
+  private buildAgent(workflowId: 'genesis', input: GenesisInput): GenesisMetaAgent;
+  private buildAgent(workflowId: 'librarian', input: LibrarianInput): LibrarianMetaAgent;
+  private buildAgent(workflowId: 'refactor', input: RefactorInput): RefactorMetaAgent;
+  private buildAgent(workflowId: MetaAgentWorkflowId, input: unknown) {
     const runtime = this.createRuntime();
     switch (workflowId) {
       case 'genesis':
