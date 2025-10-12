@@ -122,14 +122,14 @@ async function safeClose(
   errors: InspectionError[],
   connected: boolean,
 ): Promise<void> {
+  if (!connected) {
+    return;
+  }
+
   try {
     await transport.close();
   } catch (error) {
-    // Only report disconnect errors if we were actually connected
-    if (connected) {
-      errors.push({ stage: 'disconnect', message: formatErrorMessage(error) });
-    }
-    // Silently ignore close errors if connection never succeeded
+    errors.push({ stage: 'disconnect', message: formatErrorMessage(error) });
   }
 }
 
@@ -261,5 +261,12 @@ function formatErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
-  return typeof error === 'string' ? error : JSON.stringify(error);
+  if (typeof error === 'string') {
+    return error;
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
 }
