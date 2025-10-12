@@ -279,7 +279,7 @@ const metaAgent = program
   .description('Interact with Architect and Quasar meta-agents');
 
 /**
- * Register ts-node to load TypeScript modules
+ * Register ts-node to load TypeScript modules (returns true if successful)
  */
 function registerTypeScriptLoader() {
   try {
@@ -288,27 +288,34 @@ function registerTypeScriptLoader() {
       transpileOnly: true,
       project: tsconfigPath,
     });
+    return true;
   } catch (error) {
-    throw new Error(
-      'ts-node is required to run meta-agent commands. Install it with: npm install --save-dev ts-node',
-    );
+    return false;
   }
 }
 
 /**
- * Load the meta-agents module
+ * Load the meta-agents module (prefers compiled dist, falls back to ts-node source)
  */
-function loadMetaAgentsModule() {
-  const metaAgentsModulePath = path.resolve(
-    __dirname,
-    '..',
-    '..',
-    'packages',
-    'meta-agents',
-    'src',
-    'index.ts',
+function loadMetaAgentsModule(tsNodeLoaded) {
+  const distPath = path.resolve(__dirname, '..', '..', 'packages', 'meta-agents', 'dist', 'index.js');
+  const srcPath = path.resolve(__dirname, '..', '..', 'packages', 'meta-agents', 'src', 'index.ts');
+
+  const fs = require('node:fs');
+
+  // Prefer compiled output
+  if (fs.existsSync(distPath)) {
+    return require(distPath);
+  }
+
+  // Fall back to TypeScript source if ts-node is available
+  if (tsNodeLoaded && fs.existsSync(srcPath)) {
+    return require(srcPath);
+  }
+
+  throw new Error(
+    'Cannot load meta-agents module. Build it first (npm run build -w packages/meta-agents) or install ts-node to load from source.',
   );
-  return require(metaAgentsModulePath);
 }
 
 /**
@@ -335,9 +342,13 @@ function parseJsonWithValidation(content, filePath) {
     throw new Error(`Failed to parse JSON from ${filePath}: ${error.message}`);
   }
 
-  if (!parsed.tasks || !parsed.featureRequest) {
+  const hasTasks = Array.isArray(parsed.tasks);
+  const hasFeature =
+    typeof parsed.featureRequest === 'string' && parsed.featureRequest.trim().length > 0;
+
+  if (!hasTasks || !hasFeature) {
     throw new Error(
-      `Invalid handoff format in ${filePath}: missing required fields (tasks, featureRequest)`,
+      `Invalid handoff format in ${filePath}: expected { tasks: Task[], featureRequest: string }`,
     );
   }
 
@@ -412,11 +423,11 @@ metaAgent
   .description('Instantiate a meta-agent orchestrator')
   .option('-f, --feature <feature>', 'Feature request to pass to the Architect meta-agent')
   .option('-d, --directive <path>', 'Path to the directive markdown file')
-  .option('-h, --handoff <path>', 'Path to an Architect handoff JSON document for Quasar')
+  .option('--handoff <path>', 'Path to an Architect handoff JSON document for Quasar')
   .action(async (agent, options) => {
     try {
-      registerTypeScriptLoader();
-      const agentImports = loadMetaAgentsModule();
+      const tsNodeLoaded = registerTypeScriptLoader();
+      const agentImports = loadMetaAgentsModule(tsNodeLoaded);
 
       const normalizedAgent = agent.toLowerCase();
       if (normalizedAgent === 'architect') {

@@ -55,7 +55,16 @@ export class QuasarOrchestrator {
   async executeTests(executor: QuasarTesterExecutor): Promise<GlobalQualityReport> {
     const reports: QuasarAggregatedReport[] = [];
     for (const item of this.testPlan.items) {
-      const testerReport = await executor(item);
+      let testerReport: QuasarTesterReport;
+      try {
+        testerReport = await executor(item);
+      } catch (err) {
+        testerReport = {
+          status: 'fail',
+          findings: 'Executor threw an exception. See defects for details.',
+          defects: [err instanceof Error ? err.message : String(err)],
+        };
+      }
       const normalized = this.normalizeTesterReport(item, testerReport);
       reports.push(normalized);
     }
@@ -89,7 +98,7 @@ export class QuasarOrchestrator {
         missionComponents.push(`Focus on artifacts/files: ${focusAreas.join(', ')}`);
       }
 
-      missionComponents.push(`Architect reported status: ${task.status.toUpperCase()}.`);
+      missionComponents.push(`Architect reported status: ${String(task.status).toUpperCase()}.`);
 
       const id = `qa-${task.id}`;
       items.push({
@@ -171,7 +180,7 @@ export class QuasarOrchestrator {
 
     lines.push('## Development Context');
     lines.push(`- Feature Request: ${this.handoff.featureRequest}`);
-    lines.push(`- Architect Directive: ${this.handoff.directiveTitle}`);
+    lines.push(`- Architect Directive: ${this.directive.title}`);
     lines.push('');
 
     lines.push('## Test Plan Overview');
@@ -221,7 +230,11 @@ export class QuasarOrchestrator {
     lines.push('The following excerpt captures the development summary provided by the Architect:');
     lines.push('');
     lines.push('```markdown');
-    lines.push(this.handoff.handoffDocument.slice(0, MAX_HANDOFF_PREVIEW_LENGTH));
+    const handoffDoc = String(this.handoff.handoffDocument ?? '');
+    lines.push(handoffDoc.slice(0, MAX_HANDOFF_PREVIEW_LENGTH));
+    if (handoffDoc.length > MAX_HANDOFF_PREVIEW_LENGTH) {
+      lines.push('...');
+    }
     lines.push('```');
     lines.push('');
     lines.push('---');

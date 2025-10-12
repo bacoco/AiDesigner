@@ -16,8 +16,7 @@
     "prepublishOnly": "npm run build"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "dependencies": {
     "@kayvan/markdown-tree-parser": "^1.6.1"
