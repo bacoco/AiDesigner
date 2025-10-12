@@ -36,6 +36,39 @@ export type InspectResult = InspectionArtifacts & {
 };
 
 const DEFAULT_TIMEOUT_MS = 8000;
+const MAX_CONTENT_SIZE = 10 * 1024 * 1024; // 10MB limit to prevent memory exhaustion
+const MAX_HTML_SIZE_FOR_REGEX = 5 * 1024 * 1024; // 5MB limit for regex operations to prevent ReDoS
+const MAX_REGEX_MATCHES = 10000; // Limit number of regex matches to prevent DoS
+
+/**
+ * Validates that a URL is safe to fetch (prevents SSRF attacks).
+ */
+function isAllowedUrl(url: URL): boolean {
+  const hostname = url.hostname.toLowerCase();
+
+  // Block private IP ranges
+  if (
+    hostname === 'localhost' ||
+    hostname.startsWith('127.') ||
+    hostname.startsWith('10.') ||
+    hostname.startsWith('192.168.') ||
+    /^172\.(1[6-9]|2[0-9]|3[01])\./.test(hostname)
+  ) {
+    return false;
+  }
+
+  // Block cloud metadata endpoints
+  if (hostname === '169.254.169.254' || hostname === '[::ffff:169.254.169.254]') {
+    return false;
+  }
+
+  // Only allow HTTP(S) protocols
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return false;
+  }
+
+  return true;
+}
 
 export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResult> {
   const errors: InspectionError[] = [];
@@ -45,6 +78,10 @@ export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResul
     targetUrl = new URL(opts.url);
   } catch (error) {
     throw new Error(`Invalid URL: ${formatErrorMessage(error)}`);
+  }
+
+  if (!isAllowedUrl(targetUrl)) {
+    throw new Error('URL not allowed: potential SSRF risk (private IP, metadata endpoint, or unsupported protocol)');
   }
 
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -79,6 +116,11 @@ async function fetchText(url: URL, timeoutMs: number, redirectCount = 0): Promis
     throw new Error('Too many redirects while fetching resource');
   }
 
+  // Validate URL for SSRF protection
+  if (!isAllowedUrl(url)) {
+    throw new Error('URL not allowed: potential SSRF risk');
+  }
+
   const client = url.protocol === 'https:' ? https : http;
 
   return new Promise<string>((resolve, reject) => {
@@ -110,8 +152,14 @@ async function fetchText(url: URL, timeoutMs: number, redirectCount = 0): Promis
         }
 
         let body = '';
+        let size = 0;
         response.setEncoding('utf8');
-        response.on('data', (chunk) => {
+        response.on('data', (chunk: string) => {
+          size += Buffer.byteLength(chunk, 'utf8');
+          if (size > MAX_CONTENT_SIZE) {
+            request.destroy(new Error(`Content too large (max ${MAX_CONTENT_SIZE / 1024 / 1024}MB)`));
+            return;
+          }
           body += chunk;
         });
         response.on('end', () => resolve(body));
@@ -136,9 +184,20 @@ async function extractStylesheets(
 ): Promise<StylesheetSummary[]> {
   const stylesheets: StylesheetSummary[] = [];
 
+  // Guard against ReDoS attacks on very large HTML
+  if (html.length > MAX_HTML_SIZE_FOR_REGEX) {
+    errors.push({
+      stage: 'fetch-html',
+      message: `HTML too large (${html.length} bytes) for safe regex parsing, skipping inline styles`,
+    });
+    return stylesheets;
+  }
+
   const inlineRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
   let inlineMatch: RegExpExecArray | null;
-  while ((inlineMatch = inlineRegex.exec(html))) {
+  let matchCount = 0;
+  while ((inlineMatch = inlineRegex.exec(html)) && matchCount < MAX_REGEX_MATCHES) {
+    matchCount++;
     const content = inlineMatch[1]?.trim() ?? '';
     if (content) {
       stylesheets.push({ href: null, content });
@@ -148,7 +207,9 @@ async function extractStylesheets(
   const linkRegex = /<link[^>]+rel=(?:"|')?stylesheet(?:"|')?[^>]*>/gi;
   const fetches: Promise<void>[] = [];
   let linkMatch: RegExpExecArray | null;
-  while ((linkMatch = linkRegex.exec(html))) {
+  matchCount = 0;
+  while ((linkMatch = linkRegex.exec(html)) && matchCount < MAX_REGEX_MATCHES) {
+    matchCount++;
     const tag = linkMatch[0];
     const hrefMatch = /href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(tag);
     if (!hrefMatch) {
@@ -271,9 +332,17 @@ function parseDeclarations(block: string): Record<string, string> {
 
 function extractInlineStyles(html: string): StyleRuleSummary[] {
   const results: StyleRuleSummary[] = [];
+
+  // Guard against ReDoS on very large HTML
+  if (html.length > MAX_HTML_SIZE_FOR_REGEX) {
+    return results;
+  }
+
   const regex = /<([a-zA-Z0-9-]+)([^>]*?)style\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
   let match: RegExpExecArray | null;
-  while ((match = regex.exec(html))) {
+  let matchCount = 0;
+  while ((match = regex.exec(html)) && matchCount < MAX_REGEX_MATCHES) {
+    matchCount++;
     const tag = match[1].toLowerCase();
     const attrs = parseAttributes(match[2] ?? '');
     const styleText = match[3] ?? match[4] ?? '';
@@ -315,9 +384,17 @@ function parseAttributes(input: string): Record<string, string> {
 
 function buildAccessibilitySummaries(html: string): AccessibilitySummary[] {
   const summaries = new Map<string, { count: number; tagNames: Set<string> }>();
+
+  // Guard against ReDoS on very large HTML
+  if (html.length > MAX_HTML_SIZE_FOR_REGEX) {
+    return [];
+  }
+
   const tagRegex = /<([a-zA-Z0-9-]+)([^>]*)>/g;
   let match: RegExpExecArray | null;
-  while ((match = tagRegex.exec(html))) {
+  let matchCount = 0;
+  while ((match = tagRegex.exec(html)) && matchCount < MAX_REGEX_MATCHES) {
+    matchCount++;
     const rawTag = match[0];
     if (rawTag.startsWith('</')) {
       continue;

@@ -2,6 +2,12 @@ import type { ComponentMap, InspectionArtifacts } from '@aidesigner/shared-types
 
 type AttributeMap = Record<string, string>;
 
+// Component detection constants
+const MAX_CLASSES_LIKE_BUTTON = 6;
+const MAX_CLASSES_LIKE_CARD = 8;
+const MAX_CLASSES_LIKE_INPUT = 6;
+const MIN_CONTENT_LENGTH_FOR_LABELLED = 12; // Distinguish text buttons from icon-only buttons
+
 export function detectComponents(artifacts: InspectionArtifacts): ComponentMap {
   const html = artifacts.domSnapshot.html;
   const css = artifacts.cssom.aggregated;
@@ -75,7 +81,7 @@ function analyzeButtons(html: string, css: string): ComponentMap['Button'] | und
   return {
     detect: {
       role: Array.from(roles),
-      classesLike: Array.from(classTokens).slice(0, 6),
+      classesLike: Array.from(classTokens).slice(0, MAX_CLASSES_LIKE_BUTTON),
       patterns: Array.from(patterns),
     },
     variants:
@@ -130,7 +136,7 @@ function collectButtonMetadata(
   if (/box-shadow/i.test(attrs.style ?? '')) {
     patterns.add('shadow');
   }
-  if (content.trim().length > 12) {
+  if (content.trim().length > MIN_CONTENT_LENGTH_FOR_LABELLED) {
     patterns.add('labelled');
   }
 }
@@ -183,7 +189,7 @@ function analyzeCards(html: string): ComponentMap['Card'] | undefined {
 
   return {
     detect: {
-      classesLike: Array.from(classTokens).slice(0, 8),
+      classesLike: Array.from(classTokens).slice(0, MAX_CLASSES_LIKE_CARD),
       patterns: Array.from(patterns),
     },
     mappings: {
@@ -237,7 +243,7 @@ function analyzeInputs(html: string, css: string): ComponentMap['Input'] | undef
   return {
     detect: {
       role: Array.from(roles),
-      classesLike: Array.from(classTokens).slice(0, 6),
+      classesLike: Array.from(classTokens).slice(0, MAX_CLASSES_LIKE_INPUT),
       patterns: Array.from(patterns),
     },
     states: states.length > 0 ? states : undefined,

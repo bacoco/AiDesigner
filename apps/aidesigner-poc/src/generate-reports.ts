@@ -37,7 +37,7 @@ export async function generateDriftReport(tokens: Tokens, outRoot: string) {
 }
 
 function calculateSpacingDrift(values: number[], step: number): number {
-  if (step <= 0) {
+  if (step <= 0 || values.length === 0) {
     return 0;
   }
   const total = values.reduce((sum, value) => {

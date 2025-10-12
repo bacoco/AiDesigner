@@ -7,15 +7,32 @@ type ColorStat = {
   saturation: number;
 };
 
+// Default color palette for pages with no discoverable colors
+const DEFAULT_PALETTE = {
+  background: '#FFFFFF',
+  foreground: '#000000',
+  brand: '#0070F3',
+  muted: '#666666',
+};
+
+// Default font stack for pages with no discoverable fonts
+const DEFAULT_FONT = {
+  family: 'system-ui, -apple-system, sans-serif',
+  weights: [400, 700],
+};
+
+// Color inference constants
+const BACKGROUND_LUMINANCE_PRIMARY = 0.45;
+const BACKGROUND_LUMINANCE_FALLBACK = 0.3;
+const COLOR_SIMILARITY_THRESHOLD = 15; // RGB distance for "approximately equal"
+const MUTED_BLEND_AMOUNT = 0.35;
+
 export function inferTokens(artifacts: InspectionArtifacts): Tokens {
   const now = artifacts.fetchedAt ?? new Date().toISOString();
 
   const colorStats = extractColorStats(artifacts.computedStyles);
-  if (colorStats.length === 0) {
-    throw new Error('Unable to infer color tokens: no color declarations were discovered.');
-  }
+  const palette = colorStats.length > 0 ? resolvePalette(colorStats) : DEFAULT_PALETTE;
 
-  const palette = resolvePalette(colorStats);
   const spacing = buildSpacingScale(artifacts.computedStyles);
   const fonts = buildFontMap(artifacts.computedStyles, artifacts.domSnapshot.html);
   const radii = buildRadiusScale(artifacts.computedStyles);
@@ -108,7 +125,9 @@ function resolvePalette(stats: ColorStat[]): {
 } {
   const sorted = [...stats];
   const background =
-    sorted.find((color) => color.luminance >= 0.45) ?? sorted.find((color) => color.luminance >= 0.3) ?? sorted[0];
+    sorted.find((color) => color.luminance >= BACKGROUND_LUMINANCE_PRIMARY) ??
+    sorted.find((color) => color.luminance >= BACKGROUND_LUMINANCE_FALLBACK) ??
+    sorted[0];
   if (!background) {
     throw new Error('Unable to determine background color from captured styles.');
   }
@@ -130,7 +149,7 @@ function resolvePalette(stats: ColorStat[]): {
     .filter((candidate) => candidate.value !== brand)
     .sort((a, b) => Math.abs(a.luminance - background.luminance) - Math.abs(b.luminance - background.luminance))[0];
 
-  const muted = mutedCandidate?.value ?? blendColors(background.value, foreground, 0.35);
+  const muted = mutedCandidate?.value ?? blendColors(background.value, foreground, MUTED_BLEND_AMOUNT);
 
   return { background: background.value, foreground, brand, muted };
 }
@@ -258,8 +277,14 @@ function buildFontMap(rules: StyleRuleSummary[], html: string): Record<string, {
     }
   }
 
+  // Return default font stack if no families were discovered
   if (families.size === 0) {
-    throw new Error('Unable to infer font families from captured styles.');
+    return {
+      sans: {
+        family: DEFAULT_FONT.family,
+        weights: DEFAULT_FONT.weights,
+      },
+    };
   }
 
   const orderedFamilies = Array.from(families.keys());
@@ -352,7 +377,8 @@ function deriveStep(values: number[]): number | undefined {
     return undefined;
   }
   if (values.length === 1) {
-    return Number.parseFloat(values[0].toFixed(2));
+    const step = Number.parseFloat(values[0].toFixed(2));
+    return step > 0 ? step : undefined;
   }
 
   let step = values[0];
@@ -360,7 +386,9 @@ function deriveStep(values: number[]): number | undefined {
     step = gcd(step, value);
   }
 
-  return Number.parseFloat(step.toFixed(2));
+  const result = Number.parseFloat(step.toFixed(2));
+  // Ensure step is positive and finite to prevent division by zero
+  return result > 0 && Number.isFinite(result) ? result : undefined;
 }
 
 function gcd(a: number, b: number): number {
@@ -523,5 +551,5 @@ function approximatelyEqual(hex: string, other: string): boolean {
   const a = hexToRgb(hex);
   const b = hexToRgb(other);
   const distance = Math.sqrt(Math.pow(a.r - b.r, 2) + Math.pow(a.g - b.g, 2) + Math.pow(a.b - b.b, 2));
-  return distance < 15;
+  return distance < COLOR_SIMILARITY_THRESHOLD;
 }
