@@ -22,6 +22,8 @@ export interface QuasarFactoryOptions {
   parser?: MarkdownTreeParser;
 }
 
+const MAX_HANDOFF_PREVIEW_LENGTH = 2000;
+
 export class QuasarOrchestrator {
   private readonly directive: MetaAgentDirective;
   private readonly handoff: ArchitectHandoff;
@@ -219,7 +221,7 @@ export class QuasarOrchestrator {
     lines.push('The following excerpt captures the development summary provided by the Architect:');
     lines.push('');
     lines.push('```markdown');
-    lines.push(this.handoff.handoffDocument.slice(0, 2000));
+    lines.push(this.handoff.handoffDocument.slice(0, MAX_HANDOFF_PREVIEW_LENGTH));
     lines.push('```');
     lines.push('');
     lines.push('---');

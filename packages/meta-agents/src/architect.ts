@@ -227,7 +227,7 @@ export class ArchitectOrchestrator {
       if (task.output?.details) {
         lines.push(`- Details: ${task.output.details}`);
       }
-      if (task.output?.filesTouched?.length) {
+      if (task.output?.filesTouched && task.output.filesTouched.length > 0) {
         lines.push(`- Files: ${task.output.filesTouched.join(', ')}`);
       }
       if (task.output?.artifacts && Object.keys(task.output.artifacts).length > 0) {
