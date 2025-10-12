@@ -259,12 +259,13 @@ function detectStates(css: string, classTokens: Set<string>, states: string[]): 
   for (const state of states) {
     const regexes: RegExp[] = [];
     for (const cls of classTokens) {
-      regexes.push(new RegExp(`\.${escapeRegExp(cls)}:${state}`, 'i'));
-      regexes.push(new RegExp(`${escapeRegExp(cls)}\.${state}`, 'i'));
+      // Escape the literal dot and add word boundaries to prevent over-matching
+      regexes.push(new RegExp(`\\.${escapeRegExp(cls)}:${state}\\b`, 'i'));
+      regexes.push(new RegExp(`\\.${escapeRegExp(cls)}\\.${state}\\b`, 'i'));
     }
-    regexes.push(new RegExp(`button:${state}`, 'i'));
-    regexes.push(new RegExp(`input:${state}`, 'i'));
-    regexes.push(new RegExp(`textarea:${state}`, 'i'));
+    regexes.push(new RegExp(`\\bbutton:${state}\\b`, 'i'));
+    regexes.push(new RegExp(`\\binput:${state}\\b`, 'i'));
+    regexes.push(new RegExp(`\\btextarea:${state}\\b`, 'i'));
     if (regexes.some((re) => re.test(css))) {
       detected.add(state);
     }

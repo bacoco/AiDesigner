@@ -1,5 +1,6 @@
 import http from 'node:http';
 import https from 'node:https';
+import { isIP } from 'node:net';
 import type {
   AccessibilitySummary,
   ConsoleMessage,
@@ -45,10 +46,15 @@ const MAX_REGEX_MATCHES = 10000; // Limit number of regex matches to prevent DoS
  */
 function isAllowedUrl(url: URL): boolean {
   const hostname = url.hostname.toLowerCase();
+  const ipVersion = isIP(hostname);
 
-  // Block private IP ranges
+  // Block explicit localhost and all-zero bind address
+  if (hostname === '0.0.0.0' || hostname === 'localhost') {
+    return false;
+  }
+
+  // Block private IPv4 ranges
   if (
-    hostname === 'localhost' ||
     hostname.startsWith('127.') ||
     hostname.startsWith('10.') ||
     hostname.startsWith('192.168.') ||
@@ -60,6 +66,22 @@ function isAllowedUrl(url: URL): boolean {
   // Block cloud metadata endpoints
   if (hostname === '169.254.169.254' || hostname === '[::ffff:169.254.169.254]') {
     return false;
+  }
+
+  // Block IPv6 loopback, link-local, ULA, and IPv4-mapped private
+  if (ipVersion === 6) {
+    if (
+      hostname === '::1' ||
+      hostname.startsWith('fe80:') ||
+      hostname.startsWith('fc') ||
+      hostname.startsWith('fd') ||
+      hostname.startsWith('::ffff:127.') ||
+      hostname.startsWith('::ffff:10.') ||
+      hostname.startsWith('::ffff:192.168.') ||
+      /^::ffff:172\.(1[6-9]|2[0-9]|3[01])\./.test(hostname)
+    ) {
+      return false;
+    }
   }
 
   // Only allow HTTP(S) protocols
@@ -373,7 +395,7 @@ function parseAttributes(input: string): Record<string, string> {
   const attrRegex = /([\w-:]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
   let match: RegExpExecArray | null;
   while ((match = attrRegex.exec(input))) {
-    const name = match[1];
+    const name = match[1].toLowerCase(); // Normalize to lowercase for consistent role detection
     const value = match[2] ?? match[3] ?? match[4] ?? '';
     if (name) {
       attributes[name] = value;

@@ -60,7 +60,7 @@ export function inferTokens(artifacts: InspectionArtifacts): Tokens {
       color: colorTokens,
       space: spaceTokens,
       font: fontTokens,
-      radius: radii.values,
+      ...(radii.values ? { radius: radii.values } : {}),
     },
     semantic: {
       'text/primary': { ref: 'color.base/fg' },
@@ -96,9 +96,11 @@ function extractColorStats(rules: StyleRuleSummary[]): ColorStat[] {
       if (!colorProperties.has(property)) {
         continue;
       }
-      const values = rawValue.split(/\s+/);
-      for (const value of values) {
-        const parsed = parseColor(value.replace(/[,;]/g, ''));
+      // Extract color literals using regex to properly handle rgb()/rgba()/hsl()/hsla()
+      const colorMatches =
+        rawValue.match(/#(?:[0-9a-f]{3}){1,2}\b|rgba?\([^)]+\)|hsla?\([^)]+\)/gi) ?? [];
+      for (const value of colorMatches) {
+        const parsed = parseColor(value.trim());
         if (!parsed) {
           continue;
         }
