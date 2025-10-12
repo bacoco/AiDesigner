@@ -669,11 +669,6 @@ const resolveCompanionRepoPath = (config) => {
   const overrideRoot = process.env.COMPOUNDING_ENGINEERING_ROOT;
   if (overrideRoot && typeof overrideRoot === 'string' && overrideRoot.trim()) {
     const resolved = path.resolve(overrideRoot);
-    // Basic path validation: prevent path traversal attacks
-    if (resolved.includes('..') || !path.isAbsolute(resolved)) {
-      console.warn('⚠️  Warning: Potentially unsafe path detected in COMPOUNDING_ENGINEERING_ROOT');
-      return undefined;
-    }
     return resolved;
   }
 
@@ -685,12 +680,6 @@ const resolveCompanionRepoPath = (config) => {
   const resolved = path.isAbsolute(repositoryPath)
     ? repositoryPath
     : path.join(__dirname, '..', repositoryPath);
-
-  // Basic path validation: ensure the resolved path doesn't contain suspicious patterns
-  if (resolved.includes('..') && !path.isAbsolute(repositoryPath)) {
-    console.warn('⚠️  Warning: Potentially unsafe path detected in repositoryPath');
-    return undefined;
-  }
 
   return resolved;
 };
@@ -2033,26 +2022,25 @@ Happy building with BMAD! 🚀
       return;
     }
 
-    const absoluteRepoPath = path.resolve(repoPath);
-    if (!fs.existsSync(absoluteRepoPath)) {
+    if (!fs.existsSync(repoPath)) {
       console.log('📁 Companion repository not found. Clone it with:');
-      console.log(`   git clone ${COMPANION_REPO_URL} ${absoluteRepoPath}`);
+      console.log(`   git clone ${COMPANION_REPO_URL} ${repoPath}`);
       console.log('   (Set COMPOUNDING_ENGINEERING_ROOT to override the checkout location if needed.)');
       return;
     }
 
-    if (!fs.existsSync(path.join(absoluteRepoPath, '.git'))) {
+    if (!fs.existsSync(path.join(repoPath, '.git'))) {
       console.error('❌ The companion directory exists but is not a git repository.');
-      console.log(`   Remove ${absoluteRepoPath} or clone the repository manually:`);
-      console.log(`   git clone ${COMPANION_REPO_URL} ${absoluteRepoPath}`);
+      console.log(`   Remove ${repoPath} or clone the repository manually:`);
+      console.log(`   git clone ${COMPANION_REPO_URL} ${repoPath}`);
       return;
     }
 
-    console.log(`🔄 Updating compounding-engineering companion at ${absoluteRepoPath}`);
+    console.log(`🔄 Updating compounding-engineering companion at ${repoPath}`);
     try {
       await new Promise((resolve, reject) => {
         const child = spawn('git', ['pull', '--ff-only'], {
-          cwd: absoluteRepoPath,
+          cwd: repoPath,
           stdio: 'inherit',
         });
 

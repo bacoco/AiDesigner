@@ -163,7 +163,7 @@ function resolveEnvironmentValue(alias: string, mapping: EnvironmentMapping | un
 
   if (!isNonEmptyString(resolved) && mapping.required) {
     throw new Error(
-      `Missing required environment variable for Compounding Engineering integration: ${sourceKey ?? alias}`,
+      `Missing required environment variable for Compounding Engineering integration: ${sourceKey}`,
     );
   }
 
@@ -549,7 +549,7 @@ export class CompoundingEngineeringPlanningAdapter {
         if (typeof item === 'string') {
           register(item);
         } else if (typeof item === 'object' && item) {
-          const candidate = (item as PluginTaskDependency).id ?? (item as PluginTaskDependency).from;
+          const candidate = (item as PluginTaskDependency).id ?? (item as PluginTaskDependency).to;
           register(candidate);
         }
       }
