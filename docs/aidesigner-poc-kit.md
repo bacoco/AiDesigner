@@ -130,133 +130,29 @@ export type {
 
 ### 1.3 `packages/mcp-inspector/src/index.ts`
 
-> **Note**: This is skeleton code for illustration purposes. Actual implementation requires connecting to your Chrome DevTools MCP server.
+The inspector now performs a live capture of the target URL instead of returning mocked tool metadata. Highlights:
 
-```ts
-import { Client } from '@modelcontextprotocol/sdk/client';
-import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket';
-
-export type InspectOptions = {
-  url: string;
-};
-
-export type InspectResult = {
-  tools: Array<{
-    name: string;
-    signature: string;
-    description?: string;
-  }>;
-  errors: Array<{
-    stage: 'connect' | 'list-tools' | 'format' | 'disconnect';
-    message: string;
-    toolName?: string;
-  }>;
-};
-
-export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResult> {
-  const client = new Client({ name: 'AiDesigner MCP Inspector', version: '1.0.0' });
-  const transport = new WebSocketClientTransport(new URL(opts.url));
-
-  try {
-    await client.connect(transport);
-    const toolResponse = await client.listTools();
-    return {
-      tools: toolResponse.tools.map((tool) => ({
-        name: tool.name,
-        signature: `${tool.name}(…) => …`,
-        description: tool.description ?? undefined,
-      })),
-      errors: [],
-    };
-  } catch (error) {
-    return {
-      tools: [],
-      errors: [
-        {
-          stage: 'connect',
-          message: error instanceof Error ? error.message : String(error),
-        },
-      ],
-    };
-  } finally {
-    await transport.close().catch(() => undefined);
-  }
-}
-```
+- Validates the URL and issues an HTTP(S) request with redirect handling (up to five hops) using Node's core networking stack.
+- Collects inline `<style>` tags and fetches linked stylesheets, logging any failures in the returned `errors` array.
+- Produces normalized artifacts: HTML snapshot, parsed CSS rules, accessibility role summaries, and console placeholders alongside metadata (`url`, `states`, `fetchedAt`).
 
 ### 1.4 `packages/inference/src/tokens.ts`
 
-> **Note**: This is skeleton code for illustration purposes. Production implementation should use proper clustering algorithms and style extraction.
+Token inference now derives primitives from the captured artifacts:
 
-```ts
-import type { Tokens } from '@aidesigner/shared-types';
-
-export function inferTokens(input: {
-  domSnapshot: any;
-  computedStyles: any[];
-  cssom: any;
-}): Tokens {
-  // Heuristics: color clustering (simplified k-medoids), spacing steps (GCD-like), font families.
-  const now = new Date().toISOString();
-
-  // TODO: Extract real values from computedStyles
-  const colors = {
-    'base/fg': '#0A0A0A',
-    'base/bg': '#FFFFFF',
-    'brand/600': '#635BFF',
-    'muted/500': '#6B7280',
-  };
-  const space = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 24, xl: 32 };
-  const font = { sans: { family: 'Inter, system-ui, sans-serif', weights: [400, 600] } };
-
-  return {
-    meta: { source: 'url', capturedAt: now },
-    primitives: { color: colors, space, font },
-    semantic: {
-      'text/primary': { ref: 'color.base/fg' },
-      'surface/default': { ref: 'color.base/bg' },
-      'button/primary/bg': { ref: 'color.brand/600' },
-    },
-    constraints: { spacingStep: 4, borderRadiusStep: 2, contrastMin: 4.5 },
-  };
-}
-```
+- Parses every color declaration, converts to RGB/HEX, and selects background/foreground/brand tones based on luminance, contrast, and saturation heuristics.
+- Builds spacing and radius scales by scanning pixel-based margin/padding/gap/border-radius values and estimating the step with a floating-point GCD.
+- Extracts font families (including shorthand `font` declarations), records observed weights, and carries optional letter-spacing hints.
+- Emits semantic references (`text/primary`, `surface/default`, `button/primary/bg`, etc.) backed by the inferred primitives alongside contrast requirements.
 
 ### 1.5 `packages/inference/src/components.ts`
 
-> **Note**: This is skeleton code for illustration purposes. Production implementation should use sophisticated pattern matching.
+Component detection now inspects the captured HTML/CSS instead of returning a static map:
 
-```ts
-import type { ComponentMap } from '@aidesigner/shared-types';
-
-export function detectComponents(input: {
-  domSnapshot: any;
-  accessibilityTree: any;
-  cssom: any;
-}): ComponentMap {
-  // Heuristics: ARIA roles, class patterns, recurring CSS patterns
-  return {
-    Button: {
-      detect: { role: ['button'], classesLike: ['btn', 'button'], patterns: ['rounded'] },
-      variants: { intent: ['primary', 'secondary', 'danger'], size: ['sm', 'md', 'lg'] },
-      states: ['default', 'hover', 'focus', 'disabled'],
-      a11y: { minHit: 44, focusRing: true },
-      mappings: {
-        shadcn: '<Button variant="{intent}" size="{size}">{slot}</Button>',
-        mui: '<Button color="{intent}" size="{size}">{slot}</Button>',
-      },
-    },
-    Card: {
-      detect: { role: [], classesLike: ['card'], patterns: ['shadow', 'rounded'] },
-      mappings: {
-        shadcn:
-          '<Card><CardHeader>{header}</CardHeader><CardContent>{content}</CardContent></Card>',
-        mui: '<Card><CardHeader title={header}/><CardContent>{content}</CardContent></Card>',
-      },
-    },
-  };
-}
-```
+- Discovers buttons across semantic `<button>` elements, `role="button"` anchors, and button-type inputs while capturing class tokens for intent/size inference and rounded/shadow patterns.
+- Identifies card-like containers via recurring classnames (`card`, `panel`, `box`, …) and inline styles that hint at rounded corners or shadows.
+- Detects text inputs/textarea fields as a distinct component, monitoring CSS selectors for focus/disabled states.
+- Emits Shadcn/MUI mapping templates that reference the detected variant dimensions so generation can render real components.
 
 ### 1.6 `packages/validators/src/contrast.ts`
 
@@ -401,8 +297,8 @@ export async function runUrlAnalysis(
         JSON.stringify(res.domSnapshot, null, 2),
       ),
       fs.writeFile(
-        path.join(evidenceDir, 'accessibilityTree.json'),
-        JSON.stringify(res.accessibilityTree, null, 2),
+        path.join(evidenceDir, 'accessibility.json'),
+        JSON.stringify(res.accessibility, null, 2),
       ),
       fs.writeFile(path.join(evidenceDir, 'cssom.json'), JSON.stringify(res.cssom, null, 2)),
       fs.writeFile(path.join(evidenceDir, 'console.json'), JSON.stringify(res.console, null, 2)),

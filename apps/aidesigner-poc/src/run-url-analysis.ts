@@ -72,11 +72,12 @@ export async function runUrlAnalysis(
         JSON.stringify(res.domSnapshot, null, 2),
       ),
       fs.writeFile(
-        path.join(evidenceDir, 'accessibilityTree.json'),
-        JSON.stringify(res.accessibilityTree, null, 2),
+        path.join(evidenceDir, 'accessibility.json'),
+        JSON.stringify(res.accessibility, null, 2),
       ),
       fs.writeFile(path.join(evidenceDir, 'cssom.json'), JSON.stringify(res.cssom, null, 2)),
       fs.writeFile(path.join(evidenceDir, 'console.json'), JSON.stringify(res.console, null, 2)),
+      fs.writeFile(path.join(evidenceDir, 'errors.json'), JSON.stringify(res.errors, null, 2)),
       fs.writeFile(path.join(dataDir, 'tokens.json'), JSON.stringify(tokens, null, 2)),
       fs.writeFile(path.join(dataDir, 'components.map.json'), JSON.stringify(comps, null, 2)),
     ]);
