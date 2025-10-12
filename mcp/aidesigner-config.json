@@ -24,6 +24,14 @@
     "github": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"]
+    },
+    "vibe-check": {
+      "command": "npx",
+      "args": ["-y", "vibe-check-mcp-server"],
+      "env": {
+        "VIBE_CHECK_API_KEY": "${VIBE_CHECK_API_KEY}",
+        "VIBE_CHECK_MODEL": "claude-3-5-sonnet-20241022"
+      }
     }
   }
 }
