@@ -133,55 +133,54 @@ export type {
 > **Note**: This is skeleton code for illustration purposes. Actual implementation requires connecting to your Chrome DevTools MCP server.
 
 ```ts
-// Minimal wrapper for Chrome DevTools MCP.
-// Adapt tool names to match your Chrome MCP server (see Chrome MCP README).
+import { Client } from '@modelcontextprotocol/sdk/client';
+import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket';
 
 export type InspectOptions = {
   url: string;
-  states?: Array<'default' | 'hover' | 'focus' | 'dark' | 'md' | 'lg'>;
 };
 
 export type InspectResult = {
-  domSnapshot: any;
-  accessibilityTree: any;
-  cssom: any;
-  computedStyles: any[]; // par node
-  console: { logs: any[]; warnings: any[]; errors: any[] };
-  perfTracePath?: string;
-  screenshots: string[]; // chemins sauvegardés
+  tools: Array<{
+    name: string;
+    signature: string;
+    description?: string;
+  }>;
+  errors: Array<{
+    stage: 'connect' | 'list-tools' | 'format' | 'disconnect';
+    message: string;
+    toolName?: string;
+  }>;
 };
 
 export async function analyzeWithMCP(opts: InspectOptions): Promise<InspectResult> {
-  // TODO: Connect to your existing MCP client.
-  // Pseudo-calls (replace with actual MCP server tool names):
-  //
-  // try {
-  //   await mcp.browser.open(opts.url)
-  //   const domSnapshot = await mcp.devtools.dom_snapshot()
-  //   const accessibilityTree = await mcp.devtools.accessibility_tree()
-  //   const cssom = await mcp.devtools.cssom_dump()
-  //   const computedStyles = await mcp.devtools.get_computed_styles({ nodes: 'all' })
-  //   const console = await mcp.devtools.console_get_messages({ levels: ['log','warn','error'] })
-  //   await mcp.devtools.performance_start_trace({ preset: 'navigation' })
-  //   // ... navigate/idle ...
-  //   const perfTracePath = await mcp.devtools.performance_stop_trace()
-  //   const screenshots = await mcp.devtools.capture_screenshot({ states: opts.states || ['default'] })
-  //
-  //   return { domSnapshot, accessibilityTree, cssom, computedStyles, console, perfTracePath, screenshots };
-  // } catch (error) {
-  //   throw new Error(`MCP analysis failed: ${error.message}`);
-  // }
+  const client = new Client({ name: 'AiDesigner MCP Inspector', version: '1.0.0' });
+  const transport = new WebSocketClientTransport(new URL(opts.url));
 
-  // Placeholder return for skeleton code:
-  return {
-    domSnapshot: {},
-    accessibilityTree: {},
-    cssom: {},
-    computedStyles: [],
-    console: { logs: [], warnings: [], errors: [] },
-    perfTracePath: undefined,
-    screenshots: [],
-  };
+  try {
+    await client.connect(transport);
+    const toolResponse = await client.listTools();
+    return {
+      tools: toolResponse.tools.map((tool) => ({
+        name: tool.name,
+        signature: `${tool.name}(…) => …`,
+        description: tool.description ?? undefined,
+      })),
+      errors: [],
+    };
+  } catch (error) {
+    return {
+      tools: [],
+      errors: [
+        {
+          stage: 'connect',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      ],
+    };
+  } finally {
+    await transport.close().catch(() => undefined);
+  }
 }
 ```
 
