@@ -1,0 +1,177 @@
+# External Integrations Manifest
+# This manifest defines external AI agent ecosystems that can be synced into the AiDesigner workspace.
+#
+# Note: Some pipeline steps reference external tool scripts (e.g., .dev/tools/external/*.js)
+# that are marked as optional. These scripts are placeholders for future implementation and
+# will be created as needed. The sync will continue with warnings if these scripts are missing.
+
+version: 1
+owner: "Platform Integrations Guild"
+syncCadence: "weekly"
+statusDocument: "docs/final-integration-plan.md"
+checklist:
+  - "Confirm Vibe Check MCP credentials are valid before running sync."
+  - "Audit upstream licenses before importing new assets."
+  - "Run npm run format && npm run lint:fix after applying incoming changes."
+sources:
+  - id: "compounding-engine"
+    name: "Every Marketplace Compounding Engine"
+    repository: "https://github.com/everymarketplace/compounding-engine.git"
+    kind: "git"
+    description: "Compounding personas, tasks, and workflow scripts for marketplace automation."
+    targetDirectory: "expansion-packs/external-integrations/sources/compounding-engine"
+    personas:
+      - "orchestrator"
+      - "qa"
+      - "designer"
+    workflows:
+      - "agents/mcp/compounding-engine.md"
+    pipeline:
+      - name: "Refresh repository mirror"
+        description: "Fetch latest upstream updates and rebase the local workspace mirror."
+        commands:
+          - run: "git"
+            args:
+              - "pull"
+              - "--rebase"
+            cwd: "expansion-packs/external-integrations/sources/compounding-engine"
+      - name: "Normalize metadata"
+        description: "Rebuild aggregated persona registry after ingesting changes."
+        commands:
+          - run: "node"
+            args:
+              - ".dev/tools/external/normalize-compounding-engine.js"
+            cwd: "."
+            optional: true
+      - name: "Format orchestrator assets"
+        commands:
+          - run: "npm"
+            args:
+              - "run"
+              - "format"
+            cwd: "."
+    governance:
+      owner: "Integrations Platform"
+      slack: "#aidesigner-integrations"
+      cadences:
+        planning: "Weekly Integration Sync"
+        qa: "Bi-weekly MCP Inspector Review"
+  - id: "awesome-ui"
+    name: "Awesome UI Component Registry"
+    repository: "https://github.com/awesome/ui-components.git"
+    kind: "git"
+    description: "UI primitives and accessibility notes surfaced in AiDesigner planning flows."
+    targetDirectory: "expansion-packs/external-integrations/sources/awesome-ui"
+    personas:
+      - "architect"
+      - "designer"
+    workflows:
+      - "templates/ui/component-usage.yaml"
+    pipeline:
+      - name: "Sync component registry"
+        description: "Clone or update the Awesome UI catalog before regenerating hints."
+        commands:
+          - run: "git"
+            args:
+              - "pull"
+              - "--rebase"
+            cwd: "expansion-packs/external-integrations/sources/awesome-ui"
+      - name: "Generate component hints"
+        description: "Produce the ui-components.registry.json file consumed by architect planners."
+        commands:
+          - run: "node"
+            args:
+              - ".dev/tools/external/build-awesome-ui-registry.js"
+            cwd: "."
+            optional: true
+      - name: "Run formatting pipeline"
+        commands:
+          - run: "npm"
+            args:
+              - "run"
+              - "format"
+            cwd: "."
+    governance:
+      owner: "Design Systems"
+      slack: "#aidesigner-design"
+      cadences:
+        planning: "Thursday Registry Review"
+        qa: "Monthly Accessibility Audit"
+  - id: "superdesign"
+    name: "SuperDesign Generator"
+    repository: "https://github.com/superdesign/generator.git"
+    kind: "git"
+    description: "Generative asset recipes and art-direction prompts integrated via orchestrator expansions."
+    targetDirectory: "expansion-packs/external-integrations/sources/superdesign"
+    personas:
+      - "creative-director"
+      - "designer"
+    workflows:
+      - "workflows/superdesign-ingestion.yaml"
+    pipeline:
+      - name: "Update generator assets"
+        commands:
+          - run: "git"
+            args:
+              - "pull"
+              - "--rebase"
+            cwd: "expansion-packs/external-integrations/sources/superdesign"
+      - name: "Export asset manifest"
+        commands:
+          - run: "node"
+            args:
+              - ".dev/tools/external/export-superdesign-manifest.js"
+            cwd: "."
+            optional: true
+      - name: "Apply repository lint rules"
+        commands:
+          - run: "npm"
+            args:
+              - "run"
+              - "lint:fix"
+            cwd: "."
+    governance:
+      owner: "Creative Automation"
+      slack: "#aidesigner-creative"
+      cadences:
+        planning: "Sprint Planning Week 2"
+        qa: "Quarterly Design QA"
+  - id: "vibe-check"
+    name: "Vibe Check MCP Safety Layer"
+    repository: "https://github.com/vibe-check/mcp-safety.git"
+    kind: "git"
+    description: "Safety policies, adjudication flows, and credentialed MCP adapters."
+    targetDirectory: "expansion-packs/external-integrations/sources/vibe-check"
+    personas:
+      - "safety"
+      - "qa"
+    workflows:
+      - "checklists/safety/vibe-check.md"
+    pipeline:
+      - name: "Refresh policy bundle"
+        commands:
+          - run: "git"
+            args:
+              - "pull"
+              - "--rebase"
+            cwd: "expansion-packs/external-integrations/sources/vibe-check"
+      - name: "Validate credential manifests"
+        commands:
+          - run: "node"
+            args:
+              - ".dev/tools/external/validate-vibe-check-credentials.js"
+            cwd: "."
+            optional: true
+      - name: "Run safety diagnostics"
+        commands:
+          - run: "npm"
+            args:
+              - "run"
+              - "validate"
+            cwd: "."
+    governance:
+      owner: "Safety & Compliance"
+      slack: "#aidesigner-safety"
+      cadences:
+        planning: "Safety Council Weekly"
+        qa: "Release Gate Reviews"
