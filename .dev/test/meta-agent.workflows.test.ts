@@ -61,9 +61,9 @@ describe('meta-agent workflows', () => {
       this.ensureDirSync(dirPath);
     }
 
-    async writeFile(filePath: string, data: string, encoding: BufferEncoding = 'utf8') {
-      const normalizedData = Buffer.from(data, encoding).toString('utf8');
-      this.writeFileSync(filePath, normalizedData);
+    async writeFile(filePath: string, data: string, _encoding: BufferEncoding = 'utf8') {
+      // Data is already a string, no need to convert through Buffer
+      this.writeFileSync(filePath, data);
     }
 
     async readFile(filePath: string, encoding: BufferEncoding = 'utf8') {
@@ -72,7 +72,8 @@ describe('meta-agent workflows', () => {
       if (contents === undefined) {
         throw new Error(`ENOENT: ${normalized}`);
       }
-      return Buffer.from(contents, 'utf8').toString(encoding);
+      // Only convert encoding if needed
+      return encoding === 'utf8' ? contents : Buffer.from(contents, 'utf8').toString(encoding);
     }
 
     async pathExists(target: string) {

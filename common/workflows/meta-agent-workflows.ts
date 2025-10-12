@@ -1,4 +1,5 @@
 
+import { randomUUID } from 'node:crypto';
 import { GenesisMetaAgent, LibrarianMetaAgent, RefactorMetaAgent } from '../../packages/meta-agents/src';
 import type {
   GenesisInput,
@@ -91,7 +92,7 @@ export class MetaAgentWorkflowService {
   async start<K extends MetaAgentWorkflowId>(workflowId: K, input: WorkflowInputMap[K]): Promise<WorkflowStartResult> {
     const agent = this.buildAgent(workflowId, input);
     const result = (await agent.run()) as WorkflowSession;
-    const sessionId = `${workflowId}-${Date.now()}`;
+    const sessionId = `${workflowId}-${randomUUID()}`;
     this.sessions.set(sessionId, result);
     return { sessionId, result };
   }

@@ -125,8 +125,9 @@ export const renderMermaidComponentMap = (components: Array<{
   const lines = ['graph TD'];
   for (const component of components) {
     const label = `${component.name}[${component.type}]`;
+    // Always emit the node label first to preserve type information
+    lines.push(`  ${label}`);
     if (component.relations.length === 0) {
-      lines.push(`  ${label}`);
       continue;
     }
     for (const relation of component.relations) {

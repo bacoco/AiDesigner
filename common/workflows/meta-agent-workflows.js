@@ -1,5 +1,6 @@
 /* eslint-disable unicorn/prefer-module, n/no-unpublished-require */
 
+const { randomUUID } = require('node:crypto');
 const {
   GenesisMetaAgent,
   LibrarianMetaAgent,
@@ -47,7 +48,7 @@ class MetaAgentWorkflowService {
   start(workflowId, input) {
     const agent = this.#buildAgent(workflowId, input);
     return agent.run().then((result) => {
-      const sessionId = `${workflowId}-${Date.now()}`;
+      const sessionId = `${workflowId}-${randomUUID()}`;
       this.sessions.set(sessionId, result);
       return { sessionId, result };
     });
