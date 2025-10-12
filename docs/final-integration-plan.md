@@ -102,9 +102,9 @@ This document consolidates the most recent planning notes for external ecosystem
 
 ## Sprint-Ready Backlog (Next 2 Weeks)
 
-1. Finish the compounding-engineering adapter tests and smoke checks so CI detects missing companion repos early.
-2. Wire the generated Awesome UI component registry into architect planner prompts and regression-test the hint rendering loop.
-3. Draft SuperDesign API client interfaces and configuration docs to unblock orchestrator wiring in Phase 2.
+1. Finish the compounding-engineering adapter tests and smoke checks so CI detects regressions in the vendored planner early.
+2. Implement the initial Awesome UI ingestion script that generates `ui-components.registry.json` and annotate Architect planner tasks with component hints.
+3. Draft SuperDesign API client interfaces and configuration docs to unblock orchestration wiring in Phase 2.
 4. Build the `ChromeMCPClient` skeleton with connect/call/close lifecycle and swap the availability check to use the real handshake.
 5. Surface Vibe Check credential audit results to MCP inspector agents and decide when to enable strict failure gating by default.
 

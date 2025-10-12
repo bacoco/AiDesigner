@@ -641,8 +641,6 @@ const buildSpawnEnv = () => {
 // Get current package version
 const packageJsonPath = path.join(__dirname, '..', 'package.json');
 const currentVersion = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
-const COMPANION_REPO_URL = 'https://github.com/everymarketplace/compounding-engineering.git';
-
 const loadCompanionIntegrationConfig = () => {
   const configPath = path.join(
     __dirname,
@@ -709,7 +707,7 @@ Commands:
   workflow start <id>  Run meta-agent workflow (genesis | librarian | refactor)
 
   install              Install AiDesigner globally
-  companion-sync       Clone or update the compounding-engineering companion repository
+  companion-sync       Validate the built-in compounding-engineering planner assets
   build                Build MCP server
   test                 Run test suite
   validate             Validate configuration
@@ -2201,47 +2199,30 @@ Happy building with BMAD! 🚀
       return;
     }
 
-    if (!fs.existsSync(repoPath)) {
-      console.log('📁 Companion repository not found. Clone it with:');
-      console.log(`   git clone ${COMPANION_REPO_URL} ${repoPath}`);
-      console.log('   (Set COMPOUNDING_ENGINEERING_ROOT to override the checkout location if needed.)');
+    const manifestPath = path.isAbsolute(config.manifestPath)
+      ? config.manifestPath
+      : path.join(repoPath, config.manifestPath);
+
+    const cliPath = config?.defaultCommand?.args?.[0]
+      ? path.join(repoPath, config.defaultCommand.args[0])
+      : undefined;
+
+    const manifestExists = manifestPath ? fs.existsSync(manifestPath) : false;
+    const cliExists = cliPath ? fs.existsSync(cliPath) : false;
+
+    console.log('🔎 Compounding Engineering integration status');
+    console.log(`   Config: ${configPath}`);
+    console.log(`   Repository root: ${repoPath}`);
+    console.log(`   Manifest: ${manifestExists ? '✅ found' : '❌ missing'} (${manifestPath})`);
+    console.log(`   CLI entry: ${cliExists ? '✅ found' : '❌ missing'} (${cliPath ?? 'n/a'})`);
+
+    if (!manifestExists || !cliExists) {
+      console.error('❌ Built-in planner assets are incomplete. Reinstall the package or restore missing files.');
+      process.exitCode = 1;
       return;
     }
 
-    if (!fs.existsSync(path.join(repoPath, '.git'))) {
-      console.error('❌ The companion directory exists but is not a git repository.');
-      console.log(`   Remove ${repoPath} or clone the repository manually:`);
-      console.log(`   git clone ${COMPANION_REPO_URL} ${repoPath}`);
-      return;
-    }
-
-    console.log(`🔄 Updating compounding-engineering companion at ${repoPath}`);
-    try {
-      await new Promise((resolve, reject) => {
-        const child = spawn('git', ['pull', '--ff-only'], {
-          cwd: repoPath,
-          stdio: 'inherit',
-        });
-
-        child.on('error', (spawnError) => {
-          reject(spawnError);
-        });
-
-        child.on('exit', (code) => {
-          if (code === 0) {
-            resolve(undefined);
-          } else {
-            reject(new Error(`git pull exited with code ${code}`));
-          }
-        });
-      });
-
-      console.log('✅ Companion repository is up to date.');
-    } catch (pullError) {
-      console.error('❌ Failed to update companion repository:', pullError.message || pullError);
-      console.log('   Run git manually to resolve the issue.');
-      process.exit(1);
-    }
+    console.log('✅ Built-in planner assets are ready. No external clone required.');
   },
 
   build: async () => {

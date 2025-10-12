@@ -1,5 +1,5 @@
 {
-  "repositoryPath": "external/compounding-engineering",
+  "repositoryPath": ".",
   "manifestPath": "packages/compounding-engineering/manifest.json",
   "defaultCommand": {
     "command": "node",

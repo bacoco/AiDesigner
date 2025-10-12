@@ -1,45 +1,42 @@
 # Compounding Engineering Integration
 
-The Architect orchestration loop can delegate task decomposition to the
-[`everymarketplace/compounding-engineering`](https://github.com/everymarketplace/compounding-engineering)
-plugin. This guide explains how to install the companion repository, provide
-credentials, and understand how the planner consumes the resulting task graph.
+The Architect orchestration loop now ships with a **built-in copy** of the
+Compounding Engineering planner. AiDesigner vendors the manifest and CLI under
+`packages/compounding-engineering/`, removing the need to clone the companion
+repository from [`everymarketplace/compounding-engineering`](https://github.com/everymarketplace/compounding-engineering).
+This guide explains how to verify the assets, supply credentials, and
+understand how the planner feeds the Architect task graph.
 
-## Repository layout
+## Built-in layout
 
-AiDesigner expects the companion repository to live at:
+The planner assets live inside the monorepo:
 
 ```
-external/compounding-engineering/
+packages/compounding-engineering/
+  cli.mjs
+  manifest.json
 ```
 
-You can override the location by setting the `COMPOUNDING_ENGINEERING_ROOT`
-environment variable. The adapter reads
-`packages/meta-agents/config/compounding-engineering.json` to resolve the
-manifest and CLI invocation metadata.
+`packages/meta-agents/config/compounding-engineering.json` points the
+orchestrator at these files and runs the CLI from the repository root. Set
+`COMPOUNDING_ENGINEERING_ROOT` only if you need to override the execution
+directory (for example, during testing with fixtures).
 
-## Cloning and updating the companion repo
+## Verifying the integration
 
-Use the CLI helper to fetch or update the integration:
+Use the CLI helper to confirm everything is wired correctly:
 
 ```bash
 npx aidesigner companion-sync
 ```
 
-If the repository is missing, the command prints the `git clone` invocation,
-which defaults to:
-
-```bash
-git clone https://github.com/everymarketplace/compounding-engineering.git external/compounding-engineering
-```
-
-Run the command again whenever you want to pull upstream changes. Set
-`COMPOUNDING_ENGINEERING_ROOT` if you want to maintain the checkout elsewhere
-(e.g., inside a monorepo workspace).
+The command now validates that the manifest and CLI entry point exist inside
+the repository and reports their locations. No git operations are required.
 
 ## Authentication
 
-Two environment variables are available for API-based deployments:
+Two environment variables remain available for deployments that require
+authenticated planner behavior:
 
 | Variable                               | Purpose                                 |
 | -------------------------------------- | --------------------------------------- |
@@ -54,20 +51,19 @@ passes them through when invoking the plugin commands.
 During **Step 1 – Task Decomposition**, the Architect orchestrator calls the
 `CompoundingEngineeringPlanningAdapter`, which performs the following actions:
 
-1. Load the plugin manifest from the companion repository.
+1. Load the vendored manifest.
 2. Execute the `/create-tasks` command with the feature brief as JSON input.
 3. Normalize the returned missions into the Architect dependency graph format.
 4. Merge the generated developer sub-agent missions with the existing plan.
 
 The normalized task graph is exposed to downstream tooling, ensuring that
-missions, dependency edges, and metadata remain traceable back to the plugin.
+missions, dependency edges, and metadata remain traceable back to the planner.
 
 ## Troubleshooting
 
-- **Missing repository** – Run `npx aidesigner companion-sync` to see cloning
-  instructions or set `COMPOUNDING_ENGINEERING_ROOT` to the correct path.
-- **Manifest errors** – Verify that `packages/compounding-engineering/manifest.json`
-  exists within the companion checkout. Update the config file if the manifest
-  moves in a future release.
+- **Missing files** – Run `npx aidesigner companion-sync` to confirm the
+  manifest and CLI exist. Reinstall AiDesigner if either file is missing.
+- **Manifest errors** – If you customize the manifest path, update
+  `packages/meta-agents/config/compounding-engineering.json` to match.
 - **Authentication failures** – Ensure `COMPOUNDING_ENGINEERING_API_KEY` and
   related variables are exported in the shell that launches the orchestrator.
