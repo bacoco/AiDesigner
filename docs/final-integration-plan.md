@@ -1,7 +1,7 @@
 ---
 title: 'Final Integration Execution Plan'
 status: active
-updated: 2025-02-14
+updated: 2025-02-15
 contributors: ['gpt-5-codex']
 ---
 
@@ -17,6 +17,12 @@ This document consolidates the most recent planning notes for external ecosystem
 - [JIT Context Injection Integration Plan](jit-context-integration-plan.md)
 
 ## Latest Implementation Updates
+
+> **2025-02-15** — Ingestion utilities and safety audits wired into the pipelines.
+>
+> - Landed `.dev/tools/external/*` scripts for Compounding Engine normalization, Awesome UI registry generation, SuperDesign manifest export, and Vibe Check credential auditing, all callable from the manifest pipelines.
+> - Codified workspace hygiene with ignore rules and a README under `expansion-packs/external-integrations/`, clarifying how mirrored repositories and generated artifacts are staged.
+> - Extended the Final Integration plan backlog to focus on wiring registry outputs into planners and surfacing credential audits to MCP inspector agents.
 
 > **2025-02-14** — External ecosystem groundwork landed.
 >
@@ -97,10 +103,10 @@ This document consolidates the most recent planning notes for external ecosystem
 ## Sprint-Ready Backlog (Next 2 Weeks)
 
 1. Finish the compounding-engineering adapter tests and smoke checks so CI detects missing companion repos early.
-2. Implement the initial Awesome UI ingestion script that generates `ui-components.registry.json` and annotate Architect planner tasks with component hints.
-3. Draft SuperDesign API client interfaces and configuration docs to unblock orchestration wiring in Phase 2.
+2. Wire the generated Awesome UI component registry into architect planner prompts and regression-test the hint rendering loop.
+3. Draft SuperDesign API client interfaces and configuration docs to unblock orchestrator wiring in Phase 2.
 4. Build the `ChromeMCPClient` skeleton with connect/call/close lifecycle and swap the availability check to use the real handshake.
-5. Add MCP inspector checklist enforcement for Vibe Check credentials, ensuring the safety gate becomes a blocking requirement.
+5. Surface Vibe Check credential audit results to MCP inspector agents and decide when to enable strict failure gating by default.
 
 ## Governance & Reporting
 

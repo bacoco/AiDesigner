@@ -1,10 +1,3 @@
-# External Integrations Manifest
-# This manifest defines external AI agent ecosystems that can be synced into the AiDesigner workspace.
-#
-# Note: Some pipeline steps reference external tool scripts (e.g., .dev/tools/external/*.js)
-# that are marked as optional. These scripts are placeholders for future implementation and
-# will be created as needed. The sync will continue with warnings if these scripts are missing.
-
 version: 1
 owner: "Platform Integrations Guild"
 syncCadence: "weekly"
@@ -16,7 +9,7 @@ checklist:
 sources:
   - id: "compounding-engine"
     name: "Every Marketplace Compounding Engine"
-    repository: "https://github.com/everymarketplace/compounding-engine.git"
+    repository: "https://github.com/everymarketplace/compounding-engineering.git"
     kind: "git"
     description: "Compounding personas, tasks, and workflow scripts for marketplace automation."
     targetDirectory: "expansion-packs/external-integrations/sources/compounding-engine"
