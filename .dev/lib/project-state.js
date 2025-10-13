@@ -29,6 +29,12 @@ class ProjectState {
       nextSteps: '',
       createdAt: null,
       updatedAt: null,
+      integrations: {
+        drawbridge: {
+          ingestions: [],
+          lastMode: null,
+        },
+      },
     };
 
     this.conversation = [];
@@ -66,6 +72,8 @@ class ProjectState {
       this.state = await fs.readJson(this.stateFile);
     }
 
+    this.ensureIntegrationState();
+
     if (await fs.pathExists(this.conversationFile)) {
       this.conversation = await fs.readJson(this.conversationFile);
     }
@@ -99,6 +107,7 @@ class ProjectState {
    * Save state to disk
    */
   async save() {
+    this.ensureIntegrationState();
     this.state.updatedAt = new Date().toISOString();
 
     await fs.writeJson(this.stateFile, this.state, { spaces: 2 });
@@ -573,6 +582,12 @@ class ProjectState {
       nextSteps: '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      integrations: {
+        drawbridge: {
+          ingestions: [],
+          lastMode: null,
+        },
+      },
     };
 
     this.conversation = [];
@@ -689,6 +704,162 @@ class ProjectState {
    */
   generateProjectId() {
     return `aidesigner-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  }
+
+  ensureIntegrationState() {
+    if (!this.state.integrations || typeof this.state.integrations !== 'object') {
+      this.state.integrations = {};
+    }
+
+    const drawbridge = this.state.integrations.drawbridge;
+
+    if (!drawbridge || typeof drawbridge !== 'object' || Array.isArray(drawbridge)) {
+      this.state.integrations.drawbridge = {
+        ingestions: [],
+        lastMode: null,
+      };
+      return;
+    }
+
+    if (!Array.isArray(drawbridge.ingestions)) {
+      drawbridge.ingestions = [];
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(drawbridge, 'lastMode')) {
+      drawbridge.lastMode = null;
+    }
+  }
+
+  async recordDrawbridgeIngestion(ingestion = {}) {
+    this.ensureIntegrationState();
+
+    const drawbridge = this.state.integrations.drawbridge;
+    const timestamp = ingestion.ingestedAt || new Date().toISOString();
+    const mode = ingestion.mode || null;
+    const ingestionId =
+      ingestion.ingestionId ||
+      ingestion.packId ||
+      `drawbridge-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const packId = ingestion.packId || ingestionId;
+
+    const tasks = Array.isArray(ingestion.tasks)
+      ? ingestion.tasks.map((task) => {
+          const selectors = Array.isArray(task.selectors)
+            ? task.selectors.filter(Boolean)
+            : task.selectors
+              ? [task.selectors].filter(Boolean)
+              : [];
+          const references = Array.isArray(task.references)
+            ? task.references.filter(Boolean)
+            : task.references
+              ? [task.references].filter(Boolean)
+              : [];
+
+          return {
+            id: task.id || task.taskId || task.commentId || null,
+            summary: task.summary || task.title || task.comment || '',
+            action: task.action || task.intent || null,
+            severity: task.severity || task.level || null,
+            status: task.status || 'pending',
+            selectors,
+            screenshot: task.screenshot || null,
+            markdownExcerpt: task.markdownExcerpt || task.markdown || null,
+            lane: task.lane || null,
+            references,
+          };
+        })
+      : [];
+
+    const stats =
+      ingestion.stats && typeof ingestion.stats === 'object'
+        ? { ...ingestion.stats }
+        : {
+            total: tasks.length,
+            withScreenshots: tasks.filter((task) => Boolean(task.screenshot)).length,
+            withoutScreenshots: tasks.filter((task) => !task.screenshot).length,
+          };
+
+    const record = {
+      ingestionId,
+      packId,
+      mode,
+      ingestedAt: timestamp,
+      source: ingestion.source ? { ...ingestion.source } : {},
+      tasks,
+      stats,
+      metadata: ingestion.metadata ? { ...ingestion.metadata } : {},
+      docs: ingestion.docs ? { ...ingestion.docs } : {},
+    };
+
+    drawbridge.ingestions.push(record);
+    drawbridge.lastMode = mode;
+
+    await this.save();
+
+    return record;
+  }
+
+  getDrawbridgeIngestions() {
+    this.ensureIntegrationState();
+    const drawbridge = this.state.integrations.drawbridge;
+
+    return drawbridge.ingestions.map((record) => ({
+      ...record,
+      tasks: Array.isArray(record.tasks)
+        ? record.tasks.map((task) => ({
+            ...task,
+            selectors: Array.isArray(task.selectors) ? [...task.selectors] : [],
+            references: Array.isArray(task.references) ? [...task.references] : [],
+          }))
+        : [],
+    }));
+  }
+
+  getDrawbridgeReviewQueue(options = {}) {
+    const { includeResolved = false } = options;
+    const queue = [];
+    const resolvedStatuses = new Set([
+      'resolved',
+      'done',
+      'closed',
+      'complete',
+      'completed',
+      'approved',
+    ]);
+
+    for (const ingestion of this.getDrawbridgeIngestions()) {
+      for (const task of ingestion.tasks) {
+        const status = typeof task.status === 'string' ? task.status.toLowerCase() : 'pending';
+        if (!includeResolved && resolvedStatuses.has(status)) {
+          continue;
+        }
+
+        queue.push({
+          packId: ingestion.packId,
+          ingestionId: ingestion.ingestionId,
+          mode: ingestion.mode,
+          ingestedAt: ingestion.ingestedAt,
+          id: task.id,
+          summary: task.summary,
+          selectors: task.selectors,
+          screenshot: task.screenshot,
+          status: task.status,
+          severity: task.severity,
+          action: task.action,
+          lane: task.lane,
+          markdownExcerpt: task.markdownExcerpt,
+        });
+      }
+    }
+
+    return queue.sort((a, b) => {
+      const aTime = new Date(a.ingestedAt || 0).getTime();
+      const bTime = new Date(b.ingestedAt || 0).getTime();
+      if (aTime === bTime) {
+        return (a.id || '').localeCompare(b.id || '');
+      }
+      return bTime - aTime;
+    });
   }
 }
 

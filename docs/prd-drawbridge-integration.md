@@ -1,9 +1,9 @@
 ---
 title: 'Drawbridge Integration PRD'
 description: 'Product requirements to fuse Drawbridge visual annotation workflows with AiDesigner automation.'
-status: 'Draft'
+status: 'In Progress'
 author: 'AI Product Team'
-revision: '0.1'
+revision: '0.2'
 ---
 
 # Drawbridge Integration PRD
@@ -66,6 +66,16 @@ AiDesigner teams rely on natural-language orchestration while Drawbridge operato
 6. Project state stores Drawbridge metadata, allowing any agent to retrieve the original annotation set for auditing.
 
 ## 7. Launch Plan
+
+### Delivered to Date
+
+- ✅ FR1: `drawbridge-visual-feedback` watcher added to core tasks and referenced in orchestrator workflows.
+- ✅ FR2: Greenfield/Brownfield workflows expose a dedicated "Visual Feedback" phase with lane-aware routing.
+- ✅ FR3: `tools/drawbridge-context-pack.mjs` CLI utility generates context packs, refreshes docs, and copies screenshots.
+- ✅ FR4: Workflow parameter `drawbridge_mode` available across UI/full-stack playbooks.
+- ✅ FR5: Documentation compiler updates `docs/prd.md` and `docs/implementation/drawbridge-visual-feedback.md` with annotation data.
+- ✅ FR6: QA gate checklist `docs/qa/gates/drawbridge-review.md` and `bin/aidesigner review` surface outstanding feedback.
+- ✅ FR7: Project state persistence expanded (`integrations.drawbridge`) with helper retrieval methods.
 
 1. **Phase 0 – Foundations**: Implement ingestion watcher (FR1) and metadata persistence (FR7); deliver CLI tooling skeletons.
 2. **Phase 1 – Workflow Integration**: Wire orchestrator phase routing (FR2) and swarm autonomy mapping (FR4); pilot with internal teams.

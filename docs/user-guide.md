@@ -640,6 +640,17 @@ You will want to verify from sharding your architecture that these documents exi
 
 As your project grows and the code starts to build consistent patterns, coding standards should be reduced to include only the standards the agent still needs enforced. The agent will look at surrounding code in files to infer the coding standards that are relevant to the current task.
 
+## Drawbridge Visual Feedback Integration
+
+AiDesigner can ingest Drawbridge exports to align visual annotations with orchestrator workflows.
+
+1. Export feedback from Drawbridge (ensure `moat-tasks-detail.json`, `moat-tasks.md`, and `/screenshots` are included).
+2. Run `node tools/drawbridge-context-pack.mjs --input <export-path> --mode batch` (or `step`/`yolo`) from the project root.
+   - The utility copies screenshots into `.aidesigner/drawbridge/context-packs/`, updates project state, and refreshes documentation markers in `docs/prd.md` and `docs/implementation/drawbridge-visual-feedback.md`.
+3. Review the queue with `npx aidesigner review` (supports `--include-resolved` for historical context).
+4. Work through the checklist in `docs/qa/gates/drawbridge-review.md` before closing the gate.
+5. Reference the generated pack ID in follow-up commits or stories so traceability links remain intact.
+
 ## Getting Help
 
 - **Discord Community**: [Join Discord](https://discord.gg/gk8jAdXWmj)

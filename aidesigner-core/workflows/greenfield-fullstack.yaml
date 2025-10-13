@@ -13,6 +13,15 @@ workflow:
     - prototype
     - mvp
 
+  parameters:
+    drawbridge_mode:
+      description: "Controls Drawbridge ingestion cadence (step, batch, yolo)."
+      default: "batch"
+      options:
+        - "step"
+        - "batch"
+        - "yolo"
+
   sequence:
     - agent: analyst
       creates: project-brief.md
@@ -48,6 +57,18 @@ workflow:
         - technical_research_prompt
         - review_generated_ui_structure
       notes: "Creates comprehensive architecture using fullstack-architecture-tmpl. If user generated UI with v0/Lovable, can incorporate the project structure into architecture. May suggest changes to PRD stories or new stories. SAVE OUTPUT: Copy final fullstack-architecture.md to your project's docs/ folder."
+
+    - agent: invisible-orchestrator
+      action: route_drawbridge_feedback
+      uses: drawbridge-visual-feedback
+      optional: true
+      condition: drawbridge_export_available
+      notes: |
+        Integrate Drawbridge visual annotations when available:
+        - Run `node tools/drawbridge-context-pack.mjs --input <export> --mode ${parameters.drawbridge_mode}`.
+        - Project state stores ingestion metadata and updates docs (PRD + implementation mapping).
+        - Route tasks toward UI, copy, or engineering lanes based on selectors.
+        - Surface outstanding items through `bin/aidesigner review` for PO/QA triage.
 
     - agent: pm
       updates: prd.md (if needed)

@@ -14,6 +14,15 @@ workflow:
     - ui-prototype
     - simple-interface
 
+  parameters:
+    drawbridge_mode:
+      description: "Controls Drawbridge ingestion cadence (step, batch, yolo)."
+      default: "batch"
+      options:
+        - "step"
+        - "batch"
+        - "yolo"
+
   sequence:
     - agent: analyst
       creates: project-brief.md
@@ -49,6 +58,18 @@ workflow:
         - assemble_prompts
         - log_selection
       notes: "OPTIONAL: Use conversational UI designer workflow for visual concept exploration with Google Nano Banana (Gemini 2.5 Flash Image). Two modes: (1) Quick: Use auto-generated brief and screen prompts, or (2) Full: Run *discover-journey for 6-stage conversational discovery (journey mapping → inspiration intake → CSS extraction via Chrome MCP → visual language → per-screen prompts). User runs prompts in Google AI Studio to get visual concepts. After reviewing, run *log-selection to record chosen concept with journey context and CSS tokens. SAVE OUTPUT: Copy docs/ui/ui-designer-screen-prompts.md and docs/ui/ui-designer-explorations.md to your project."
+
+    - agent: invisible-orchestrator
+      action: route_drawbridge_feedback
+      uses: drawbridge-visual-feedback
+      optional: true
+      condition: drawbridge_export_available
+      notes: |
+        Integrate Drawbridge visual annotations when available:
+        - Run `node tools/drawbridge-context-pack.mjs --input <export> --mode ${parameters.drawbridge_mode}`.
+        - Project state stores ingestion metadata and docs (PRD + implementation mapping).
+        - Route normalized tasks to UI tuning, copy edit, or engineering fix lanes based on selectors.
+        - Surface queue via `bin/aidesigner review` before handing off to agents.
 
     - agent: architect
       creates: front-end-architecture.md

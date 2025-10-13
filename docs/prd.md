@@ -338,6 +338,22 @@ so that AiDesigner can be deployed in regulated industries.
 
 _Checklist execution pending._ Once PM and architect checklists run, capture outcomes, blockers, and remediation actions here before progressing to build phases.
 
+<!-- DRAWBRIDGE_FEEDBACK_START -->
+
+### Drawbridge Visual Feedback (Pending Ingestion)
+
+- Mode: `batch`
+- Total annotations: 0
+- With selectors: 0
+- With screenshots: 0
+
+_No Drawbridge annotations processed yet. Run `node tools/drawbridge-context-pack.mjs --input <export>` to populate this section._
+
+#### Selector Routing Notes
+
+- No visual feedback available.
+<!-- DRAWBRIDGE_FEEDBACK_END -->
+
 ## Next Steps
 
 ### UX Expert Prompt
