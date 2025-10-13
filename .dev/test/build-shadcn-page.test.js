@@ -15,6 +15,7 @@ describe('buildShadcnPage', () => {
       space: {},
     },
     semantic: {},
+    constraints: { spacingStep: 8, borderRadiusStep: 4 },
   };
 
   beforeEach(async () => {
@@ -25,10 +26,30 @@ describe('buildShadcnPage', () => {
     await fs.rm(absoluteTempDir, { recursive: true, force: true });
   });
 
-  it('writes generated files within the project directory', async () => {
+  it('writes generated files within the project directory using detected components', async () => {
     const outputDir = path.join(relativeTempDir, 'valid-output');
+    const componentMap = {
+      Button: {
+        detect: { role: ['button'], classesLike: ['btn-primary', 'cta'] },
+        variants: { intent: ['primary', 'secondary'], size: ['sm', 'lg'] },
+        states: ['hover', 'focus'],
+        mappings: { shadcn: '<Button variant="{intent}" size="{size}">{slot}</Button>' },
+      },
+      Card: {
+        detect: { classesLike: ['card', 'rounded'] },
+        mappings: {
+          shadcn:
+            '<Card><CardHeader><CardTitle>{title}</CardTitle></CardHeader><CardContent>{content}</CardContent></Card>',
+        },
+      },
+      Input: {
+        detect: { role: ['textbox'], classesLike: ['form-input'] },
+        states: ['focus'],
+        mappings: { shadcn: '<Input placeholder="{placeholder}" />' },
+      },
+    };
 
-    await buildShadcnPage(tokens, {}, outputDir);
+    await buildShadcnPage(tokens, componentMap, outputDir);
 
     const pagePath = path.join(absoluteTempDir, 'valid-output', 'page.tsx');
     const stylesPath = path.join(absoluteTempDir, 'valid-output', 'globals.css');
@@ -36,10 +57,16 @@ describe('buildShadcnPage', () => {
     const pageContent = await fs.readFile(pagePath, 'utf-8');
     const stylesContent = await fs.readFile(stylesPath, 'utf-8');
 
-    expect(pageContent).toContain('AiDesigner POC');
-    expect(pageContent).toContain('<main');
-    expect(stylesContent).toContain(`--fg:${tokens.primitives.color['base/fg']}`);
-    expect(stylesContent).toContain(`font-family:${tokens.primitives.font.sans.family}`);
+    expect(pageContent).toContain('AiDesigner Preview');
+    expect(pageContent).toContain('Button variant="default"');
+    expect(pageContent).toContain('Variants → intent: primary, secondary • size: sm, lg');
+    expect(pageContent).toContain('Input placeholder="Enter value"');
+    expect(pageContent).toContain('Theme snapshot');
+    expect(pageContent).toContain('Roles: button');
+    expect(stylesContent).toContain('--fg: #111111');
+    expect(stylesContent).toContain('font-family: Inter, sans-serif');
+    expect(pageContent).toContain('Spacing step: 8px');
+    expect(pageContent).toContain('Radius step: 4px');
   });
 
   it('rejects attempts to escape the project root', async () => {
