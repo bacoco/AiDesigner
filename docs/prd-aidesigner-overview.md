@@ -45,22 +45,22 @@ AiDesigner delivers an end-to-end, conversation-driven workflow that takes a pro
 ## 7. Non-Functional Requirements
 
 - **Local-first privacy**: All workflows operate without external API calls, preserving confidentiality.【F:README.md†L121-L141】
-- **Extensibility**: Architecture must allow new agent teams, workflows, and expansion packs to be added without modifying the core engine.【F:docs/core-architecture.md†L1-L124】【F:docs/AGENTS.md†L66-L104】
-- **Dual-environment delivery**: Tooling must bundle agent resources for both IDE and web chat contexts via the web builder pipeline.【F:docs/core-architecture.md†L69-L110】
-- **Template-driven consistency**: Documents and prompts rely on reusable templates with embedded processing logic to maintain quality across domains.【F:docs/core-architecture.md†L110-L160】
+- **Extensibility**: Architecture must allow new agent teams, workflows, and expansion packs to be added without modifying the core engine.【F:docs/core-architecture.md†L1-L124】【F:docs/AGENTS.md†L139-L149】
+- **Dual-environment delivery**: Tooling must bundle agent resources for both IDE and web chat contexts via the web builder pipeline.【F:docs/core-architecture.md†L132-L147】
+- **Template-driven consistency**: Documents and prompts rely on reusable templates with embedded processing logic to maintain quality across domains.【F:docs/core-architecture.md†L92-L105】
 
 ## 8. System Architecture Overview
 
 - **Core Framework (`aidesigner-core/`)** supplies agents, workflows, templates, tasks, checklists, and knowledge base data that define behavior and outputs.【F:docs/core-architecture.md†L17-L111】
-- **Tooling Layer (`tools/`)** bundles dependencies (e.g., `web-builder.js`) into distributable artifacts placed in `dist/` for upload or IDE consumption.【F:docs/core-architecture.md†L60-L109】
-- **Dual Deployment Paths** allow agents to run via CLI within IDEs or as packaged `.txt` bundles for web interfaces.【F:docs/core-architecture.md†L69-L110】
-- **Template Processing System** (template format spec, `create-doc`, `advanced-elicitation`) ensures consistent document generation and refinement workflows.【F:docs/core-architecture.md†L110-L160】
+- **Tooling Layer (`tools/`)** bundles dependencies (e.g., `web-builder.js`) into distributable artifacts placed in `dist/` for upload or IDE consumption.【F:docs/core-architecture.md†L132-L142】
+- **Dual Deployment Paths** allow agents to run via CLI within IDEs or as packaged `.txt` bundles for web interfaces.【F:docs/core-architecture.md†L143-L147】
+- **Template Processing System** (template format spec, `create-doc`, `advanced-elicitation`) ensures consistent document generation and refinement workflows.【F:docs/core-architecture.md†L92-L105】
 
 ## 9. Integrations and Dependencies
 
 - **Chrome MCP** for design token extraction within the conversational UI design phase.【F:README.md†L67-L95】
 - **Shadcn/MUI component libraries** used during component mapping and implementation planning.【F:README.md†L95-L120】
-- **BMAD Methodology Knowledge Base** sourced from `aidesigner-core/data/` to inform planning and execution.【F:docs/core-architecture.md†L95-L160】
+- **BMAD Methodology Knowledge Base** sourced from `aidesigner-core/data/` to inform planning and execution.【F:docs/core-architecture.md†L84-L91】
 - **CLI Variants** (Claude, Codex, OpenCode) configured via scripts in `bin/` to suit different local environments.【F:docs/AGENTS.md†L107-L142】
 
 ## 10. Release Plan & Milestones
@@ -81,7 +81,7 @@ AiDesigner delivers an end-to-end, conversation-driven workflow that takes a pro
 ## 12. Risks and Mitigations
 
 - **Token extraction failures** → Provide fallback manual token entry prompts and log errors for troubleshooting.
-- **Template drift** → Enforce regression checks by running `npm run validate` and aligning template updates with QA checklists.【F:docs/AGENTS.md†L25-L56】【F:docs/core-architecture.md†L110-L160】
+- **Template drift** → Enforce regression checks by running `npm run validate` and aligning template updates with QA checklists.【F:docs/AGENTS.md†L25-L56】【F:docs/core-architecture.md†L92-L105】
 - **Environment fragmentation** → Maintain parity across CLI variants with shared configuration and release scripts.【F:docs/AGENTS.md†L107-L142】
 
 ## 13. Handoff Checklist for New Developers
@@ -90,4 +90,4 @@ AiDesigner delivers an end-to-end, conversation-driven workflow that takes a pro
 - Study `docs/core-architecture.md` and `docs/AGENTS.md` for structural conventions, build commands, and release processes.【F:docs/core-architecture.md†L1-L160】【F:docs/AGENTS.md†L1-L152】
 - Explore `aidesigner-core/` to understand agent, workflow, template, and task dependencies before contributing.
 - Execute build and validation scripts locally to confirm environment readiness.【F:docs/AGENTS.md†L25-L56】
-- Document learnings or updates in relevant templates or knowledge base files to keep agent behavior aligned across teams.【F:docs/core-architecture.md†L110-L160】
+- Document learnings or updates in relevant templates or knowledge base files to keep agent behavior aligned across teams.【F:docs/core-architecture.md†L84-L105】
