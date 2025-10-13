@@ -1,30 +1,164 @@
 import type { ComponentMap } from '@aidesigner/shared-types';
 
-export function detectComponents(input: {
+type ComponentInferenceInput = {
   domSnapshot?: unknown;
   accessibilityTree?: unknown;
   cssom?: unknown;
-}): ComponentMap {
-  // Heuristics: ARIA roles, class patterns, recurring CSS patterns
-  // Production implementation should:
-  // - Parse DOM snapshot for ARIA roles and semantic HTML
-  // - Analyze class name patterns (btn, button, card, etc.)
-  // - Detect recurring CSS patterns (shadows, borders, padding combinations)
-  // - Cross-reference with accessibility tree for component boundaries
+};
+
+type AttributeMap = Record<string, string>;
+
+const MAX_CLASSES_LIKE_BUTTON = 12;
+const MAX_CLASSES_LIKE_CARD = 10;
+const MAX_CLASSES_LIKE_INPUT = 10;
+const MIN_CONTENT_LENGTH_FOR_LABELLED = 3;
+
+export function detectComponents(input: ComponentInferenceInput): ComponentMap {
+  const html = extractHtml(input.domSnapshot);
+  const css = extractCssText(input.cssom);
+  const rolesFromTree = extractRoles(input.accessibilityTree);
+
+  const components: ComponentMap = {};
+
+  const button = analyzeButtons(html, css, rolesFromTree);
+  if (button) {
+    components.Button = button;
+  }
+
+  const card = analyzeCards(html);
+  if (card) {
+    components.Card = card;
+  }
+
+  const inputComponent = analyzeInputs(html, css);
+  if (inputComponent) {
+    components.Input = inputComponent;
+  }
+
+  return components;
+}
+
+function extractHtml(domSnapshot: unknown): string {
+  if (typeof domSnapshot === 'string') {
+    return domSnapshot;
+  }
+  if (domSnapshot && typeof domSnapshot === 'object') {
+    if ('html' in domSnapshot && typeof (domSnapshot as { html?: unknown }).html === 'string') {
+      return (domSnapshot as { html: string }).html;
+    }
+    if ('content' in domSnapshot && typeof (domSnapshot as { content?: unknown }).content === 'string') {
+      return (domSnapshot as { content: string }).content;
+    }
+  }
+  return '';
+}
+
+function extractCssText(cssom: unknown): string {
+  if (typeof cssom === 'string') {
+    return cssom;
+  }
+  if (cssom && typeof cssom === 'object') {
+    if ('aggregated' in cssom && typeof (cssom as { aggregated?: unknown }).aggregated === 'string') {
+      return (cssom as { aggregated: string }).aggregated;
+    }
+    if ('content' in cssom && typeof (cssom as { content?: unknown }).content === 'string') {
+      return (cssom as { content: string }).content;
+    }
+  }
+  return '';
+}
+
+function extractRoles(accessibilityTree: unknown): Set<string> {
+  const roles = new Set<string>();
+  const visit = (node: unknown) => {
+    if (!node || typeof node !== 'object') {
+      return;
+    }
+    const role = (node as { role?: unknown }).role;
+    if (typeof role === 'string') {
+      roles.add(role.toLowerCase());
+    }
+    const children = (node as { children?: unknown }).children;
+    if (Array.isArray(children)) {
+      for (const child of children) {
+        visit(child);
+      }
+    }
+  };
+
+  if (Array.isArray(accessibilityTree)) {
+    for (const node of accessibilityTree) {
+      visit(node);
+    }
+  } else {
+    visit(accessibilityTree);
+  }
+
+  return roles;
+}
+
+function analyzeButtons(html: string, css: string, rolesFromTree: Set<string>): ComponentMap['Button'] | undefined {
+  const buttonRegex = /<(button|a|div)([^>]*)>([\s\S]*?)<\/\1>/gi;
+  const roles = new Set<string>();
+  const classTokens = new Set<string>();
+  const patterns = new Set<string>();
+  const intents = new Set<string>();
+  const sizes = new Set<string>();
+  let found = false;
+
+  let match: RegExpExecArray | null;
+  while ((match = buttonRegex.exec(html))) {
+    const tag = match[1].toLowerCase();
+    const attrs = parseAttributes(match[2] ?? '');
+    const content = match[3] ?? '';
+    const roleAttr = attrs.role?.toLowerCase();
+    const isSemanticButton = tag === 'button';
+    const isInteractiveAnchor = tag === 'a' && roleAttr === 'button';
+    const isInteractiveDiv = tag === 'div' && roleAttr === 'button';
+    const hasButtonClass = classLooksLikeButton(attrs.class);
+    if (!(isSemanticButton || isInteractiveAnchor || isInteractiveDiv || hasButtonClass)) {
+      continue;
+    }
+
+    found = true;
+    if (isSemanticButton || isInteractiveAnchor || isInteractiveDiv || roleAttr) {
+      roles.add('button');
+    }
+    collectButtonMetadata(attrs, content, classTokens, patterns, intents, sizes);
+  }
+
+  if (!found && rolesFromTree.has('button')) {
+    roles.add('button');
+  }
+
+  if (!found && roles.size === 0 && classTokens.size === 0) {
+    return undefined;
+  }
+
+  const detect: ComponentMap['Button']['detect'] = {};
+  if (roles.size > 0) {
+    detect.role = Array.from(roles);
+  }
+  if (classTokens.size > 0) {
+    detect.classesLike = Array.from(classTokens).slice(0, MAX_CLASSES_LIKE_BUTTON);
+  }
+  if (patterns.size > 0) {
+    detect.patterns = Array.from(patterns);
+  }
+
+  const states = detectStates(css, classTokens, ['hover', 'focus', 'active', 'disabled']);
+
+  const variants =
+    intents.size > 0 || sizes.size > 0
+      ? {
+          ...(intents.size > 0 ? { intent: Array.from(intents) } : {}),
+          ...(sizes.size > 0 ? { size: Array.from(sizes) } : {}),
+        }
+      : undefined;
 
   return {
-    detect: {
-      role: Array.from(roles),
-      classesLike: Array.from(classTokens).slice(0, MAX_CLASSES_LIKE_BUTTON),
-      patterns: Array.from(patterns),
-    },
-    variants:
-      intents.size > 0 || sizes.size > 0
-        ? {
-            ...(intents.size > 0 ? { intent: Array.from(intents) } : {}),
-            ...(sizes.size > 0 ? { size: Array.from(sizes) } : {}),
-          }
-        : undefined,
+    detect,
+    variants,
     states: states.length > 0 ? states : undefined,
     mappings: buildButtonMappings(intents.size > 0, sizes.size > 0),
   };

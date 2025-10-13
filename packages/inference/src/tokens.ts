@@ -1,44 +1,68 @@
-import type { Tokens } from '@aidesigner/shared-types';
+import type { StyleRuleSummary, Tokens } from '@aidesigner/shared-types';
 
-export function inferTokens(input: {
+type TokenInferenceInput = {
+  url?: string;
   domSnapshot?: unknown;
   computedStyles?: unknown[];
-  cssom?: unknown;
-}): Tokens {
-  // Heuristics: color clustering (simplified k-medoids), spacing steps (GCD-like), font families.
+};
+
+type ColorStat = {
+  value: string;
+  count: number;
+  luminance: number;
+  saturation: number;
+};
+
+const BACKGROUND_LUMINANCE_PRIMARY = 0.9;
+const BACKGROUND_LUMINANCE_FALLBACK = 0.75;
+const MUTED_BLEND_AMOUNT = 0.35;
+const DEFAULT_FONT = { family: 'Inter', weights: [400, 500, 700] } as const;
+const COLOR_SIMILARITY_THRESHOLD = 24;
+const DEFAULT_COLOR_TOKENS = {
+  'base/fg': '#0A0A0A',
+  'base/bg': '#FFFFFF',
+  'brand/600': '#635BFF',
+  'muted/500': '#6B7280',
+} as const;
+const SPACING_LABELS = ['xxs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
+
+export function inferTokens(input: TokenInferenceInput): Tokens {
   const now = new Date().toISOString();
+  const rules = normalizeComputedStyles(input.computedStyles);
+  const html = extractHtml(input.domSnapshot);
 
-  // TODO: Extract real values from computedStyles
-  // Production implementation should:
-  // - Extract all colors from computed styles
-  // - Cluster similar colors using k-medoids or similar algorithm
-  // - Detect spacing patterns using GCD or histogram analysis
-  // - Extract font families and weights from font-family declarations
+  const colorStats = extractColorStats(rules);
+  const palette = colorStats.length > 0 ? resolvePalette(colorStats) : DEFAULT_COLOR_TOKENS;
+  const spacingScale = buildSpacingScale(rules);
+  const radiusScale = buildRadiusScale(rules);
+  const fonts = buildFontMap(rules, html);
 
-  const colors = {
-    'base/fg': '#0A0A0A',
-    'base/bg': '#FFFFFF',
-    'brand/600': '#635BFF',
-    'muted/500': '#6B7280',
-  };
+  const colorTokens =
+    'background' in palette
+      ? {
+          'base/fg': palette.foreground,
+          'base/bg': palette.background,
+          'brand/600': palette.brand,
+          'muted/500': palette.muted,
+        }
+      : { ...palette };
 
   const spaceTokens: Record<string, number> = {};
-  const labels = ['xxs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
-  spacing.values.forEach((value, index) => {
-    if (index < labels.length) {
-      spaceTokens[labels[index]] = value;
+  spacingScale.values.forEach((value, index) => {
+    if (index < SPACING_LABELS.length) {
+      spaceTokens[SPACING_LABELS[index]] = Number.parseFloat(value.toFixed(2));
     }
   });
 
-  const fontTokens = fonts;
+  const metaUrl = typeof input.url === 'string' ? input.url : undefined;
 
   return {
-    meta: { source: 'url', url: artifacts.url, capturedAt: now },
+    meta: { source: 'url', url: metaUrl, capturedAt: now },
     primitives: {
       color: colorTokens,
-      space: spaceTokens,
-      font: fontTokens,
-      ...(radii.values ? { radius: radii.values } : {}),
+      space: Object.keys(spaceTokens).length > 0 ? spaceTokens : buildDefaultSpacingTokens(),
+      font: fonts,
+      ...(radiusScale.values ? { radius: radiusScale.values } : {}),
     },
     semantic: {
       'text/primary': { ref: 'color.base/fg' },
@@ -47,11 +71,61 @@ export function inferTokens(input: {
       'text/subtle': { ref: 'color.muted/500', fallback: 'color.base/fg' },
     },
     constraints: {
-      spacingStep: spacing.step,
-      borderRadiusStep: radii.step,
+      spacingStep: spacingScale.step,
+      borderRadiusStep: radiusScale.step,
       contrastMin: 4.5,
     },
   };
+}
+
+function normalizeComputedStyles(computedStyles: unknown[] | undefined): StyleRuleSummary[] {
+  if (!Array.isArray(computedStyles)) {
+    return [];
+  }
+
+  return computedStyles
+    .map((rule) => {
+      if (!rule || typeof rule !== 'object') {
+        return undefined;
+      }
+      const selector = (rule as { selector?: unknown }).selector;
+      const declarations = (rule as { declarations?: unknown }).declarations;
+      if (typeof selector !== 'string' || typeof declarations !== 'object' || declarations === null) {
+        return undefined;
+      }
+      const normalizedDeclarations: Record<string, string> = {};
+      for (const [property, value] of Object.entries(declarations as Record<string, unknown>)) {
+        if (typeof value === 'string') {
+          normalizedDeclarations[property] = value;
+        }
+      }
+      return { selector, declarations: normalizedDeclarations } satisfies StyleRuleSummary;
+    })
+    .filter((rule): rule is StyleRuleSummary => Boolean(rule));
+}
+
+function extractHtml(domSnapshot: unknown): string {
+  if (typeof domSnapshot === 'string') {
+    return domSnapshot;
+  }
+  if (domSnapshot && typeof domSnapshot === 'object') {
+    if ('html' in domSnapshot && typeof (domSnapshot as { html?: unknown }).html === 'string') {
+      return (domSnapshot as { html: string }).html;
+    }
+    if ('content' in domSnapshot && typeof (domSnapshot as { content?: unknown }).content === 'string') {
+      return (domSnapshot as { content: string }).content;
+    }
+  }
+  return '';
+}
+
+function buildDefaultSpacingTokens(): Record<string, number> {
+  const fallback: Record<string, number> = {};
+  const base = 4;
+  SPACING_LABELS.forEach((label, index) => {
+    fallback[label] = Number.parseFloat(((index + 1) * base).toFixed(2));
+  });
+  return fallback;
 }
 
 function extractColorStats(rules: StyleRuleSummary[]): ColorStat[] {
