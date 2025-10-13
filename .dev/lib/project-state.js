@@ -706,6 +706,10 @@ class ProjectState {
     return `aidesigner-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   }
 
+  /**
+   * Ensures the integrations state structure exists with proper defaults
+   * @private
+   */
   ensureIntegrationState() {
     if (!this.state.integrations || typeof this.state.integrations !== 'object') {
       this.state.integrations = {};
@@ -730,10 +734,26 @@ class ProjectState {
     }
   }
 
+  /**
+   * Records a new Drawbridge ingestion in project state
+   * Automatically rotates old ingestions when limit is reached (max 100)
+   * @param {Object} ingestion - Ingestion metadata
+   * @param {string} [ingestion.mode] - Ingestion mode (step|batch|yolo)
+   * @param {Array<Object>} [ingestion.tasks] - Task array with visual feedback items
+   * @param {string} [ingestion.packId] - Unique pack identifier
+   * @param {Object} [ingestion.stats] - Statistics about the ingestion
+   * @param {Object} [ingestion.source] - Source file information
+   * @param {Object} [ingestion.metadata] - Additional metadata
+   * @param {Object} [ingestion.docs] - Documentation paths
+   * @returns {Promise<Object>} The recorded ingestion record
+   * @throws {Error} If state save fails
+   */
   async recordDrawbridgeIngestion(ingestion = {}) {
     this.ensureIntegrationState();
 
     const drawbridge = this.state.integrations.drawbridge;
+    const MAX_INGESTIONS = 100; // Limit to prevent unbounded growth
+
     const timestamp = ingestion.ingestedAt || new Date().toISOString();
     const mode = ingestion.mode || null;
     const ingestionId =
@@ -744,16 +764,8 @@ class ProjectState {
 
     const tasks = Array.isArray(ingestion.tasks)
       ? ingestion.tasks.map((task) => {
-          const selectors = Array.isArray(task.selectors)
-            ? task.selectors.filter(Boolean)
-            : task.selectors
-              ? [task.selectors].filter(Boolean)
-              : [];
-          const references = Array.isArray(task.references)
-            ? task.references.filter(Boolean)
-            : task.references
-              ? [task.references].filter(Boolean)
-              : [];
+          const selectors = [].concat(task.selectors || []).filter(Boolean);
+          const references = [].concat(task.references || []).filter(Boolean);
 
           return {
             id: task.id || task.taskId || task.commentId || null,
@@ -773,11 +785,14 @@ class ProjectState {
     const stats =
       ingestion.stats && typeof ingestion.stats === 'object'
         ? { ...ingestion.stats }
-        : {
-            total: tasks.length,
-            withScreenshots: tasks.filter((task) => Boolean(task.screenshot)).length,
-            withoutScreenshots: tasks.filter((task) => !task.screenshot).length,
-          };
+        : (() => {
+            const withScreenshotsCount = tasks.filter((task) => Boolean(task.screenshot)).length;
+            return {
+              total: tasks.length,
+              withScreenshots: withScreenshotsCount,
+              withoutScreenshots: tasks.length - withScreenshotsCount,
+            };
+          })();
 
     const record = {
       ingestionId,
@@ -791,6 +806,12 @@ class ProjectState {
       docs: ingestion.docs ? { ...ingestion.docs } : {},
     };
 
+    // Implement rotation to prevent unbounded growth
+    if (drawbridge.ingestions.length >= MAX_INGESTIONS) {
+      // Remove oldest ingestions, keeping only the most recent MAX_INGESTIONS - 1
+      drawbridge.ingestions = drawbridge.ingestions.slice(-(MAX_INGESTIONS - 1));
+    }
+
     drawbridge.ingestions.push(record);
     drawbridge.lastMode = mode;
 
@@ -799,6 +820,10 @@ class ProjectState {
     return record;
   }
 
+  /**
+   * Retrieves all Drawbridge ingestion records with deep copies to prevent mutation
+   * @returns {Array<Object>} Array of ingestion records with tasks
+   */
   getDrawbridgeIngestions() {
     this.ensureIntegrationState();
     const drawbridge = this.state.integrations.drawbridge;
@@ -815,9 +840,16 @@ class ProjectState {
     }));
   }
 
+  /**
+   * Retrieves a filtered review queue of Drawbridge tasks
+   * @param {Object} options - Options for queue filtering
+   * @param {boolean} [options.includeResolved=false] - Whether to include resolved tasks
+   * @returns {Array<Object>} Array of task items sorted by ingestion date (newest first)
+   */
   getDrawbridgeReviewQueue(options = {}) {
     const { includeResolved = false } = options;
     const queue = [];
+    // Resolved status constants
     const resolvedStatuses = new Set([
       'resolved',
       'done',

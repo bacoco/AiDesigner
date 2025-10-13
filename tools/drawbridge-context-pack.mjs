@@ -25,13 +25,20 @@ const resolveProjectPath = (projectRoot, candidate) => {
     return null;
   }
 
-  if (path.isAbsolute(candidate)) {
-    return candidate;
+  const resolved = path.isAbsolute(candidate)
+    ? candidate
+    : path.join(projectRoot, candidate);
+
+  // Prevent path traversal attacks
+  const normalized = path.normalize(resolved);
+  const normalizedRoot = path.normalize(projectRoot);
+
+  if (!normalized.startsWith(normalizedRoot)) {
+    throw new Error(`Path traversal detected: ${candidate}`);
   }
 
-  const projectResolved = path.join(projectRoot, candidate);
-  if (fsSync.existsSync(projectResolved)) {
-    return projectResolved;
+  if (fsSync.existsSync(normalized)) {
+    return normalized;
   }
 
   return path.resolve(process.cwd(), candidate);
@@ -92,8 +99,21 @@ const readJsonIfExists = async (filePath) => {
     return null;
   }
 
-  const raw = await fs.readFile(filePath, 'utf8');
-  return JSON.parse(raw);
+  try {
+    const raw = await fs.readFile(filePath, 'utf8');
+    const parsed = JSON.parse(raw);
+
+    if (!parsed || typeof parsed !== 'object') {
+      throw new Error('Invalid JSON format: expected an object');
+    }
+
+    return parsed;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`Failed to parse JSON from ${filePath}: ${error.message}`);
+    }
+    throw error;
+  }
 };
 
 const readTextIfExists = async (filePath) => {
@@ -384,6 +404,8 @@ const copyScreenshots = async (tasks, packDir, projectRoot) => {
   await ensureDirectory(screenshotsDir);
 
   const updated = [];
+  const ALLOWED_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg']);
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
   for (const task of tasks) {
     if (!task.screenshotPath || !fsSync.existsSync(task.screenshotPath)) {
@@ -391,17 +413,37 @@ const copyScreenshots = async (tasks, packDir, projectRoot) => {
       continue;
     }
 
-    const extension = path.extname(task.screenshotPath) || '.png';
-    const safeName = sanitiseForFilename(task.id || task.raw?.id || 'feedback');
-    const filename = `${safeName}${extension}`;
-    const destination = path.join(screenshotsDir, filename);
+    try {
+      // Validate file extension
+      const extension = path.extname(task.screenshotPath).toLowerCase() || '.png';
+      if (!ALLOWED_EXTENSIONS.has(extension)) {
+        console.error(`⚠️ Skipping invalid file type: ${task.screenshotPath}`);
+        updated.push({ ...task, screenshot: null });
+        continue;
+      }
 
-    await fs.copyFile(task.screenshotPath, destination);
+      // Validate file size
+      const stats = fsSync.statSync(task.screenshotPath);
+      if (stats.size > MAX_FILE_SIZE) {
+        console.error(`⚠️ Skipping file exceeding size limit: ${task.screenshotPath}`);
+        updated.push({ ...task, screenshot: null });
+        continue;
+      }
 
-    updated.push({
-      ...task,
-      screenshot: toPosix(path.relative(projectRoot, destination)),
-    });
+      const safeName = sanitiseForFilename(task.id || task.raw?.id || 'feedback');
+      const filename = `${safeName}${extension}`;
+      const destination = path.join(screenshotsDir, filename);
+
+      await fs.copyFile(task.screenshotPath, destination);
+
+      updated.push({
+        ...task,
+        screenshot: toPosix(path.relative(projectRoot, destination)),
+      });
+    } catch (error) {
+      console.error(`⚠️ Failed to copy screenshot ${task.screenshotPath}: ${error.message}`);
+      updated.push({ ...task, screenshot: null });
+    }
   }
 
   return updated;
@@ -699,6 +741,10 @@ const main = async () => {
 try {
   await main();
 } catch (error) {
-  console.error(`❌ ${error.message || error}`);
+  console.error(`❌ Error: ${error.message || error}`);
+  if (error.stack && process.env.DEBUG) {
+    console.error('\nStack trace:');
+    console.error(error.stack);
+  }
   process.exitCode = 1;
 }

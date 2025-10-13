@@ -1028,6 +1028,29 @@ const promptForMcpServers = async () => {
   }
 };
 
+// Task status constants
+const TASK_STATUS = {
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  DONE: 'done',
+  CLOSED: 'closed',
+  COMPLETE: 'complete',
+  COMPLETED: 'completed',
+  APPROVED: 'approved',
+};
+
+const RESOLVED_STATUSES = new Set([
+  TASK_STATUS.RESOLVED,
+  TASK_STATUS.DONE,
+  TASK_STATUS.CLOSED,
+  TASK_STATUS.COMPLETE,
+  TASK_STATUS.COMPLETED,
+  TASK_STATUS.APPROVED,
+]);
+
+// Severity levels for sorting
+const SEVERITY_ORDER = ['critical', 'high', 'medium', 'low'];
+
 const formatDateTime = (value) => {
   if (!value) {
     return 'unknown';
@@ -1065,16 +1088,16 @@ const printDrawbridgeReviewQueue = (queue, { includeResolved = false } = {}) => 
 
   for (const [packId, items] of grouped.entries()) {
     const sorted = items.slice().sort((a, b) => {
-      const order = ['critical', 'high', 'medium', 'low'];
-      const aSeverity = order.indexOf((a.severity || '').toLowerCase());
-      const bSeverity = order.indexOf((b.severity || '').toLowerCase());
+      const aSeverity = SEVERITY_ORDER.indexOf((a.severity || '').toLowerCase());
+      const bSeverity = SEVERITY_ORDER.indexOf((b.severity || '').toLowerCase());
 
       if (aSeverity !== bSeverity) {
-        return (aSeverity === -1 ? order.length : aSeverity) - (bSeverity === -1 ? order.length : bSeverity);
+        return (aSeverity === -1 ? SEVERITY_ORDER.length : aSeverity) - (bSeverity === -1 ? SEVERITY_ORDER.length : bSeverity);
       }
 
+      // Fix sorting inconsistency: sort by newest first (descending) to match main queue
       if (a.ingestedAt && b.ingestedAt && a.ingestedAt !== b.ingestedAt) {
-        return new Date(a.ingestedAt).getTime() - new Date(b.ingestedAt).getTime();
+        return new Date(b.ingestedAt).getTime() - new Date(a.ingestedAt).getTime();
       }
 
       return (a.id || '').localeCompare(b.id || '');
