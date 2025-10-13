@@ -12,6 +12,15 @@ workflow:
     - design-refresh
     - frontend-enhancement
 
+  parameters:
+    drawbridge_mode:
+      description: "Controls Drawbridge ingestion cadence (step, batch, yolo)."
+      default: "batch"
+      options:
+        - "step"
+        - "batch"
+        - "yolo"
+
   sequence:
     - step: ui_analysis
       agent: architect
@@ -38,6 +47,18 @@ workflow:
         - prd.md
         - front-end-spec.md
       notes: "Creates frontend architecture with component integration strategy and migration planning. SAVE OUTPUT: Copy final architecture.md to your project's docs/ folder."
+
+    - agent: invisible-orchestrator
+      action: route_drawbridge_feedback
+      uses: drawbridge-visual-feedback
+      optional: true
+      condition: drawbridge_export_available
+      notes: |
+        Integrate Drawbridge annotations gathered from brownfield UI reviews:
+        - Execute `node tools/drawbridge-context-pack.mjs --input <export> --mode ${parameters.drawbridge_mode}` to normalize tasks.
+        - Project state captures ingestion metadata and updates PRD/implementation docs.
+        - Assign lanes for UI refinements, content updates, or engineering fixes using selector metadata.
+        - Review outstanding items with `bin/aidesigner review` before story planning.
 
     - agent: po
       validates: all_artifacts

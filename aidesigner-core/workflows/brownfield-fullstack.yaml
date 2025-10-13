@@ -12,6 +12,15 @@ workflow:
     - modernization
     - integration-enhancement
 
+  parameters:
+    drawbridge_mode:
+      description: "Controls Drawbridge ingestion cadence (step, batch, yolo)."
+      default: "batch"
+      options:
+        - "step"
+        - "batch"
+        - "yolo"
+
   sequence:
     - step: enhancement_classification
       agent: analyst
@@ -83,6 +92,18 @@ workflow:
       requires: prd.md
       condition: architecture_changes_needed
       notes: "Creates architecture ONLY for significant architectural changes. SAVE OUTPUT: Copy final architecture.md to your project's docs/ folder."
+
+    - agent: invisible-orchestrator
+      action: route_drawbridge_feedback
+      uses: drawbridge-visual-feedback
+      optional: true
+      condition: drawbridge_export_available
+      notes: |
+        Integrate Drawbridge export bundles captured during brownfield assessments:
+        - Execute `node tools/drawbridge-context-pack.mjs --input <export> --mode ${parameters.drawbridge_mode}`.
+        - Project state captures ingestion metadata, docs, and queue stats.
+        - Route feedback to UI, copy, or engineering lanes for remediation.
+        - Share queue status using `bin/aidesigner review` before moving into story slicing.
 
     - agent: po
       validates: all_artifacts
