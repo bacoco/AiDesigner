@@ -102,7 +102,7 @@ const readJsonIfExists = async (filePath) => {
     const parsed = JSON.parse(raw);
 
     if (!parsed || typeof parsed !== 'object') {
-      throw new Error('Invalid JSON format: expected an object');
+      throw new TypeError('Invalid JSON format: expected an object');
     }
 
     return parsed;
