@@ -1,12 +1,24 @@
 # MCP Chatbot Test Dialogues (AiDesigner Edition)
 
+**Version**: 1.0.0
+**Compatible with**: AiDesigner v1.3.x+
+**Last Updated**: 2025-01-13
+
 These scripts simulate how a non-technical product owner chats with AiDesigner to co-create a high-quality UI. Every user prompt
-is written in plain language so a "boeuf" beginner can paste it straight into the chat UI. Behind the scenes, the assistant must
+is written in plain language so a complete beginner can paste it straight into the chat UI. Behind the scenes, the assistant must
 still exercise AiDesigner’s full MCP toolchain—personas, guardrails, documentation, workflow runs, quality gates, and integration
 checks—while narrating its plan back to the user before each action.
 
 After each dialogue, confirm the assistant produced the narrated MCP traces listed under **Expected MCP Usage**. Run the scripts in
 order to cover the full end-to-end process from context refresh through polished HTML concepts.
+
+## Prerequisites
+
+Before running these test dialogues:
+1. AiDesigner must be installed: `npx aidesigner install`
+2. MCP server must be running: `npm run mcp`
+3. Project must be initialized with AiDesigner
+4. Verify MCP health: `npm run mcp:doctor`
 
 ## 1. Wake Up the Project Memory
 
@@ -46,7 +58,7 @@ order to cover the full end-to-end process from context refresh through polished
 - **User Prompts:**
   1. "Talk me through, in normal words, how you’ll collect inspirations and write the plan before touching any pixels."
   2. "Okay, do that now: first draft the plan for our Quick Designer onboarding screen, then make the matching architecture notes."
-- **Expected MCP Usage:** `generate_deliverable` twice (`type = "prd"`, then `type = "architecture"`).
+- **Expected MCP Usage:** `generate_deliverable` (`type = "prd"`) then `generate_deliverable` (`type = "architecture"`).
 
 ## 6. Choose the Build Lane and Run It
 
@@ -73,3 +85,23 @@ order to cover the full end-to-end process from context refresh through polished
 - **Expected MCP Usage:** `list_mcp_servers` followed by `get_mcp_health`.
 
 Use each dialogue sequentially within the chatbot UI. A successful test will show narrated MCP tool calls that align with the expected usage while guiding even the most non-technical user toward choosing a polished UI concept.
+
+## Troubleshooting
+
+### MCP Tool Not Found
+If the assistant reports a tool is unavailable:
+1. Check MCP server status: `npm run mcp:doctor`
+2. Verify aidesigner version: `npx aidesigner --version`
+3. Restart the MCP server: `npm run mcp`
+
+### Unexpected Responses
+If dialogue responses don't match expectations:
+1. Review the MCP trace logs
+2. Ensure project has required documentation
+3. Check for configuration issues in `.aidesigner/config.json`
+
+### Quality Check Failures
+If Dialogue 7 repeatedly fails quality checks:
+1. Verify all planning documents are generated (PRD, architecture)
+2. Check that the selected development lane matches project requirements
+3. Review workflow execution logs for errors
