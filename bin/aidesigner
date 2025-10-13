@@ -16,7 +16,7 @@ const readline = require('readline');
 const inquirer = require('inquirer');
 const { runIntegrityPreflight } = require('../common/utils/integrity');
 const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
-const { ProjectState } = require('../.dev/lib/project-state.js');
+const { ProjectState } = require('../lib/project-state.js');
 
 let command;
 let args = [];

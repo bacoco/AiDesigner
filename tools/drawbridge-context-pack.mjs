@@ -4,7 +4,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { ProjectState } = require('../.dev/lib/project-state.js');
+const { ProjectState } = require('../lib/project-state.js');
 
 const DEFAULT_MODE = 'batch';
 const VALID_MODES = new Set(['step', 'batch', 'yolo']);
@@ -29,19 +29,17 @@ const resolveProjectPath = (projectRoot, candidate) => {
     ? candidate
     : path.join(projectRoot, candidate);
 
-  // Prevent path traversal attacks
-  const normalized = path.normalize(resolved);
-  const normalizedRoot = path.normalize(projectRoot);
+  // Prevent path traversal attacks using proper relative path checks
+  const normalizedRoot = path.resolve(projectRoot);
+  const normalized = path.resolve(resolved);
+  const rel = path.relative(normalizedRoot, normalized);
 
-  if (!normalized.startsWith(normalizedRoot)) {
+  if (rel.startsWith('..') || path.isAbsolute(rel)) {
     throw new Error(`Path traversal detected: ${candidate}`);
   }
 
-  if (fsSync.existsSync(normalized)) {
-    return normalized;
-  }
-
-  return path.resolve(process.cwd(), candidate);
+  // Return normalized path; callers handle missing files
+  return normalized;
 };
 
 const parseArgs = (argv = []) => {
@@ -322,19 +320,28 @@ const findScreenshotForTask = (task, screenshotDir, fallbackId) => {
     return null;
   }
 
+  const screenshotsRoot = path.resolve(screenshotDir);
   const candidates = normaliseScreenshotCandidates(task);
 
   for (const candidate of candidates) {
-    const absoluteCandidate = path.isAbsolute(candidate)
-      ? candidate
-      : path.join(screenshotDir, candidate);
+    const resolved = path.isAbsolute(candidate)
+      ? path.resolve(candidate)
+      : path.resolve(screenshotsRoot, candidate);
 
-    if (fsSync.existsSync(absoluteCandidate)) {
-      return absoluteCandidate;
+    // Ensure resolved path is within screenshotsRoot
+    const rel = path.relative(screenshotsRoot, resolved);
+    const withinBase = !rel.startsWith('..') && !path.isAbsolute(rel);
+
+    if (withinBase && fsSync.existsSync(resolved)) {
+      return resolved;
     }
 
-    const basenameCandidate = path.join(screenshotDir, path.basename(candidate));
-    if (fsSync.existsSync(basenameCandidate)) {
+    // Try with just the basename
+    const basenameCandidate = path.resolve(screenshotsRoot, path.basename(candidate));
+    const basenameRel = path.relative(screenshotsRoot, basenameCandidate);
+    const basenameWithinBase = !basenameRel.startsWith('..') && !path.isAbsolute(basenameRel);
+
+    if (basenameWithinBase && fsSync.existsSync(basenameCandidate)) {
       return basenameCandidate;
     }
   }
@@ -346,7 +353,13 @@ const findScreenshotForTask = (task, screenshotDir, fallbackId) => {
         file.toLowerCase().includes(String(fallbackId).toLowerCase()),
       );
       if (match) {
-        return path.join(screenshotDir, match);
+        const matchedPath = path.resolve(screenshotsRoot, match);
+        const matchedRel = path.relative(screenshotsRoot, matchedPath);
+        const matchedWithinBase = !matchedRel.startsWith('..') && !path.isAbsolute(matchedRel);
+
+        if (matchedWithinBase) {
+          return matchedPath;
+        }
       }
     } catch {
       // ignore directory read errors
