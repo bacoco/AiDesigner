@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prefer-module */
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -20,16 +19,16 @@ class BaseMetaAgent {
         this.title = title;
         this.description = description;
         this.projectRoot = options.projectRoot ?? process.cwd();
-        const fs = options.fileSystem ?? new utils_2.NodeFileSystem();
-        this.artifactManager = new utils_1.ArtifactManager(this.projectRoot, fs);
-        this.logger = options.logger ?? (() => {});
+        this.fileSystem = options.fileSystem ?? new utils_2.NodeFileSystem();
+        this.artifactManager = new utils_1.ArtifactManager(this.projectRoot, this.fileSystem);
+        this.logger = options.logger ?? (() => undefined);
         this.clock = options.clock ?? (() => new Date());
     }
     registerStage(id, title) {
         if (this.stageOrder.includes(id)) {
             return;
         }
-        const stage = { id, title, status: 'pending', artifacts: [] };
+        const stage = { id, stage: id, title, status: 'pending', artifacts: [] };
         this.stageOrder.push(id);
         this.stages.push(stage);
     }

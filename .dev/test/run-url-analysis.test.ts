@@ -23,10 +23,15 @@ const inferTokensMock = inferTokens as jest.MockedFunction<typeof inferTokens>;
 const detectComponentsMock = detectComponents as jest.MockedFunction<typeof detectComponents>;
 
 const mockAnalysisResult = {
-  domSnapshot: { html: '<div />' },
-  accessibilityTree: { role: 'document' },
-  cssom: [],
-  console: [],
+  captures: {
+    default: {
+      domSnapshot: { html: '<div />' },
+      accessibilityTree: { role: 'document' },
+      cssom: [],
+      console: [],
+      computedStyles: {},
+    },
+  },
 };
 
 const mockTokens = { primitives: { color: { primary: '#000000' } } } as const;
@@ -113,6 +118,13 @@ describe('runUrlAnalysis path validation', () => {
     expect(analyzeWithMCPMock).toHaveBeenCalledWith({
       url,
       states: ['default', 'hover', 'dark', 'md'],
+      capture: {
+        domSnapshot: true,
+        accessibilityTree: true,
+        cssom: true,
+        console: true,
+        computedStyles: true,
+      },
     });
 
     await expect(fs.stat(expectedEvidenceDir)).resolves.toBeDefined();

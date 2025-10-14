@@ -12,4 +12,3 @@ export declare class LibrarianMetaAgent extends BaseMetaAgent<LibrarianInput> {
     private renderSetupValidation;
     protected execute(): Promise<string>;
 }
-//# sourceMappingURL=librarian.d.ts.map

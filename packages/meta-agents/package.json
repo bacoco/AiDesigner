@@ -11,15 +11,16 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
-  "files": [
-    "dist"
-  ],
   "dependencies": {
-    "@kayvan/markdown-tree-parser": "^1.6.1"
+    "@kayvan/markdown-tree-parser": "^1.6.1",
+    "fs-extra": "^11.0.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0"

@@ -12,4 +12,3 @@ export declare class RefactorMetaAgent extends BaseMetaAgent<RefactorInput> {
     private renderDependencyReport;
     protected execute(): Promise<string>;
 }
-//# sourceMappingURL=refactor.d.ts.map

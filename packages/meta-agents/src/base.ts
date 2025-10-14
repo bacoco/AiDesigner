@@ -52,7 +52,7 @@ export abstract class BaseMetaAgent<Input, Result extends MetaAgentResult = Meta
       return;
     }
 
-    const stage: StageProgress = { id, title, status: 'pending', artifacts: [] };
+    const stage: StageProgress = { id, stage: id, title, status: 'pending', artifacts: [] };
     this.stageOrder.push(id);
     this.stages.push(stage);
   }

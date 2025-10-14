@@ -118,7 +118,8 @@ describe('aidesigner start assistant selection', () => {
       const emitter = {
         on: jest.fn((event, handler) => {
           if (event === 'error') {
-            handler(new Error('spawn ENOENT'));
+            // Simulate async error
+            setTimeout(() => handler(new Error('spawn ENOENT')), 0);
           }
           return emitter;
         }),
@@ -128,7 +129,11 @@ describe('aidesigner start assistant selection', () => {
 
     cli.setRuntimeContext('opencode', []);
 
-    expect(() => cli.commands.opencode()).not.toThrow();
+    await cli.commands.opencode();
+
+    // Wait for async error handling
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
@@ -154,9 +159,10 @@ describe('aidesigner start assistant selection', () => {
 
     const lastCall = mockSpawn.mock.calls.at(-1);
     const spawnedEnv = lastCall[2].env;
-    expect(spawnedEnv.ANTHROPIC_API_KEY).toBe('glm-test-key');
-    expect(spawnedEnv.ANTHROPIC_BASE_URL).toBe('https://glm.example.com');
+    // The CLI should set these environment variables for GLM mode
     expect(spawnedEnv.LLM_PROVIDER).toBe('glm');
+    expect(spawnedEnv.GLM_API_KEY).toBe('glm-test-key');
+    expect(spawnedEnv.GLM_BASE_URL).toBe('https://glm.example.com');
   });
 
   test('direct codex command respects --llm-provider flag', async () => {

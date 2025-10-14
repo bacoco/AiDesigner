@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prefer-module, unicorn/prefer-single-call */
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -15,17 +14,11 @@ class LibrarianMetaAgent extends base_1.BaseMetaAgent {
     async listFiles(relativeDir) {
         const absoluteDir = node_path_1.default.join(this.projectRoot, relativeDir);
         try {
-            const entries = await this.options.fileSystem?.readdir(absoluteDir);
-            if (!entries) {
-                return [];
-            }
+            const entries = await this.fileSystem.readdir(absoluteDir);
             const files = [];
             for (const entry of entries) {
                 const absolutePath = node_path_1.default.join(absoluteDir, entry);
-                const stats = await this.options.fileSystem?.stat(absolutePath);
-                if (!stats) {
-                    continue;
-                }
+                const stats = await this.fileSystem.stat(absolutePath);
                 if (stats.isDirectory()) {
                     const nested = await this.listFiles(node_path_1.default.relative(this.projectRoot, absolutePath));
                     files.push(...nested);
@@ -45,16 +38,16 @@ class LibrarianMetaAgent extends base_1.BaseMetaAgent {
         const components = [];
         for (const scope of scopePaths) {
             const files = await this.listFiles(scope);
-            if (files.length === 0) {
+            if (!files.length) {
                 continue;
             }
             components.push({
-                name: scope.replaceAll('/', '_'),
+                name: scope.replace(/\//g, '_'),
                 type: 'Module',
                 relations: files
                     .filter((file) => file.includes('/'))
                     .slice(0, 5)
-                    .map((file) => file.split('/')[0].replaceAll(/[^a-zA-Z0-9]/g, '_')),
+                    .map((file) => file.split('/')[0].replace(/[^a-zA-Z0-9]/g, '_')),
             });
         }
         return components;
@@ -81,7 +74,7 @@ class LibrarianMetaAgent extends base_1.BaseMetaAgent {
         for (const component of components) {
             lines.push(`### ${component.name}`, '', `Type: ${component.type}`, 'Responsibilities:');
             lines.push('- Maintain module boundaries');
-            if (component.relations.length > 0) {
+            if (component.relations.length) {
                 lines.push('', 'Relations:');
                 for (const relation of component.relations) {
                     lines.push(`- ${component.name} → ${relation}`);
@@ -111,17 +104,14 @@ class LibrarianMetaAgent extends base_1.BaseMetaAgent {
                 summary: 'FastAPI endpoint',
             };
         }
-        return;
+        return undefined;
     }
     async collectApiEndpoints(apiFiles) {
         const endpoints = [];
         for (const file of apiFiles) {
             const absolutePath = node_path_1.default.join(this.projectRoot, file);
             try {
-                const content = await this.options.fileSystem?.readFile(absolutePath, 'utf8');
-                if (!content) {
-                    continue;
-                }
+                const content = await this.fileSystem.readFile(absolutePath, 'utf8');
                 const lines = content.split(/\r?\n/);
                 for (const line of lines) {
                     const endpoint = this.parseEndpointLine(line.trim());
@@ -138,7 +128,7 @@ class LibrarianMetaAgent extends base_1.BaseMetaAgent {
     }
     renderApiReference(endpoints) {
         const lines = ['# API Reference', '', '## Endpoints', ''];
-        if (endpoints.length === 0) {
+        if (!endpoints.length) {
             lines.push('_No API endpoints detected in supplied scope._');
             return lines.join('\n');
         }
@@ -151,7 +141,7 @@ class LibrarianMetaAgent extends base_1.BaseMetaAgent {
     }
     renderDatabaseSchema(tables) {
         const lines = ['# Database Schema', ''];
-        if (tables.length === 0) {
+        if (!tables.length) {
             lines.push('No Supabase schema information available.');
             return lines.join('\n');
         }
@@ -167,7 +157,7 @@ class LibrarianMetaAgent extends base_1.BaseMetaAgent {
     renderSetupValidation(commands) {
         const checks = (0, utils_1.summarizeCommands)(commands);
         const lines = ['# Setup Validation Report', '', '## Commands'];
-        if (checks.length === 0) {
+        if (!checks.length) {
             lines.push('', 'No commands discovered in development guide.');
             return lines.join('\n');
         }
@@ -177,7 +167,11 @@ class LibrarianMetaAgent extends base_1.BaseMetaAgent {
         return lines.join('\n');
     }
     async execute() {
+        // Validate inputs (scopePaths has a default but should be non-empty)
         const scopePaths = this.input.scopePaths ?? ['src'];
+        if (scopePaths.length === 0) {
+            throw new Error('scopePaths must contain at least one directory');
+        }
         const architectureDoc = await this.generateArchitectureDoc(scopePaths);
         await this.runStage('architecture', 'Generate architecture documentation', async () => {
             const artifactPath = this.createArtifactPath('docs', 'architecture', 'md');
@@ -202,7 +196,7 @@ class LibrarianMetaAgent extends base_1.BaseMetaAgent {
             const artifactPath = this.createArtifactPath('docs', 'database-schema', 'md');
             const artifact = await this.artifactManager.write(artifactPath, this.renderDatabaseSchema(tables), 'Database schema exported from Supabase');
             return {
-                summary: tables.length > 0 ? `Documented ${tables.length} tables.` : 'No tables returned by Supabase.',
+                summary: tables.length ? `Documented ${tables.length} tables.` : 'No tables returned by Supabase.',
                 artifacts: [artifact],
             };
         });
@@ -210,11 +204,9 @@ class LibrarianMetaAgent extends base_1.BaseMetaAgent {
         let commands = [];
         try {
             const fullPath = node_path_1.default.join(this.projectRoot, developmentGuidePath);
-            const content = await this.options.fileSystem?.readFile(fullPath, 'utf8');
-            if (content) {
-                const tokens = (0, utils_1.tokenizeLines)(content).join('\n');
-                commands = (0, utils_1.extractShellCommands)(tokens);
-            }
+            const content = await this.fileSystem.readFile(fullPath, 'utf8');
+            const tokens = (0, utils_1.tokenizeLines)(content).join('\n');
+            commands = (0, utils_1.extractShellCommands)(tokens);
         }
         catch (error) {
             this.logger(`⚠️  Unable to analyze development guide: ${error.message}`);

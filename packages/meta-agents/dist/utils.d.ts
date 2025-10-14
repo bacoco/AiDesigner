@@ -46,4 +46,3 @@ export interface CommandCheckResult {
 export declare const extractShellCommands: (guideContent: string) => string[];
 export declare const summarizeCommands: (commands: string[]) => CommandCheckResult[];
 export declare const normalizeTechnologyStack: (stack: string[]) => string[];
-//# sourceMappingURL=utils.d.ts.map

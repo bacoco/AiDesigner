@@ -1,4 +1,4 @@
-import type { MetaAgentResult, MetaAgentRuntimeOptions } from './types';
+import type { FileSystem, MetaAgentResult, MetaAgentRuntimeOptions } from './types';
 import { ArtifactManager, type StageExecutionResult } from './utils';
 export declare abstract class BaseMetaAgent<Input, Result extends MetaAgentResult = MetaAgentResult> {
     protected readonly input: Input;
@@ -7,6 +7,7 @@ export declare abstract class BaseMetaAgent<Input, Result extends MetaAgentResul
     protected readonly title: string;
     protected readonly description: string;
     protected readonly artifactManager: ArtifactManager;
+    protected readonly fileSystem: FileSystem;
     protected readonly projectRoot: string;
     protected readonly logger: (message: string) => void;
     protected readonly clock: () => Date;
@@ -24,4 +25,3 @@ export declare abstract class BaseMetaAgent<Input, Result extends MetaAgentResul
     protected abstract execute(): Promise<string>;
     run(): Promise<Result>;
 }
-//# sourceMappingURL=base.d.ts.map

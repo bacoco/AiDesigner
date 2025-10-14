@@ -9,4 +9,3 @@ export declare class GenesisMetaAgent extends BaseMetaAgent<GenesisInput> {
     private renderMigrationDraft;
     protected execute(): Promise<string>;
 }
-//# sourceMappingURL=genesis.d.ts.map

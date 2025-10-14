@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prefer-module, unicorn/consistent-function-scoping */
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -40,6 +39,12 @@ class ArtifactManager {
     }
     async write(relativePath, contents, description) {
         const destination = node_path_1.default.join(this.projectRoot, relativePath);
+        const normalized = node_path_1.default.normalize(destination);
+        const normalizedRoot = node_path_1.default.normalize(this.projectRoot);
+        // Ensure the resolved path is within projectRoot (prevent path traversal)
+        if (!normalized.startsWith(normalizedRoot + node_path_1.default.sep) && normalized !== normalizedRoot) {
+            throw new Error(`Path traversal detected: ${relativePath} escapes project root`);
+        }
         await this.fileSystem.ensureDir(node_path_1.default.dirname(destination));
         await this.fileSystem.writeFile(destination, contents, 'utf8');
         const record = { path: relativePath, description };
@@ -85,14 +90,15 @@ async function fetchSupabasePublicSchema(client) {
         });
         grouped.set(row.table_name, table);
     }
-    return [...grouped.values()].sort((a, b) => a.name.localeCompare(b.name));
+    return Array.from(grouped.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 const renderMermaidComponentMap = (components) => {
     const lines = ['graph TD'];
     for (const component of components) {
         const label = `${component.name}[${component.type}]`;
+        // Always emit the node label first to preserve type information
+        lines.push(`  ${label}`);
         if (component.relations.length === 0) {
-            lines.push(`  ${label}`);
             continue;
         }
         for (const relation of component.relations) {

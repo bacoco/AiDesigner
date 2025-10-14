@@ -27,9 +27,9 @@ export const parseDirective = async (
   for (const section of sectionTrees) {
     const content = (await parser.stringify(section.tree)).trim();
     sections.push({
-      heading: section.headingText,
-      depth: section.heading.depth,
-      slug: slugifyHeading(section.headingText),
+      heading: section.headingText || 'Untitled',
+      depth: section.heading?.depth || 2,
+      slug: slugifyHeading(section.headingText || 'untitled'),
       content,
     });
   }

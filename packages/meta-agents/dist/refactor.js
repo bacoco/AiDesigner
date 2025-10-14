@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prefer-module */
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -16,17 +15,11 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
     async listFiles(relativeDir) {
         const baseDir = node_path_1.default.join(this.projectRoot, relativeDir);
         try {
-            const entries = await this.options.fileSystem?.readdir(baseDir);
-            if (!entries) {
-                return [];
-            }
+            const entries = await this.fileSystem.readdir(baseDir);
             const files = [];
             for (const entry of entries) {
                 const absolutePath = node_path_1.default.join(baseDir, entry);
-                const stats = await this.options.fileSystem?.stat(absolutePath);
-                if (!stats) {
-                    continue;
-                }
+                const stats = await this.fileSystem.stat(absolutePath);
                 if (stats.isDirectory()) {
                     const nested = await this.listFiles(node_path_1.default.relative(this.projectRoot, absolutePath));
                     files.push(...nested);
@@ -44,7 +37,8 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
     }
     async loadSourceFiles() {
         const files = [];
-        for (const scope of this.input.scopePaths) {
+        const scopePaths = this.input.scopePaths || [];
+        for (const scope of scopePaths) {
             const discovered = await this.listFiles(scope);
             for (const relative of discovered) {
                 if (!SOURCE_EXTENSIONS.some((extension) => relative.endsWith(extension))) {
@@ -52,10 +46,8 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
                 }
                 const absolute = node_path_1.default.join(this.projectRoot, relative);
                 try {
-                    const content = await this.options.fileSystem?.readFile(absolute, 'utf8');
-                    if (content) {
-                        files.push({ path: relative, content });
-                    }
+                    const content = await this.fileSystem.readFile(absolute, 'utf8');
+                    files.push({ path: relative, content });
                 }
                 catch (error) {
                     this.logger(`⚠️  Failed to read ${relative}: ${error.message}`);
@@ -69,17 +61,17 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
         for (const file of files) {
             const lines = (0, utils_1.tokenizeLines)(file.content);
             const windows = (0, utils_1.slidingWindow)(lines, 5);
-            for (const [index, window] of windows.entries()) {
+            windows.forEach((window, index) => {
                 const snippet = window.join('\n');
                 if (snippet.length < 40) {
-                    continue;
+                    return;
                 }
                 const block = blocks.get(snippet) ?? { snippet, occurrences: [] };
                 block.occurrences.push({ file: file.path, index });
                 blocks.set(snippet, block);
-            }
+            });
         }
-        return [...blocks.values()].filter((block) => block.occurrences.length > 1);
+        return Array.from(blocks.values()).filter((block) => block.occurrences.length > 1);
     }
     analyzeComplexity(files) {
         const findings = [];
@@ -115,36 +107,39 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
         for (const dependencyFile of files) {
             const absolute = node_path_1.default.join(this.projectRoot, dependencyFile);
             try {
-                const exists = await this.options.fileSystem?.pathExists(absolute);
+                const exists = await this.fileSystem.pathExists(absolute);
                 if (!exists) {
                     continue;
                 }
                 if (dependencyFile.endsWith('package.json')) {
-                    const raw = await this.options.fileSystem?.readFile(absolute, 'utf8');
-                    if (raw) {
-                        const pkg = JSON.parse(raw);
-                        const all = { ...pkg.dependencies, ...pkg.devDependencies };
+                    const raw = await this.fileSystem.readFile(absolute, 'utf8');
+                    const pkg = JSON.parse(raw);
+                    // Safely access dependencies with validation
+                    if (pkg && typeof pkg === 'object') {
+                        const dependencies = (pkg.dependencies && typeof pkg.dependencies === 'object') ? pkg.dependencies : {};
+                        const devDependencies = (pkg.devDependencies && typeof pkg.devDependencies === 'object') ? pkg.devDependencies : {};
+                        const all = { ...dependencies, ...devDependencies };
                         for (const [name, version] of Object.entries(all)) {
-                            if (/beta|alpha|rc/.test(version)) {
-                                findings.push({ name, version, reason: 'Pre-release version detected' });
-                            }
-                            else if (/^\^?0\./.test(version)) {
-                                findings.push({ name, version, reason: 'Major version 0 indicates unstable API' });
+                            if (typeof version === 'string') {
+                                if (/beta|alpha|rc/.test(version)) {
+                                    findings.push({ name, version, reason: 'Pre-release version detected' });
+                                }
+                                else if (/^\^?0\./.test(version)) {
+                                    findings.push({ name, version, reason: 'Major version 0 indicates unstable API' });
+                                }
                             }
                         }
                     }
                 }
                 else if (dependencyFile.endsWith('requirements.txt')) {
-                    const raw = await this.options.fileSystem?.readFile(absolute, 'utf8');
-                    if (raw) {
-                        for (const line of raw.split(/\r?\n/)) {
-                            const trimmed = line.trim();
-                            if (!trimmed || trimmed.startsWith('#')) {
-                                continue;
-                            }
-                            if (/(alpha|beta|rc)/i.test(trimmed)) {
-                                findings.push({ name: trimmed, version: 'prerelease', reason: 'Pre-release dependency in requirements.txt' });
-                            }
+                    const raw = await this.fileSystem.readFile(absolute, 'utf8');
+                    for (const line of raw.split(/\r?\n/)) {
+                        const trimmed = line.trim();
+                        if (!trimmed || trimmed.startsWith('#')) {
+                            continue;
+                        }
+                        if (/(alpha|beta|rc)/i.test(trimmed)) {
+                            findings.push({ name: trimmed, version: 'prerelease', reason: 'Pre-release dependency in requirements.txt' });
                         }
                     }
                 }
@@ -157,7 +152,7 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
     }
     renderDuplicationReport(blocks) {
         const lines = ['# Duplication Report', ''];
-        if (blocks.length === 0) {
+        if (!blocks.length) {
             lines.push('No duplicated blocks detected in the analyzed scope.');
             return lines.join('\n');
         }
@@ -172,7 +167,7 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
     }
     renderComplexityReport(findings) {
         const lines = ['# Complexity Analysis', ''];
-        if (findings.length === 0) {
+        if (!findings.length) {
             lines.push('No complexity hotspots detected.');
             return lines.join('\n');
         }
@@ -183,7 +178,7 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
     }
     renderDependencyReport(findings) {
         const lines = ['# Dependency Audit', ''];
-        if (findings.length === 0) {
+        if (!findings.length) {
             lines.push('No risky dependencies detected.');
             return lines.join('\n');
         }
@@ -193,6 +188,10 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
         return lines.join('\n');
     }
     async execute() {
+        // Validate required inputs
+        if (!this.input.scopePaths || this.input.scopePaths.length === 0) {
+            throw new Error('scopePaths is required and must contain at least one directory');
+        }
         const files = await this.loadSourceFiles();
         const duplications = this.detectDuplications(files);
         const complexity = this.analyzeComplexity(files);
@@ -201,7 +200,7 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
             const artifactPath = this.createArtifactPath('reports/refactor', 'duplication', 'md');
             const artifact = await this.artifactManager.write(artifactPath, this.renderDuplicationReport(duplications), 'Duplicated code blocks detected by Refactor agent');
             return {
-                summary: duplications.length > 0 ? `Identified ${duplications.length} duplicate blocks.` : 'No duplicate blocks found.',
+                summary: duplications.length ? `Identified ${duplications.length} duplicate blocks.` : 'No duplicate blocks found.',
                 artifacts: [artifact],
             };
         });
@@ -209,7 +208,7 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
             const artifactPath = this.createArtifactPath('reports/refactor', 'complexity', 'md');
             const artifact = await this.artifactManager.write(artifactPath, this.renderComplexityReport(complexity), 'Complexity hotspots summary');
             return {
-                summary: complexity.length > 0 ? `Flagged ${complexity.length} complex files.` : 'No complexity hotspots detected.',
+                summary: complexity.length ? `Flagged ${complexity.length} complex files.` : 'No complexity hotspots detected.',
                 artifacts: [artifact],
             };
         });
@@ -217,7 +216,7 @@ class RefactorMetaAgent extends base_1.BaseMetaAgent {
             const artifactPath = this.createArtifactPath('reports/refactor', 'dependencies', 'md');
             const artifact = await this.artifactManager.write(artifactPath, this.renderDependencyReport(dependencies), 'Dependency risk assessment');
             return {
-                summary: dependencies.length > 0 ? `Found ${dependencies.length} risky dependencies.` : 'Dependencies look healthy.',
+                summary: dependencies.length ? `Found ${dependencies.length} risky dependencies.` : 'Dependencies look healthy.',
                 artifacts: [artifact],
             };
         });

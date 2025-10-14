@@ -63,7 +63,8 @@ export class RefactorMetaAgent extends BaseMetaAgent<RefactorInput> {
 
   private async loadSourceFiles(): Promise<SourceFile[]> {
     const files: SourceFile[] = [];
-    for (const scope of this.input.scopePaths) {
+    const scopePaths = this.input.scopePaths || [];
+    for (const scope of scopePaths) {
       const discovered = await this.listFiles(scope);
       for (const relative of discovered) {
         if (!SOURCE_EXTENSIONS.some((extension) => relative.endsWith(extension))) {

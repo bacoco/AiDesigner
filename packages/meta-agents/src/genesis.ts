@@ -150,7 +150,7 @@ export class GenesisMetaAgent extends BaseMetaAgent<GenesisInput> {
     }
 
     const { projectName, projectType } = this.input;
-    const technologyStack = normalizeTechnologyStack(this.input.technologyStack);
+    const technologyStack = normalizeTechnologyStack(this.input.technologyStack || []);
 
     if (technologyStack.length === 0) {
       throw new Error('At least one technology must be specified in technologyStack');

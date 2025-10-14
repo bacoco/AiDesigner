@@ -1,3 +1,87 @@
+// Base types for meta-agents
+export interface FileSystem {
+  ensureDir(target: string): Promise<void>;
+  writeFile(target: string, data: string, encoding?: BufferEncoding): Promise<void>;
+  readFile(target: string, encoding?: BufferEncoding): Promise<string>;
+  pathExists(target: string): Promise<boolean>;
+  readdir(target: string): Promise<string[]>;
+  stat(target: string): Promise<{ isDirectory(): boolean; isFile(): boolean }>;
+}
+
+export interface ArtifactRecord {
+  path: string;
+  description: string;
+}
+
+export interface StageProgress {
+  id: string;
+  stage: string;
+  title: string;
+  status: StageStatus;
+  startedAt?: string;
+  finishedAt?: string;
+  summary?: string;
+  artifacts: ArtifactRecord[];
+}
+
+export type StageStatus = 'pending' | 'running' | 'completed' | 'complete' | 'failed';
+
+export interface MetaAgentResult {
+  id: string;
+  agentId?: string;
+  title: string;
+  description: string;
+  summary: string;
+  startedAt?: string;
+  completedAt?: string;
+  stages: StageProgress[];
+  artifacts: ArtifactRecord[];
+}
+
+export interface MetaAgentRuntimeOptions {
+  projectRoot?: string;
+  fileSystem?: FileSystem;
+  supabaseClient?: SupabaseClientLike;
+  clock?: () => Date;
+  logger?: (message: string) => void;
+}
+
+export interface SupabaseClientLike {
+  from(table: string): {
+    select(columns: string): {
+      eq(column: string, value: string): Promise<{ data?: any[]; error?: { message: string } }>;
+    };
+  };
+}
+
+export interface SupabaseColumnRow {
+  table_name: string;
+  column_name: string;
+  data_type: string;
+  is_nullable: string;
+  column_default: string | null;
+}
+
+// Genesis meta-agent types
+export interface GenesisInput {
+  projectName?: string;
+  projectType?: string;
+  technologyStack?: string[];
+}
+
+// Librarian meta-agent types
+export interface LibrarianInput {
+  scopePaths?: string[];
+  apiFiles?: string[];
+  developmentGuidePath?: string;
+}
+
+// Refactor meta-agent types
+export interface RefactorInput {
+  scopePaths?: string[];
+  dependencyFiles?: string[];
+}
+
 export interface DirectiveSection {
   heading: string;
   depth: number;

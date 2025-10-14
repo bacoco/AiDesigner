@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prefer-module, unicorn/prefer-single-call */
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GenesisMetaAgent = void 0;
@@ -111,8 +110,18 @@ class GenesisMetaAgent extends base_1.BaseMetaAgent {
         return [`-- ${projectName} initial structure`, "CREATE SCHEMA IF NOT EXISTS app;", '', '-- TODO: add project specific tables'].join('\n');
     }
     async execute() {
+        // Validate required inputs
+        if (!this.input.projectName?.trim()) {
+            throw new Error('projectName is required and cannot be empty');
+        }
+        if (!this.input.projectType?.trim()) {
+            throw new Error('projectType is required and cannot be empty');
+        }
         const { projectName, projectType } = this.input;
-        const technologyStack = (0, utils_1.normalizeTechnologyStack)(this.input.technologyStack);
+        const technologyStack = (0, utils_1.normalizeTechnologyStack)(this.input.technologyStack || []);
+        if (technologyStack.length === 0) {
+            throw new Error('At least one technology must be specified in technologyStack');
+        }
         const domains = this.composeDomainBlueprint(technologyStack);
         const subAgents = SUB_AGENT_PLANS;
         await this.runStage('deconstruct-blueprint', 'Deconstruct the project blueprint', async () => {
