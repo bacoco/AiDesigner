@@ -15,6 +15,10 @@ npm-debug.log*
 build/*.txt
 web-bundles/
 
+# Build artifacts (TypeScript compilation output)
+dist/codex/
+dist/mcp/
+
 # Environment variables
 .env
 

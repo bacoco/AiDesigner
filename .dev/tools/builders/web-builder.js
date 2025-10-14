@@ -104,11 +104,22 @@ These references map directly to bundle sections:
   async cleanOutputDirs() {
     for (const dir of this.outputDirs) {
       try {
-        await fs.rm(dir, { recursive: true, force: true });
-        console.log(`Cleaned: ${path.relative(this.rootDir, dir)}`);
+        // Only clean specific subdirectories instead of the entire dist folder
+        // This prevents deleting tracked files like MCP server and codex files
+        const subdirs = ['agents', 'teams'];
+
+        for (const subdir of subdirs) {
+          const subdirPath = path.join(dir, subdir);
+          try {
+            await fs.rm(subdirPath, { recursive: true, force: true });
+            console.log(`Cleaned: ${path.relative(this.rootDir, subdirPath)}`);
+          } catch (error) {
+            console.debug(`Failed to clean subdirectory ${subdirPath}:`, error.message);
+            // Directory might not exist, that's fine
+          }
+        }
       } catch (error) {
         console.debug(`Failed to clean directory ${dir}:`, error.message);
-        // Directory might not exist, that's fine
       }
     }
   }
