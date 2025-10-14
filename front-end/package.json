@@ -1,11 +1,11 @@
 {
   "name": "front-end",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "tsc -b && vite build",
+    "dev": "vite",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -52,6 +52,7 @@
     "react-hook-form": "^7.65.0",
     "react-resizable-panels": "^3.0.6",
     "recharts": "^2.12.4",
+    "socket.io-client": "^4.8.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
