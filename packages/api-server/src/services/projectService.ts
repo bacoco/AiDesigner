@@ -1,9 +1,9 @@
 import path from 'path';
 import crypto from 'crypto';
-import { logger } from '../index';
+import { logger } from '../config/logger';
 import { NotFoundError } from '../middleware/errorHandler';
 
-const projectStatePath = path.resolve(process.cwd(), '.dev/lib/project-state.js');
+const projectStatePath = path.resolve(__dirname, '../../../../.dev/lib/project-state.js');
 
 interface ProjectStateInstance {
   initialize(): Promise<void>;
@@ -66,6 +66,44 @@ export interface Deliverable {
 
 class ProjectService {
   private projects: Map<string, ProjectStateInstance> = new Map();
+  private projectLastAccessed: Map<string, number> = new Map();
+  private readonly MAX_PROJECTS = 1000; // Maximum number of projects to keep in memory
+  private readonly PROJECT_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+  constructor() {
+    setInterval(() => this.cleanupStaleProjects(), 60 * 60 * 1000);
+  }
+
+  private cleanupStaleProjects(): void {
+    const now = Date.now();
+    const projectsToDelete: string[] = [];
+
+    for (const [projectId, lastAccessed] of this.projectLastAccessed.entries()) {
+      if (now - lastAccessed > this.PROJECT_TIMEOUT_MS) {
+        projectsToDelete.push(projectId);
+      }
+    }
+
+    if (this.projects.size > this.MAX_PROJECTS) {
+      const sortedProjects = Array.from(this.projectLastAccessed.entries())
+        .sort((a, b) => a[1] - b[1]);
+      
+      const excess = this.projects.size - this.MAX_PROJECTS;
+      for (let i = 0; i < excess; i++) {
+        projectsToDelete.push(sortedProjects[i][0]);
+      }
+    }
+
+    for (const projectId of projectsToDelete) {
+      this.projects.delete(projectId);
+      this.projectLastAccessed.delete(projectId);
+      logger.info(`Cleaned up stale project: ${projectId}`);
+    }
+
+    if (projectsToDelete.length > 0) {
+      logger.info(`Cleaned up ${projectsToDelete.length} stale projects. Current count: ${this.projects.size}`);
+    }
+  }
 
   async createProject(name?: string): Promise<{ projectId: string; state: ProjectState }> {
     try {
@@ -79,6 +117,7 @@ class ProjectService {
       }
       
       this.projects.set(projectId, projectState);
+      this.projectLastAccessed.set(projectId, Date.now());
       
       logger.info(`Created project: ${projectId}`);
       
@@ -97,6 +136,7 @@ class ProjectService {
     if (!project) {
       throw new NotFoundError(`Project ${projectId}`);
     }
+    this.projectLastAccessed.set(projectId, Date.now());
     return project;
   }
 
