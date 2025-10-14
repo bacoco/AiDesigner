@@ -11,8 +11,42 @@ function getContextEnrichers() {
   return [
     {
       name: 'default',
-      description: 'Default context enricher',
-      enrich: async (context) => context,
+      description: 'Default story context enricher',
+      enrich: async (context) => {
+        const story = context.context?.story;
+        if (!story) {
+          return context;
+        }
+
+        const structured = story.structured;
+        if (!structured) {
+          return context;
+        }
+
+        const sections = [
+          {
+            title: 'Story Overview',
+            body: `Story: ${structured.title}\nSequence: ${structured.storyId}\nPersona: ${structured.persona || 'Not specified'}\nSummary: ${structured.summary || 'Not provided'}`,
+          },
+          {
+            title: 'Acceptance Criteria',
+            body: Array.isArray(structured.acceptanceCriteria)
+              ? structured.acceptanceCriteria.join('\n')
+              : structured.acceptanceCriteria || 'Not specified',
+          },
+        ];
+
+        return {
+          sections,
+          persona: structured.persona || 'Not specified',
+          contextUpdates: {
+            story: {
+              summary: structured.summary,
+              acceptanceCriteria: structured.acceptanceCriteria,
+            },
+          },
+        };
+      },
     },
     {
       name: 'phase-aware',

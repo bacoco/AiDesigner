@@ -7,7 +7,8 @@ const { getContextEnrichers } = require('../hooks/context-enrichment');
 
 function findDefaultEnricher() {
   const enrichers = getContextEnrichers();
-  return enrichers.find((fn) => typeof fn === 'function');
+  const enricher = enrichers.find((e) => e.name === 'default');
+  return enricher ? enricher.enrich : undefined;
 }
 
 describe('story context enrichment', () => {
