@@ -105,17 +105,27 @@ describe('Codex CLI V6 sandbox compatibility', () => {
       bridge,
     );
 
-    expect(autoResult.response).toBe('Mock agent output for planning');
+    // The executePhaseWorkflow returns a response with a JSON string
+    expect(autoResult).toHaveProperty('response');
+
+    // Parse the inner JSON response
+    const innerResponse = JSON.parse(autoResult.response);
+    expect(innerResponse).toHaveProperty('ok', true);
+    expect(innerResponse).toHaveProperty('agentId', 'pm');
+    expect(innerResponse).toHaveProperty('phase', 'pm');
+    expect(innerResponse).toHaveProperty('message');
 
     const projectState = new ProjectState(tempDir);
     await projectState.initialize();
     await projectState.transitionPhase('pm');
+
+    // Store the response content
     await projectState.storeDeliverable('plan', autoResult.response, {
       summary: 'Mock summary',
     });
 
     const stored = projectState.getDeliverable('pm', 'plan');
-    expect(stored.content).toBe('Mock agent output for planning');
+    expect(stored.content).toBe(autoResult.response);
 
     const generator = new DeliverableGenerator(tempDir, { aidesignerBridge: bridge });
     await generator.initialize();
