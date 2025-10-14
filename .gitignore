@@ -63,3 +63,17 @@ quick-designer-tabs-demo.html
 test-mcp-commands.md
 test-mcp-direct.mjs
 docs/ui/test-mockup.html
+
+# Bundle size optimization - exclude large test projects
+lolo/node_modules/
+lolo/.next/
+lolo/dist/
+lolo/build/
+*/node_modules/
+tmp/
+temp/
+.temp/
+
+# Optimization logs
+logs/
+optimization-*.log

@@ -2,6 +2,9 @@
  * Simple performance monitoring utilities
  */
 
+// eslint-disable-next-line unicorn/prefer-module
+const logger = require('./logger');
+
 /**
  * Create a timer for measuring operation duration
  * @param {string} operation - Name of the operation being timed
@@ -17,9 +20,11 @@ function createTimer(operation) {
     const duration = endTime - startTime;
     const memoryDelta = endMemory.heapUsed - startMemory.heapUsed;
 
-    console.debug(
-      `⏱️  ${operation} completed in ${duration}ms (memory: ${formatBytes(memoryDelta)})`,
-    );
+    logger.debug(`Performance: ${operation} completed`, {
+      duration: `${duration}ms`,
+      memoryDelta: formatBytes(memoryDelta),
+      operation,
+    });
 
     return {
       operation,
