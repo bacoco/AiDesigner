@@ -2236,6 +2236,27 @@
         "keywordMatches": {}
       },
       "levelRationale": "Positive signals: Ongoing complex workflow context (+1). Result: level 1 (score 3)."
+    },
+    {
+      "lane": "complex",
+      "rationale": "Complex lane selected: already in complex workflow. (Score: Complex 3 vs Quick 0)",
+      "confidence": 0.95,
+      "userMessage": "Create a simple login component",
+      "timestamp": "2025-10-14T17:15:25.679Z",
+      "phase": "analyst",
+      "level": 1,
+      "levelScore": 3,
+      "levelSignals": {
+        "contributions": [
+          {
+            "description": "Ongoing complex workflow context",
+            "value": 1
+          }
+        ],
+        "deductions": [],
+        "keywordMatches": {}
+      },
+      "levelRationale": "Positive signals: Ongoing complex workflow context (+1). Result: level 1 (score 3)."
     }
   ],
   "requirements": {},
@@ -2243,7 +2264,7 @@
   "userPreferences": {},
   "nextSteps": "",
   "createdAt": "2025-10-14T10:23:49.833Z",
-  "updatedAt": "2025-10-14T13:16:17.288Z",
+  "updatedAt": "2025-10-14T17:15:25.679Z",
   "integrations": {
     "drawbridge": {
       "ingestions": [],
