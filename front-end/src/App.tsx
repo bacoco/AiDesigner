@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Sparkles, Code, Eye, Terminal, Layout, FileCode, Settings, Github } from 'lucide-react';
+import { Send, Sparkles, Code, Eye, Terminal, Layout, FileCode, Settings, Github, Info } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Card } from './components/ui/card';
 import { Input } from './components/ui/input';
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { ScrollArea } from './components/ui/scroll-area';
 import { Badge } from './components/ui/badge';
 import { Separator } from './components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
 import './App.css';
 
 interface Message {
@@ -416,6 +417,15 @@ function App() {
           </div>
         </header>
 
+        <Alert className="m-4 border-yellow-600 bg-yellow-950/50">
+          <Info className="h-4 w-4 text-yellow-400" />
+          <AlertTitle className="text-yellow-400">Prototype Mode</AlertTitle>
+          <AlertDescription className="text-yellow-200">
+            This is a UI prototype using mock data. Backend integration is not yet implemented.
+            All responses are simulated for demonstration purposes.
+          </AlertDescription>
+        </Alert>
+
         <div className="flex-1 flex overflow-hidden">
           <div className="flex-1 flex flex-col">
             <Tabs defaultValue="chat" className="flex-1 flex flex-col">
@@ -632,6 +642,7 @@ function App() {
                           srcDoc={selectedUI.html}
                           className="flex-1 bg-white"
                           title={selectedUI.name}
+                          sandbox="allow-scripts"
                         />
                       </>
                     ) : (
