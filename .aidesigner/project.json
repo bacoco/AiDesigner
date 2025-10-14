@@ -1,0 +1,9 @@
+{
+  "name": "AiDesigner",
+  "version": "1.0.0",
+  "aidesignerVersion": "3.2.0",
+  "createdAt": "2025-10-14T07:43:45.739Z",
+  "config": {
+    "mcpServers": ["aidesigner"]
+  }
+}

@@ -12137,6 +12137,7 @@ elicit: true
 ## Purpose
 
 Générer instantanément un écran UI complet avec:
+
 - Concepts visuels via Gemini (3 variations)
 - Extraction automatique des specs de design
 - Génération dans UN SEUL fichier HTML avec tabs
@@ -12184,12 +12185,13 @@ Générer instantanément un écran UI complet avec:
 
 ```javascript
 {
-  url: "https://linear.app"
+  url: 'https://linear.app';
 }
 ```
 
 **Confirmer:**
 "✅ Tokens extraits de Linear.app:
+
 - Couleurs: #5E6AD2 (primary), #3D9970 (accent)
 - Police: Inter
 - Espacement: grille 4px"
@@ -12213,12 +12215,14 @@ Réutilisation pour cohérence."
 Generate 3 DISTINCT visual concept variations for a [TYPE] screen.
 
 ## Visual Constraints
+
 Colors: [Primary], [Accent], [Neutral]
 Typography: [Font], sizes, weights
 Spacing: [Base unit], scale
 Components: [Specific requirements]
 
 ## Variations
+
 1. Minimal - Clean, spacious, simple
 2. Friendly - Welcoming, rounded, soft
 3. Professional - Structured, formal, high contrast
@@ -12255,6 +12259,7 @@ Output: 4 mobile screens per variation (2x2 grid)
 ```
 
 **Résultat:**
+
 ```json
 {
   "variations": [
@@ -12293,6 +12298,7 @@ Output: 4 mobile screens per variation (2x2 grid)
 ```
 
 **Cet outil va:**
+
 1. Créer `docs/ui/mockup.html` si n'existe pas
 2. Ajouter tab "Login" dans la navigation
 3. Générer les 3 variations inline dans le HTML
@@ -12313,8 +12319,9 @@ Output: 4 mobile screens per variation (2x2 grid)
 ```
 
 **Via Chrome MCP:**
+
 ```javascript
-navigate_page({ url: "file:///.../docs/ui/mockup.html#login" })
+navigate_page({ url: 'file:///.../docs/ui/mockup.html#login' });
 ```
 
 **Confirmer:**
@@ -12350,6 +12357,7 @@ navigate_page({ url: "file:///.../docs/ui/mockup.html#login" })
 "Quelle variation préfères-tu? (1, 2 ou 3)
 
 Ou:
+
 - 'refine' pour ajuster
 - 'next [type]' pour passer à l'écran suivant (ex: 'next dashboard')"
 
@@ -12368,6 +12376,7 @@ Ou:
 ```
 
 **Cet outil va:**
+
 1. Marquer variation 3 avec ✓
 2. Mettre à jour tab Design System avec specs de var 3
 3. Refresh navigateur (montre ✓ sur variation 3)
@@ -12377,16 +12386,17 @@ Ou:
 ```javascript
 store_ui_iteration({
   iterationNumber: 1,
-  promptsUsed: "login-prompt",
-  userFeedback: "Variation 3 sélectionnée",
-  status: "validated"
-})
+  promptsUsed: 'login-prompt',
+  userFeedback: 'Variation 3 sélectionnée',
+  status: 'validated',
+});
 ```
 
 **Confirmer:**
 "✅ Variation 3 'Professional' sélectionnée!
 
 📦 Design System v1.0 mis à jour:
+
 - Couleurs: #5E6AD2, #3D9970
 - Police: Inter 400/600/700
 - Espacement: 8px grid
@@ -12401,6 +12411,7 @@ store_ui_iteration({
 **User:** "dashboard"
 
 **Workflow:**
+
 1. Retour Step 1 avec type "dashboard"
 2. Step 3 charge Design System v1.0 → Réutilise specs
 3. Génère concepts cohérents
@@ -12428,6 +12439,7 @@ store_ui_iteration({
 ```
 
 **Cohérence automatique:**
+
 - Mêmes couleurs #5E6AD2, #3D9970
 - Même police Inter
 - Même grille 8px
@@ -12442,61 +12454,61 @@ Structure interne:
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Maquette AiDesigner</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* Design System CSS */
-    :root {
-      --primary: #5E6AD2;
-      --accent: #3D9970;
-      /* etc. */
-    }
-  </style>
-</head>
-<body>
-  <!-- Navigation Tabs -->
-  <nav class="tabs">
-    <button data-page="design-system">Design System</button>
-    <button data-page="login" class="active">✓ Login</button>
-    <button data-page="dashboard">Dashboard</button>
-  </nav>
+  <head>
+    <title>Maquette AiDesigner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Design System CSS */
+      :root {
+        --primary: #5e6ad2;
+        --accent: #3d9970;
+        /* etc. */
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation Tabs -->
+    <nav class="tabs">
+      <button data-page="design-system">Design System</button>
+      <button data-page="login" class="active">✓ Login</button>
+      <button data-page="dashboard">Dashboard</button>
+    </nav>
 
-  <!-- Page: Design System -->
-  <div id="page-design-system" class="page hidden">
-    <h1>🎨 Design System v1.0</h1>
-    <div class="design-specs">
-      <!-- Couleurs, typo, spacing, components -->
-    </div>
-  </div>
-
-  <!-- Page: Login -->
-  <div id="page-login" class="page">
-    <h2>Login - Sélectionnez une variation</h2>
-    <div class="variation-grid">
-      <!-- Variation 1 -->
-      <div class="variation-card" data-variation="1">
-        <h3>Minimal</h3>
-        <div class="preview">
-          <!-- HTML inline du login minimal -->
-        </div>
-        <button onclick="selectVariation('login', 1)">Sélectionner</button>
+    <!-- Page: Design System -->
+    <div id="page-design-system" class="page hidden">
+      <h1>🎨 Design System v1.0</h1>
+      <div class="design-specs">
+        <!-- Couleurs, typo, spacing, components -->
       </div>
-      <!-- Variations 2 et 3... -->
     </div>
-  </div>
 
-  <!-- Page: Dashboard -->
-  <div id="page-dashboard" class="page hidden">
-    <!-- Même structure -->
-  </div>
+    <!-- Page: Login -->
+    <div id="page-login" class="page">
+      <h2>Login - Sélectionnez une variation</h2>
+      <div class="variation-grid">
+        <!-- Variation 1 -->
+        <div class="variation-card" data-variation="1">
+          <h3>Minimal</h3>
+          <div class="preview">
+            <!-- HTML inline du login minimal -->
+          </div>
+          <button onclick="selectVariation('login', 1)">Sélectionner</button>
+        </div>
+        <!-- Variations 2 et 3... -->
+      </div>
+    </div>
 
-  <script>
-    // Navigation entre tabs
-    // Sélection de variations
-    // Mise à jour Design System
-  </script>
-</body>
+    <!-- Page: Dashboard -->
+    <div id="page-dashboard" class="page hidden">
+      <!-- Même structure -->
+    </div>
+
+    <script>
+      // Navigation entre tabs
+      // Sélection de variations
+      // Mise à jour Design System
+    </script>
+  </body>
 </html>
 ```
 
@@ -12625,7 +12637,12 @@ You are Google Nano Banana (Gemini 2.5 Flash Image). Render {{concept_variations
 - **Apply shades by hierarchy**: Shade 1 for page backgrounds, Shade 2 for containers/cards/navigation bases, Shade 3 for interactive elements (buttons, tabs, inputs) and highlighted cards, Shade 4 for selected/hover/active states.
 - **Compensate text & icons**: Whenever a lighter shade is used behind content, increase the foreground lightness equally to maintain contrast.
 - **Drop borders on light layers**: Remove borders from elements using Shades 3 or 4; rely on color contrast and depth for separation (use borders sparingly on Shade 1/2 only if absolutely required).
-- **Component specifics**: Tabs → Shade 2 base with Shade 3 selected; Cards → Shade 2 wrapper, Shade 3 important surfaces, Shade 3 + soft shadow when selected; Dropdowns/Buttons → Shade 2 default, Shade 3 primary/important, optional gradient + inner shadow for premium feel; Radios/Checkboxes → Shade 2 containers with Shade 3 selected states; Tables → Shade 1 backgrounds to recede.
+- **Component specifics**:
+  - **Tabs**: Shade 2 base, Shade 3 selected.
+  - **Cards**: Shade 2 wrapper, Shade 3 for important surfaces. When selected, use Shade 3 and add a soft shadow.
+  - **Dropdowns/Buttons**: Shade 2 for default states, Shade 3 for primary/important ones. For a premium feel, an optional gradient and inner shadow can be added.
+  - **Radios/Checkboxes**: Shade 2 for containers, with Shade 3 for selected states.
+  - **Tables**: Shade 1 for backgrounds to make them recede.
 - **Control emphasis with lightness**: Lighter shades (3/4) pull elements forward, darker shades (1/2) push elements back, supporting the 60-30-10 balance (neutrals dominant, accents intentional).
 
 ### Shadow & Gradient Depth Rules
@@ -16143,6 +16160,15 @@ workflow:
     - modernization
     - integration-enhancement
 
+  parameters:
+    drawbridge_mode:
+      description: "Controls Drawbridge ingestion cadence (step, batch, yolo)."
+      default: "batch"
+      options:
+        - "step"
+        - "batch"
+        - "yolo"
+
   sequence:
     - step: enhancement_classification
       agent: analyst
@@ -16214,6 +16240,18 @@ workflow:
       requires: prd.md
       condition: architecture_changes_needed
       notes: "Creates architecture ONLY for significant architectural changes. SAVE OUTPUT: Copy final architecture.md to your project's docs/ folder."
+
+    - agent: invisible-orchestrator
+      action: route_drawbridge_feedback
+      uses: drawbridge-visual-feedback
+      optional: true
+      condition: drawbridge_export_available
+      notes: |
+        Integrate Drawbridge export bundles captured during brownfield assessments:
+        - Execute `node tools/drawbridge-context-pack.mjs --input <export> --mode ${parameters.drawbridge_mode}`.
+        - Project state captures ingestion metadata, docs, and queue stats.
+        - Route feedback to UI, copy, or engineering lanes for remediation.
+        - Share queue status using `bin/aidesigner review` before moving into story slicing.
 
     - agent: po
       validates: all_artifacts
@@ -16635,6 +16673,15 @@ workflow:
     - design-refresh
     - frontend-enhancement
 
+  parameters:
+    drawbridge_mode:
+      description: "Controls Drawbridge ingestion cadence (step, batch, yolo)."
+      default: "batch"
+      options:
+        - "step"
+        - "batch"
+        - "yolo"
+
   sequence:
     - step: ui_analysis
       agent: architect
@@ -16661,6 +16708,18 @@ workflow:
         - prd.md
         - front-end-spec.md
       notes: "Creates frontend architecture with component integration strategy and migration planning. SAVE OUTPUT: Copy final architecture.md to your project's docs/ folder."
+
+    - agent: invisible-orchestrator
+      action: route_drawbridge_feedback
+      uses: drawbridge-visual-feedback
+      optional: true
+      condition: drawbridge_export_available
+      notes: |
+        Integrate Drawbridge annotations gathered from brownfield UI reviews:
+        - Execute `node tools/drawbridge-context-pack.mjs --input <export> --mode ${parameters.drawbridge_mode}` to normalize tasks.
+        - Project state captures ingestion metadata and updates PRD/implementation docs.
+        - Assign lanes for UI refinements, content updates, or engineering fixes using selector metadata.
+        - Review outstanding items with `bin/aidesigner review` before story planning.
 
     - agent: po
       validates: all_artifacts
@@ -16837,6 +16896,15 @@ workflow:
     - prototype
     - mvp
 
+  parameters:
+    drawbridge_mode:
+      description: "Controls Drawbridge ingestion cadence (step, batch, yolo)."
+      default: "batch"
+      options:
+        - "step"
+        - "batch"
+        - "yolo"
+
   sequence:
     - agent: analyst
       creates: project-brief.md
@@ -16872,6 +16940,18 @@ workflow:
         - technical_research_prompt
         - review_generated_ui_structure
       notes: "Creates comprehensive architecture using fullstack-architecture-tmpl. If user generated UI with v0/Lovable, can incorporate the project structure into architecture. May suggest changes to PRD stories or new stories. SAVE OUTPUT: Copy final fullstack-architecture.md to your project's docs/ folder."
+
+    - agent: invisible-orchestrator
+      action: route_drawbridge_feedback
+      uses: drawbridge-visual-feedback
+      optional: true
+      condition: drawbridge_export_available
+      notes: |
+        Integrate Drawbridge visual annotations when available:
+        - Run `node tools/drawbridge-context-pack.mjs --input <export> --mode ${parameters.drawbridge_mode}`.
+        - Project state stores ingestion metadata and updates docs (PRD + implementation mapping).
+        - Route tasks toward UI, copy, or engineering lanes based on selectors.
+        - Surface outstanding items through `bin/aidesigner review` for PO/QA triage.
 
     - agent: pm
       updates: prd.md (if needed)
@@ -17292,6 +17372,15 @@ workflow:
     - ui-prototype
     - simple-interface
 
+  parameters:
+    drawbridge_mode:
+      description: "Controls Drawbridge ingestion cadence (step, batch, yolo)."
+      default: "batch"
+      options:
+        - "step"
+        - "batch"
+        - "yolo"
+
   sequence:
     - agent: analyst
       creates: project-brief.md
@@ -17327,6 +17416,18 @@ workflow:
         - assemble_prompts
         - log_selection
       notes: "OPTIONAL: Use conversational UI designer workflow for visual concept exploration with Google Nano Banana (Gemini 2.5 Flash Image). Two modes: (1) Quick: Use auto-generated brief and screen prompts, or (2) Full: Run *discover-journey for 6-stage conversational discovery (journey mapping → inspiration intake → CSS extraction via Chrome MCP → visual language → per-screen prompts). User runs prompts in Google AI Studio to get visual concepts. After reviewing, run *log-selection to record chosen concept with journey context and CSS tokens. SAVE OUTPUT: Copy docs/ui/ui-designer-screen-prompts.md and docs/ui/ui-designer-explorations.md to your project."
+
+    - agent: invisible-orchestrator
+      action: route_drawbridge_feedback
+      uses: drawbridge-visual-feedback
+      optional: true
+      condition: drawbridge_export_available
+      notes: |
+        Integrate Drawbridge visual annotations when available:
+        - Run `node tools/drawbridge-context-pack.mjs --input <export> --mode ${parameters.drawbridge_mode}`.
+        - Project state stores ingestion metadata and docs (PRD + implementation mapping).
+        - Route normalized tasks to UI tuning, copy edit, or engineering fix lanes based on selectors.
+        - Surface queue via `bin/aidesigner review` before handing off to agents.
 
     - agent: architect
       creates: front-end-architecture.md

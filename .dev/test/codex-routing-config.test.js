@@ -2,8 +2,8 @@ const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 
 const NODE_EXEC = process.execPath;
-const CODEX_CONFIG_PATH = path.resolve(__dirname, '../dist/codex/codex-config.js');
-const CODEX_SERVER_PATH = path.resolve(__dirname, '../dist/codex/codex-server.js');
+const CODEX_CONFIG_PATH = path.resolve(__dirname, '../../dist/codex/codex-config.js');
+const CODEX_SERVER_PATH = path.resolve(__dirname, '../../dist/codex/codex-server.js');
 
 function runLoadModelRoutingConfig(envOverrides = {}) {
   const script = `

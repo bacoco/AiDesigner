@@ -1,0 +1,19 @@
+{
+  "name": "lolo",
+  "version": "1.0.0",
+  "description": "Project powered by AiDesigner",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "scripts": {
+    "aidesigner": "aidesigner start",
+    "aidesigner:build": "aidesigner build",
+    "aidesigner:claude": "aidesigner chat",
+    "aidesigner:codex": "aidesigner codex",
+    "aidesigner:opencode": "aidesigner opencode",
+    "codex": "aidesigner codex"
+  },
+  "dependencies": {
+    "aidesigner": "^3.2.0"
+  }
+}

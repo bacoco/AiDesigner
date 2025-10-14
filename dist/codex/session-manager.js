@@ -1,16 +1,24 @@
+'use strict';
 /**
  * Session Manager
  * Manages design sessions with persistence
  */
-import fs from 'fs/promises';
-import path from 'path';
-export class SessionManager {
+var __importDefault =
+  (this && this.__importDefault) ||
+  function (mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.sessionManager = exports.SessionManager = void 0;
+const promises_1 = __importDefault(require('fs/promises'));
+const path_1 = __importDefault(require('path'));
+class SessionManager {
   constructor(baseDir) {
-    this.sessionsDir = baseDir || path.join(process.cwd(), '.quick-designer-sessions');
+    this.sessionsDir = baseDir || path_1.default.join(process.cwd(), '.quick-designer-sessions');
     this.activeSessions = new Map();
   }
   async init() {
-    await fs.mkdir(this.sessionsDir, { recursive: true });
+    await promises_1.default.mkdir(this.sessionsDir, { recursive: true });
   }
   generateSessionId() {
     return `qd_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
@@ -39,8 +47,8 @@ export class SessionManager {
     }
     // Load from disk
     try {
-      const sessionPath = path.join(this.sessionsDir, `${sessionId}.json`);
-      const data = await fs.readFile(sessionPath, 'utf-8');
+      const sessionPath = path_1.default.join(this.sessionsDir, `${sessionId}.json`);
+      const data = await promises_1.default.readFile(sessionPath, 'utf-8');
       const session = JSON.parse(data);
       this.activeSessions.set(sessionId, session);
       return session;
@@ -50,8 +58,8 @@ export class SessionManager {
   }
   async saveSession(session) {
     session.lastModified = new Date().toISOString();
-    const sessionPath = path.join(this.sessionsDir, `${session.sessionId}.json`);
-    await fs.writeFile(sessionPath, JSON.stringify(session, null, 2), 'utf-8');
+    const sessionPath = path_1.default.join(this.sessionsDir, `${session.sessionId}.json`);
+    await promises_1.default.writeFile(sessionPath, JSON.stringify(session, null, 2), 'utf-8');
     this.activeSessions.set(session.sessionId, session);
   }
   async addVariation(sessionId, variation) {
@@ -88,7 +96,7 @@ export class SessionManager {
   }
   async listSessions() {
     try {
-      const files = await fs.readdir(this.sessionsDir);
+      const files = await promises_1.default.readdir(this.sessionsDir);
       return files.filter((f) => f.endsWith('.json')).map((f) => f.replace('.json', ''));
     } catch (error) {
       return [];
@@ -99,7 +107,7 @@ export class SessionManager {
     if (!session) {
       throw new Error(`Session ${sessionId} not found`);
     }
-    await fs.writeFile(outputPath, JSON.stringify(session, null, 2), 'utf-8');
+    await promises_1.default.writeFile(outputPath, JSON.stringify(session, null, 2), 'utf-8');
   }
   getDefaultDesignSystem() {
     return {
@@ -322,4 +330,5 @@ export class SessionManager {
 </html>`;
   }
 }
-export const sessionManager = new SessionManager();
+exports.SessionManager = SessionManager;
+exports.sessionManager = new SessionManager();

@@ -29,6 +29,12 @@ class ProjectState {
       nextSteps: '',
       createdAt: null,
       updatedAt: null,
+      integrations: {
+        drawbridge: {
+          ingestions: [],
+          lastMode: null,
+        },
+      },
     };
 
     this.conversation = [];
@@ -66,6 +72,8 @@ class ProjectState {
       this.state = await fs.readJson(this.stateFile);
     }
 
+    this.ensureIntegrationState();
+
     if (await fs.pathExists(this.conversationFile)) {
       this.conversation = await fs.readJson(this.conversationFile);
     }
@@ -99,6 +107,7 @@ class ProjectState {
    * Save state to disk
    */
   async save() {
+    this.ensureIntegrationState();
     this.state.updatedAt = new Date().toISOString();
 
     await fs.writeJson(this.stateFile, this.state, { spaces: 2 });
@@ -566,13 +575,21 @@ class ProjectState {
       projectId: this.generateProjectId(),
       projectName: null,
       currentPhase: 'analyst',
+      currentLane: null,
       phaseHistory: [],
+      laneHistory: [],
       requirements: {},
       decisions: {},
       userPreferences: {},
       nextSteps: '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      integrations: {
+        drawbridge: {
+          ingestions: [],
+          lastMode: null,
+        },
+      },
     };
 
     this.conversation = [];
@@ -689,6 +706,194 @@ class ProjectState {
    */
   generateProjectId() {
     return `aidesigner-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  }
+
+  /**
+   * Ensures the integrations state structure exists with proper defaults
+   * @private
+   */
+  ensureIntegrationState() {
+    if (!this.state.integrations || typeof this.state.integrations !== 'object') {
+      this.state.integrations = {};
+    }
+
+    const drawbridge = this.state.integrations.drawbridge;
+
+    if (!drawbridge || typeof drawbridge !== 'object' || Array.isArray(drawbridge)) {
+      this.state.integrations.drawbridge = {
+        ingestions: [],
+        lastMode: null,
+      };
+      return;
+    }
+
+    if (!Array.isArray(drawbridge.ingestions)) {
+      drawbridge.ingestions = [];
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(drawbridge, 'lastMode')) {
+      drawbridge.lastMode = null;
+    }
+  }
+
+  /**
+   * Records a new Drawbridge ingestion in project state
+   * Automatically rotates old ingestions when limit is reached (max 100)
+   * @param {Object} ingestion - Ingestion metadata
+   * @param {string} [ingestion.mode] - Ingestion mode (step|batch|yolo)
+   * @param {Array<Object>} [ingestion.tasks] - Task array with visual feedback items
+   * @param {string} [ingestion.packId] - Unique pack identifier
+   * @param {Object} [ingestion.stats] - Statistics about the ingestion
+   * @param {Object} [ingestion.source] - Source file information
+   * @param {Object} [ingestion.metadata] - Additional metadata
+   * @param {Object} [ingestion.docs] - Documentation paths
+   * @returns {Promise<Object>} The recorded ingestion record
+   * @throws {Error} If state save fails
+   */
+  async recordDrawbridgeIngestion(ingestion = {}) {
+    this.ensureIntegrationState();
+
+    const drawbridge = this.state.integrations.drawbridge;
+    const MAX_INGESTIONS = 100; // Limit to prevent unbounded growth
+
+    const timestamp = ingestion.ingestedAt || new Date().toISOString();
+    const mode = ingestion.mode || null;
+    const ingestionId =
+      ingestion.ingestionId ||
+      ingestion.packId ||
+      `drawbridge-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const packId = ingestion.packId || ingestionId;
+
+    const tasks = Array.isArray(ingestion.tasks)
+      ? ingestion.tasks.map((task) => {
+          const selectors = [task.selectors || []].flat().filter(Boolean);
+          const references = [task.references || []].flat().filter(Boolean);
+
+          return {
+            id: task.id || task.taskId || task.commentId || null,
+            summary: task.summary || task.title || task.comment || '',
+            action: task.action || task.intent || null,
+            severity: task.severity || task.level || null,
+            status: task.status || 'pending',
+            selectors,
+            screenshot: task.screenshot || null,
+            markdownExcerpt: task.markdownExcerpt || task.markdown || null,
+            lane: task.lane || null,
+            references,
+          };
+        })
+      : [];
+
+    const stats =
+      ingestion.stats && typeof ingestion.stats === 'object'
+        ? { ...ingestion.stats }
+        : (() => {
+            const withScreenshotsCount = tasks.filter((task) => Boolean(task.screenshot)).length;
+            return {
+              total: tasks.length,
+              withScreenshots: withScreenshotsCount,
+              withoutScreenshots: tasks.length - withScreenshotsCount,
+            };
+          })();
+
+    const record = {
+      ingestionId,
+      packId,
+      mode,
+      ingestedAt: timestamp,
+      source: ingestion.source ? { ...ingestion.source } : {},
+      tasks,
+      stats,
+      metadata: ingestion.metadata ? { ...ingestion.metadata } : {},
+      docs: ingestion.docs ? { ...ingestion.docs } : {},
+    };
+
+    // Implement rotation to prevent unbounded growth
+    if (drawbridge.ingestions.length >= MAX_INGESTIONS) {
+      // Remove oldest ingestions, keeping only the most recent MAX_INGESTIONS - 1
+      drawbridge.ingestions = drawbridge.ingestions.slice(-(MAX_INGESTIONS - 1));
+    }
+
+    drawbridge.ingestions.push(record);
+    drawbridge.lastMode = mode;
+
+    await this.save();
+
+    return record;
+  }
+
+  /**
+   * Retrieves all Drawbridge ingestion records with deep copies to prevent mutation
+   * @returns {Array<Object>} Array of ingestion records with tasks
+   */
+  getDrawbridgeIngestions() {
+    this.ensureIntegrationState();
+    const drawbridge = this.state.integrations.drawbridge;
+
+    return drawbridge.ingestions.map((record) => ({
+      ...record,
+      tasks: Array.isArray(record.tasks)
+        ? record.tasks.map((task) => ({
+            ...task,
+            selectors: Array.isArray(task.selectors) ? [...task.selectors] : [],
+            references: Array.isArray(task.references) ? [...task.references] : [],
+          }))
+        : [],
+    }));
+  }
+
+  /**
+   * Retrieves a filtered review queue of Drawbridge tasks
+   * @param {Object} options - Options for queue filtering
+   * @param {boolean} [options.includeResolved=false] - Whether to include resolved tasks
+   * @returns {Array<Object>} Array of task items sorted by ingestion date (newest first)
+   */
+  getDrawbridgeReviewQueue(options = {}) {
+    const { includeResolved = false } = options;
+    const queue = [];
+    // Resolved status constants
+    const resolvedStatuses = new Set([
+      'resolved',
+      'done',
+      'closed',
+      'complete',
+      'completed',
+      'approved',
+    ]);
+
+    for (const ingestion of this.getDrawbridgeIngestions()) {
+      for (const task of ingestion.tasks) {
+        const status = typeof task.status === 'string' ? task.status.toLowerCase() : 'pending';
+        if (!includeResolved && resolvedStatuses.has(status)) {
+          continue;
+        }
+
+        queue.push({
+          packId: ingestion.packId,
+          ingestionId: ingestion.ingestionId,
+          mode: ingestion.mode,
+          ingestedAt: ingestion.ingestedAt,
+          id: task.id,
+          summary: task.summary,
+          selectors: task.selectors,
+          screenshot: task.screenshot,
+          status: task.status,
+          severity: task.severity,
+          action: task.action,
+          lane: task.lane,
+          markdownExcerpt: task.markdownExcerpt,
+        });
+      }
+    }
+
+    return queue.sort((a, b) => {
+      const aTime = new Date(a.ingestedAt || 0).getTime();
+      const bTime = new Date(b.ingestedAt || 0).getTime();
+      if (aTime === bTime) {
+        return (a.id || '').localeCompare(b.id || '');
+      }
+      return bTime - aTime;
+    });
   }
 }
 

@@ -2,7 +2,7 @@ import process from 'node:process';
 
 const DEFAULT_COMMAND = '/create-tasks';
 const MAX_INPUT_SIZE = 1024 * 1024; // 1MB
-const STDIN_TIMEOUT_MS = 30000; // 30 seconds
+const STDIN_TIMEOUT_MS = 30_000; // 30 seconds
 const MAX_SLUG_LENGTH = 40;
 
 const helpText = `Compounding Engineering CLI\n\nUsage:\n  node packages/compounding-engineering/cli.mjs /create-tasks [--format json]\n\nDescription:\n  Reads a feature brief from STDIN (JSON) and emits a sequenced task plan.\n`;

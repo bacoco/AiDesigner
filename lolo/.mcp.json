@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "aidesigner": {
+      "command": "node",
+      "args": ["node_modules/aidesigner/dist/mcp/mcp/server.js"],
+      "disabled": false
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "disabled": false
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp", "--headless"],
+      "disabled": false
+    },
+    "shadcn-ui": {
+      "command": "npx",
+      "args": ["-y", "@jpisnice/shadcn-ui-mcp-server"],
+      "disabled": false
+    }
+  }
+}

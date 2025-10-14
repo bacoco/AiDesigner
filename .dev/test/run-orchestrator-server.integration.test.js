@@ -31,8 +31,8 @@ function summarizeScaleSignals(scale = {}) {
   return parts.join(' ');
 }
 
-jest.mock('../dist/codex/lib-resolver.js', () => {
-  const actual = jest.requireActual('../dist/codex/lib-resolver.js');
+jest.mock('../../dist/codex/lib-resolver.js', () => {
+  const actual = jest.requireActual('../../dist/codex/lib-resolver.js');
 
   return {
     ...actual,
@@ -314,7 +314,7 @@ const deliverableGeneratorModule = require('../lib/deliverable-generator.js');
 const projectStateModule = require('../lib/project-state.js');
 const phaseTransitionModule = require('../hooks/phase-transition.js');
 function loadRuntimeForTests() {
-  const filePath = path.resolve(__dirname, '../dist/codex/runtime.js');
+  const filePath = path.resolve(__dirname, '../../dist/codex/runtime.js');
   let source = fs.readFileSync(filePath, 'utf8');
   source = source.replace(
     '"use strict";',
@@ -673,7 +673,7 @@ describe('runOrchestratorServer integration flows', () => {
     const response = await callTool({
       params: {
         name: 'transition_phase',
-        arguments: { toPhase: 'dev', context: { agentId: 'qa' } },
+        arguments: { toPhase: 'dev', context: { agentId: 'qa' }, validated: true },
       },
     });
 

@@ -14,7 +14,13 @@ module.exports = {
       compilerOptions,
     });
 
-    return { code: outputText };
+    // Replace import.meta.url with a CommonJS equivalent for Jest
+    const transformedCode = outputText.replace(
+      /import\.meta\.url/g,
+      `require('url').pathToFileURL(__filename).href`,
+    );
+
+    return { code: transformedCode };
   },
   getCacheKey(sourceText, sourcePath) {
     return crypto

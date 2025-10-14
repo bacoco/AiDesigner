@@ -3,7 +3,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { execSync } = require('node:child_process');
 
-const repoRoot = path.join(__dirname, '..');
+const repoRoot = path.join(__dirname, '..', '..');
 
 function ensureBuildArtifacts() {
   const artifactPath = path.join(repoRoot, 'dist', 'codex', 'codex-server.js');

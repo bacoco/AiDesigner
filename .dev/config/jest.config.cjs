@@ -8,4 +8,5 @@ module.exports = {
   transform: {
     '^.+\\.ts$': '<rootDir>/.dev/config/test/support/ts-transformer.js',
   },
+  transformIgnorePatterns: ['node_modules/(?!(@modelcontextprotocol|other-esm-packages)/)'],
 };

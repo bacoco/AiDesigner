@@ -3,7 +3,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 describe('postinstall-build-mcp script', () => {
-  const rootDir = path.resolve(__dirname, '..');
+  const rootDir = path.resolve(__dirname, '..', '..');
   const distMcpDir = path.join(rootDir, 'dist', 'mcp');
   const postinstallScript = path.join(rootDir, 'tools', 'postinstall-build-mcp.js');
   const serverEntry = path.join(distMcpDir, 'mcp', 'server.js');

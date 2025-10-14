@@ -3,7 +3,7 @@ const path = require('node:path');
 const { spawnSync, execSync } = require('node:child_process');
 
 describe('prepack MCP integration tests', () => {
-  const rootDir = path.resolve(__dirname, '..');
+  const rootDir = path.resolve(__dirname, '..', '..');
   const distMcpDir = path.join(rootDir, 'dist', 'mcp');
   const serverEntry = path.join(distMcpDir, 'mcp', 'server.js');
 

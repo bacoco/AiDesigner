@@ -25,9 +25,7 @@ const resolveProjectPath = (projectRoot, candidate) => {
     return null;
   }
 
-  const resolved = path.isAbsolute(candidate)
-    ? candidate
-    : path.join(projectRoot, candidate);
+  const resolved = path.isAbsolute(candidate) ? candidate : path.join(projectRoot, candidate);
 
   // Prevent path traversal attacks using proper relative path checks
   const normalizedRoot = path.resolve(projectRoot);
@@ -108,7 +106,7 @@ const readJsonIfExists = async (filePath) => {
     return parsed;
   } catch (error) {
     if (error instanceof SyntaxError) {
-      throw new Error(`Failed to parse JSON from ${filePath}: ${error.message}`);
+      throw new TypeError(`Failed to parse JSON from ${filePath}: ${error.message}`);
     }
     throw error;
   }

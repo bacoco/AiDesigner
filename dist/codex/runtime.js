@@ -61,6 +61,7 @@ const fs = __importStar(require('fs-extra'));
 const path = __importStar(require('node:path'));
 const node_os_1 = require('node:os');
 const observability_js_1 = require('./observability.js');
+const vibe_check_gate_js_1 = require('./vibe-check-gate.js');
 const lib_resolver_js_1 = require('./lib-resolver.js');
 const { executeAutoCommand } = (0, lib_resolver_js_1.requireLibModule)('auto-commands.js');
 /**
@@ -2326,6 +2327,16 @@ async function runOrchestratorServer(options = {}) {
               ...context,
             });
             await aidesignerBridge.executePhaseWorkflow('pm', context);
+            const vibeCheckResult = await (0, vibe_check_gate_js_1.runVibeCheckGate)({
+              projectState,
+              logger,
+            });
+            if (vibeCheckResult.score !== undefined) {
+              outcomeFields.vibeCheckScore = vibeCheckResult.score;
+            }
+            if (vibeCheckResult.verdict) {
+              outcomeFields.vibeCheckVerdict = vibeCheckResult.verdict;
+            }
             await aidesignerBridge.executePhaseWorkflow('architect', context);
             await aidesignerBridge.executePhaseWorkflow('sm', context);
             result = {
@@ -2334,6 +2345,13 @@ async function runOrchestratorServer(options = {}) {
               files: ['docs/prd.md', 'docs/architecture.md', 'docs/stories/*.md'],
               message: 'Complex workflow executed through aidesigner agents',
             };
+            if (vibeCheckResult.score !== undefined || vibeCheckResult.verdict) {
+              result.vibeCheck = {
+                score: vibeCheckResult.score,
+                verdict: vibeCheckResult.verdict,
+                suggestions: vibeCheckResult.suggestions,
+              };
+            }
             if (selectedQuickLane && !quickLaneActive) {
               result.quickLane = {
                 available: false,

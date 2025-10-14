@@ -219,18 +219,21 @@ class QuickDesignerMCPServer {
     }
 
     // Refresh session
-    session = await this.sessionManager.getSession(session.sessionId)!;
+    const refreshedSession = await this.sessionManager.getSession(session.sessionId);
+    if (!refreshedSession) {
+      throw new Error(`Failed to refresh session ${session.sessionId}`);
+    }
 
     return {
       content: [{
         type: 'text',
         text: JSON.stringify({
           success: true,
-          sessionId: session.sessionId,
+          sessionId: refreshedSession.sessionId,
           variationsGenerated: count,
-          totalVariations: session.variations.length,
-          designSystem: session.designSystem,
-          message: `✨ ${count} variations générées avec succès!\n\nSession: ${session.sessionId}\nTotal variations: ${session.variations.length}\n\nUtilise 'quick_designer_show_session' pour voir toutes les variations.`
+          totalVariations: refreshedSession.variations.length,
+          designSystem: refreshedSession.designSystem,
+          message: `✨ ${count} variations générées avec succès!\n\nSession: ${refreshedSession.sessionId}\nTotal variations: ${refreshedSession.variations.length}\n\nUtilise 'quick_designer_show_session' pour voir toutes les variations.`
         }, null, 2)
       }]
     };
@@ -258,7 +261,10 @@ class QuickDesignerMCPServer {
       prompt
     });
 
-    const updatedSession = await this.sessionManager.getSession(session.sessionId)!;
+    const updatedSession = await this.sessionManager.getSession(session.sessionId);
+    if (!updatedSession) {
+      throw new Error(`Failed to get updated session ${session.sessionId}`);
+    }
 
     return {
       content: [{

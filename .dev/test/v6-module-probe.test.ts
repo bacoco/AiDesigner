@@ -2,7 +2,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 
 describe('probeInvisibleModule', () => {
-  const moduleUnderTestPath = path.resolve(__dirname, '../src/v6-poc/modules/invisible/module.ts');
+  const moduleUnderTestPath = path.resolve(__dirname, '../src/v6-poc/modules/invisible/module.cjs');
 
   afterEach(() => {
     jest.restoreAllMocks();

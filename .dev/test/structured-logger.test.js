@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { PassThrough } = require('node:stream');
 
-const distPath = path.join(__dirname, '..', 'dist', 'codex', 'observability.js');
+const distPath = path.join(__dirname, '..', '..', 'dist', 'codex', 'observability.js');
 
 if (!fs.existsSync(distPath)) {
   throw new Error(

@@ -4,7 +4,7 @@ const vm = require('node:vm');
 const { createRequire } = require('node:module');
 
 function loadCodexTestHarness() {
-  const filePath = path.join(__dirname, '..', 'dist', 'codex', 'codex-server.js');
+  const filePath = path.join(__dirname, '..', '..', 'dist', 'codex', 'codex-server.js');
   let source = fs.readFileSync(filePath, 'utf8');
 
   source = source.replace(

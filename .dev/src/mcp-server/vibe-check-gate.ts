@@ -1,6 +1,6 @@
-import { Client } from "@modelcontextprotocol/sdk/client";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio";
-import type { ToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 export interface VibeCheckGateOptions {
   projectState: {
@@ -42,7 +42,7 @@ interface Logger {
 
 interface ClientHandle {
   client: Pick<Client, "connect" | "callTool" | "close" | "getServerVersion">;
-  transport: Pick<StdioClientTransport, "close"> & { stderr?: NodeJS.ReadableStream | null };
+  transport: StdioClientTransport;
 }
 
 const DEFAULT_COMMAND = "npx";
@@ -186,19 +186,15 @@ function extractSuggestions(result: unknown): string[] | undefined {
   return suggestions.filter((entry) => typeof entry === "string");
 }
 
-function parseToolResult(result: ToolResult): unknown {
-  const content = Array.isArray(result.content) ? result.content : [];
+function parseToolResult(result: CallToolResult): unknown {
+  const content = result.content || [];
   for (const item of content) {
     if (!item) {
       continue;
     }
 
-    if ((item as any).type === "json" && typeof (item as any).data === "object") {
-      return (item as any).data;
-    }
-
-    if ((item as any).type === "text" && typeof (item as any).text === "string") {
-      const text = (item as any).text.trim();
+    if (item.type === "text" && typeof item.text === "string") {
+      const text = item.text.trim();
       if (!text) {
         continue;
       }
@@ -207,6 +203,11 @@ function parseToolResult(result: ToolResult): unknown {
       } catch {
         return { raw: text };
       }
+    }
+
+    // Handle other content types if needed
+    if ((item as any).type === "json" && typeof (item as any).data === "object") {
+      return (item as any).data;
     }
   }
 
@@ -271,7 +272,7 @@ export async function runVibeCheckGate(options: VibeCheckGateOptions): Promise<V
 
   let connected = false;
   try {
-    await handle.client.connect(handle.transport, { timeout: timeoutMs });
+    await handle.client.connect(handle.transport);
     connected = true;
 
     const toolResult = await handle.client.callTool({
@@ -283,7 +284,7 @@ export async function runVibeCheckGate(options: VibeCheckGateOptions): Promise<V
       },
     });
 
-    const parsed = parseToolResult(toolResult);
+    const parsed = parseToolResult(toolResult as CallToolResult);
     const score = extractScore(parsed);
     const verdict = extractVerdict(parsed);
     const suggestions = extractSuggestions(parsed);
