@@ -724,7 +724,7 @@ The project will be considered successful when:
 
 ## Appendix A: Code Review Priorities Reference
 
-From `CODE_REVIEW_AND_IMPROVEMENTS.md`:
+From [`CODE_REVIEW_AND_IMPROVEMENTS.md`](./CODE_REVIEW_AND_IMPROVEMENTS.md):
 
 **Phase 1 Priorities** (covered in this PRD):
 

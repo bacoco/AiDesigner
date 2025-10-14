@@ -1,7 +1,8 @@
 import path from 'path';
 import { logger } from '../index';
+import { NotFoundError } from '../middleware/errorHandler';
 
-const bmadBridgePath = path.resolve(__dirname, '../../../../.dev/lib/aidesigner-bridge.js');
+const bmadBridgePath = path.resolve(process.cwd(), '.dev/lib/aidesigner-bridge.js');
 const { AidesignerBridge } = require(bmadBridgePath);
 
 export interface Agent {
@@ -49,10 +50,10 @@ class AgentService {
     try {
       const agent = await this.bridge.loadAgent(agentId);
       if (!agent) {
-        throw new Error(`Agent ${agentId} not found`);
+        throw new NotFoundError(`Agent ${agentId}`);
       }
       return agent;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error(`Error loading agent ${agentId}:`, error);
       throw error;
     }
@@ -82,11 +83,11 @@ class AgentService {
       
       logger.info(`Agent execution completed in ${result.duration}ms`);
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error(`Error executing agent ${agentId}:`, error);
       return {
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         duration: Date.now() - startTime,
       };
     }

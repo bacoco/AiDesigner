@@ -1,17 +1,50 @@
 import path from 'path';
+import crypto from 'crypto';
 import { logger } from '../index';
+import { NotFoundError } from '../middleware/errorHandler';
 
-const projectStatePath = path.resolve(__dirname, '../../../../.dev/lib/project-state.js');
-const { ProjectState: ProjectStateClass } = require(projectStatePath);
+const projectStatePath = path.resolve(process.cwd(), '.dev/lib/project-state.js');
+
+interface ProjectStateInstance {
+  initialize(): Promise<void>;
+  updateState(updates: Partial<ProjectState>): Promise<void>;
+  getState(): ProjectState & {
+    deliverables?: Deliverable[];
+    decisions?: Record<string, unknown>;
+  };
+  getConversation(limit?: number): Promise<Message[]>;
+  addMessage(
+    role: Message['role'],
+    content: string,
+    metadata?: Record<string, unknown>
+  ): Promise<void>;
+  storeDeliverable(
+    type: string,
+    content: string,
+    metadata?: Record<string, unknown>
+  ): Promise<void>;
+  recordDecision(
+    key: string,
+    value: unknown,
+    rationale?: string
+  ): Promise<void>;
+}
+
+type ProjectStateConstructor = new () => ProjectStateInstance;
+
+const { ProjectState: ProjectStateClass } = require(projectStatePath) as {
+  ProjectState: ProjectStateConstructor;
+};
 
 export interface ProjectState {
   projectId?: string;
   projectName?: string;
   currentPhase?: string;
-  requirements?: Record<string, any>;
-  decisions?: Record<string, any>;
+  requirements?: Record<string, unknown>;
+  decisions?: Record<string, unknown>;
   nextSteps?: string;
-  phaseHistory?: any[];
+  phaseHistory?: Array<Record<string, unknown>>;
+  deliverables?: Deliverable[];
 }
 
 export interface Message {
@@ -20,24 +53,24 @@ export interface Message {
   content: string;
   timestamp: Date;
   phase?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Deliverable {
   type: string;
   phase?: string;
   content: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
 }
 
 class ProjectService {
-  private projects: Map<string, any> = new Map();
+  private projects: Map<string, ProjectStateInstance> = new Map();
 
   async createProject(name?: string): Promise<{ projectId: string; state: ProjectState }> {
     try {
-      const projectId = `proj-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
+      const projectId = `proj-${crypto.randomUUID()}`;
+
       const projectState = new ProjectStateClass();
       await projectState.initialize();
       
@@ -59,10 +92,10 @@ class ProjectService {
     }
   }
 
-  async getProject(projectId: string): Promise<any> {
+  async getProject(projectId: string): Promise<ProjectStateInstance> {
     const project = this.projects.get(projectId);
     if (!project) {
-      throw new Error(`Project ${projectId} not found`);
+      throw new NotFoundError(`Project ${projectId}`);
     }
     return project;
   }
@@ -85,9 +118,9 @@ class ProjectService {
 
   async addMessage(
     projectId: string,
-    role: string,
+    role: Message['role'],
     content: string,
-    metadata?: any
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     const project = await this.getProject(projectId);
     await project.addMessage(role, content, metadata);
@@ -113,7 +146,7 @@ class ProjectService {
     projectId: string,
     type: string,
     content: string,
-    metadata?: any
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     const project = await this.getProject(projectId);
     await project.storeDeliverable(type, content, metadata);
@@ -122,14 +155,14 @@ class ProjectService {
   async recordDecision(
     projectId: string,
     key: string,
-    value: any,
+    value: unknown,
     rationale?: string
   ): Promise<void> {
     const project = await this.getProject(projectId);
     await project.recordDecision(key, value, rationale);
   }
 
-  async getDecisions(projectId: string): Promise<Record<string, any>> {
+  async getDecisions(projectId: string): Promise<Record<string, unknown>> {
     const project = await this.getProject(projectId);
     const state = project.getState();
     return state.decisions || {};

@@ -11,7 +11,6 @@ import { requestLogger } from './middleware/requestLogger';
 config();
 
 const PORT = process.env.API_PORT || 3000;
-const WS_PORT = process.env.WS_PORT || 3001;
 
 export const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
@@ -76,7 +75,7 @@ io.on('connection', (socket) => {
 
 httpServer.listen(PORT, () => {
   logger.info(`API server listening on port ${PORT}`);
-  logger.info(`WebSocket server listening on port ${PORT}`);
+  logger.info('WebSocket server attached to API server');
   logger.info(`Health check available at http://localhost:${PORT}/health`);
 });
 

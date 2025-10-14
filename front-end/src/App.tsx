@@ -22,9 +22,26 @@ function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageRegistryRef = useRef<Set<string>>(new Set());
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const createMessageKey = (message: { role: string; content: string }) => {
+    return `${message.role}:${message.content}`;
+  };
+
+  const registerMessage = (message: Message) => {
+    messageRegistryRef.current.add(createMessageKey(message));
+  };
+
+  const hasMessage = (message: { role: string; content: string }) => {
+    return messageRegistryRef.current.has(createMessageKey(message));
+  };
+
+  const removeMessage = (message: { role: string; content: string }) => {
+    messageRegistryRef.current.delete(createMessageKey(message));
   };
 
   useEffect(() => {
@@ -32,23 +49,41 @@ function App() {
   }, [messages]);
 
   useEffect(() => {
+    let isMounted = true;
+    let createdProjectId: string | null = null;
+    const cleanupFns: Array<() => void> = [];
+
     const initializeProject = async () => {
       try {
         const result = await apiClient.createProject('Web UI Project');
+        if (!isMounted) {
+          return;
+        }
+
+        createdProjectId = result.projectId;
         setProjectId(result.projectId);
         setProjectState(result.state);
-        
+
         wsClient.connect();
         setIsConnected(true);
-        
+
         wsClient.joinProject(result.projectId);
-        
-        const cleanupFns = [
+
+        cleanupFns.push(
           wsClient.onStateUpdated((data) => {
             setProjectState(prev => ({ ...prev, ...data.changes }));
           }),
-          
           wsClient.onMessageAdded((data) => {
+            const eventMessage = {
+              role: data.role,
+              content: data.content,
+            };
+
+            if (hasMessage(eventMessage)) {
+              removeMessage(eventMessage);
+              return;
+            }
+
             const newMessage: Message = {
               id: Date.now().toString(),
               role: data.role as 'user' | 'assistant' | 'system',
@@ -56,64 +91,83 @@ function App() {
               timestamp: new Date(data.timestamp),
               phase: data.phase,
             };
+
+            registerMessage(newMessage);
             setMessages(prev => [...prev, newMessage]);
           }),
-          
           wsClient.onDeliverableCreated((data) => {
             console.log('Deliverable created:', data);
           }),
-        ];
-        
-        setMessages([{
+        );
+
+        messageRegistryRef.current.clear();
+
+        const systemMessage: Message = {
           id: '1',
           role: 'system',
           content: 'Welcome to AiDesigner Web UI! I can help you design and build applications through natural conversation. What would you like to create today?',
           timestamp: new Date(),
-        }]);
-        
-        return () => {
-          cleanupFns.forEach(fn => fn());
-          if (result.projectId) {
-            wsClient.leaveProject(result.projectId);
-          }
-          wsClient.disconnect();
         };
-      } catch (err: any) {
-        setError(`Failed to initialize: ${err.message}`);
+
+        registerMessage(systemMessage);
+        setMessages([systemMessage]);
+      } catch (err: unknown) {
+        if (!isMounted) {
+          return;
+        }
+        const message = err instanceof Error ? err.message : String(err);
+        setError(`Failed to initialize: ${message}`);
         console.error('Initialization error:', err);
       }
     };
 
     initializeProject();
+
+    return () => {
+      isMounted = false;
+      cleanupFns.forEach(fn => fn());
+      if (createdProjectId) {
+        wsClient.leaveProject(createdProjectId);
+      }
+      wsClient.disconnect();
+      setIsConnected(false);
+    };
   }, []);
 
+
   const handleSend = async () => {
-    if (!input.trim() || isProcessing || !projectId) return;
+    const trimmedInput = input.trim();
+    if (!trimmedInput || isProcessing || !projectId) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      content: trimmedInput,
       timestamp: new Date(),
     };
 
+    registerMessage(userMessage);
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsProcessing(true);
     setError(null);
 
+    const currentPhase = projectState.currentPhase;
+    const hasProjectName = Boolean(projectState.projectName);
+
     try {
       await apiClient.addMessage(projectId, 'user', userMessage.content, {
-        phase: projectState.currentPhase,
+        phase: currentPhase,
       });
 
       setTimeout(async () => {
+        const assistantContent = `I understand you want to: "${trimmedInput}". I'm analyzing your requirements and will help you build this. Let me start by gathering more information...`;
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: `I understand you want to: "${input}". I'm analyzing your requirements and will help you build this. Let me start by gathering more information...`,
+          content: assistantContent,
           timestamp: new Date(),
-          phase: projectState.currentPhase || 'analyst',
+          phase: currentPhase || 'analyst',
           toolCalls: [
             {
               name: 'get_project_context',
@@ -124,24 +178,32 @@ function App() {
           ],
         };
 
-        setMessages((prev) => [...prev, assistantMessage]);
-        
-        await apiClient.addMessage(projectId, 'assistant', assistantMessage.content, {
-          phase: assistantMessage.phase,
-          toolCalls: assistantMessage.toolCalls,
-        });
-        
-        setIsProcessing(false);
-
-        if (input.toLowerCase().includes('build') && !projectState.projectName) {
-          await apiClient.updateState(projectId, {
-            projectName: 'New Project',
-            currentPhase: 'analyst',
+        try {
+          await apiClient.addMessage(projectId, 'assistant', assistantMessage.content, {
+            phase: assistantMessage.phase,
+            toolCalls: assistantMessage.toolCalls,
           });
+
+          registerMessage(assistantMessage);
+          setMessages((prev) => [...prev, assistantMessage]);
+
+          if (trimmedInput.toLowerCase().includes('build') && !hasProjectName) {
+            await apiClient.updateState(projectId, {
+              projectName: 'New Project',
+              currentPhase: 'analyst',
+            });
+          }
+        } catch (assistantError: unknown) {
+          const message = assistantError instanceof Error ? assistantError.message : String(assistantError);
+          setError(`Failed to send assistant message: ${message}`);
+          console.error('Error sending assistant message:', assistantError);
+        } finally {
+          setIsProcessing(false);
         }
       }, 1500);
-    } catch (err: any) {
-      setError(`Failed to send message: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(`Failed to send message: ${message}`);
       console.error('Error sending message:', err);
       setIsProcessing(false);
     }

@@ -252,6 +252,7 @@ Use the API with curl or Postman:
 curl http://localhost:3000/health
 
 # Create project
+# Requires jq for JSON parsing (https://stedolan.github.io/jq/)
 PROJECT_ID=$(curl -s -X POST http://localhost:3000/api/projects \
   -H "Content-Type: application/json" \
   -d '{"name": "Test"}' | jq -r '.projectId')
@@ -315,7 +316,7 @@ kill -9 <PID>
 - [Frontend README](front-end/README.md)
 - [PRD](PRD_AIDESIGNER_MODERNIZATION.md)
 - [Implementation Plan](IMPLEMENTATION_PLAN.md)
-- [Code Review](CODE_REVIEW_AND_IMPROVEMENTS.md)
+- [Code Review](./CODE_REVIEW_AND_IMPROVEMENTS.md)
 
 ## Contributing
 
