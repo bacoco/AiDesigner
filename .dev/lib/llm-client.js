@@ -75,10 +75,10 @@ class LLMClient {
       }
       case 'glm': {
         return (
+          process.env.ZHIPUAI_API_KEY ||
           process.env.aidesigner_GLM_API_KEY ||
           process.env.BMAD_GLM_API_KEY ||
-          process.env.GLM_API_KEY ||
-          process.env.ZHIPUAI_API_KEY
+          process.env.GLM_API_KEY
         );
       }
       default: {
@@ -363,6 +363,15 @@ class LLMClient {
       process.env.BMAD_GLM_BASE_URL ||
       process.env.GLM_BASE_URL ||
       'https://open.bigmodel.cn';
+
+    // Validate base URL format before processing
+    if (
+      baseUrl.includes(' ') ||
+      baseUrl.includes('!') ||
+      (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(baseUrl) && !/^[a-zA-Z0-9.-]+/.test(baseUrl))
+    ) {
+      throw new Error(`Invalid GLM base URL: URL contains invalid characters or format`);
+    }
 
     const normalizedBaseUrl = /^https?:\/\//i.test(baseUrl) ? baseUrl : `https://${baseUrl}`;
 

@@ -580,12 +580,7 @@ const buildSpawnEnv = () => {
   if (runtimeOptions.llmProvider) {
     env.LLM_PROVIDER = runtimeOptions.llmProvider;
     env.AGILAI_ASSISTANT_PROVIDER = runtimeOptions.llmProvider;
-
-    if (legacyBmadProviderDetected) {
-      env.BMAD_ASSISTANT_PROVIDER = runtimeOptions.llmProvider;
-    } else if (env.BMAD_ASSISTANT_PROVIDER === 'glm') {
-      delete env.BMAD_ASSISTANT_PROVIDER;
-    }
+    env.BMAD_ASSISTANT_PROVIDER = runtimeOptions.llmProvider;
 
     if (runtimeOptions.llmProvider === 'glm') {
       const existingKey =

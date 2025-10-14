@@ -1231,6 +1231,192 @@
         "keywordMatches": {}
       },
       "levelRationale": "Positive signals: Ongoing complex workflow context (+1). Result: level 1 (score 3)."
+    },
+    {
+      "lane": "complex",
+      "rationale": "Complex lane selected: already in complex workflow. (Score: Complex 3 vs Quick 0)",
+      "confidence": 0.95,
+      "userMessage": "Ship login",
+      "timestamp": "2025-10-14T11:35:55.631Z",
+      "phase": "analyst",
+      "level": 1,
+      "levelScore": 3,
+      "levelSignals": {
+        "contributions": [
+          {
+            "description": "Ongoing complex workflow context",
+            "value": 1
+          }
+        ],
+        "deductions": [],
+        "keywordMatches": {}
+      },
+      "levelRationale": "Positive signals: Ongoing complex workflow context (+1). Result: level 1 (score 3)."
+    },
+    {
+      "lane": "quick",
+      "rationale": "Quick lane selected: detected quick fix keywords, concise request, scale level 0. (Score: Quick 9 vs Complex 3)",
+      "confidence": 0.75,
+      "userMessage": "Fix landing page typo",
+      "timestamp": "2025-10-14T11:35:55.648Z",
+      "phase": "analyst",
+      "level": 0,
+      "levelScore": 1,
+      "levelSignals": {
+        "contributions": [
+          {
+            "description": "Ongoing complex workflow context",
+            "value": 1
+          }
+        ],
+        "deductions": [
+          {
+            "description": "Quick fix keywords",
+            "value": 2
+          }
+        ],
+        "keywordMatches": {}
+      },
+      "levelRationale": "Positive signals: Ongoing complex workflow context (+1). Negative signals: Quick fix keywords (-2). Result: level 0 (score 1)."
+    },
+    {
+      "lane": "complex",
+      "rationale": "Complex lane selected: complex feature indicators, already in complex workflow, scale level 2. (Score: Complex 8 vs Quick 0)",
+      "confidence": 0.95,
+      "userMessage": "Build analytics suite",
+      "timestamp": "2025-10-14T11:35:55.663Z",
+      "phase": "analyst",
+      "level": 2,
+      "levelScore": 5,
+      "levelSignals": {
+        "contributions": [
+          {
+            "description": "Complex keyword signals",
+            "value": 2
+          },
+          {
+            "description": "Ongoing complex workflow context",
+            "value": 1
+          }
+        ],
+        "deductions": [],
+        "keywordMatches": {}
+      },
+      "levelRationale": "Positive signals: Complex keyword signals (+2), Ongoing complex workflow context (+1). Result: level 2 (score 5)."
+    },
+    {
+      "lane": "complex",
+      "rationale": "Complex lane selected: already in complex workflow. (Score: Complex 3 vs Quick 0)",
+      "confidence": 0.95,
+      "userMessage": "Create a simple login component",
+      "timestamp": "2025-10-14T11:36:34.178Z",
+      "phase": "analyst",
+      "level": 1,
+      "levelScore": 3,
+      "levelSignals": {
+        "contributions": [
+          {
+            "description": "Ongoing complex workflow context",
+            "value": 1
+          }
+        ],
+        "deductions": [],
+        "keywordMatches": {}
+      },
+      "levelRationale": "Positive signals: Ongoing complex workflow context (+1). Result: level 1 (score 3)."
+    },
+    {
+      "lane": "complex",
+      "rationale": "Complex lane selected: already in complex workflow. (Score: Complex 3 vs Quick 0)",
+      "confidence": 0.95,
+      "userMessage": "Ship login",
+      "timestamp": "2025-10-14T11:39:40.252Z",
+      "phase": "analyst",
+      "level": 1,
+      "levelScore": 3,
+      "levelSignals": {
+        "contributions": [
+          {
+            "description": "Ongoing complex workflow context",
+            "value": 1
+          }
+        ],
+        "deductions": [],
+        "keywordMatches": {}
+      },
+      "levelRationale": "Positive signals: Ongoing complex workflow context (+1). Result: level 1 (score 3)."
+    },
+    {
+      "lane": "quick",
+      "rationale": "Quick lane selected: detected quick fix keywords, concise request, scale level 0. (Score: Quick 9 vs Complex 3)",
+      "confidence": 0.75,
+      "userMessage": "Fix landing page typo",
+      "timestamp": "2025-10-14T11:39:40.271Z",
+      "phase": "analyst",
+      "level": 0,
+      "levelScore": 1,
+      "levelSignals": {
+        "contributions": [
+          {
+            "description": "Ongoing complex workflow context",
+            "value": 1
+          }
+        ],
+        "deductions": [
+          {
+            "description": "Quick fix keywords",
+            "value": 2
+          }
+        ],
+        "keywordMatches": {}
+      },
+      "levelRationale": "Positive signals: Ongoing complex workflow context (+1). Negative signals: Quick fix keywords (-2). Result: level 0 (score 1)."
+    },
+    {
+      "lane": "complex",
+      "rationale": "Complex lane selected: complex feature indicators, already in complex workflow, scale level 2. (Score: Complex 8 vs Quick 0)",
+      "confidence": 0.95,
+      "userMessage": "Build analytics suite",
+      "timestamp": "2025-10-14T11:39:40.287Z",
+      "phase": "analyst",
+      "level": 2,
+      "levelScore": 5,
+      "levelSignals": {
+        "contributions": [
+          {
+            "description": "Complex keyword signals",
+            "value": 2
+          },
+          {
+            "description": "Ongoing complex workflow context",
+            "value": 1
+          }
+        ],
+        "deductions": [],
+        "keywordMatches": {}
+      },
+      "levelRationale": "Positive signals: Complex keyword signals (+2), Ongoing complex workflow context (+1). Result: level 2 (score 5)."
+    },
+    {
+      "lane": "complex",
+      "rationale": "Complex lane selected: already in complex workflow. (Score: Complex 3 vs Quick 0)",
+      "confidence": 0.95,
+      "userMessage": "Create a simple login component",
+      "timestamp": "2025-10-14T11:40:18.474Z",
+      "phase": "analyst",
+      "level": 1,
+      "levelScore": 3,
+      "levelSignals": {
+        "contributions": [
+          {
+            "description": "Ongoing complex workflow context",
+            "value": 1
+          }
+        ],
+        "deductions": [],
+        "keywordMatches": {}
+      },
+      "levelRationale": "Positive signals: Ongoing complex workflow context (+1). Result: level 1 (score 3)."
     }
   ],
   "requirements": {},
@@ -1238,7 +1424,7 @@
   "userPreferences": {},
   "nextSteps": "",
   "createdAt": "2025-10-14T10:23:49.833Z",
-  "updatedAt": "2025-10-14T11:32:45.367Z",
+  "updatedAt": "2025-10-14T11:40:18.474Z",
   "integrations": {
     "drawbridge": {
       "ingestions": [],
