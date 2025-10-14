@@ -81,4 +81,3 @@ temp/
 # Optimization logs
 logs/
 optimization-*.log
-front-end/
