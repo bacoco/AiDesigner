@@ -8,6 +8,7 @@ const path = require('node:path');
 const yaml = require('js-yaml');
 const { V6ModuleLoader } = require('./v6-module-loader');
 const contextEnrichment = require('../hooks/context-enrichment');
+const logger = require('../../common/utils/logger');
 
 /**
  * Searches upward from the current directory to find the nearest package.json.
@@ -31,9 +32,10 @@ function resolvePackageRoot() {
 
   // Fallback: assume package root is two levels up from __dirname
   const fallbackPath = path.resolve(__dirname, '..', '..');
-  console.warn(
-    `[AidesignerBridge] Warning: No package.json found in directory tree. Falling back to ${fallbackPath}`,
-  );
+  logger.warn('No package.json found in directory tree, using fallback path', {
+    component: 'AidesignerBridge',
+    fallbackPath,
+  });
   return fallbackPath;
 }
 
@@ -61,9 +63,10 @@ function resolveDefaultV6Path(rootDirectory) {
   }
 
   // V6 modules are optional - fall back to legacy mode silently
-  console.debug(
-    `[AidesignerBridge] V6 modules not found, using legacy mode. Searched: ${candidates.join(', ')}`,
-  );
+  logger.debug('V6 modules not found, using legacy mode', {
+    component: 'AidesignerBridge',
+    searchedPaths: candidates,
+  });
   return null;
 }
 
@@ -216,7 +219,11 @@ class AidesignerBridge {
       const candidatePath = path.join(basePath, `${agentId}.md`);
 
       if (await fs.pathExists(candidatePath)) {
-        console.debug(`[AidesignerBridge] Found agent '${agentId}' at: ${candidatePath}`);
+        logger.debug('Found agent at path', {
+          component: 'AidesignerBridge',
+          agentId,
+          path: candidatePath,
+        });
         resolvedAgentPath = candidatePath;
         break;
       }
@@ -307,10 +314,11 @@ class AidesignerBridge {
         try {
           return path.resolve(candidate);
         } catch (error) {
-          console.warn(
-            `[AidesignerBridge] Skipping invalid agent search path: ${candidate}`,
-            error,
-          );
+          logger.warn('Skipping invalid agent search path', {
+            component: 'AidesignerBridge',
+            path: candidate,
+            error: error.message,
+          });
           return null;
         }
       })
@@ -489,11 +497,11 @@ class AidesignerBridge {
           contextSections.push(...arrayify(result.sections));
         }
       } catch (error) {
-        console.warn(
-          `Context enricher failed for agent ${agent.id || agent.agent?.id || 'unknown'}: ${
-            error instanceof Error ? error.message : error
-          }`,
-        );
+        logger.warn('Context enricher failed', {
+          component: 'AidesignerBridge',
+          agentId: agent.id || agent.agent?.id || 'unknown',
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -642,7 +650,11 @@ class AidesignerBridge {
         try {
           dependencies.tasks[taskName] = await this.loadTask(taskName);
         } catch (error) {
-          console.warn(`Failed to load task ${taskName}:`, error.message);
+          logger.warn('Failed to load task dependency', {
+            component: 'AidesignerBridge',
+            taskName,
+            error: error.message,
+          });
         }
       }
     }
@@ -653,7 +665,11 @@ class AidesignerBridge {
         try {
           dependencies.templates[templateName] = await this.loadTemplate(templateName);
         } catch (error) {
-          console.warn(`Failed to load template ${templateName}:`, error.message);
+          logger.warn('Failed to load template dependency', {
+            component: 'AidesignerBridge',
+            templateName,
+            error: error.message,
+          });
         }
       }
     }
@@ -664,7 +680,11 @@ class AidesignerBridge {
         try {
           dependencies.checklists[checklistName] = await this.loadChecklist(checklistName);
         } catch (error) {
-          console.warn(`Failed to load checklist ${checklistName}:`, error.message);
+          logger.warn('Failed to load checklist dependency', {
+            component: 'AidesignerBridge',
+            checklistName,
+            error: error.message,
+          });
         }
       }
     }

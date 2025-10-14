@@ -2,6 +2,9 @@ import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 
+// Import logger for structured logging
+const logger = require('../../../common/utils/logger');
+
 export interface EnsureConfigOptions {
   nonInteractive?: boolean;
 }
@@ -440,7 +443,12 @@ async function readConfig(
     await fs.copy(configPath, backupPath);
     const message = `Failed to parse existing Codex config. A backup was created at ${backupPath}. ${(error as Error).message}`;
     if (nonInteractive) {
-      console.warn(message);
+      logger.warn('Failed to parse Codex config, using defaults', {
+        component: 'ConfigManager',
+        configPath,
+        backupPath,
+        error: (error as Error).message,
+      });
       return { raw: null, data: {} };
     }
     throw new Error(message);

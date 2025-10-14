@@ -17,6 +17,7 @@ const inquirer = require('inquirer');
 const { runIntegrityPreflight } = require('../common/utils/integrity');
 const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
 const { ProjectState } = require('../lib/project-state.js');
+const logger = require('../common/utils/logger');
 
 let command;
 let args = [];
@@ -141,9 +142,11 @@ const readProjectEnv = (projectRoot) => {
   try {
     return { values: parseEnvFile(envPath), path: envPath };
   } catch (error) {
-    console.warn(
-      `⚠️ Unable to parse ${envPath}: ${error.message || error}. Continuing without it.`,
-    );
+    logger.warn('Unable to parse .env file, continuing without it', {
+      component: 'CLI',
+      envPath,
+      error: error.message || String(error),
+    });
     return { values: {}, path: envPath };
   }
 };

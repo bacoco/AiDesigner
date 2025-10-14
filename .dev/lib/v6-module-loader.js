@@ -7,6 +7,7 @@
 const fs = require('fs-extra');
 const path = require('node:path');
 const yaml = require('js-yaml');
+const logger = require('../../common/utils/logger');
 
 function normalizeKey(value) {
   if (!value) {
@@ -142,7 +143,11 @@ class V6ModuleLoader {
         try {
           config = yaml.load(yamlMatch[1]) || {};
         } catch (error) {
-          console.warn(`Failed to parse YAML for agent ${filePath}:`, error.message);
+          logger.warn('Failed to parse YAML for agent', {
+            component: 'V6ModuleLoader',
+            filePath,
+            error: error.message,
+          });
         }
       }
 

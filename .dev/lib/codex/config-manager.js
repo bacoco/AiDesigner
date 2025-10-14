@@ -5,6 +5,9 @@ exports.getCodexConfigPath = getCodexConfigPath;
 const fs = require('fs-extra');
 const os = require('node:os');
 const path = require('node:path');
+
+// Import logger for structured logging
+const logger = require('../../../common/utils/logger');
 const DEFAULT_MODEL = 'GPT-5-Codex';
 const DEFAULT_MANUAL_APPROVAL = false;
 const SERVER_NAME = 'aidesigner-mcp';
@@ -370,7 +373,12 @@ async function readConfig(configPath, { nonInteractive }) {
     await fs.copy(configPath, backupPath);
     const message = `Failed to parse existing Codex config. A backup was created at ${backupPath}. ${error.message}`;
     if (nonInteractive) {
-      console.warn(message);
+      logger.warn('Failed to parse Codex config, using defaults', {
+        component: 'ConfigManager',
+        configPath,
+        backupPath,
+        error: error.message,
+      });
       return { raw: null, data: {} };
     }
     throw new Error(message);

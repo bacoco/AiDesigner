@@ -8,6 +8,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const { createRequire } = require('node:module');
 const { pathToFileURL } = require('node:url');
+const logger = require('../../common/utils/logger');
 
 // Import real implementations without mocking
 const { AidesignerBridge } = require('../lib/aidesigner-bridge.js');
@@ -150,7 +151,10 @@ describe('runOrchestratorServer real process integration', () => {
     try {
       await bridge.initialize();
     } catch (error) {
-      console.warn('Bridge initialization failed, using fallback:', error.message);
+      logger.warn('Bridge initialization failed, using fallback', {
+        component: 'IntegrationTest',
+        error: error.message,
+      });
       // Continue with test even if bridge initialization fails
     }
 
@@ -164,7 +168,11 @@ describe('runOrchestratorServer real process integration', () => {
     try {
       await fs.promises.rm(testProjectPath, { recursive: true, force: true });
     } catch (error) {
-      console.warn('Failed to clean up test project:', error.message);
+      logger.warn('Failed to clean up test project', {
+        component: 'IntegrationTest',
+        testProjectPath,
+        error: error.message,
+      });
     }
   });
 
@@ -190,7 +198,10 @@ describe('runOrchestratorServer real process integration', () => {
       expect(laneDecision).toHaveProperty('confidence');
       expect(['quick', 'complex']).toContain(laneDecision.lane);
     } catch (error) {
-      console.warn('Lane selection failed:', error.message);
+      logger.warn('Lane selection failed', {
+        component: 'IntegrationTest',
+        error: error.message,
+      });
       // Continue test even if lane selection fails
     }
   });
@@ -212,7 +223,10 @@ describe('runOrchestratorServer real process integration', () => {
       const agents = await bridge.listAgents();
       expect(Array.isArray(agents)).toBe(true);
     } catch (error) {
-      console.warn('Agent listing failed:', error.message);
+      logger.warn('Agent listing failed', {
+        component: 'IntegrationTest',
+        error: error.message,
+      });
       // Continue test even if agent listing fails
     }
   });
@@ -268,7 +282,10 @@ describe('runOrchestratorServer real process integration', () => {
       expect(result).toHaveProperty('message');
       expect(result).toHaveProperty('files');
     } catch (error) {
-      console.warn('Quick lane execution failed:', error.message);
+      logger.warn('Quick lane execution failed', {
+        component: 'IntegrationTest',
+        error: error.message,
+      });
       // This is expected if quick lane dependencies are not available
     }
   });
@@ -289,7 +306,10 @@ describe('runOrchestratorServer real process integration', () => {
       expect(brief).toHaveProperty('content');
       expect(brief.content).toContain('todo');
     } catch (error) {
-      console.warn('Deliverable generation failed:', error.message);
+      logger.warn('Deliverable generation failed', {
+        component: 'IntegrationTest',
+        error: error.message,
+      });
       // This is expected if generator dependencies are not available
     }
   });
@@ -315,7 +335,10 @@ describe('runOrchestratorServer real process integration', () => {
 
       expect(transitionResult).toHaveProperty('transitionedTo');
     } catch (error) {
-      console.warn('Phase transition failed:', error.message);
+      logger.warn('Phase transition failed', {
+        component: 'IntegrationTest',
+        error: error.message,
+      });
       // Continue test even if phase transition fails
     }
   });
@@ -332,7 +355,10 @@ describe('runOrchestratorServer real process integration', () => {
 
       expect(preservedContext).toEqual(expect.objectContaining(context));
     } catch (error) {
-      console.warn('Context preservation failed:', error.message);
+      logger.warn('Context preservation failed', {
+        component: 'IntegrationTest',
+        error: error.message,
+      });
       // Continue test even if context preservation fails
     }
   });
@@ -348,7 +374,10 @@ describe('runOrchestratorServer real process integration', () => {
       expect(validationResult).toHaveProperty('status');
       expect(validationResult).toHaveProperty('issues');
     } catch (error) {
-      console.warn('Story context validation failed:', error.message);
+      logger.warn('Story context validation failed', {
+        component: 'IntegrationTest',
+        error: error.message,
+      });
       // This is expected if validation dependencies are not available
     }
   });
@@ -362,7 +391,10 @@ describe('runOrchestratorServer real process integration', () => {
 
       expect(commandResult).toHaveProperty('status');
     } catch (error) {
-      console.warn('Auto command execution failed:', error.message);
+      logger.warn('Auto command execution failed', {
+        component: 'IntegrationTest',
+        error: error.message,
+      });
       // This is expected if auto command dependencies are not available
     }
   });
@@ -396,7 +428,10 @@ describe('runOrchestratorServer real process integration', () => {
       expect(payload).toHaveProperty('lane');
       expect(['quick', 'complex']).toContain(payload.lane);
     } catch (error) {
-      console.warn('Workflow execution failed:', error.message);
+      logger.warn('Workflow execution failed', {
+        component: 'IntegrationTest',
+        error: error.message,
+      });
       // This is expected if workflow dependencies are not fully available
     }
   });
