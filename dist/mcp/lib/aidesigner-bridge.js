@@ -60,8 +60,9 @@ function resolveDefaultV6Path(rootDirectory) {
     }
   }
 
-  console.warn(
-    `[AidesignerBridge] Warning: No V6 modules found in candidates: ${candidates.join(', ')}`,
+  // V6 modules are optional - fall back to legacy mode silently
+  console.debug(
+    `[AidesignerBridge] V6 modules not found, using legacy mode. Searched: ${candidates.join(', ')}`,
   );
   return null;
 }
