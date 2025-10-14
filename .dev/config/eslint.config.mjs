@@ -14,6 +14,7 @@ export default [
       'coverage/**',
       '**/*.min.js',
       '**/node_modules/**',
+      'front-end/**',
     ],
   },
 
