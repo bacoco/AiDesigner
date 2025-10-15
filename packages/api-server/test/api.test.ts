@@ -8,7 +8,7 @@ import { initializeSocketIO, closeSocketIO } from '../src/config/socketio';
 let app: express.Application;
 let httpServer: HttpServer;
 
-beforeAll(() => {
+beforeAll(async () => {
   app = express();
   app.use(express.json());
 
@@ -21,21 +21,32 @@ beforeAll(() => {
 
   setupRoutes(app);
   app.use(errorHandler);
+  await new Promise<void>((resolve) => {
+    httpServer.listen(0, () => resolve());
+  });
 });
 
-afterAll((done) => {
+afterAll(async () => {
   closeSocketIO();
-  if (httpServer) {
-    httpServer.close(done);
-  } else {
-    done();
+  if (!httpServer) {
+    return;
   }
+
+  await new Promise<void>((resolve, reject) => {
+    httpServer.close((error) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
 });
 
 describe('API Smoke Tests', () => {
   describe('Health Check', () => {
     it('should return 200 OK', async () => {
-      const response = await request(app).get('/health');
+      const response = await request(httpServer).get('/health');
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('status', 'ok');
       expect(response.body).toHaveProperty('timestamp');
@@ -44,7 +55,7 @@ describe('API Smoke Tests', () => {
 
   describe('Project Creation', () => {
     it('should create a project with valid data', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post('/api/projects')
         .send({ name: 'Test Project' });
       
@@ -55,7 +66,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should create a project without name', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post('/api/projects')
         .send({});
       
@@ -64,7 +75,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should reject project with invalid name', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post('/api/projects')
         .send({ name: '' });
       
@@ -72,7 +83,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should reject project with name too long', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post('/api/projects')
         .send({ name: 'a'.repeat(256) });
       
@@ -84,14 +95,14 @@ describe('API Smoke Tests', () => {
     let projectId: string;
 
     beforeEach(async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post('/api/projects')
         .send({ name: 'Test Project' });
       projectId = response.body.projectId;
     });
 
     it('should get project state', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .get(`/api/projects/${projectId}/state`);
       
       expect(response.status).toBe(200);
@@ -99,7 +110,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should update project state', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .patch(`/api/projects/${projectId}/state`)
         .send({ currentPhase: 'planning' });
       
@@ -108,21 +119,21 @@ describe('API Smoke Tests', () => {
     });
 
     it('should reject invalid project ID format', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .get('/api/projects/invalid-id/state');
       
       expect(response.status).toBe(400);
     });
 
     it('should return 404 for non-existent project', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .get('/api/projects/proj-00000000-0000-0000-0000-000000000000/state');
       
       expect(response.status).toBe(404);
     });
 
     it('should reject invalid state update', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .patch(`/api/projects/${projectId}/state`)
         .send({ projectName: '' });
       
@@ -134,14 +145,14 @@ describe('API Smoke Tests', () => {
     let projectId: string;
 
     beforeEach(async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post('/api/projects')
         .send({ name: 'Test Project' });
       projectId = response.body.projectId;
     });
 
     it('should add a message', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/conversation`)
         .send({ role: 'user', content: 'Hello, world!' });
       
@@ -150,11 +161,11 @@ describe('API Smoke Tests', () => {
     });
 
     it('should get conversation', async () => {
-      await request(app)
+      await request(httpServer)
         .post(`/api/projects/${projectId}/conversation`)
         .send({ role: 'user', content: 'Test message' });
 
-      const response = await request(app)
+      const response = await request(httpServer)
         .get(`/api/projects/${projectId}/conversation`);
       
       expect(response.status).toBe(200);
@@ -163,7 +174,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should reject message without role', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/conversation`)
         .send({ content: 'Hello' });
       
@@ -171,7 +182,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should reject message without content', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/conversation`)
         .send({ role: 'user' });
       
@@ -179,7 +190,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should reject message with invalid role', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/conversation`)
         .send({ role: 'invalid', content: 'Hello' });
       
@@ -187,15 +198,15 @@ describe('API Smoke Tests', () => {
     });
 
     it('should support conversation limit query param', async () => {
-      await request(app)
+      await request(httpServer)
         .post(`/api/projects/${projectId}/conversation`)
         .send({ role: 'user', content: 'Message 1' });
       
-      await request(app)
+      await request(httpServer)
         .post(`/api/projects/${projectId}/conversation`)
         .send({ role: 'user', content: 'Message 2' });
 
-      const response = await request(app)
+      const response = await request(httpServer)
         .get(`/api/projects/${projectId}/conversation?limit=1`);
       
       expect(response.status).toBe(200);
@@ -203,7 +214,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should reject invalid limit', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .get(`/api/projects/${projectId}/conversation?limit=invalid`);
       
       expect(response.status).toBe(400);
@@ -214,14 +225,14 @@ describe('API Smoke Tests', () => {
     let projectId: string;
 
     beforeEach(async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post('/api/projects')
         .send({ name: 'Test Project' });
       projectId = response.body.projectId;
     });
 
     it('should create a deliverable', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/deliverables`)
         .send({ type: 'prd', content: 'Test PRD content' });
       
@@ -230,11 +241,11 @@ describe('API Smoke Tests', () => {
     });
 
     it('should get deliverables', async () => {
-      await request(app)
+      await request(httpServer)
         .post(`/api/projects/${projectId}/deliverables`)
         .send({ type: 'prd', content: 'Test PRD' });
 
-      const response = await request(app)
+      const response = await request(httpServer)
         .get(`/api/projects/${projectId}/deliverables`);
       
       expect(response.status).toBe(200);
@@ -243,11 +254,11 @@ describe('API Smoke Tests', () => {
     });
 
     it('should get specific deliverable', async () => {
-      await request(app)
+      await request(httpServer)
         .post(`/api/projects/${projectId}/deliverables`)
         .send({ type: 'prd', content: 'Test PRD' });
 
-      const response = await request(app)
+      const response = await request(httpServer)
         .get(`/api/projects/${projectId}/deliverables/prd`);
       
       expect(response.status).toBe(200);
@@ -255,14 +266,14 @@ describe('API Smoke Tests', () => {
     });
 
     it('should return 404 for non-existent deliverable', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .get(`/api/projects/${projectId}/deliverables/non-existent`);
       
       expect(response.status).toBe(404);
     });
 
     it('should reject deliverable without type', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/deliverables`)
         .send({ content: 'Test content' });
       
@@ -270,7 +281,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should reject deliverable without content', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/deliverables`)
         .send({ type: 'prd' });
       
@@ -282,14 +293,14 @@ describe('API Smoke Tests', () => {
     let projectId: string;
 
     beforeEach(async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post('/api/projects')
         .send({ name: 'Test Project' });
       projectId = response.body.projectId;
     });
 
     it('should record a decision', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/decisions`)
         .send({ key: 'tech-stack', value: 'Node.js', rationale: 'Best fit' });
       
@@ -298,11 +309,11 @@ describe('API Smoke Tests', () => {
     });
 
     it('should get decisions', async () => {
-      await request(app)
+      await request(httpServer)
         .post(`/api/projects/${projectId}/decisions`)
         .send({ key: 'tech-stack', value: 'Node.js' });
 
-      const response = await request(app)
+      const response = await request(httpServer)
         .get(`/api/projects/${projectId}/decisions`);
       
       expect(response.status).toBe(200);
@@ -310,7 +321,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should reject decision without key', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/decisions`)
         .send({ value: 'Node.js' });
       
@@ -318,7 +329,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should reject decision without value', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/decisions`)
         .send({ key: 'tech-stack' });
       
@@ -326,7 +337,7 @@ describe('API Smoke Tests', () => {
     });
 
     it('should allow value as false', async () => {
-      const response = await request(app)
+      const response = await request(httpServer)
         .post(`/api/projects/${projectId}/decisions`)
         .send({ key: 'use-typescript', value: false });
       
