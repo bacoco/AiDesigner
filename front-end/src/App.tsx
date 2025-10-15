@@ -273,7 +273,7 @@ function App() {
       setThemeSyncError(`Failed to load theme: ${message}`);
       console.error('Failed to fetch UI theme:', err);
     }
-  }, []);
+  }, []); // Stable dependencies - no theme state dependency to prevent reinitialization
 
   const loadRegistry = useCallback(async () => {
     if (registryComponents.length > 0) {
@@ -327,8 +327,9 @@ function App() {
     if (projectState.ui?.preview) {
       setPreviewState(projectState.ui.preview);
     }
-    if (projectState.ui?.theme && !areThemesEqual(projectState.ui.theme, themeSettings)) {
-      setThemeSettings(projectState.ui.theme);
+    if (projectState.ui?.theme) {
+      // Use functional update to compare with current state and prevent overwriting user edits during debounce
+      setThemeSettings((prev) => (areThemesEqual(projectState.ui.theme, prev) ? prev : projectState.ui.theme!));
     }
   }, [projectState.ui]);
 
