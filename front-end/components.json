@@ -17,5 +17,11 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "iconLibrary": "lucide"
+  "iconLibrary": "lucide",
+  "registries": {
+    "@originui": "https://originui.com/r/{name}.json",
+    "@aceternity": "https://aceternity.com/r/{name}.json",
+    "@magicui": "https://magicui.design/r/{name}.json",
+    "@kiboui": "https://www.kibo-ui.com/r/{name}.json"
+  }
 }

@@ -43,7 +43,11 @@ Done! The command automatically:
 If you opt into the bundled shadcn UI helpers, the installer writes
 `components.json` using the official shadcn schema so future component imports
 (`npx shadcn@latest add card`, etc.) know your Tailwind paths and alias
-configuration.
+configuration. The generated config now ships with ready-to-use registries for
+OriginUI, Aceternity, MagicUI, and the official Kibo UI feed, so you can mix
+components from any of those libraries without extra setup. Run
+`npx shadcn@latest list @kiboui` to preview what the registry exposes, then
+scaffold a component with `npx shadcn@latest add @kiboui/<component>`.
 
 > **💡 Tip**: Always use `@latest` to avoid npx cache issues on either flow!
 
