@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { CSSProperties } from 'react';
+import DOMPurify from 'dompurify';
 import {
   Send,
   Sparkles,
@@ -43,6 +44,14 @@ import type {
   UIPreview,
 } from './api/types';
 import './App.css';
+
+const THEME_SYNC_DEBOUNCE_MS = 350;
+type ThemeField = 'primary' | 'accent' | 'background';
+const THEME_FIELD_LABELS: Array<[ThemeField, string]> = [
+  ['primary', 'Primary'],
+  ['accent', 'Accent'],
+  ['background', 'Background'],
+];
 
 const readCssVariable = (variable: string, fallback: string): string => {
   if (typeof window === 'undefined') {
@@ -95,6 +104,11 @@ const hexToRgba = (value: string, alpha = 1): string => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+const ensureValidHex = (value: string, fallback: string): string => {
+  const normalized = normalizeHex(value);
+  return /^#[0-9a-fA-F]{6}$/.test(normalized) ? normalized : fallback;
+};
+
 const createBackgroundStyle = (theme: UITheme): CSSProperties => ({
   background: `radial-gradient(circle at 15% 15%, ${hexToRgba(theme.primary, 0.45)}, transparent 55%), radial-gradient(circle at 85% 0%, ${hexToRgba(theme.accent, 0.35)}, transparent 60%), linear-gradient(135deg, ${theme.background}, #020617 80%)`,
 });
@@ -133,7 +147,7 @@ function App() {
   const [themeSyncError, setThemeSyncError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageRegistryRef = useRef<Set<string>>(new Set());
-  const themeSyncTimeoutRef = useRef<number | null>(null);
+  const themeSyncTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -170,9 +184,9 @@ function App() {
       return;
     }
     if (themeSyncTimeoutRef.current) {
-      window.clearTimeout(themeSyncTimeoutRef.current);
+      globalThis.clearTimeout(themeSyncTimeoutRef.current);
     }
-    themeSyncTimeoutRef.current = window.setTimeout(async () => {
+    themeSyncTimeoutRef.current = globalThis.setTimeout(async () => {
       try {
         setIsThemeSaving(true);
         const response = await apiClient.updateUITheme(projectId, theme);
@@ -192,7 +206,7 @@ function App() {
       } finally {
         setIsThemeSaving(false);
       }
-    }, 350);
+    }, THEME_SYNC_DEBOUNCE_MS);
   }, [projectId]);
 
   const refreshInstalledComponents = useCallback(async (id: string) => {
@@ -316,7 +330,7 @@ function App() {
     if (projectState.ui?.theme && !areThemesEqual(projectState.ui.theme, themeSettings)) {
       setThemeSettings(projectState.ui.theme);
     }
-  }, [projectState.ui, themeSettings]);
+  }, [projectState.ui]);
 
   useEffect(() => {
     let isMounted = true;
@@ -436,7 +450,7 @@ function App() {
       wsClient.disconnect();
       setIsConnected(false);
       if (themeSyncTimeoutRef.current) {
-        window.clearTimeout(themeSyncTimeoutRef.current);
+        globalThis.clearTimeout(themeSyncTimeoutRef.current);
       }
     };
   }, [loadThemeFromServer, refreshInstalledComponents, refreshUIPreview]);
@@ -543,9 +557,11 @@ function App() {
     }
   };
 
-  const handleThemeFieldChange = (field: keyof UITheme, value: string) => {
-    const formatted = value.startsWith('#') ? value.slice(0, 7) : `#${value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6)}`;
-    const nextTheme = { ...themeSettings, [field]: formatted.length >= 4 ? formatted : themeSettings[field] } as UITheme;
+  const handleThemeFieldChange = (field: ThemeField, value: string) => {
+    const raw = value.startsWith('#') ? value : `#${value}`;
+    const fallback = themeSettings[field] ?? initialTheme[field];
+    const sanitized = ensureValidHex(raw.replace(/[^0-9a-fA-F#]/g, ''), fallback);
+    const nextTheme = { ...themeSettings, [field]: sanitized } as UITheme;
     setThemeSyncError(null);
     setThemeSettings(nextTheme);
     scheduleThemeSync(nextTheme);
@@ -555,13 +571,23 @@ function App() {
     if (!previewState?.html) {
       return null;
     }
-    const themeStyle = `<style>:root { --theme-primary: ${themeSettings.primary}; --theme-accent: ${themeSettings.accent}; --theme-background: ${themeSettings.background}; }</style>`;
-    return `${themeStyle}${previewState.html}`;
+    const safePrimary = ensureValidHex(themeSettings.primary, initialTheme.primary);
+    const safeAccent = ensureValidHex(themeSettings.accent, initialTheme.accent);
+    const safeBackground = ensureValidHex(themeSettings.background, initialTheme.background);
+    const themeStyle = `<style>:root { --theme-primary: ${safePrimary}; --theme-accent: ${safeAccent}; --theme-background: ${safeBackground}; }</style>`;
+    const sanitizedHtml =
+      typeof window === 'undefined'
+        ? previewState.html
+        : DOMPurify.sanitize(previewState.html, { USE_PROFILES: { html: true, svg: true } });
+    return `${themeStyle}${sanitizedHtml}`;
   }, [
     previewState?.html,
     themeSettings.primary,
     themeSettings.accent,
     themeSettings.background,
+    initialTheme.primary,
+    initialTheme.accent,
+    initialTheme.background,
   ]);
 
   const previewFrameKey = previewState?.updatedAt ?? previewState?.url ?? `preview-${installedComponents.length}`;
@@ -893,11 +919,7 @@ function App() {
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                      {([
-                        ['primary', 'Primary'],
-                        ['accent', 'Accent'],
-                        ['background', 'Background'],
-                      ] as Array<[keyof UITheme, string]>).map(([field, label]) => (
+                      {THEME_FIELD_LABELS.map(([field, label]) => (
                         <div key={field} className="space-y-3">
                           <div className="text-xs uppercase tracking-wide text-slate-400">{label}</div>
                           <div className="flex items-center gap-3">
