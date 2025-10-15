@@ -36,7 +36,7 @@ Once the entry exists, launch the orchestrator and ask it to list the configured
 node .dev/tools/cli.js mcp list
 ```
 
-```
+```text
 📡 MCP Servers Configuration
 ...
 ● tweakcn [ACTIVE] (aidesigner)
@@ -45,6 +45,4 @@ node .dev/tools/cli.js mcp list
 ...
 ```
 
-【244ff3†L1-L27】
-
-This confirms the orchestrator sees the TweakCN profile and will spawn the published server when the host environment runs `.mcp.json`.
+This confirms the orchestrator sees the TweakCN profile and will spawn the published server when the host environment runs `.mcp.json`.【244ff3†L1-L27】
