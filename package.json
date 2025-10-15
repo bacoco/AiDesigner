@@ -124,6 +124,7 @@
     "js-yaml": "^4.1.0",
     "ora": "^5.4.1",
     "semver": "^7.7.2",
+    "shell-quote": "^1.8.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -132,6 +133,7 @@
     "@semantic-release/git": "^10.0.1",
     "@types/fs-extra": "^11.0.4",
     "@types/jest": "^29.5.12",
+    "@types/shell-quote": "^1.7.5",
     "eslint": "^9.34.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-n": "^17.21.3",

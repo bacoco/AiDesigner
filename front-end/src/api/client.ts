@@ -4,6 +4,10 @@ import type {
   Deliverable,
   Agent,
   AgentExecutionResult,
+  InstallComponentRequest,
+  InstallComponentResponse,
+  UpdateThemeRequest,
+  UpdateThemeResponse,
 } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -134,6 +138,26 @@ class APIClient {
     return this.request(`/api/agents/${agentId}/execute`, {
       method: 'POST',
       body: JSON.stringify({ command, context, projectId }),
+    });
+  }
+
+  async installUIComponent(
+    projectId: string,
+    payload: InstallComponentRequest
+  ): Promise<InstallComponentResponse> {
+    return this.request(`/api/projects/${projectId}/ui/components`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateUITheme(
+    projectId: string,
+    payload: UpdateThemeRequest
+  ): Promise<UpdateThemeResponse> {
+    return this.request(`/api/projects/${projectId}/ui/theme`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
     });
   }
 

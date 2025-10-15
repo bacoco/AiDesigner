@@ -5,6 +5,8 @@ import type {
   WSDeliverableCreatedEvent,
   WSDecisionRecordedEvent,
   WSAgentExecutedEvent,
+  WSUIComponentInstalledEvent,
+  WSUIThemeUpdatedEvent,
 } from './types';
 
 const WS_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -84,6 +86,16 @@ export class WebSocketClient {
 
   onAgentExecuted(handler: EventHandler<WSAgentExecutedEvent>): () => void {
     return this.on('agent:executed', handler);
+  }
+
+  onUIComponentInstalled(
+    handler: EventHandler<WSUIComponentInstalledEvent>
+  ): () => void {
+    return this.on('ui:component-installed', handler);
+  }
+
+  onUIThemeUpdated(handler: EventHandler<WSUIThemeUpdatedEvent>): () => void {
+    return this.on('ui:theme-updated', handler);
   }
 
   private on<T = any>(event: string, handler: EventHandler<T>): () => void {

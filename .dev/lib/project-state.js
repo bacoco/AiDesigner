@@ -34,6 +34,14 @@ class ProjectState {
           ingestions: [],
           lastMode: null,
         },
+        shadcn: {
+          components: [],
+          lastInstalledAt: null,
+        },
+        tweakcn: {
+          palettes: [],
+          lastUpdatedAt: null,
+        },
       },
     };
 
@@ -589,6 +597,14 @@ class ProjectState {
           ingestions: [],
           lastMode: null,
         },
+        shadcn: {
+          components: [],
+          lastInstalledAt: null,
+        },
+        tweakcn: {
+          palettes: [],
+          lastUpdatedAt: null,
+        },
       },
     };
 
@@ -717,22 +733,46 @@ class ProjectState {
       this.state.integrations = {};
     }
 
-    const drawbridge = this.state.integrations.drawbridge;
+    // Define integration configurations to reduce duplication
+    const integrations = {
+      drawbridge: {
+        arrayProp: 'ingestions',
+        dateProp: 'lastMode',
+        defaultArrayValue: [],
+        defaultDateValue: null,
+      },
+      shadcn: {
+        arrayProp: 'components',
+        dateProp: 'lastInstalledAt',
+        defaultArrayValue: [],
+        defaultDateValue: null,
+      },
+      tweakcn: {
+        arrayProp: 'palettes',
+        dateProp: 'lastUpdatedAt',
+        defaultArrayValue: [],
+        defaultDateValue: null,
+      },
+    };
 
-    if (!drawbridge || typeof drawbridge !== 'object' || Array.isArray(drawbridge)) {
-      this.state.integrations.drawbridge = {
-        ingestions: [],
-        lastMode: null,
-      };
-      return;
-    }
+    // Initialize each integration with the same logic
+    for (const [key, config] of Object.entries(integrations)) {
+      const integration = this.state.integrations[key];
 
-    if (!Array.isArray(drawbridge.ingestions)) {
-      drawbridge.ingestions = [];
-    }
+      if (!integration || typeof integration !== 'object' || Array.isArray(integration)) {
+        this.state.integrations[key] = {
+          [config.arrayProp]: config.defaultArrayValue,
+          [config.dateProp]: config.defaultDateValue,
+        };
+      } else {
+        if (!Array.isArray(integration[config.arrayProp])) {
+          integration[config.arrayProp] = config.defaultArrayValue;
+        }
 
-    if (!Object.prototype.hasOwnProperty.call(drawbridge, 'lastMode')) {
-      drawbridge.lastMode = null;
+        if (!Object.prototype.hasOwnProperty.call(integration, config.dateProp)) {
+          integration[config.dateProp] = config.defaultDateValue;
+        }
+      }
     }
   }
 
@@ -894,6 +934,112 @@ class ProjectState {
       }
       return bTime - aTime;
     });
+  }
+
+  /**
+   * Records a shadcn component installation attempt
+   * @param {Object} installation - Installation metadata
+   * @returns {Promise<Object>} The persisted installation record
+   */
+  async recordShadcnComponentInstallation(installation = {}) {
+    this.ensureIntegrationState();
+
+    const shadcn = this.state.integrations.shadcn;
+    const MAX_COMPONENT_RECORDS = 100;
+
+    if (Array.isArray(shadcn.components) && shadcn.components.length >= MAX_COMPONENT_RECORDS) {
+      shadcn.components = shadcn.components.slice(-(MAX_COMPONENT_RECORDS - 1));
+    }
+
+    const record = {
+      id: installation.id || `shadcn-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      component: installation.component || 'unknown',
+      args: Array.isArray(installation.args) ? installation.args.map((arg) => String(arg)) : [],
+      status: installation.status === 'failed' ? 'failed' : 'succeeded',
+      installedAt: installation.installedAt || new Date().toISOString(),
+      metadata:
+        installation.metadata && typeof installation.metadata === 'object'
+          ? { ...installation.metadata }
+          : {},
+      stdout: installation.stdout || '',
+      stderr: installation.stderr || '',
+      error: installation.error || null,
+    };
+
+    shadcn.components.push(record);
+    shadcn.lastInstalledAt = record.installedAt;
+
+    await this.save();
+
+    return { ...record };
+  }
+
+  /**
+   * Retrieves the shadcn component installation history
+   * @returns {Array<Object>} Array of installation metadata records
+   */
+  getShadcnComponents() {
+    this.ensureIntegrationState();
+    const shadcn = this.state.integrations.shadcn;
+
+    return shadcn.components.map((record) => ({
+      ...record,
+      args: Array.isArray(record.args) ? [...record.args] : [],
+      metadata:
+        record.metadata && typeof record.metadata === 'object' ? { ...record.metadata } : {},
+    }));
+  }
+
+  /**
+   * Applies and records a tweakcn palette update
+   * @param {Object} palette - Palette metadata and token set
+   * @returns {Promise<Object>} The persisted palette record
+   */
+  async applyTweakcnPalette(palette = {}) {
+    this.ensureIntegrationState();
+
+    const tweakcn = this.state.integrations.tweakcn;
+    const MAX_PALETTE_RECORDS = 100;
+
+    if (Array.isArray(tweakcn.palettes) && tweakcn.palettes.length >= MAX_PALETTE_RECORDS) {
+      tweakcn.palettes = tweakcn.palettes.slice(-(MAX_PALETTE_RECORDS - 1));
+    }
+
+    const record = {
+      id: palette.id || `tweakcn-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      name: palette.name || 'default',
+      tokens: palette.tokens && typeof palette.tokens === 'object' ? { ...palette.tokens } : {},
+      status: palette.status === 'failed' ? 'failed' : 'succeeded',
+      appliedAt: palette.appliedAt || new Date().toISOString(),
+      metadata:
+        palette.metadata && typeof palette.metadata === 'object' ? { ...palette.metadata } : {},
+      stdout: palette.stdout || '',
+      stderr: palette.stderr || '',
+      error: palette.error || null,
+    };
+
+    tweakcn.palettes.push(record);
+    tweakcn.lastUpdatedAt = record.appliedAt;
+
+    await this.save();
+
+    return { ...record };
+  }
+
+  /**
+   * Retrieves the tweakcn palette history
+   * @returns {Array<Object>} Array of palette application records
+   */
+  getTweakcnPalettes() {
+    this.ensureIntegrationState();
+    const tweakcn = this.state.integrations.tweakcn;
+
+    return tweakcn.palettes.map((record) => ({
+      ...record,
+      tokens: record.tokens && typeof record.tokens === 'object' ? { ...record.tokens } : {},
+      metadata:
+        record.metadata && typeof record.metadata === 'object' ? { ...record.metadata } : {},
+    }));
   }
 }
 
