@@ -18,6 +18,7 @@ import {
   XCircle,
   Boxes,
 } from 'lucide-react';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Button } from './components/ui/button';
 import { Card } from './components/ui/card';
 import { Input } from './components/ui/input';
@@ -44,6 +45,7 @@ import type {
   UIPreview,
 } from './api/types';
 import './App.css';
+import { createBackgroundStyle, ensureValidHex } from './lib/theme';
 
 const THEME_SYNC_DEBOUNCE_MS = 350;
 type ThemeField = 'primary' | 'accent' | 'background';
@@ -60,58 +62,6 @@ const readCssVariable = (variable: string, fallback: string): string => {
   const value = getComputedStyle(document.documentElement).getPropertyValue(variable);
   return value?.trim() || fallback;
 };
-
-const normalizeHex = (value: string): string => {
-  if (!value) {
-    return value;
-  }
-  const trimmed = value.trim();
-  const raw = trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
-
-  if (!/^[0-9a-fA-F]+$/.test(raw)) {
-    return trimmed; // Not a valid hex character sequence, return original.
-  }
-
-  if (raw.length === 3) {
-    return `#${raw.split('').map((char) => char + char).join('')}`;
-  }
-  if (raw.length === 6) {
-    return `#${raw}`;
-  }
-  if (raw.length === 8) {
-    return `#${raw.slice(0, 6)}`;
-  }
-
-  return trimmed; // Return original if not a supported length.
-};
-
-const hexToRgba = (value: string, alpha = 1): string => {
-  const normalized = normalizeHex(value);
-  if (!normalized.startsWith('#')) {
-    return value;
-  }
-  const raw = normalized.slice(1);
-  if (raw.length !== 6) {
-    return normalized;
-  }
-  const int = Number.parseInt(raw, 16);
-  if (Number.isNaN(int)) {
-    return normalized;
-  }
-  const r = (int >> 16) & 255;
-  const g = (int >> 8) & 255;
-  const b = int & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
-const ensureValidHex = (value: string, fallback: string): string => {
-  const normalized = normalizeHex(value);
-  return /^#[0-9a-fA-F]{6}$/.test(normalized) ? normalized : fallback;
-};
-
-const createBackgroundStyle = (theme: UITheme): CSSProperties => ({
-  background: `radial-gradient(circle at 15% 15%, ${hexToRgba(theme.primary, 0.45)}, transparent 55%), radial-gradient(circle at 85% 0%, ${hexToRgba(theme.accent, 0.35)}, transparent 60%), linear-gradient(135deg, ${theme.background}, #020617 80%)`,
-});
 
 const areThemesEqual = (a?: UITheme, b?: UITheme): boolean => {
   if (!a && !b) return true;
@@ -148,6 +98,7 @@ function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageRegistryRef = useRef<Set<string>>(new Set());
   const themeSyncTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
+  const wsSubscriptionsRef = useRef<Array<() => void>>([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -327,16 +278,28 @@ function App() {
     if (projectState.ui?.preview) {
       setPreviewState(projectState.ui.preview);
     }
-    if (projectState.ui?.theme) {
+    const nextTheme = projectState.ui?.theme;
+    if (nextTheme) {
       // Use functional update to compare with current state and prevent overwriting user edits during debounce
-      setThemeSettings((prev) => (areThemesEqual(projectState.ui.theme, prev) ? prev : projectState.ui.theme!));
+      setThemeSettings((prev) => (areThemesEqual(nextTheme, prev) ? prev : nextTheme));
     }
   }, [projectState.ui]);
 
   useEffect(() => {
     let isMounted = true;
     let createdProjectId: string | null = null;
-    const cleanupFns: Array<() => void> = [];
+
+    // Clean up any lingering subscriptions from previous mounts before creating new ones.
+    wsSubscriptionsRef.current.forEach(fn => fn());
+    wsSubscriptionsRef.current = [];
+
+    const registerSubscription = (unsubscribe: () => void) => {
+      if (!isMounted) {
+        unsubscribe();
+        return;
+      }
+      wsSubscriptionsRef.current.push(unsubscribe);
+    };
 
     const initializeProject = async () => {
       try {
@@ -353,10 +316,12 @@ function App() {
         setIsConnected(true);
         wsClient.joinProject(result.projectId);
 
-        cleanupFns.push(
+        registerSubscription(
           wsClient.onStateUpdated((data) => {
             setProjectState(prev => ({ ...prev, ...data.changes }));
           }),
+        );
+        registerSubscription(
           wsClient.onMessageAdded((data) => {
             const eventMessage = {
               role: data.role,
@@ -378,10 +343,14 @@ function App() {
 
             registerMessage(newMessage);
             setMessages(prev => [...prev, newMessage]);
-          }),
+          })
+        );
+        registerSubscription(
           wsClient.onDeliverableCreated((data) => {
             console.log('Deliverable created:', data);
-          }),
+          })
+        );
+        registerSubscription(
           wsClient.onUIComponentsChanged((data) => {
             if (data.components) {
               setInstalledComponents(data.components);
@@ -399,7 +368,9 @@ function App() {
               setPreviewError(null);
               setIsPreviewLoading(false);
             }
-          }),
+          })
+        );
+        registerSubscription(
           wsClient.onUIThemeUpdated((data) => {
             setProjectState(prev => ({
               ...prev,
@@ -409,7 +380,7 @@ function App() {
               },
             }));
             setThemeSettings(data.theme);
-          }),
+          })
         );
 
         messageRegistryRef.current.clear();
@@ -444,7 +415,8 @@ function App() {
 
     return () => {
       isMounted = false;
-      cleanupFns.forEach(fn => fn());
+      wsSubscriptionsRef.current.forEach(fn => fn());
+      wsSubscriptionsRef.current = [];
       if (createdProjectId) {
         wsClient.leaveProject(createdProjectId);
       }
@@ -594,8 +566,9 @@ function App() {
   const previewFrameKey = previewState?.updatedAt ?? previewState?.url ?? `preview-${installedComponents.length}`;
 
   return (
-    <div className="flex h-screen" style={backgroundStyle}>
-      <div className="flex-1 flex flex-col bg-slate-950/80 backdrop-blur-xl">
+    <ErrorBoundary>
+      <div className="flex h-screen" style={backgroundStyle}>
+        <div className="flex-1 flex flex-col bg-slate-950/80 backdrop-blur-xl">
         <header className="bg-slate-900/70 border-b border-slate-800 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -920,24 +893,48 @@ function App() {
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                      {THEME_FIELD_LABELS.map(([field, label]) => (
-                        <div key={field} className="space-y-3">
-                          <div className="text-xs uppercase tracking-wide text-slate-400">{label}</div>
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="color"
-                              value={themeSettings[field]}
-                              onChange={(event) => handleThemeFieldChange(field, event.target.value)}
-                              className="h-10 w-10 rounded border border-slate-700 bg-transparent"
-                            />
-                            <Input
-                              value={themeSettings[field]}
-                              onChange={(event) => handleThemeFieldChange(field, event.target.value)}
-                              className="bg-slate-950/80 border-slate-800 text-white"
-                            />
+                      {THEME_FIELD_LABELS.map(([field, label]) => {
+                        const labelId = `theme-${field}-label`;
+                        const helpTextId = `theme-${field}-help`;
+                        const colorInputId = `theme-${field}-swatch`;
+                        const textInputId = `theme-${field}-hex`;
+
+                        return (
+                          <div key={field} className="space-y-3">
+                            <label
+                              id={labelId}
+                              htmlFor={textInputId}
+                              className="text-xs uppercase tracking-wide text-slate-400"
+                            >
+                              {label}
+                            </label>
+                            <span id={helpTextId} className="sr-only">
+                              Select or enter the {label.toLowerCase()} color using a hexadecimal value.
+                            </span>
+                            <div className="flex items-center gap-3">
+                              <input
+                                id={colorInputId}
+                                type="color"
+                                value={themeSettings[field]}
+                                onChange={(event) => handleThemeFieldChange(field, event.target.value)}
+                                className="h-10 w-10 rounded border border-slate-700 bg-transparent"
+                                aria-labelledby={labelId}
+                                aria-describedby={helpTextId}
+                              />
+                              <Input
+                                id={textInputId}
+                                value={themeSettings[field]}
+                                onChange={(event) => handleThemeFieldChange(field, event.target.value)}
+                                className="bg-slate-950/80 border-slate-800 text-white"
+                                aria-labelledby={labelId}
+                                aria-describedby={helpTextId}
+                                inputMode="text"
+                                pattern="^#?[0-9a-fA-F]{3,8}$"
+                              />
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     {themeSyncError && (
                       <Alert className="mt-6 border-red-500/60 bg-red-900/30 text-red-200">
@@ -1159,6 +1156,7 @@ function App() {
         </DialogContent>
       </Dialog>
     </div>
+    </ErrorBoundary>
   );
 }
 

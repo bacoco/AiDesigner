@@ -5,19 +5,35 @@ A modern, responsive web interface for AiDesigner that provides a chat-based int
 ## Features
 
 ### 1. Chat Interface
+
 - Natural conversation with the AiDesigner AI
 - Real-time message streaming
 - Phase-aware responses (Analyst, PM, Architect, UX, SM, Dev, QA)
 - Tool usage visualization showing which MCP tools are being called
 
-### 2. UI Preview
-- Live preview of generated HTML/UI designs
-- Multiple design iterations tracked
-- Download HTML functionality
-- Phase tracking for each design
-- Beautiful iframe rendering
+### 2. Live UI Preview
 
-### 3. Tools Dashboard
+- Live rendering of the current project UI fed by backend WebSocket events
+- Sanitized iframe output with hardened sandboxing for untrusted HTML
+- Automatic refresh when components install or the theme updates
+- Loading and error states so users always know what is happening
+
+### 3. Theme Editor
+
+- Visual color pickers and hex inputs with accessibility friendly labels
+- Debounced synchronization with the `/ui/theme` API endpoint
+- Immediate application of CSS variables across the interface
+- Safe validation helpers (`normalizeHex`, `hexToRgba`, `ensureValidHex`) with automated tests
+
+### 4. Component Registry
+
+- Browse the merged shadcn/Kibo catalog from inside the app
+- Install components directly into the project with progress feedback
+- Optimized lookup of installed components for large registries
+- Registry dialog featuring status badges, retry flows, and helpful empty states
+
+### 5. Tools Dashboard
+
 - Display of all available MCP tools
 - Real-time project state visualization
 - Tool descriptions and capabilities
@@ -26,6 +42,7 @@ A modern, responsive web interface for AiDesigner that provides a chat-based int
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js >= 20.10.0
 - npm >= 9.0.0
 
@@ -79,7 +96,9 @@ front-end/
 ## Key Components
 
 ### App.tsx
+
 The main application component that handles:
+
 - Message state management
 - Chat interactions
 - Project state tracking
@@ -126,7 +145,9 @@ interface GeneratedUI {
 ## Features in Detail
 
 ### Phase Tracking
+
 The application tracks the current phase of the design process:
+
 - **Analyst** (blue) - Discovery and requirements gathering
 - **PM** (purple) - Product management and planning
 - **Architect** (green) - Technical architecture design
@@ -136,18 +157,31 @@ The application tracks the current phase of the design process:
 - **QA** (yellow) - Quality assurance
 
 ### Tool Visualization
+
 When the AI uses tools, they are displayed with:
+
 - Tool name
 - Duration (in milliseconds)
 - Result message
 - Visual grouping in the chat
 
-### UI Generation
-When the user requests UI designs, the system:
-1. Detects keywords like "ui", "design", "interface"
-2. Generates a responsive HTML design
-3. Adds it to the UI Preview tab
-4. Provides download functionality
+### UI & Theme Synchronization
+
+The application keeps the preview and theme in sync by:
+
+1. Listening for `ui:components` and `ui:theme` WebSocket events
+2. Debouncing outgoing theme updates to prevent server overload
+3. Sanitizing backend HTML with DOMPurify before rendering
+4. Automatically refreshing the iframe when installs or updates land
+
+### Component Installation
+
+Installing from the registry now:
+
+1. Prevents duplicate installs by tracking pending status per component
+2. Surfaces success and error feedback inline with retry affordances
+3. Refreshes the installed component list and preview in parallel
+4. Handles network failures gracefully with user facing error messages
 
 ## Current State (Mock Implementation)
 
@@ -161,12 +195,14 @@ When the user requests UI designs, the system:
 ## Future Enhancements
 
 ### Backend Integration
+
 - Connect to actual AiDesigner MCP server
 - Real-time project state synchronization
 - Actual tool execution and results
 - Conversation persistence
 
 ### Additional Features
+
 - Code editor for generated HTML/CSS
 - Design token editor
 - Component library browser
@@ -176,6 +212,7 @@ When the user requests UI designs, the system:
 - Template marketplace
 
 ### Performance
+
 - Virtual scrolling for long conversations
 - Lazy loading of UI previews
 - Caching of generated designs
@@ -188,6 +225,7 @@ MIT License - Same as AiDesigner project
 ## Support
 
 For issues or questions about the web UI:
+
 - Open an issue on GitHub
 - Join the Discord community
 - Check the main AiDesigner documentation
