@@ -3,15 +3,16 @@ export interface CommandExecutionResult {
   stdout: string;
   stderr: string;
   exitCode: number | null;
+  error?: string | null;
 }
 
 export interface ShadcnComponentInstallation {
   id: string;
   component: string;
-  args: string[];
+  args?: string[];
   status: 'succeeded' | 'failed';
   installedAt: string;
-  metadata: Record<string, any>;
+  metadata?: Record<string, any>;
   stdout?: string;
   stderr?: string;
   error?: string | null;
@@ -23,7 +24,7 @@ export interface TweakcnPaletteRecord {
   tokens: Record<string, string>;
   status: 'succeeded' | 'failed';
   appliedAt: string;
-  metadata: Record<string, any>;
+  metadata?: Record<string, any>;
   stdout?: string;
   stderr?: string;
   error?: string | null;
@@ -145,8 +146,6 @@ export interface WSUIComponentInstalledEvent {
   component: string;
   record: ShadcnComponentInstallation;
   success: boolean;
-  stdout?: string;
-  stderr?: string;
   timestamp: string;
 }
 
@@ -154,8 +153,6 @@ export interface WSUIThemeUpdatedEvent {
   projectId: string;
   record: TweakcnPaletteRecord;
   success: boolean;
-  stdout?: string;
-  stderr?: string;
   timestamp: string;
 }
 

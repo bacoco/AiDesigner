@@ -597,6 +597,14 @@ class ProjectState {
           ingestions: [],
           lastMode: null,
         },
+        shadcn: {
+          components: [],
+          lastInstalledAt: null,
+        },
+        tweakcn: {
+          palettes: [],
+          lastUpdatedAt: null,
+        },
       },
     };
 
@@ -937,6 +945,12 @@ class ProjectState {
     this.ensureIntegrationState();
 
     const shadcn = this.state.integrations.shadcn;
+    const MAX_COMPONENT_RECORDS = 100;
+
+    if (Array.isArray(shadcn.components) && shadcn.components.length >= MAX_COMPONENT_RECORDS) {
+      shadcn.components = shadcn.components.slice(-(MAX_COMPONENT_RECORDS - 1));
+    }
+
     const record = {
       id: installation.id || `shadcn-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
       component: installation.component || 'unknown',
@@ -985,6 +999,12 @@ class ProjectState {
     this.ensureIntegrationState();
 
     const tweakcn = this.state.integrations.tweakcn;
+    const MAX_PALETTE_RECORDS = 100;
+
+    if (Array.isArray(tweakcn.palettes) && tweakcn.palettes.length >= MAX_PALETTE_RECORDS) {
+      tweakcn.palettes = tweakcn.palettes.slice(-(MAX_PALETTE_RECORDS - 1));
+    }
+
     const record = {
       id: palette.id || `tweakcn-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
       name: palette.name || 'default',

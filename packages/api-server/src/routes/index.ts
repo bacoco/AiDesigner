@@ -2,6 +2,21 @@ import { Express, Router } from 'express';
 import { projectController } from '../controllers/projectController';
 import { agentController } from '../controllers/agentController';
 import { uiIntegrationController } from '../controllers/uiIntegrationController';
+import { validateBody, validateParams, validateQuery } from '../middleware/validate';
+import {
+  addMessageSchema,
+  agentIdParamSchema,
+  conversationQuerySchema,
+  createDeliverableSchema,
+  createProjectSchema,
+  deliverableTypeParamSchema,
+  executeAgentSchema,
+  installComponentSchema,
+  projectIdParamSchema,
+  recordDecisionSchema,
+  updateStateSchema,
+  updateThemeSchema,
+} from '../validators/projectSchemas';
 
 export function setupRoutes(app: Express): void {
   const router = Router();
@@ -17,8 +32,17 @@ export function setupRoutes(app: Express): void {
   router.get('/projects/:projectId/deliverables/:type', validateParams(projectIdParamSchema.merge(deliverableTypeParamSchema)), projectController.getDeliverable.bind(projectController));
   router.post('/projects/:projectId/deliverables', validateParams(projectIdParamSchema), validateBody(createDeliverableSchema), projectController.createDeliverable.bind(projectController));
   
-  router.get('/projects/:projectId/decisions', projectController.getDecisions.bind(projectController));
-  router.post('/projects/:projectId/decisions', projectController.recordDecision.bind(projectController));
+  router.get(
+    '/projects/:projectId/decisions',
+    validateParams(projectIdParamSchema),
+    projectController.getDecisions.bind(projectController)
+  );
+  router.post(
+    '/projects/:projectId/decisions',
+    validateParams(projectIdParamSchema),
+    validateBody(recordDecisionSchema),
+    projectController.recordDecision.bind(projectController)
+  );
 
   router.get('/agents', agentController.listAgents.bind(agentController));
   router.get('/agents/:agentId', validateParams(agentIdParamSchema), agentController.getAgent.bind(agentController));
@@ -26,10 +50,14 @@ export function setupRoutes(app: Express): void {
 
   router.post(
     '/projects/:projectId/ui/components',
+    validateParams(projectIdParamSchema),
+    validateBody(installComponentSchema),
     uiIntegrationController.installComponent.bind(uiIntegrationController)
   );
   router.patch(
     '/projects/:projectId/ui/theme',
+    validateParams(projectIdParamSchema),
+    validateBody(updateThemeSchema),
     uiIntegrationController.updateTheme.bind(uiIntegrationController)
   );
 

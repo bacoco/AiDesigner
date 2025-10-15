@@ -14,13 +14,14 @@ interface StoredDeliverableRecord {
 
 type DeliverablesByPhase = Record<string, Record<string, StoredDeliverableRecord>>;
 
-interface ProjectStateInstance {
+export interface ProjectStateInstance {
   initialize(): Promise<void>;
   updateState(updates: Partial<ProjectState>): Promise<void>;
   getState(): ProjectState & {
     deliverables?: DeliverablesByPhase;
     decisions?: Record<string, unknown>;
   };
+  projectPath: string;
   getConversation(limit?: number): Promise<Message[]>;
   addMessage(
     role: Message['role'],
@@ -61,7 +62,7 @@ export interface ProjectState {
   decisions?: Record<string, unknown>;
   nextSteps?: string;
   phaseHistory?: Array<Record<string, unknown>>;
-  deliverables?: Deliverable[];
+  deliverables?: DeliverablesByPhase;
   integrations?: ProjectIntegrationsState;
 }
 
@@ -73,7 +74,7 @@ export interface ShadcnComponentInstallationInput {
   metadata?: Record<string, unknown>;
   stdout?: string;
   stderr?: string;
-  error?: string;
+  error?: string | null;
 }
 
 export interface ShadcnComponentInstallationRecord
@@ -89,7 +90,7 @@ export interface TweakcnPaletteInput {
   metadata?: Record<string, unknown>;
   stdout?: string;
   stderr?: string;
-  error?: string;
+  error?: string | null;
 }
 
 export interface TweakcnPaletteRecord extends TweakcnPaletteInput {
@@ -314,6 +315,58 @@ class ProjectService {
   ): Promise<void> {
     const project = await this.getProject(projectId);
     await project.storeDeliverable(type, content, metadata);
+  }
+
+  getProjectRoot(projectId: string): string {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      throw new NotFoundError(`Project ${projectId}`);
+    }
+
+    this.projectLastAccessed.set(projectId, Date.now());
+
+    const envRoot = process.env.AIDESIGNER_PROJECT_ROOT;
+    if (envRoot) {
+      return path.resolve(envRoot);
+    }
+
+    return path.resolve(project.projectPath || process.cwd());
+  }
+
+  async recordShadcnComponentInstallation(
+    projectId: string,
+    installation: ShadcnComponentInstallationInput
+  ): Promise<ShadcnComponentInstallationRecord> {
+    const project = await this.getProject(projectId);
+    return project.recordShadcnComponentInstallation(installation);
+  }
+
+  getShadcnComponents(projectId: string): ShadcnComponentInstallationRecord[] {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      throw new NotFoundError(`Project ${projectId}`);
+    }
+
+    this.projectLastAccessed.set(projectId, Date.now());
+    return project.getShadcnComponents();
+  }
+
+  async applyTweakcnPalette(
+    projectId: string,
+    palette: TweakcnPaletteInput
+  ): Promise<TweakcnPaletteRecord> {
+    const project = await this.getProject(projectId);
+    return project.applyTweakcnPalette(palette);
+  }
+
+  getTweakcnPalettes(projectId: string): TweakcnPaletteRecord[] {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      throw new NotFoundError(`Project ${projectId}`);
+    }
+
+    this.projectLastAccessed.set(projectId, Date.now());
+    return project.getTweakcnPalettes();
   }
 
   async recordDecision(

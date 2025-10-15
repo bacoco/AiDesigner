@@ -1,5 +1,8 @@
 import { spawn } from 'child_process';
+import { promises as fs } from 'fs';
 import path from 'path';
+import { parse } from 'shell-quote';
+import { BadRequestError } from '../middleware/errorHandler';
 import { logger } from '../index';
 import {
   projectService,
@@ -11,7 +14,7 @@ interface CommandResult {
   stdout: string;
   stderr: string;
   exitCode: number | null;
-  error?: Error;
+  error?: string | null;
 }
 
 export interface InstallComponentPayload {
@@ -44,29 +47,46 @@ export interface ThemeUpdateResult {
 }
 
 class UIIntegrationService {
+  private readonly maxUserArgs: number;
+  private readonly maxOutputBytes: number;
+
+  constructor() {
+    const configuredArgs = Number(process.env.UI_INTEGRATION_MAX_ARGS ?? 25);
+    this.maxUserArgs = Number.isFinite(configuredArgs) && configuredArgs > 0 ? configuredArgs : 25;
+
+    const configuredOutput = Number(
+      process.env.UI_INTEGRATION_MAX_OUTPUT_BYTES ?? 10 * 1024 * 1024
+    );
+    this.maxOutputBytes =
+      Number.isFinite(configuredOutput) && configuredOutput > 0
+        ? configuredOutput
+        : 10 * 1024 * 1024;
+  }
+
   async installComponent(
     projectId: string,
     payload: InstallComponentPayload
   ): Promise<InstallComponentResult> {
-    const project = await projectService.getProject(projectId);
+    const projectRoot = projectService.getProjectRoot(projectId);
+    const sanitizedComponent = this.sanitizeToken(payload.component, 'component');
+    const normalizedArgs = this.normalizeArgs(payload.args);
+    const cwd = await this.validateCwd(payload.cwd, projectRoot);
 
-    const projectRoot = this.resolveWorkingDirectory();
-    const requestedCwd = payload.cwd || projectRoot;
-    const cwd = this.validateCwd(requestedCwd, projectRoot);
-
-    const { command, args } = this.buildShadcnCommand(payload);
+    const { command, args } = this.buildShadcnCommand(sanitizedComponent, normalizedArgs);
     const execution = await this.runCommand(command, args, cwd);
 
     const status = execution.exitCode === 0 ? 'succeeded' : 'failed';
-    const record = await project.recordShadcnComponentInstallation({
-      component: payload.component,
-      args: payload.args,
+    const timestamp = new Date().toISOString();
+
+    const record = await projectService.recordShadcnComponentInstallation(projectId, {
+      component: sanitizedComponent,
+      args: normalizedArgs,
       status,
-      installedAt: new Date().toISOString(),
+      installedAt: timestamp,
       metadata: payload.metadata,
       stdout: execution.stdout,
       stderr: execution.stderr,
-      error: execution.error ? execution.error.message : undefined,
+      error: execution.error ?? null,
     });
 
     return {
@@ -80,25 +100,31 @@ class UIIntegrationService {
     projectId: string,
     payload: ThemeUpdatePayload
   ): Promise<ThemeUpdateResult> {
-    const project = await projectService.getProject(projectId);
+    const projectRoot = projectService.getProjectRoot(projectId);
+    const paletteName = this.sanitizeToken(payload.palette.name, 'palette');
+    const sanitizedTokens = this.sanitizeTokens(payload.palette.tokens);
+    const normalizedArgs = this.normalizeArgs(payload.args);
+    const cwd = await this.validateCwd(payload.cwd, projectRoot);
 
-    const projectRoot = this.resolveWorkingDirectory();
-    const requestedCwd = payload.cwd || projectRoot;
-    const cwd = this.validateCwd(requestedCwd, projectRoot);
-
-    const { command, args } = this.buildTweakcnCommand(payload);
+    const { command, args } = this.buildTweakcnCommand(
+      paletteName,
+      sanitizedTokens,
+      normalizedArgs
+    );
     const execution = await this.runCommand(command, args, cwd);
 
     const status = execution.exitCode === 0 ? 'succeeded' : 'failed';
-    const record = await project.applyTweakcnPalette({
-      name: payload.palette.name,
-      tokens: payload.palette.tokens,
+    const timestamp = new Date().toISOString();
+
+    const record = await projectService.applyTweakcnPalette(projectId, {
+      name: paletteName,
+      tokens: sanitizedTokens,
       status,
-      appliedAt: new Date().toISOString(),
+      appliedAt: timestamp,
       metadata: payload.metadata,
       stdout: execution.stdout,
       stderr: execution.stderr,
-      error: execution.error ? execution.error.message : undefined,
+      error: execution.error ?? null,
     });
 
     return {
@@ -115,7 +141,8 @@ class UIIntegrationService {
   ): Promise<CommandResult> {
     logger.info(`Executing command: ${command} ${args.join(' ')}`, { cwd });
 
-    const timeoutMs = Number(process.env.UI_INTEGRATION_TIMEOUT_MS ?? 300_000); // 5 minutes default
+    const timeoutMs = Number(process.env.UI_INTEGRATION_TIMEOUT_MS ?? 300_000);
+    const maxOutputBytes = this.maxOutputBytes;
 
     return new Promise((resolve) => {
       const child = spawn(command, args, {
@@ -126,8 +153,10 @@ class UIIntegrationService {
 
       let stdout = '';
       let stderr = '';
-      let spawnedError: Error | undefined;
       let resolved = false;
+      let errorMessage: string | null = null;
+      let totalBytes = 0;
+      let outputExceeded = false;
 
       const timer = setTimeout(() => {
         if (!resolved) {
@@ -135,22 +164,48 @@ class UIIntegrationService {
           try {
             child.kill('SIGTERM');
           } catch (killError) {
-            logger.error('Failed to kill timed out process', { killError });
+            logger.error('Failed to kill timed out process', {
+              error: killError instanceof Error ? killError.message : String(killError),
+            });
           }
         }
       }, timeoutMs);
 
-      child.stdout?.on('data', (data: Buffer) => {
-        stdout += data.toString();
-      });
+      const handleData = (data: Buffer, target: 'stdout' | 'stderr') => {
+        if (outputExceeded) {
+          return;
+        }
 
-      child.stderr?.on('data', (data: Buffer) => {
-        stderr += data.toString();
-      });
+        totalBytes += data.length;
+        if (totalBytes > maxOutputBytes) {
+          outputExceeded = true;
+          errorMessage = `Process output exceeded ${maxOutputBytes} bytes`;
+          logger.warn('Integration command output exceeded limit; terminating process', {
+            maxOutputBytes,
+          });
+          try {
+            child.kill('SIGTERM');
+          } catch (killError) {
+            logger.error('Failed to terminate process after exceeding output limit', {
+              error: killError instanceof Error ? killError.message : String(killError),
+            });
+          }
+          return;
+        }
+
+        if (target === 'stdout') {
+          stdout += data.toString();
+        } else {
+          stderr += data.toString();
+        }
+      };
+
+      child.stdout?.on('data', (data: Buffer) => handleData(data, 'stdout'));
+      child.stderr?.on('data', (data: Buffer) => handleData(data, 'stderr'));
 
       child.on('error', (error) => {
-        spawnedError = error;
-        logger.error('Failed to spawn integration command', { error: error.message });
+        errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error('Failed to spawn integration command', { error: errorMessage });
         if (!resolved) {
           resolved = true;
           clearTimeout(timer);
@@ -158,7 +213,7 @@ class UIIntegrationService {
             stdout,
             stderr,
             exitCode: null,
-            error,
+            error: errorMessage,
           });
         }
       });
@@ -168,6 +223,7 @@ class UIIntegrationService {
           clearTimeout(timer);
           return;
         }
+
         resolved = true;
         clearTimeout(timer);
 
@@ -177,6 +233,7 @@ class UIIntegrationService {
           logger.warn('Integration command completed with non-zero exit code', {
             exitCode,
             stderr,
+            error: errorMessage,
           });
         }
 
@@ -184,13 +241,13 @@ class UIIntegrationService {
           stdout,
           stderr,
           exitCode,
-          ...(spawnedError ? { error: spawnedError } : {}),
+          error: errorMessage,
         });
       });
     });
   }
 
-  private buildShadcnCommand(payload: InstallComponentPayload) {
+  private buildShadcnCommand(component: string, extraArgs: string[]) {
     const baseCommand = process.env.SHADCN_MCP_COMMAND || 'npx';
     const command = this.resolveCommand(baseCommand);
     const baseArgs = this.parseArgs(
@@ -198,18 +255,20 @@ class UIIntegrationService {
         '--yes @modelcontextprotocol/cli call shadcn install-component'
     );
 
-    const component = this.sanitizeToken(payload.component);
     const args = [...baseArgs, component];
 
-    if (Array.isArray(payload.args) && payload.args.length > 0) {
-      this.validateArgs(payload.args);
-      args.push(...payload.args);
+    if (extraArgs.length > 0) {
+      args.push(...extraArgs);
     }
 
     return { command, args };
   }
 
-  private buildTweakcnCommand(payload: ThemeUpdatePayload) {
+  private buildTweakcnCommand(
+    paletteName: string,
+    tokens: Record<string, string>,
+    extraArgs: string[]
+  ) {
     const baseCommand = process.env.TWEAKCN_MCP_COMMAND || 'npx';
     const command = this.resolveCommand(baseCommand);
     const baseArgs = this.parseArgs(
@@ -217,99 +276,215 @@ class UIIntegrationService {
         '--yes @modelcontextprotocol/cli call tweakcn apply-palette'
     );
 
-    const paletteName = this.sanitizeToken(payload.palette.name);
     const args = [...baseArgs, paletteName];
-    const tokensArg = JSON.stringify(payload.palette.tokens || {});
+    const tokensArg = JSON.stringify(tokens);
+
+    if (tokensArg.length > 20000) {
+      throw new BadRequestError('Palette tokens payload is too large');
+    }
+
     args.push('--tokens', tokensArg);
 
-    if (Array.isArray(payload.args) && payload.args.length > 0) {
-      this.validateArgs(payload.args);
-      args.push(...payload.args);
+    if (extraArgs.length > 0) {
+      args.push(...extraArgs);
     }
 
     return { command, args };
   }
 
   private parseArgs(input: string): string[] {
-    // Simple quote-aware parser to handle arguments with spaces
-    const args: string[] = [];
-    let current = '';
-    let quote: '"' | "'" | null = null;
-
-    for (let i = 0; i < input.length; i++) {
-      const char = input[i];
-
-      if (!quote && (char === '"' || char === "'")) {
-        quote = char;
-        continue;
-      }
-
-      if (quote && char === quote) {
-        quote = null;
-        continue;
-      }
-
-      if (!quote && /\s/.test(char)) {
-        if (current) {
-          args.push(current);
-          current = '';
-        }
-        continue;
-      }
-
-      current += char;
+    if (!input) {
+      return [];
     }
 
-    if (current) {
-      args.push(current);
+    const parsed = parse(input);
+    const args: string[] = [];
+
+    for (const part of parsed) {
+      if (typeof part !== 'string') {
+        throw new Error('Unsupported operator in MCP command configuration');
+      }
+
+      const trimmed = part.trim();
+      if (!trimmed) {
+        continue;
+      }
+
+      this.ensureArgSafe(trimmed, 'system');
+      args.push(trimmed);
     }
 
     return args;
   }
 
-  private resolveWorkingDirectory(): string {
-    const projectRoot = process.env.AIDESIGNER_PROJECT_ROOT;
-    if (projectRoot) {
-      return path.resolve(projectRoot);
-    }
-    return process.cwd();
-  }
+  private async validateCwd(
+    requestedCwd: string | undefined,
+    projectRoot: string
+  ): Promise<string> {
+    const resolvedRoot = await this.realpathOrResolve(projectRoot);
+    const normalizedRequest =
+      typeof requestedCwd === 'string' && requestedCwd.trim().length > 0
+        ? requestedCwd.trim()
+        : undefined;
 
-  private validateCwd(requestedCwd: string, projectRoot: string): string {
-    const resolvedCwd = path.resolve(requestedCwd);
-    const resolvedRoot = path.resolve(projectRoot);
+    const candidatePath = normalizedRequest
+      ? path.resolve(projectRoot, normalizedRequest)
+      : resolvedRoot;
 
-    // Ensure the requested cwd is within the project root
-    if (resolvedCwd !== resolvedRoot && !resolvedCwd.startsWith(resolvedRoot + path.sep)) {
-      logger.warn('Invalid working directory requested, using project root', {
-        requestedCwd,
-        projectRoot,
-      });
-      return resolvedRoot;
-    }
-
-    return resolvedCwd;
-  }
-
-  private sanitizeToken(token: string): string {
-    // Only allow alphanumeric, hyphens, underscores, dots, slashes, and @ for scoped packages
-    if (!/^[\w@./-]+$/.test(token)) {
-      throw new Error(`Invalid token: ${token}`);
-    }
-    return token;
-  }
-
-  private validateArgs(args: string[]): void {
-    const dangerousPatterns = /[;&|`$()]/;
-    for (const arg of args) {
-      if (dangerousPatterns.test(arg)) {
-        throw new Error(`Invalid argument detected: ${arg}`);
+    let resolvedCandidate: string;
+    try {
+      resolvedCandidate = await fs.realpath(candidatePath);
+    } catch (error) {
+      if (!normalizedRequest) {
+        resolvedCandidate = resolvedRoot;
+      } else {
+        logger.warn('Requested working directory does not exist', {
+          requestedCwd: normalizedRequest,
+        });
+        throw new BadRequestError('Working directory does not exist');
       }
     }
+
+    const relative = path.relative(resolvedRoot, resolvedCandidate);
+    if (relative && (relative.startsWith('..') || path.isAbsolute(relative))) {
+      logger.warn('Invalid working directory requested, outside project root', {
+        requestedCwd: normalizedRequest,
+        projectRoot,
+      });
+      throw new BadRequestError('Invalid working directory');
+    }
+
+    const stats = await fs.stat(resolvedCandidate).catch(() => null);
+    if (!stats || !stats.isDirectory()) {
+      throw new BadRequestError('Working directory must be an existing directory');
+    }
+
+    return resolvedCandidate;
+  }
+
+  private async realpathOrResolve(target: string): Promise<string> {
+    try {
+      return await fs.realpath(target);
+    } catch {
+      return path.resolve(target);
+    }
+  }
+
+  private sanitizeToken(value: string, field: 'component' | 'palette'): string {
+    const trimmed = value?.trim();
+    if (!trimmed) {
+      throw new BadRequestError(`${field === 'component' ? 'Component' : 'Palette'} name is required`);
+    }
+
+    if (trimmed.length > 214) {
+      throw new BadRequestError('Name is too long');
+    }
+
+    if (trimmed.includes('..')) {
+      throw new BadRequestError('Invalid name');
+    }
+
+    const pattern = /^(@[a-z0-9][\w.-]*\/)?[a-zA-Z0-9][\w.-]*$/i;
+    if (!pattern.test(trimmed)) {
+      throw new BadRequestError('Invalid name format');
+    }
+
+    return trimmed;
+  }
+
+  private normalizeArgs(args?: unknown[]): string[] {
+    if (!Array.isArray(args) || args.length === 0) {
+      return [];
+    }
+
+    if (args.length > this.maxUserArgs) {
+      throw new BadRequestError(`Too many command arguments (max ${this.maxUserArgs})`);
+    }
+
+    return args.map((arg, index) => {
+      if (typeof arg !== 'string') {
+        throw new BadRequestError(`Argument at position ${index} must be a string`);
+      }
+
+      const trimmed = arg.trim();
+      if (!trimmed) {
+        throw new BadRequestError('Command arguments cannot be empty');
+      }
+
+      if (trimmed.length > 2000) {
+        throw new BadRequestError('Command argument is too long');
+      }
+
+      this.ensureArgSafe(trimmed, 'user');
+      return trimmed;
+    });
+  }
+
+  private ensureArgSafe(arg: string, source: 'user' | 'system'): void {
+    const dangerousPattern = /[;&|`$()<>\\'"\n\r]/;
+    const forbiddenPrefixes = ['--eval', '-e', '--require', '-r'];
+
+    if (dangerousPattern.test(arg) || arg.includes('..')) {
+      if (source === 'user') {
+        throw new BadRequestError(`Invalid argument detected: ${arg}`);
+      }
+      throw new Error(`Invalid configured argument detected: ${arg}`);
+    }
+
+    const lowered = arg.toLowerCase();
+    if (forbiddenPrefixes.some((flag) => lowered.startsWith(flag))) {
+      if (source === 'user') {
+        throw new BadRequestError(`Unsupported argument: ${arg}`);
+      }
+      throw new Error(`Unsupported configured argument: ${arg}`);
+    }
+  }
+
+  private sanitizeTokens(tokens: Record<string, string>): Record<string, string> {
+    if (!tokens || typeof tokens !== 'object') {
+      return {};
+    }
+
+    const entries = Object.entries(tokens);
+    if (entries.length > 100) {
+      throw new BadRequestError('Too many palette tokens (max 100)');
+    }
+
+    const sanitized: Record<string, string> = {};
+    for (const [rawKey, rawValue] of entries) {
+      const key = String(rawKey).trim();
+      if (!key) {
+        throw new BadRequestError('Palette token keys cannot be empty');
+      }
+      if (key.length > 100) {
+        throw new BadRequestError(`Palette token key "${key}" is too long`);
+      }
+      if (key === '__proto__' || key === 'constructor') {
+        throw new BadRequestError('Invalid palette token key');
+      }
+      if (!/^[A-Za-z0-9_.-]+$/.test(key)) {
+        throw new BadRequestError(`Invalid palette token key: ${key}`);
+      }
+
+      if (typeof rawValue !== 'string') {
+        throw new BadRequestError(`Palette token value for "${key}" must be a string`);
+      }
+
+      const value = rawValue.trim();
+      if (!value) {
+        throw new BadRequestError(`Palette token value for "${key}" cannot be empty`);
+      }
+      if (value.length > 500) {
+        throw new BadRequestError(`Palette token value for "${key}" is too long`);
+      }
+
+      sanitized[key] = value;
+    }
+
+    return sanitized;
   }
 
   private resolveCommand(command: string): string {
-    // On Windows, npx needs .cmd extension when not using shell
     if (process.platform === 'win32' && command === 'npx') {
       return 'npx.cmd';
     }

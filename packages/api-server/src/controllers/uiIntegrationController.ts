@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { uiIntegrationService } from '../services/uiIntegrationService';
-import { BadRequestError, NotFoundError } from '../middleware/errorHandler';
+import { BadRequestError } from '../middleware/errorHandler';
 import { io } from '../index';
 
 class UIIntegrationController {
@@ -22,12 +22,10 @@ class UIIntegrationController {
 
       io.to(`project:${projectId}`).emit('ui:component-installed', {
         projectId,
-        component,
+        component: result.record.component,
         record: result.record,
         success: result.success,
-        stdout: result.output.stdout,
-        stderr: result.output.stderr,
-        timestamp: new Date().toISOString(),
+        timestamp: result.record.installedAt,
       });
 
       res.status(202).json(result);
@@ -67,9 +65,7 @@ class UIIntegrationController {
         projectId,
         record: result.record,
         success: result.success,
-        stdout: result.output.stdout,
-        stderr: result.output.stderr,
-        timestamp: new Date().toISOString(),
+        timestamp: result.record.appliedAt,
       });
 
       res.status(202).json(result);
