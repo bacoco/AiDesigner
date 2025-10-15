@@ -1,8 +1,8 @@
 import path from 'path';
-import { logger } from '../index';
+import { logger } from '../config/logger';
 import { NotFoundError } from '../middleware/errorHandler';
 
-const bmadBridgePath = path.resolve(process.cwd(), '.dev/lib/aidesigner-bridge.js');
+const bmadBridgePath = path.resolve(__dirname, '../../../../.dev/lib/aidesigner-bridge.js');
 const { AidesignerBridge } = require(bmadBridgePath);
 
 export interface Agent {
