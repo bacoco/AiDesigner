@@ -32,10 +32,6 @@ class UIIntegrationController {
 
       res.status(202).json(result);
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof BadRequestError) {
-        return next(error);
-      }
-
       return next(error);
     }
   }
@@ -78,10 +74,6 @@ class UIIntegrationController {
 
       res.status(202).json(result);
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof BadRequestError) {
-        return next(error);
-      }
-
       return next(error);
     }
   }

@@ -725,54 +725,45 @@ class ProjectState {
       this.state.integrations = {};
     }
 
-    const drawbridge = this.state.integrations.drawbridge;
+    // Define integration configurations to reduce duplication
+    const integrations = {
+      drawbridge: {
+        arrayProp: 'ingestions',
+        dateProp: 'lastMode',
+        defaultArrayValue: [],
+        defaultDateValue: null,
+      },
+      shadcn: {
+        arrayProp: 'components',
+        dateProp: 'lastInstalledAt',
+        defaultArrayValue: [],
+        defaultDateValue: null,
+      },
+      tweakcn: {
+        arrayProp: 'palettes',
+        dateProp: 'lastUpdatedAt',
+        defaultArrayValue: [],
+        defaultDateValue: null,
+      },
+    };
 
-    if (!drawbridge || typeof drawbridge !== 'object' || Array.isArray(drawbridge)) {
-      this.state.integrations.drawbridge = {
-        ingestions: [],
-        lastMode: null,
-      };
-    } else {
-      if (!Array.isArray(drawbridge.ingestions)) {
-        drawbridge.ingestions = [];
-      }
+    // Initialize each integration with the same logic
+    for (const [key, config] of Object.entries(integrations)) {
+      const integration = this.state.integrations[key];
 
-      if (!Object.prototype.hasOwnProperty.call(drawbridge, 'lastMode')) {
-        drawbridge.lastMode = null;
-      }
-    }
+      if (!integration || typeof integration !== 'object' || Array.isArray(integration)) {
+        this.state.integrations[key] = {
+          [config.arrayProp]: config.defaultArrayValue,
+          [config.dateProp]: config.defaultDateValue,
+        };
+      } else {
+        if (!Array.isArray(integration[config.arrayProp])) {
+          integration[config.arrayProp] = config.defaultArrayValue;
+        }
 
-    const shadcn = this.state.integrations.shadcn;
-
-    if (!shadcn || typeof shadcn !== 'object' || Array.isArray(shadcn)) {
-      this.state.integrations.shadcn = {
-        components: [],
-        lastInstalledAt: null,
-      };
-    } else {
-      if (!Array.isArray(shadcn.components)) {
-        shadcn.components = [];
-      }
-
-      if (!Object.prototype.hasOwnProperty.call(shadcn, 'lastInstalledAt')) {
-        shadcn.lastInstalledAt = null;
-      }
-    }
-
-    const tweakcn = this.state.integrations.tweakcn;
-
-    if (!tweakcn || typeof tweakcn !== 'object' || Array.isArray(tweakcn)) {
-      this.state.integrations.tweakcn = {
-        palettes: [],
-        lastUpdatedAt: null,
-      };
-    } else {
-      if (!Array.isArray(tweakcn.palettes)) {
-        tweakcn.palettes = [];
-      }
-
-      if (!Object.prototype.hasOwnProperty.call(tweakcn, 'lastUpdatedAt')) {
-        tweakcn.lastUpdatedAt = null;
+        if (!Object.prototype.hasOwnProperty.call(integration, config.dateProp)) {
+          integration[config.dateProp] = config.defaultDateValue;
+        }
       }
     }
   }

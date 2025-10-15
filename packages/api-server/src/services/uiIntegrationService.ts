@@ -50,7 +50,10 @@ class UIIntegrationService {
   ): Promise<InstallComponentResult> {
     const project = await projectService.getProject(projectId);
 
-    const cwd = payload.cwd || (project as any).projectPath || this.resolveWorkingDirectory();
+    const projectRoot = this.resolveWorkingDirectory();
+    const requestedCwd = payload.cwd || projectRoot;
+    const cwd = this.validateCwd(requestedCwd, projectRoot);
+
     const { command, args } = this.buildShadcnCommand(payload);
     const execution = await this.runCommand(command, args, cwd);
 
@@ -79,7 +82,10 @@ class UIIntegrationService {
   ): Promise<ThemeUpdateResult> {
     const project = await projectService.getProject(projectId);
 
-    const cwd = payload.cwd || (project as any).projectPath || this.resolveWorkingDirectory();
+    const projectRoot = this.resolveWorkingDirectory();
+    const requestedCwd = payload.cwd || projectRoot;
+    const cwd = this.validateCwd(requestedCwd, projectRoot);
+
     const { command, args } = this.buildTweakcnCommand(payload);
     const execution = await this.runCommand(command, args, cwd);
 
@@ -109,17 +115,30 @@ class UIIntegrationService {
   ): Promise<CommandResult> {
     logger.info(`Executing command: ${command} ${args.join(' ')}`, { cwd });
 
+    const timeoutMs = Number(process.env.UI_INTEGRATION_TIMEOUT_MS ?? 300_000); // 5 minutes default
+
     return new Promise((resolve) => {
       const child = spawn(command, args, {
         cwd,
         env: { ...process.env },
-        shell: process.platform === 'win32',
+        shell: false,
       });
 
       let stdout = '';
       let stderr = '';
       let spawnedError: Error | undefined;
       let resolved = false;
+
+      const timer = setTimeout(() => {
+        if (!resolved) {
+          logger.warn('Integration command timed out; terminating', { timeoutMs });
+          try {
+            child.kill('SIGTERM');
+          } catch (killError) {
+            logger.error('Failed to kill timed out process', { killError });
+          }
+        }
+      }, timeoutMs);
 
       child.stdout?.on('data', (data: Buffer) => {
         stdout += data.toString();
@@ -134,6 +153,7 @@ class UIIntegrationService {
         logger.error('Failed to spawn integration command', { error: error.message });
         if (!resolved) {
           resolved = true;
+          clearTimeout(timer);
           resolve({
             stdout,
             stderr,
@@ -145,9 +165,12 @@ class UIIntegrationService {
 
       child.on('close', (exitCode) => {
         if (resolved) {
+          clearTimeout(timer);
           return;
         }
         resolved = true;
+        clearTimeout(timer);
+
         if (exitCode === 0) {
           logger.info('Integration command completed successfully', { exitCode });
         } else {
@@ -168,14 +191,18 @@ class UIIntegrationService {
   }
 
   private buildShadcnCommand(payload: InstallComponentPayload) {
-    const command = process.env.SHADCN_MCP_COMMAND || 'npx';
+    const baseCommand = process.env.SHADCN_MCP_COMMAND || 'npx';
+    const command = this.resolveCommand(baseCommand);
     const baseArgs = this.parseArgs(
       process.env.SHADCN_MCP_ARGS ||
         '--yes @modelcontextprotocol/cli call shadcn install-component'
     );
 
-    const args = [...baseArgs, payload.component];
+    const component = this.sanitizeToken(payload.component);
+    const args = [...baseArgs, component];
+
     if (Array.isArray(payload.args) && payload.args.length > 0) {
+      this.validateArgs(payload.args);
       args.push(...payload.args);
     }
 
@@ -183,17 +210,20 @@ class UIIntegrationService {
   }
 
   private buildTweakcnCommand(payload: ThemeUpdatePayload) {
-    const command = process.env.TWEAKCN_MCP_COMMAND || 'npx';
+    const baseCommand = process.env.TWEAKCN_MCP_COMMAND || 'npx';
+    const command = this.resolveCommand(baseCommand);
     const baseArgs = this.parseArgs(
       process.env.TWEAKCN_MCP_ARGS ||
         '--yes @modelcontextprotocol/cli call tweakcn apply-palette'
     );
 
-    const args = [...baseArgs, payload.palette.name];
+    const paletteName = this.sanitizeToken(payload.palette.name);
+    const args = [...baseArgs, paletteName];
     const tokensArg = JSON.stringify(payload.palette.tokens || {});
     args.push('--tokens', tokensArg);
 
     if (Array.isArray(payload.args) && payload.args.length > 0) {
+      this.validateArgs(payload.args);
       args.push(...payload.args);
     }
 
@@ -201,10 +231,40 @@ class UIIntegrationService {
   }
 
   private parseArgs(input: string): string[] {
-    return input
-      .split(' ')
-      .map((part) => part.trim())
-      .filter(Boolean);
+    // Simple quote-aware parser to handle arguments with spaces
+    const args: string[] = [];
+    let current = '';
+    let quote: '"' | "'" | null = null;
+
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
+
+      if (!quote && (char === '"' || char === "'")) {
+        quote = char;
+        continue;
+      }
+
+      if (quote && char === quote) {
+        quote = null;
+        continue;
+      }
+
+      if (!quote && /\s/.test(char)) {
+        if (current) {
+          args.push(current);
+          current = '';
+        }
+        continue;
+      }
+
+      current += char;
+    }
+
+    if (current) {
+      args.push(current);
+    }
+
+    return args;
   }
 
   private resolveWorkingDirectory(): string {
@@ -213,6 +273,47 @@ class UIIntegrationService {
       return path.resolve(projectRoot);
     }
     return process.cwd();
+  }
+
+  private validateCwd(requestedCwd: string, projectRoot: string): string {
+    const resolvedCwd = path.resolve(requestedCwd);
+    const resolvedRoot = path.resolve(projectRoot);
+
+    // Ensure the requested cwd is within the project root
+    if (resolvedCwd !== resolvedRoot && !resolvedCwd.startsWith(resolvedRoot + path.sep)) {
+      logger.warn('Invalid working directory requested, using project root', {
+        requestedCwd,
+        projectRoot,
+      });
+      return resolvedRoot;
+    }
+
+    return resolvedCwd;
+  }
+
+  private sanitizeToken(token: string): string {
+    // Only allow alphanumeric, hyphens, underscores, dots, slashes, and @ for scoped packages
+    if (!/^[\w@./-]+$/.test(token)) {
+      throw new Error(`Invalid token: ${token}`);
+    }
+    return token;
+  }
+
+  private validateArgs(args: string[]): void {
+    const dangerousPatterns = /[;&|`$()]/;
+    for (const arg of args) {
+      if (dangerousPatterns.test(arg)) {
+        throw new Error(`Invalid argument detected: ${arg}`);
+      }
+    }
+  }
+
+  private resolveCommand(command: string): string {
+    // On Windows, npx needs .cmd extension when not using shell
+    if (process.platform === 'win32' && command === 'npx') {
+      return 'npx.cmd';
+    }
+    return command;
   }
 }
 
