@@ -6,11 +6,15 @@ import { setupRoutes } from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import { logger } from './config/logger';
-import { initializeSocketIO } from './config/socketio';
+import { initializeSocketIO, closeSocketIO } from './config/socketio';
+import { projectService } from './services/projectService';
 
 config();
 
-const PORT = process.env.API_PORT || 3000;
+const PORT = process.env.API_PORT ? Number(process.env.API_PORT) : 3000;
+if (Number.isNaN(PORT)) {
+  throw new Error(`Invalid API_PORT: ${process.env.API_PORT}`);
+}
 
 const app = express();
 
@@ -59,8 +63,18 @@ httpServer.listen(PORT, () => {
 
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully...');
-  httpServer.close(() => {
-    logger.info('Server closed');
-    process.exit(0);
-  });
+  try {
+    // Close Socket.IO first
+    closeSocketIO();
+    // Cleanup project service resources
+    projectService.shutdown();
+    // Then close HTTP server
+    httpServer.close(() => {
+      logger.info('Server closed');
+      process.exit(0);
+    });
+  } catch (err) {
+    logger.error('Error during shutdown', err);
+    process.exit(1);
+  }
 });

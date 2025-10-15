@@ -11,6 +11,8 @@ import {
   projectIdParamSchema,
   deliverableTypeParamSchema,
   conversationQuerySchema,
+  agentIdParamSchema,
+  executeAgentSchema,
 } from '../validators/projectSchemas';
 
 export function setupRoutes(app: Express): void {
@@ -31,8 +33,8 @@ export function setupRoutes(app: Express): void {
   router.post('/projects/:projectId/decisions', validateParams(projectIdParamSchema), validateBody(recordDecisionSchema), projectController.recordDecision.bind(projectController));
   
   router.get('/agents', agentController.listAgents.bind(agentController));
-  router.get('/agents/:agentId', agentController.getAgent.bind(agentController));
-  router.post('/agents/:agentId/execute', agentController.executeAgent.bind(agentController));
+  router.get('/agents/:agentId', validateParams(agentIdParamSchema), agentController.getAgent.bind(agentController));
+  router.post('/agents/:agentId/execute', validateParams(agentIdParamSchema), validateBody(executeAgentSchema), agentController.executeAgent.bind(agentController));
 
   app.use('/api', router);
 }

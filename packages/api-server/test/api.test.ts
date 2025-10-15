@@ -1,25 +1,35 @@
 import request from 'supertest';
 import express from 'express';
-import { createServer } from 'http';
+import { createServer, Server as HttpServer } from 'http';
 import { setupRoutes } from '../src/routes';
 import { errorHandler } from '../src/middleware/errorHandler';
-import { initializeSocketIO } from '../src/config/socketio';
+import { initializeSocketIO, closeSocketIO } from '../src/config/socketio';
 
 let app: express.Application;
+let httpServer: HttpServer;
 
 beforeAll(() => {
   app = express();
   app.use(express.json());
-  
-  const httpServer = createServer(app);
+
+  httpServer = createServer(app);
   initializeSocketIO(httpServer);
-  
+
   app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
-  
+
   setupRoutes(app);
   app.use(errorHandler);
+});
+
+afterAll((done) => {
+  closeSocketIO();
+  if (httpServer) {
+    httpServer.close(done);
+  } else {
+    done();
+  }
 });
 
 describe('API Smoke Tests', () => {

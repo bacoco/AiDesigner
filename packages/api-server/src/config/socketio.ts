@@ -4,13 +4,14 @@ import { Server as HttpServer } from 'http';
 let io: SocketIOServer | null = null;
 
 export function initializeSocketIO(httpServer: HttpServer): SocketIOServer {
+  if (io) return io;
   io = new SocketIOServer(httpServer, {
     cors: {
       origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
       credentials: true,
     },
   });
-  
+
   return io;
 }
 
@@ -19,4 +20,11 @@ export function getSocketIO(): SocketIOServer {
     throw new Error('Socket.IO not initialized. Call initializeSocketIO first.');
   }
   return io;
+}
+
+export function closeSocketIO(): void {
+  if (io) {
+    io.close();
+    io = null;
+  }
 }

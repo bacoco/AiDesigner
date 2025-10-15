@@ -3,7 +3,8 @@ import crypto from 'crypto';
 import { logger } from '../config/logger';
 import { NotFoundError } from '../middleware/errorHandler';
 
-const projectStatePath = path.resolve(__dirname, '../../../../.dev/lib/project-state.js');
+const projectStatePath = process.env.PROJECT_STATE_PATH
+  ?? path.resolve(__dirname, '../../../../.dev/lib/project-state.js');
 
 interface ProjectStateInstance {
   initialize(): Promise<void>;
@@ -69,28 +70,34 @@ class ProjectService {
   private projectLastAccessed: Map<string, number> = new Map();
   private readonly MAX_PROJECTS = 1000; // Maximum number of projects to keep in memory
   private readonly PROJECT_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
+  private cleanupTimer?: NodeJS.Timeout;
 
   constructor() {
-    setInterval(() => this.cleanupStaleProjects(), 60 * 60 * 1000);
+    this.cleanupTimer = setInterval(() => this.cleanupStaleProjects(), 60 * 60 * 1000);
+    // Don't keep the event loop alive solely for cleanup
+    this.cleanupTimer.unref?.();
   }
 
   private cleanupStaleProjects(): void {
     const now = Date.now();
-    const projectsToDelete: string[] = [];
+    const projectsToDelete = new Set<string>();
 
+    // Mark TTL-expired projects
     for (const [projectId, lastAccessed] of this.projectLastAccessed.entries()) {
       if (now - lastAccessed > this.PROJECT_TIMEOUT_MS) {
-        projectsToDelete.push(projectId);
+        projectsToDelete.add(projectId);
       }
     }
 
-    if (this.projects.size > this.MAX_PROJECTS) {
-      const sortedProjects = Array.from(this.projectLastAccessed.entries())
+    // Compute size after TTL; then enforce MAX with LRU
+    const sizeAfterTTL = this.projects.size - projectsToDelete.size;
+    if (sizeAfterTTL > this.MAX_PROJECTS) {
+      const lru = Array.from(this.projectLastAccessed.entries())
+        .filter(([id]) => !projectsToDelete.has(id))
         .sort((a, b) => a[1] - b[1]);
-      
-      const excess = this.projects.size - this.MAX_PROJECTS;
-      for (let i = 0; i < excess; i++) {
-        projectsToDelete.push(sortedProjects[i][0]);
+      const excess = sizeAfterTTL - this.MAX_PROJECTS;
+      for (let i = 0; i < excess && i < lru.length; i++) {
+        projectsToDelete.add(lru[i][0]);
       }
     }
 
@@ -100,8 +107,15 @@ class ProjectService {
       logger.info(`Cleaned up stale project: ${projectId}`);
     }
 
-    if (projectsToDelete.length > 0) {
-      logger.info(`Cleaned up ${projectsToDelete.length} stale projects. Current count: ${this.projects.size}`);
+    if (projectsToDelete.size > 0) {
+      logger.info(`Cleaned up ${projectsToDelete.size} stale projects. Current count: ${this.projects.size}`);
+    }
+  }
+
+  public shutdown(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = undefined;
     }
   }
 
@@ -169,17 +183,41 @@ class ProjectService {
   async getDeliverables(projectId: string): Promise<Deliverable[]> {
     const project = await this.getProject(projectId);
     const state = project.getState();
-    
-    if (state.deliverables && Array.isArray(state.deliverables)) {
-      return state.deliverables;
+
+    // Deliverables are stored as nested objects: deliverables[phase][type]
+    // We need to flatten them into an array
+    const deliverables: Deliverable[] = [];
+
+    if (state.deliverables && typeof state.deliverables === 'object') {
+      for (const [phase, phaseDeliverables] of Object.entries(state.deliverables)) {
+        if (phaseDeliverables && typeof phaseDeliverables === 'object') {
+          for (const [type, deliverable] of Object.entries(phaseDeliverables)) {
+            if (deliverable && typeof deliverable === 'object') {
+              deliverables.push({
+                type,
+                phase,
+                content: (deliverable as any).content || '',
+                metadata: (deliverable as any).metadata,
+                createdAt: new Date((deliverable as any).timestamp || Date.now()),
+              });
+            }
+          }
+        }
+      }
     }
-    
-    return [];
+
+    return deliverables;
   }
 
   async getDeliverable(projectId: string, type: string): Promise<Deliverable | null> {
     const deliverables = await this.getDeliverables(projectId);
-    return deliverables.find(d => d.type === type) || null;
+    // Return the most recent deliverable of this type (last in array)
+    for (let i = deliverables.length - 1; i >= 0; i--) {
+      if (deliverables[i].type === type) {
+        return deliverables[i];
+      }
+    }
+    return null;
   }
 
   async storeDeliverable(
