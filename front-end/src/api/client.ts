@@ -180,26 +180,6 @@ class APIClient {
     });
   }
 
-  async installUIComponent(
-    projectId: string,
-    payload: InstallComponentRequest
-  ): Promise<InstallComponentResponse> {
-    return this.request(`/api/projects/${projectId}/ui/components`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  }
-
-  async updateUITheme(
-    projectId: string,
-    payload: UpdateThemeRequest
-  ): Promise<UpdateThemeResponse> {
-    return this.request(`/api/projects/${projectId}/ui/theme`, {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    });
-  }
-
   async healthCheck(): Promise<{ status: string; timestamp: string }> {
     return this.request('/health');
   }
