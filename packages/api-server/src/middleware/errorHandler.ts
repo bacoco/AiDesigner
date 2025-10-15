@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../index';
+import { logger } from '../config/logger';
 import { ZodError } from 'zod';
 
 export interface ApiError extends Error {

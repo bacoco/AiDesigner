@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { projectService } from '../services/projectService';
 import { BadRequestError, NotFoundError } from '../middleware/errorHandler';
-import { io } from '../index';
+import { getSocketIO } from '../config/socketio';
 
 export class ProjectController {
   async createProject(req: Request, res: Response, next: NextFunction) {
@@ -35,7 +35,7 @@ export class ProjectController {
       
       const state = await projectService.updateState(projectId, updates);
       
-      io.to(`project:${projectId}`).emit('state:updated', {
+      getSocketIO().to(`project:${projectId}`).emit('state:updated', {
         changes: updates,
         timestamp: new Date().toISOString(),
       });
@@ -71,13 +71,9 @@ export class ProjectController {
       const { projectId } = req.params;
       const { role, content, metadata } = req.body;
       
-      if (!role || !content) {
-        throw new BadRequestError('Role and content are required');
-      }
-      
       await projectService.addMessage(projectId, role, content, metadata);
       
-      io.to(`project:${projectId}`).emit('message:added', {
+      getSocketIO().to(`project:${projectId}`).emit('message:added', {
         role,
         content,
         phase: metadata?.phase,
@@ -128,13 +124,9 @@ export class ProjectController {
       const { projectId } = req.params;
       const { type, content, metadata } = req.body;
       
-      if (!type || !content) {
-        throw new BadRequestError('Type and content are required');
-      }
-      
       await projectService.storeDeliverable(projectId, type, content, metadata);
       
-      io.to(`project:${projectId}`).emit('deliverable:created', {
+      getSocketIO().to(`project:${projectId}`).emit('deliverable:created', {
         type,
         phase: metadata?.phase,
         timestamp: new Date().toISOString(),
@@ -169,13 +161,9 @@ export class ProjectController {
       const { projectId } = req.params;
       const { key, value, rationale } = req.body;
       
-      if (!key || value === undefined) {
-        throw new BadRequestError('Key and value are required');
-      }
-      
       await projectService.recordDecision(projectId, key, value, rationale);
       
-      io.to(`project:${projectId}`).emit('decision:recorded', {
+      getSocketIO().to(`project:${projectId}`).emit('decision:recorded', {
         key,
         value,
         rationale,
