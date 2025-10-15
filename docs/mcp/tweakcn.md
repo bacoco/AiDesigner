@@ -17,7 +17,7 @@ Update your project MCP profile so the orchestrator can spawn the server. The de
 }
 ```
 
-If you generated a project before this change, copy the `tweakcn` block into your `.mcp.json` manually.【F:mcp/aidesigner-config.json†L1-L28】【F:mcp/quick-designer-config.json†L1-L22】
+If you generated a project before this change, copy the `tweakcn` block into your `.mcp.json` manually (see `mcp/aidesigner-config.json` and `mcp/quick-designer-config.json`).
 
 ## 2. Supply credentials
 
@@ -26,7 +26,12 @@ The server accepts two optional environment variables:
 - `TWEAKCN_THEME_PREVIEW_URL` – Direct link to the TweakCN preview you want AiDesigner to mirror.
 - `TWEAKCN_API_TOKEN` – API token for authenticated theme saves.
 
-The `aidesigner` CLI now prompts for both when you opt into the server during project scaffolding so the values land in `.mcp.json` automatically.【F:bin/aidesigner†L793-L852】【F:bin/aidesigner†L1528-L1573】 You can also define them in your shell or `.env` file before rerunning `npx aidesigner init`.
+The `aidesigner` CLI can prompt for both when you opt into the server during project scaffolding. Prefer supplying credentials via environment variables so secrets are not written to `.mcp.json`. You can define them in your shell or an ignored `.env.local` before rerunning `npx aidesigner init`.
+
+Security note:
+
+- Do not commit API tokens to version control.
+- Use environment variables or a `.env.local` excluded by `.gitignore`.
 
 ## 3. Smoke test the orchestrator
 
@@ -45,4 +50,4 @@ node .dev/tools/cli.js mcp list
 ...
 ```
 
-This confirms the orchestrator sees the TweakCN profile and will spawn the published server when the host environment runs `.mcp.json`.【244ff3†L1-L27】
+This confirms the orchestrator sees the TweakCN profile and will spawn the published server when the host environment loads `.mcp.json`.【244ff3†L1-L27】
