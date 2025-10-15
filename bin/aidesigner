@@ -794,9 +794,12 @@ const OPTIONAL_MCP_SERVERS = [
     label: 'GitHub repository operations',
     description: 'Git operations and GitHub API via MCP.',
     recommended: true,
-    needsEnvPrompt: true,
-    envKey: 'GITHUB_PERSONAL_ACCESS_TOKEN',
-    envPrompt: 'Enter your GitHub Personal Access Token (or leave blank to skip)',
+    envPrompts: [
+      {
+        key: 'GITHUB_PERSONAL_ACCESS_TOKEN',
+        prompt: 'Enter your GitHub Personal Access Token (or leave blank to skip)',
+      },
+    ],
     config: {
       command: 'npx',
       args: ['-y', '@modelcontextprotocol/server-github'],
@@ -822,6 +825,27 @@ const OPTIONAL_MCP_SERVERS = [
     config: {
       command: 'npx',
       args: ['-y', '@jpisnice/shadcn-ui-mcp-server'],
+      disabled: false,
+    },
+  },
+  {
+    id: 'tweakcn',
+    label: 'TweakCN theme assistant',
+    description: 'Sync Tailwind tokens and themes between TweakCN and AiDesigner workflows.',
+    recommended: false,
+    envPrompts: [
+      {
+        key: 'TWEAKCN_THEME_PREVIEW_URL',
+        prompt: 'Enter your TweakCN theme preview URL (optional, press Enter to skip)',
+      },
+      {
+        key: 'TWEAKCN_API_TOKEN',
+        prompt: 'Enter your TweakCN API token (optional, press Enter to skip)',
+      },
+    ],
+    config: {
+      command: 'npx',
+      args: ['-y', 'tweakcn-mcp-server'],
       disabled: false,
     },
   },
@@ -1171,7 +1195,7 @@ const commands = {
 
     if (process.stdout.isTTY) {
       console.log(
-        '💡 We can optionally enable additional MCP servers (chrome-devtools, shadcn) during setup.',
+        '💡 We can optionally enable additional MCP servers (chrome-devtools, shadcn, tweakcn) during setup.',
       );
     }
 
@@ -1501,31 +1525,47 @@ const commands = {
         continue;
       }
 
-      const serverConfig = { ...optional.config };
+      const serverConfig = {
+        ...optional.config,
+        ...(optional.config.env ? { env: { ...optional.config.env } } : {}),
+      };
 
-      // Prompt for environment variables if needed
-      if (optional.needsEnvPrompt && optional.envKey && optional.envPrompt) {
-        try {
-          // Check if env var already exists in system environment
-          const existingValue = process.env[optional.envKey];
-          if (existingValue) {
-            console.log(`ℹ️  Using ${optional.envKey} from system environment`);
-            serverConfig.env = serverConfig.env || {};
-            serverConfig.env[optional.envKey] = existingValue;
-          } else {
-            const envValue = await promptInput(optional.envPrompt);
-            if (envValue) {
-              serverConfig.env = serverConfig.env || {};
-              serverConfig.env[optional.envKey] = envValue;
-              console.log(`✅ Added ${optional.envKey} to ${optional.label} configuration`);
-            } else {
-              console.log(`⚠️ Skipping ${optional.envKey} - you can add it manually to .mcp.json later`);
+      const envPrompts = Array.isArray(optional.envPrompts)
+        ? optional.envPrompts.filter(definition => definition && definition.key && definition.prompt)
+        : [];
+
+      if (envPrompts.length > 0) {
+        const envAssignments = { ...(serverConfig.env || {}) };
+
+        for (const definition of envPrompts) {
+          const { key, prompt: envPrompt, required = false } = definition;
+
+          try {
+            const existingValue = envAssignments[key] || process.env[key];
+            if (existingValue && typeof existingValue === 'string' && existingValue.trim()) {
+              envAssignments[key] = existingValue.trim();
+              console.log(`ℹ️  Using ${key} from existing environment`);
+              continue;
             }
+
+            const envValue = await promptInput(envPrompt);
+            if (envValue) {
+              envAssignments[key] = envValue;
+              console.log(`✅ Added ${key} to ${optional.label} configuration`);
+            } else if (required) {
+              console.warn(`⚠️ ${key} is required for ${optional.label}. Add it to .mcp.json when available.`);
+            } else {
+              console.log(`ℹ️ Skipped ${key} - you can add it manually to .mcp.json later`);
+            }
+          } catch (error) {
+            console.warn(`⚠️ Failed to prompt for ${key}: ${error.message || error}`);
           }
-        } catch (error) {
-          console.warn(
-            `⚠️ Failed to prompt for ${optional.envKey}: ${error.message || error}`,
-          );
+        }
+
+        if (Object.keys(envAssignments).length > 0) {
+          serverConfig.env = envAssignments;
+        } else {
+          delete serverConfig.env;
         }
       }
 
