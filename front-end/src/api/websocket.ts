@@ -5,8 +5,8 @@ import type {
   WSDeliverableCreatedEvent,
   WSDecisionRecordedEvent,
   WSAgentExecutedEvent,
-  WSUIComponentInstalledEvent,
-  WSUIThemeUpdatedEvent,
+  WSUIComponentsEvent,
+  WSUIThemeEvent,
 } from './types';
 
 const WS_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -39,12 +39,12 @@ export class WebSocketClient {
       console.log('WebSocket disconnected');
     });
 
-    this.socket.on('connect_error', (error) => {
+    this.socket.on('connect_error', (error: Error) => {
       console.error('WebSocket connection error:', error);
       this.reconnectAttempts++;
     });
 
-    this.socket.on('reconnect', (attemptNumber) => {
+    this.socket.on('reconnect', (attemptNumber: number) => {
       console.log(`WebSocket reconnected after ${attemptNumber} attempts`);
     });
   }
@@ -88,14 +88,21 @@ export class WebSocketClient {
     return this.on('agent:executed', handler);
   }
 
-  onUIComponentInstalled(
-    handler: EventHandler<WSUIComponentInstalledEvent>
-  ): () => void {
-    return this.on('ui:component-installed', handler);
+  onUIComponentsChanged(handler: EventHandler<WSUIComponentsEvent>): () => void {
+    const unsubscribers = [
+      this.on('ui:components:updated', handler),
+      this.on('ui:component:installed', handler),
+      this.on('ui:component:removed', handler),
+      this.on('ui:preview:updated', handler),
+    ];
+
+    return () => {
+      unsubscribers.forEach((unsubscribe) => unsubscribe());
+    };
   }
 
-  onUIThemeUpdated(handler: EventHandler<WSUIThemeUpdatedEvent>): () => void {
-    return this.on('ui:theme-updated', handler);
+  onUIThemeUpdated(handler: EventHandler<WSUIThemeEvent>): () => void {
+    return this.on('ui:theme:updated', handler);
   }
 
   private on<T = any>(event: string, handler: EventHandler<T>): () => void {

@@ -4,10 +4,10 @@ import type {
   Deliverable,
   Agent,
   AgentExecutionResult,
-  InstallComponentRequest,
-  InstallComponentResponse,
-  UpdateThemeRequest,
-  UpdateThemeResponse,
+  InstalledComponent,
+  UIRegistryComponent,
+  UIPreview,
+  UITheme,
 } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -49,6 +49,45 @@ class APIClient {
       method: 'POST',
       body: JSON.stringify({ name }),
     });
+  }
+
+  async listUIRegistry(): Promise<{ components: UIRegistryComponent[] }> {
+    return this.request('/api/ui/registry');
+  }
+
+  async getUIComponents(projectId: string): Promise<{
+    components: InstalledComponent[];
+    preview?: UIPreview;
+  }> {
+    return this.request(`/api/projects/${projectId}/ui/components`);
+  }
+
+  async installUIComponent(
+    projectId: string,
+    componentId: string
+  ): Promise<{ success: boolean; component?: InstalledComponent }> {
+    return this.request(`/api/projects/${projectId}/ui/components`, {
+      method: 'POST',
+      body: JSON.stringify({ componentId }),
+    });
+  }
+
+  async getUITheme(projectId: string): Promise<{ theme: UITheme }> {
+    return this.request(`/api/projects/${projectId}/ui/theme`);
+  }
+
+  async updateUITheme(
+    projectId: string,
+    theme: UITheme
+  ): Promise<{ theme: UITheme }> {
+    return this.request(`/api/projects/${projectId}/ui/theme`, {
+      method: 'PATCH',
+      body: JSON.stringify(theme),
+    });
+  }
+
+  async getUIPreview(projectId: string): Promise<UIPreview> {
+    return this.request(`/api/projects/${projectId}/ui/preview`);
   }
 
   async getState(projectId: string): Promise<ProjectState> {
@@ -138,26 +177,6 @@ class APIClient {
     return this.request(`/api/agents/${agentId}/execute`, {
       method: 'POST',
       body: JSON.stringify({ command, context, projectId }),
-    });
-  }
-
-  async installUIComponent(
-    projectId: string,
-    payload: InstallComponentRequest
-  ): Promise<InstallComponentResponse> {
-    return this.request(`/api/projects/${projectId}/ui/components`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  }
-
-  async updateUITheme(
-    projectId: string,
-    payload: UpdateThemeRequest
-  ): Promise<UpdateThemeResponse> {
-    return this.request(`/api/projects/${projectId}/ui/theme`, {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
     });
   }
 

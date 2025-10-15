@@ -1,46 +1,39 @@
 
-export interface CommandExecutionResult {
-  stdout: string;
-  stderr: string;
-  exitCode: number | null;
-  error?: string | null;
+export interface UITheme {
+  primary: string;
+  accent: string;
+  background: string;
+  updatedAt?: string;
 }
 
-export interface ShadcnComponentInstallation {
-  id: string;
-  component: string;
-  args?: string[];
-  status: 'succeeded' | 'failed';
-  installedAt: string;
-  metadata?: Record<string, any>;
-  stdout?: string;
-  stderr?: string;
-  error?: string | null;
-}
-
-export interface TweakcnPaletteRecord {
+export interface UIRegistryComponent {
   id: string;
   name: string;
-  tokens: Record<string, string>;
-  status: 'succeeded' | 'failed';
-  appliedAt: string;
-  metadata?: Record<string, any>;
-  stdout?: string;
-  stderr?: string;
-  error?: string | null;
+  description?: string;
+  tags?: string[];
+  source?: string;
+  category?: string;
+  previewUrl?: string;
+  framework?: string;
 }
 
-export interface ProjectIntegrationsState {
-  drawbridge?: Record<string, any>;
-  shadcn?: {
-    components: ShadcnComponentInstallation[];
-    lastInstalledAt?: string | null;
-  };
-  tweakcn?: {
-    palettes: TweakcnPaletteRecord[];
-    lastUpdatedAt?: string | null;
-  };
-  [key: string]: any;
+export interface InstalledComponent extends UIRegistryComponent {
+  version?: string;
+  installedAt?: string;
+  status?: 'installed' | 'pending' | 'failed';
+  previewHtml?: string;
+}
+
+export interface UIPreview {
+  html?: string;
+  url?: string;
+  updatedAt?: string;
+}
+
+export interface ProjectUIState {
+  components?: InstalledComponent[];
+  preview?: UIPreview;
+  theme?: UITheme;
 }
 
 export interface ProjectState {
@@ -53,7 +46,7 @@ export interface ProjectState {
   phaseHistory?: any[];
   createdAt?: string;
   updatedAt?: string;
-  integrations?: ProjectIntegrationsState;
+  ui?: ProjectUIState;
 }
 
 export interface Message {
@@ -126,6 +119,17 @@ export interface WSDeliverableCreatedEvent {
   timestamp: string;
 }
 
+export interface WSUIComponentsEvent {
+  components?: InstalledComponent[];
+  preview?: UIPreview;
+  timestamp: string;
+}
+
+export interface WSUIThemeEvent {
+  theme: UITheme;
+  timestamp: string;
+}
+
 export interface WSDecisionRecordedEvent {
   key: string;
   value: any;
@@ -139,48 +143,4 @@ export interface WSAgentExecutedEvent {
   duration: number;
   success: boolean;
   timestamp: string;
-}
-
-export interface WSUIComponentInstalledEvent {
-  projectId: string;
-  component: string;
-  record: ShadcnComponentInstallation;
-  success: boolean;
-  timestamp: string;
-}
-
-export interface WSUIThemeUpdatedEvent {
-  projectId: string;
-  record: TweakcnPaletteRecord;
-  success: boolean;
-  timestamp: string;
-}
-
-export interface InstallComponentRequest {
-  component: string;
-  args?: string[];
-  metadata?: Record<string, any>;
-  cwd?: string;
-}
-
-export interface InstallComponentResponse {
-  success: boolean;
-  output: CommandExecutionResult;
-  record: ShadcnComponentInstallation;
-}
-
-export interface UpdateThemeRequest {
-  palette: {
-    name: string;
-    tokens: Record<string, string>;
-  };
-  args?: string[];
-  metadata?: Record<string, any>;
-  cwd?: string;
-}
-
-export interface UpdateThemeResponse {
-  success: boolean;
-  output: CommandExecutionResult;
-  record: TweakcnPaletteRecord;
 }
