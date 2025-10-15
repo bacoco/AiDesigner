@@ -1,4 +1,47 @@
 
+export interface CommandExecutionResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number | null;
+}
+
+export interface ShadcnComponentInstallation {
+  id: string;
+  component: string;
+  args: string[];
+  status: 'succeeded' | 'failed';
+  installedAt: string;
+  metadata: Record<string, any>;
+  stdout?: string;
+  stderr?: string;
+  error?: string | null;
+}
+
+export interface TweakcnPaletteRecord {
+  id: string;
+  name: string;
+  tokens: Record<string, string>;
+  status: 'succeeded' | 'failed';
+  appliedAt: string;
+  metadata: Record<string, any>;
+  stdout?: string;
+  stderr?: string;
+  error?: string | null;
+}
+
+export interface ProjectIntegrationsState {
+  drawbridge?: Record<string, any>;
+  shadcn?: {
+    components: ShadcnComponentInstallation[];
+    lastInstalledAt?: string | null;
+  };
+  tweakcn?: {
+    palettes: TweakcnPaletteRecord[];
+    lastUpdatedAt?: string | null;
+  };
+  [key: string]: any;
+}
+
 export interface ProjectState {
   projectId?: string;
   projectName?: string;
@@ -9,6 +52,7 @@ export interface ProjectState {
   phaseHistory?: any[];
   createdAt?: string;
   updatedAt?: string;
+  integrations?: ProjectIntegrationsState;
 }
 
 export interface Message {
@@ -94,4 +138,52 @@ export interface WSAgentExecutedEvent {
   duration: number;
   success: boolean;
   timestamp: string;
+}
+
+export interface WSUIComponentInstalledEvent {
+  projectId: string;
+  component: string;
+  record: ShadcnComponentInstallation;
+  success: boolean;
+  stdout?: string;
+  stderr?: string;
+  timestamp: string;
+}
+
+export interface WSUIThemeUpdatedEvent {
+  projectId: string;
+  record: TweakcnPaletteRecord;
+  success: boolean;
+  stdout?: string;
+  stderr?: string;
+  timestamp: string;
+}
+
+export interface InstallComponentRequest {
+  component: string;
+  args?: string[];
+  metadata?: Record<string, any>;
+  cwd?: string;
+}
+
+export interface InstallComponentResponse {
+  success: boolean;
+  output: CommandExecutionResult;
+  record: ShadcnComponentInstallation;
+}
+
+export interface UpdateThemeRequest {
+  palette: {
+    name: string;
+    tokens: Record<string, string>;
+  };
+  args?: string[];
+  metadata?: Record<string, any>;
+  cwd?: string;
+}
+
+export interface UpdateThemeResponse {
+  success: boolean;
+  output: CommandExecutionResult;
+  record: TweakcnPaletteRecord;
 }

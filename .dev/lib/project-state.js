@@ -34,6 +34,14 @@ class ProjectState {
           ingestions: [],
           lastMode: null,
         },
+        shadcn: {
+          components: [],
+          lastInstalledAt: null,
+        },
+        tweakcn: {
+          palettes: [],
+          lastUpdatedAt: null,
+        },
       },
     };
 
@@ -724,15 +732,48 @@ class ProjectState {
         ingestions: [],
         lastMode: null,
       };
-      return;
+    } else {
+      if (!Array.isArray(drawbridge.ingestions)) {
+        drawbridge.ingestions = [];
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(drawbridge, 'lastMode')) {
+        drawbridge.lastMode = null;
+      }
     }
 
-    if (!Array.isArray(drawbridge.ingestions)) {
-      drawbridge.ingestions = [];
+    const shadcn = this.state.integrations.shadcn;
+
+    if (!shadcn || typeof shadcn !== 'object' || Array.isArray(shadcn)) {
+      this.state.integrations.shadcn = {
+        components: [],
+        lastInstalledAt: null,
+      };
+    } else {
+      if (!Array.isArray(shadcn.components)) {
+        shadcn.components = [];
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(shadcn, 'lastInstalledAt')) {
+        shadcn.lastInstalledAt = null;
+      }
     }
 
-    if (!Object.prototype.hasOwnProperty.call(drawbridge, 'lastMode')) {
-      drawbridge.lastMode = null;
+    const tweakcn = this.state.integrations.tweakcn;
+
+    if (!tweakcn || typeof tweakcn !== 'object' || Array.isArray(tweakcn)) {
+      this.state.integrations.tweakcn = {
+        palettes: [],
+        lastUpdatedAt: null,
+      };
+    } else {
+      if (!Array.isArray(tweakcn.palettes)) {
+        tweakcn.palettes = [];
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(tweakcn, 'lastUpdatedAt')) {
+        tweakcn.lastUpdatedAt = null;
+      }
     }
   }
 
@@ -894,6 +935,100 @@ class ProjectState {
       }
       return bTime - aTime;
     });
+  }
+
+  /**
+   * Records a shadcn component installation attempt
+   * @param {Object} installation - Installation metadata
+   * @returns {Promise<Object>} The persisted installation record
+   */
+  async recordShadcnComponentInstallation(installation = {}) {
+    this.ensureIntegrationState();
+
+    const shadcn = this.state.integrations.shadcn;
+    const record = {
+      id: installation.id || `shadcn-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      component: installation.component || 'unknown',
+      args: Array.isArray(installation.args) ? installation.args.map((arg) => String(arg)) : [],
+      status: installation.status === 'failed' ? 'failed' : 'succeeded',
+      installedAt: installation.installedAt || new Date().toISOString(),
+      metadata:
+        installation.metadata && typeof installation.metadata === 'object'
+          ? { ...installation.metadata }
+          : {},
+      stdout: installation.stdout || '',
+      stderr: installation.stderr || '',
+      error: installation.error || null,
+    };
+
+    shadcn.components.push(record);
+    shadcn.lastInstalledAt = record.installedAt;
+
+    await this.save();
+
+    return { ...record };
+  }
+
+  /**
+   * Retrieves the shadcn component installation history
+   * @returns {Array<Object>} Array of installation metadata records
+   */
+  getShadcnComponents() {
+    this.ensureIntegrationState();
+    const shadcn = this.state.integrations.shadcn;
+
+    return shadcn.components.map((record) => ({
+      ...record,
+      args: Array.isArray(record.args) ? [...record.args] : [],
+      metadata:
+        record.metadata && typeof record.metadata === 'object' ? { ...record.metadata } : {},
+    }));
+  }
+
+  /**
+   * Applies and records a tweakcn palette update
+   * @param {Object} palette - Palette metadata and token set
+   * @returns {Promise<Object>} The persisted palette record
+   */
+  async applyTweakcnPalette(palette = {}) {
+    this.ensureIntegrationState();
+
+    const tweakcn = this.state.integrations.tweakcn;
+    const record = {
+      id: palette.id || `tweakcn-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      name: palette.name || 'default',
+      tokens: palette.tokens && typeof palette.tokens === 'object' ? { ...palette.tokens } : {},
+      status: palette.status === 'failed' ? 'failed' : 'succeeded',
+      appliedAt: palette.appliedAt || new Date().toISOString(),
+      metadata:
+        palette.metadata && typeof palette.metadata === 'object' ? { ...palette.metadata } : {},
+      stdout: palette.stdout || '',
+      stderr: palette.stderr || '',
+      error: palette.error || null,
+    };
+
+    tweakcn.palettes.push(record);
+    tweakcn.lastUpdatedAt = record.appliedAt;
+
+    await this.save();
+
+    return { ...record };
+  }
+
+  /**
+   * Retrieves the tweakcn palette history
+   * @returns {Array<Object>} Array of palette application records
+   */
+  getTweakcnPalettes() {
+    this.ensureIntegrationState();
+    const tweakcn = this.state.integrations.tweakcn;
+
+    return tweakcn.palettes.map((record) => ({
+      ...record,
+      tokens: record.tokens && typeof record.tokens === 'object' ? { ...record.tokens } : {},
+      metadata:
+        record.metadata && typeof record.metadata === 'object' ? { ...record.metadata } : {},
+    }));
   }
 }
 

@@ -28,6 +28,14 @@ interface ProjectStateInstance {
     value: unknown,
     rationale?: string
   ): Promise<void>;
+  recordShadcnComponentInstallation(
+    installation: ShadcnComponentInstallationInput
+  ): Promise<ShadcnComponentInstallationRecord>;
+  getShadcnComponents(): ShadcnComponentInstallationRecord[];
+  applyTweakcnPalette(
+    palette: TweakcnPaletteInput
+  ): Promise<TweakcnPaletteRecord>;
+  getTweakcnPalettes(): TweakcnPaletteRecord[];
 }
 
 type ProjectStateConstructor = new () => ProjectStateInstance;
@@ -45,6 +53,51 @@ export interface ProjectState {
   nextSteps?: string;
   phaseHistory?: Array<Record<string, unknown>>;
   deliverables?: Deliverable[];
+  integrations?: ProjectIntegrationsState;
+}
+
+export interface ShadcnComponentInstallationInput {
+  component: string;
+  args?: string[];
+  status: 'succeeded' | 'failed';
+  installedAt: string;
+  metadata?: Record<string, unknown>;
+  stdout?: string;
+  stderr?: string;
+  error?: string;
+}
+
+export interface ShadcnComponentInstallationRecord
+  extends ShadcnComponentInstallationInput {
+  id: string;
+}
+
+export interface TweakcnPaletteInput {
+  name: string;
+  tokens: Record<string, string>;
+  status: 'succeeded' | 'failed';
+  appliedAt: string;
+  metadata?: Record<string, unknown>;
+  stdout?: string;
+  stderr?: string;
+  error?: string;
+}
+
+export interface TweakcnPaletteRecord extends TweakcnPaletteInput {
+  id: string;
+}
+
+export interface ProjectIntegrationsState {
+  drawbridge?: Record<string, unknown>;
+  shadcn?: {
+    components: ShadcnComponentInstallationRecord[];
+    lastInstalledAt?: string | null;
+  };
+  tweakcn?: {
+    palettes: TweakcnPaletteRecord[];
+    lastUpdatedAt?: string | null;
+  };
+  [key: string]: unknown;
 }
 
 export interface Message {

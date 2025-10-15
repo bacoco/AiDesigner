@@ -1,6 +1,7 @@
 import { Express, Router } from 'express';
 import { projectController } from '../controllers/projectController';
 import { agentController } from '../controllers/agentController';
+import { uiIntegrationController } from '../controllers/uiIntegrationController';
 
 export function setupRoutes(app: Express): void {
   const router = Router();
@@ -18,10 +19,19 @@ export function setupRoutes(app: Express): void {
   
   router.get('/projects/:projectId/decisions', projectController.getDecisions.bind(projectController));
   router.post('/projects/:projectId/decisions', projectController.recordDecision.bind(projectController));
-  
+
   router.get('/agents', agentController.listAgents.bind(agentController));
   router.get('/agents/:agentId', agentController.getAgent.bind(agentController));
   router.post('/agents/:agentId/execute', agentController.executeAgent.bind(agentController));
+
+  router.post(
+    '/projects/:projectId/ui/components',
+    uiIntegrationController.installComponent.bind(uiIntegrationController)
+  );
+  router.patch(
+    '/projects/:projectId/ui/theme',
+    uiIntegrationController.updateTheme.bind(uiIntegrationController)
+  );
 
   app.use('/api', router);
 }
