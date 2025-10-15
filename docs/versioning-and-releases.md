@@ -111,14 +111,14 @@ You can also trigger releases through GitHub Actions:
 
 We track the upstream `bmad-upstream/v6-alpha` branch for signals that BMAD V6 has moved beyond its alpha phase. Key milestones:
 
-- **2aidesigner25-aidesigner8-14 — First beta tag.** The upstream repository published [`v6.aidesigner.aidesigner-beta.1`](https://github.com/bmadcode/BMAD-METHOD/releases/tag/v6.aidesigner.aidesigner-beta.1), marking the first beta cut of the V6 line. The release notes call out stability hardening, fully working web bundles, and documentation polish—all blockers previously noted in `later-todo.md`.
+- **2025-08-14 — First beta tag.** The upstream repository published [`v6.0.0-beta.1`](https://github.com/bmadcode/BMAD-METHOD/releases/tag/v6.0.0-beta.1), marking the first beta cut of the V6 line. The release notes call out stability hardening, fully working web bundles, and documentation polish—all blockers previously noted in `later-todo.md`.
 - **Impact on BMAD-invisible.** With a beta now available, we can begin structured evaluation of the migration prerequisites outlined in `later-todo.md`, rather than blocking on alpha instability.
 
 ## 📈 Version Strategy
 
-- **Patch** (5.1.aidesigner → 5.1.1): Bug fixes, minor improvements
-- **Minor** (5.1.aidesigner → 5.2.aidesigner): New features, enhancements
-- **Major** (5.1.aidesigner → 6.aidesigner.aidesigner): Breaking changes, major redesigns
+- **Patch** (5.1.0 → 5.1.1): Bug fixes, minor improvements
+- **Minor** (5.1.0 → 5.2.0): New features, enhancements
+- **Major** (5.1.0 → 6.0.0): Breaking changes, major redesigns
 
 ## 🛠️ Development Workflow
 
@@ -161,7 +161,7 @@ If your local files don't match the published version after a release:
 - Ensure branch protection allows workflow pushes
 ````
 
-## 🧪 V6 Stability Evaluation (April 2aidesigner24)
+## 🧪 V6 Stability Evaluation (April 2024)
 
 - Attempted to clone `bmad-upstream/v6-alpha`, but the repository URL is unavailable in the current environment, so no dependencies could be installed.
 - Because the codebase is inaccessible, V6 build and test pipelines could not be executed and workflow reliability could not be evaluated.

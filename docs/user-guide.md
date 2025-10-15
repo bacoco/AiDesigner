@@ -831,7 +831,7 @@ Creates comprehensive test strategies including:
 
 - Test scenarios for each acceptance criterion
 - Appropriate test level recommendations (unit vs integration vs E2E)
-- Risk-based prioritization (Paidesigner/P1/P2)
+- Risk-based prioritization (P0/P1/P2)
 - Test data requirements and mock strategies
 - Execution strategies for CI/CD integration
 
@@ -845,8 +845,8 @@ test_summary:
     integration: 7
     e2e: 2
   by_priority:
-    Paidesigner: 8 # Must have - linked to critical risks
-    P1: 1aidesigner # Should have - medium risks
+    P0: 8 # Must have - linked to critical risks
+    P1: 10 # Should have - medium risks
     P2: 6 # Nice to have - low risks
 ```
 

@@ -2,14 +2,14 @@
 
 ## Overview
 
-BMAD-Invisible implements an "invisible" multi-agent agile orchestrator that exposes a conversational workflow through the Model Context Protocol (MCP). The codebase primarily targets execution in the OpenAI Codex CLI runtime, bridging BMAD-METHOD™ tooling with dynamic lane selection to balance speed and thoroughness. The core runtime lives under `src/mcp-server`, while supporting orchestration, planning, and deliverable generation utilities reside in the `lib/` and `hooks/` directories.
+BMAD-Invisible implements an "invisible" multi-agent agile orchestrator that exposes a conversational workflow through the Model Context Protocol (MCP). The codebase primarily targets execution in the OpenAI Codex CLI runtime, bridging BMAD-METHOD™ tooling with dynamic lane selection to balance speed and thoroughness. The core runtime lives under `.dev/src/mcp-server`, while supporting orchestration, planning, and deliverable generation utilities reside in `.dev/lib/` (alongside the legacy `lib/project-state.js`) and the `hooks/` directory.
 
 - **Related Documentation**
   - [Dual-Lane Orchestration Guide](DUAL_LANE_ORCHESTRATION.md)
   - [Invisible Orchestrator README](INVISIBLE_ORCHESTRATOR_README.md)
   - [Core Architecture Overview](core-architecture.md)
 
-## Runtime Entry Point (`src/mcp-server/codex-server.ts`)
+## Runtime Entry Point (`.dev/src/mcp-server/codex-server.ts`)
 
 The `codex-server.ts` script boots the orchestrator MCP server. Key responsibilities include:
 
@@ -17,20 +17,20 @@ The `codex-server.ts` script boots the orchestrator MCP server. Key responsibili
 
   ```bash
   export CODEX_DEFAULT_PROVIDER="claude"
-  export CODEX_DEFAULT_MODEL="claude-3-5-sonnet-2aidesigner241aidesigner22"
-  export CODEX_MAX_TOKENS="4aidesigner96"
+  export CODEX_DEFAULT_MODEL="claude-3-5-sonnet-2024-12"
+  export CODEX_MAX_TOKENS="4096"
   export CODEX_QUICK_PROVIDER="claude"
-  export CODEX_QUICK_MODEL="claude-3-haiku-2aidesigner24aidesigner3aidesigner7"
-  export CODEX_QUICK_MAX_TOKENS="2aidesigner48"
+  export CODEX_QUICK_MODEL="claude-3-haiku-20240307"
+  export CODEX_QUICK_MAX_TOKENS="2048"
   export CODEX_COMPLEX_PROVIDER="claude"
-  export CODEX_COMPLEX_MODEL="claude-3-opus-2aidesigner24aidesigner229"
+  export CODEX_COMPLEX_MODEL="claude-3-opus-20240229"
   export CODEX_COMPLEX_MAX_TOKENS="8192"
   export CODEX_APPROVAL_MODE="true"
   export CODEX_AUTO_APPROVE="false"
   export CODEX_APPROVED_OPERATIONS="plan.generate,plan.apply"
 
   export LLM_PROVIDER="claude"
-  export LLM_MODEL="claude-3-5-sonnet-2aidesigner241aidesigner22"
+  export LLM_MODEL="claude-3-5-sonnet-2024-12"
   ```
 
 - **Model routing** – The `ModelRouter` class maps logical lanes (default, quick, complex) and friendly aliases to concrete model selections. It supports granular overrides by operation metadata (e.g., decision lane) while falling back to sensible defaults.
@@ -40,7 +40,7 @@ The `codex-server.ts` script boots the orchestrator MCP server. Key responsibili
 
 Together these pieces provide a configurable, policy-aware entry point that can adapt to different deployment contexts while preserving consistent multi-lane orchestration semantics.
 
-## Orchestrator Runtime (`src/mcp-server/runtime.ts`)
+## Orchestrator Runtime (`.dev/src/mcp-server/runtime.ts`)
 
 `runOrchestratorServer()` hosts the MCP server responsible for coordinating BMAD phases and lane execution. Notable responsibilities:
 
@@ -54,7 +54,7 @@ The runtime therefore acts as a glue layer between the MCP protocol, BMAD automa
 
 ## Supporting Libraries
 
-Although not all `lib/` sources are reproduced here, the runtime illustrates core expectations:
+Although not all `.dev/lib/` sources are reproduced here, the runtime illustrates core expectations:
 
 - **`ProjectState`** – Manages persistent workspace state and initializes BMAD project metadata before orchestrated work begins.
 - **`aidesignerBridge`** – Bridges orchestrator requests to BMAD-METHOD™ agents, providing a consistent interface for running specialized AI roles (analyst, architect, developer, etc.).
@@ -106,8 +106,8 @@ flowchart TD
 - Implement configuration schema validation (e.g., Zod) for environment-driven routing tables.
 - Add integration tests exercising quick versus complex lane flows using mocked `LLMClient` instances.
 - Extend approval handling with per-operation policies that include rate limits or escalation paths.
-- Document the responsibilities of `lib/` modules in dedicated docs to aid contributors onboarding into the invisible orchestrator architecture.
+- Document the responsibilities of `.dev/lib/` modules (and the legacy `lib/project-state.js`) in dedicated docs to aid contributors onboarding into the invisible orchestrator architecture.
 
 ---
 
-**Last Updated:** October 2aidesigner25
+**Last Updated:** October 2025

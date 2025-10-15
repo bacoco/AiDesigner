@@ -35,9 +35,9 @@ Additional enrichers can be registered to append design docs, recent decisions, 
 
 ## Implementation Notes
 
-- `lib/bmad-bridge.js` now calls context enrichment hooks before every agent execution, merging the resulting persona fragments into the system prompt and inserting context sections into the user message.【F:lib/bmad-bridge.js†L1-L21aidesigner】
+- `.dev/lib/aidesigner-bridge.js` exposes `applyContextEnrichers` so context hooks can run before agent execution, merging persona fragments into the system prompt and attaching context sections to the user message.【F:.dev/lib/aidesigner-bridge.js†L342-L435】【F:.dev/lib/aidesigner-bridge.js†L438-L511】
 - Default enrichers live in `hooks/context-enrichment.js`. They parse story files, normalize checklists, and push well-labeled sections into the context payload.【F:hooks/context-enrichment.js†L1-L158】
-- Teams can register additional enrichers at runtime (`bmadBridge.registerContextEnricher`) to customize the packet per project lane without modifying the core hook file.【F:lib/bmad-bridge.js†L21aidesigner-L274】
+- Teams can register additional enrichers at runtime (`bmadBridge.registerContextEnricher`) to customize the packet per project lane without modifying the core hook file.【F:.dev/lib/aidesigner-bridge.js†L438-L511】
 
 ## Using the Feature
 

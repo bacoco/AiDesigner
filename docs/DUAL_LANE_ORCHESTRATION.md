@@ -38,7 +38,7 @@ Lane    Lane
 | Aspect           | Quick Lane                                             | Complex Lane                         |
 | ---------------- | ------------------------------------------------------ | ------------------------------------ |
 | **Generation**   | Template-based prompts                                 | Multi-agent BMAD workflow            |
-| **Speed**        | ~2-3 minutes                                           | ~1aidesigner-15 minutes              |
+| **Speed**        | ~2-3 minutes                                           | ~10-15 minutes                       |
 | **Best For**     | Typos, config changes, small fixes                     | Features, architecture, integrations |
 | **Artifacts**    | `docs/prd.md`, `docs/architecture.md`, `docs/stories/` | Same - `docs/` folder                |
 | **Dependencies** | None (built-in templates)                              | BMAD core agents                     |
@@ -47,7 +47,7 @@ Lane    Lane
 
 ### Automatic Classification Factors
 
-The lane selector (`lib/lane-selector.js`) analyzes:
+The lane selector (`.dev/lib/lane-selector.js`) analyzes:
 
 1. **Quick Lane Keywords** (score +3 each)
    - typo, fix typo, spelling
@@ -71,8 +71,8 @@ The lane selector (`lib/lane-selector.js`) analyzes:
    - Multiple files / "across" / "throughout" (+3 complex)
 
 4. **Message Characteristics**
-   - Short message (<1aidesigneraidesigner chars) + action words (+2 quick)
-   - Long message (>2aidesigneraidesigner chars) (+1 complex)
+   - Short message (<100 chars) + action words (+2 quick)
+   - Long message (>200 chars) (+1 complex)
    - Question marks (+1 complex)
 
 5. **Context Factors**
@@ -82,16 +82,16 @@ The lane selector (`lib/lane-selector.js`) analyzes:
 
 ### V6 Scale Level Translation
 
-BMAD V6 introduces scale-adaptive levels (aidesigner-4). The invisible lane selector mirrors that logic by
+BMAD V6 introduces scale-adaptive levels (0-4). The invisible lane selector mirrors that logic by
 deriving a **scale score** for every request:
 
-| Level      | Description                              | Typical Signals                                                                 | Lane Bias      |
-| ---------- | ---------------------------------------- | ------------------------------------------------------------------------------- | -------------- |
-| aidesigner | Micro fixes / localized edits            | Quick-fix keywords, single-file scope, short requests                           | Strong Quick   |
-| 1          | Small enhancements                       | Default baseline when no strong signals exist                                   | Mild Quick     |
-| 2          | Medium features / integrations           | Integration keywords, cross-service work, moderate complex indicators           | Lean Complex   |
-| 3          | Platform work / multi-component programs | Architecture or platform overhaul language, multi-file scope, long requirements | Strong Complex |
-| 4          | Enterprise-wide transformations          | Enterprise/multi-region/compliance terminology, enterprise context flags        | Force Complex  |
+| Level | Description                              | Typical Signals                                                                 | Lane Bias      |
+| ----- | ---------------------------------------- | ------------------------------------------------------------------------------- | -------------- |
+| 0     | Micro fixes / localized edits            | Quick-fix keywords, single-file scope, short requests                           | Strong Quick   |
+| 1     | Small enhancements                       | Default baseline when no strong signals exist                                   | Mild Quick     |
+| 2     | Medium features / integrations           | Integration keywords, cross-service work, moderate complex indicators           | Lean Complex   |
+| 3     | Platform work / multi-component programs | Architecture or platform overhaul language, multi-file scope, long requirements | Strong Complex |
+| 4     | Enterprise-wide transformations          | Enterprise/multi-region/compliance terminology, enterprise context flags        | Force Complex  |
 
 The scale score is included in the decision output (`result.scale`) along with rationale signals.
 Each level provides an additive bonus to either the quick or complex lane scores, ensuring routing
@@ -99,14 +99,14 @@ aligns with V6 expectations while preserving invisible orchestration.
 
 ### Decision Examples
 
-| User Request                     | Lane    | Confidence             | Rationale                          |
-| -------------------------------- | ------- | ---------------------- | ---------------------------------- |
-| "Fix typo in README"             | Quick   | aidesigner.92          | Quick fix keywords, short message  |
-| "Add verbose flag to CLI"        | Quick   | aidesigner.85          | Small change, single concern       |
-| "Build OAuth2 authentication"    | Complex | aidesigner.95          | Complex feature, security-critical |
-| "Redesign database architecture" | Complex | aidesigner.9aidesigner | Cross-cutting, architectural       |
-| "Remove console logs"            | Quick   | aidesigner.88          | Simple cleanup task                |
-| "How should we implement auth?"  | Complex | aidesigner.85          | Question requiring analysis        |
+| User Request                     | Lane    | Confidence | Rationale                          |
+| -------------------------------- | ------- | ---------- | ---------------------------------- |
+| "Fix typo in README"             | Quick   | 0.92       | Quick fix keywords, short message  |
+| "Add verbose flag to CLI"        | Quick   | 0.85       | Small change, single concern       |
+| "Build OAuth2 authentication"    | Complex | 0.95       | Complex feature, security-critical |
+| "Redesign database architecture" | Complex | 0.90       | Cross-cutting, architectural       |
+| "Remove console logs"            | Quick   | 0.88       | Simple cleanup task                |
+| "How should we implement auth?"  | Complex | 0.85       | Question requiring analysis        |
 
 ### Manual Override
 
@@ -124,7 +124,7 @@ selectLane(userMessage, {
 
 The Quick lane uses three templates derived from GitHub's Spec Kit methodology:
 
-#### 1. Spec Template (`lib/spec-kit-templates/spec-template.md`)
+#### 1. Spec Template (`.dev/lib/spec-kit-templates/spec-template.md`)
 
 Generates the product requirements document with:
 
@@ -137,7 +137,7 @@ Generates the product requirements document with:
 **Input**: User request
 **Output**: `docs/prd.md`
 
-#### 2. Plan Template (`lib/spec-kit-templates/plan-template.md`)
+#### 2. Plan Template (`.dev/lib/spec-kit-templates/plan-template.md`)
 
 Generates technical implementation plan with:
 
@@ -150,7 +150,7 @@ Generates technical implementation plan with:
 **Input**: Generated spec
 **Output**: `docs/architecture.md`
 
-#### 3. Tasks Template (`lib/spec-kit-templates/tasks-template.md`)
+#### 3. Tasks Template (`.dev/lib/spec-kit-templates/tasks-template.md`)
 
 Breaks down plan into actionable stories:
 
@@ -165,7 +165,7 @@ Breaks down plan into actionable stories:
 ### Quick Lane Workflow
 
 ```javascript
-// lib/quick-lane.js execution flow
+// .dev/lib/quick-lane.js execution flow
 
 1. Load spec template
 2. Insert user request into template
@@ -178,7 +178,7 @@ Breaks down plan into actionable stories:
 8. Write to docs/architecture.md
 
 9. Load tasks template
-1aidesigner. Insert plan into template
+10. Insert plan into template
 11. Send to LLM → receive tasks
 12. Write to docs/stories/story-*.md
 ```
@@ -191,13 +191,13 @@ The Quick Lane now includes **automatic UI journey inference and per-screen visu
 
 #### 4. UI Designer Templates
 
-**A. Legacy Nano Banana Brief** (`lib/spec-kit-templates/nano-banana-brief-template.md`)
+**A. Legacy Nano Banana Brief** (`.dev/lib/spec-kit-templates/nano-banana-brief-template.md`)
 
 - Single global prompt (backward compatibility)
 - Project context summary
 - Google AI Studio usage instructions
 
-**B. Per-Screen Prompts** (`lib/spec-kit-templates/ui-designer-screen-prompts-template.md`) ✨ **NEW**
+**B. Per-Screen Prompts** (`.dev/lib/spec-kit-templates/ui-designer-screen-prompts-template.md`) ✨ **NEW**
 
 - Infers user journey from PRD user stories
 - Generates tailored prompt per screen
@@ -408,7 +408,7 @@ Intelligently routes user requests through appropriate lane.
 {
   "success": true,
   "lane": "complex",
-  "confidence": aidesigner.95,
+  "confidence": 0.95,
   "artifacts": [
     "docs/prd.md",
     "docs/architecture.md",
@@ -450,8 +450,8 @@ my-project/
 Every lane decision is logged in `.aidesigner/decisions.jsonl`:
 
 ```jsonl
-{"timestamp":"2aidesigner25-1aidesigner-aidesigner1T2aidesigner:aidesigneraidesigner:aidesigneraidesignerZ","userMessage":"Fix typo in README","lane":"quick","confidence":aidesigner.92,"rationale":"Quick lane: quick fix keywords, short message","scores":{"quick":7,"complex":1}}
-{"timestamp":"2aidesigner25-1aidesigner-aidesigner1T2aidesigner:15:aidesigneraidesignerZ","userMessage":"Build authentication system","lane":"complex","confidence":aidesigner.95,"rationale":"Complex lane: complex feature indicators","scores":{"quick":1,"complex":12}}
+{"timestamp":"2025-10-01T20:00:00Z","userMessage":"Fix typo in README","lane":"quick","confidence":0.92,"rationale":"Quick lane: quick fix keywords, short message","scores":{"quick":7,"complex":1}}
+{"timestamp":"2025-10-01T20:15:00Z","userMessage":"Build authentication system","lane":"complex","confidence":0.95,"rationale":"Complex lane: complex feature indicators","scores":{"quick":1,"complex":12}}
 ```
 
 ## Usage Patterns
@@ -462,7 +462,7 @@ Every lane decision is logged in `.aidesigner/decisions.jsonl`:
 
 **System:**
 
-1. Lane selector → Quick lane (aidesigner.92 confidence)
+1. Lane selector → Quick lane (0.92 confidence)
 2. Generate spec from template
 3. Generate plan from spec
 4. Generate tasks from plan
@@ -484,7 +484,7 @@ Every lane decision is logged in `.aidesigner/decisions.jsonl`:
 
 **System:**
 
-1. Lane selector → Complex lane (aidesigner.95 confidence)
+1. Lane selector → Complex lane (0.95 confidence)
 2. Analyst phase - gather requirements
 3. PM phase - comprehensive PRD
 4. Architect phase - design auth system
@@ -508,7 +508,7 @@ Every lane decision is logged in `.aidesigner/decisions.jsonl`:
 **System:**
 
 1. Lane selector analyzes
-2. Moderate confidence (aidesigner.65)
+2. Moderate confidence (0.65)
 3. Defaults to Complex lane for safety
 4. Can ask user for clarification if needed
 
@@ -564,11 +564,11 @@ const decision = selectLane(userMessage, {
 
 ### Issue: Quick lane artifacts too basic
 
-**Solution:** Quick lane is optimized for speed. For detailed artifacts, use Complex lane or manually enhance the templates in `lib/spec-kit-templates/`.
+**Solution:** Quick lane is optimized for speed. For detailed artifacts, use Complex lane or manually enhance the templates in `.dev/lib/spec-kit-templates/`.
 
 ### Issue: Complex lane too slow for simple tasks
 
-**Solution:** Add keywords to `QUICK_FIX_KEYWORDS` in `lib/lane-selector.js` to improve future routing.
+**Solution:** Add keywords to `QUICK_FIX_KEYWORDS` in `.dev/lib/lane-selector.js` to improve future routing.
 
 ## Testing
 
@@ -607,39 +607,39 @@ Unlike CLI-based approaches, this implementation:
 
 **Quick Lane:**
 
-- Template loading: ~1aidesignerms
+- Template loading: ~10ms
 - LLM calls: 3 (spec, plan, tasks)
 - Total time: ~2-3 minutes
-- Token usage: ~2,aidesigneraidesigneraidesigner-5,aidesigneraidesigneraidesigner tokens
+- Token usage: ~20,000-50,000 tokens
 
 **Complex Lane:**
 
-- Agent initialization: ~5aidesignerms
+- Agent initialization: ~50ms
 - LLM calls: 8-12 (depending on phases)
-- Total time: ~1aidesigner-15 minutes
-- Token usage: ~1aidesigner,aidesigneraidesigneraidesigner-3aidesigner,aidesigneraidesigneraidesigner tokens
+- Total time: ~10-15 minutes
+- Token usage: ~10,000-30,000 tokens
 
 ### Confidence Thresholds
 
 ```javascript
-// lib/lane-selector.js
+// .dev/lib/lane-selector.js
 
 if (quickScore > complexScore * 1.5) {
   // Strong quick lane signal
-  confidence = min(quickScore / total, aidesigner.95);
+  confidence = min(quickScore / total, 0.95);
   lane = 'quick';
 } else if (complexScore > quickScore) {
   // Complex lane signal
-  confidence = min(complexScore / total, aidesigner.95);
+  confidence = min(complexScore / total, 0.95);
   lane = 'complex';
 } else {
   // Unclear - default to quick for efficiency
-  confidence = aidesigner.6;
+  confidence = 0.6;
   lane = 'quick';
 }
 ```
 
-Maximum confidence capped at aidesigner.95 to acknowledge uncertainty.
+Maximum confidence capped at 0.95 to acknowledge uncertainty.
 
 ## Future Enhancements
 
@@ -660,24 +660,24 @@ A: No, it enhances BMAD by adding a fast track for simple tasks while keeping th
 A: They're optimized for speed and simplicity. For comprehensive documentation, complex lane is better.
 
 **Q: Can I customize the lane selector?**
-A: Yes, modify `lib/lane-selector.js` to adjust keywords, scores, or thresholds.
+A: Yes, modify `.dev/lib/lane-selector.js` to adjust keywords, scores, or thresholds.
 
 **Q: What if I disagree with lane selection?**
 A: Use manual override or adjust lane selector rules. Decision log helps identify patterns.
 
 **Q: Do both lanes cost the same in LLM tokens?**
-A: No. Quick lane uses ~6aidesigner% fewer tokens due to simpler prompts and fewer iterations.
+A: No. Quick lane uses ~60% fewer tokens due to simpler prompts and fewer iterations.
 
 ## References
 
 - **BMAD Method**: https://github.com/bmadcode/bmad-method
 - **GitHub Spec Kit** (inspiration): https://github.com/github/spec-kit
 - **Lane Selector Tests**: `test/lane-selector.test.js`
-- **Quick Lane Implementation**: `lib/quick-lane.js`
-- **Templates**: `lib/spec-kit-templates/*.md`
+- **Quick Lane Implementation**: `.dev/lib/quick-lane.js`
+- **Templates**: `.dev/lib/spec-kit-templates/*.md`
 
 ---
 
-**Version:** 1.2.aidesigner
-**Last Updated:** 2aidesigner25-1aidesigner-aidesigner1
+**Version:** 1.2.0
+**Last Updated:** 2025-10-01
 **Status:** ✅ Fully Implemented

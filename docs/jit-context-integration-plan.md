@@ -10,21 +10,21 @@
 
 1. **Context Injector Pipeline**
    - Extend `aidesignerBridge` with a pluggable context injector registry so runtime components can contribute targeted sections before a prompt is sent to any agent.
-   - Each injector receives the agent id and current execution context and can return structured sections (`title`, `body`, `priority`) that are merged into the user message for the LLM.【F:lib/bmad-bridge.js†L12-L23】【F:lib/bmad-bridge.js†L101-L171】
+   - Each injector receives the agent id and current execution context and can return structured sections (`title`, `body`, `priority`) that are merged into the user message for the LLM.【F:.dev/lib/aidesigner-bridge.js†L128-L139】【F:.dev/lib/aidesigner-bridge.js†L438-L511】
 
 2. **Developer Story Context Injector**
    - Register a developer-specific injector from the MCP runtime after the bridge initializes. The injector aggregates:
      - The latest story deliverable authored by the scrum master (`docs/` output captured in project state).
      - Consolidated requirements, decisions, and next steps tracked by the orchestrator state store.
-     - Recent user/assistant conversation snippets for situational awareness.【F:src/mcp-server/runtime.ts†L9-L124】【F:src/mcp-server/runtime.ts†L214-L250】
+     - Recent user/assistant conversation snippets for situational awareness.【F:.dev/src/mcp-server/runtime.ts†L162-L235】【F:.dev/src/mcp-server/runtime.ts†L256-L275】
    - Sections are prioritized (high/medium/low) so future heuristics can decide ordering or trimming if the prompt needs to shrink.
 
 3. **Prompt Assembly Changes**
-   - Updated prompt builder appends an explicit "Targeted Context Injection" section, mirroring V6’s practice of handing the developer a curated packet directly inside the LLM conversation.【F:lib/bmad-bridge.js†L76-L115】
+   - Updated prompt builder appends an explicit "Targeted Context Injection" section, mirroring V6’s practice of handing the developer a curated packet directly inside the LLM conversation.【F:.dev/lib/aidesigner-bridge.js†L342-L387】【F:.dev/lib/aidesigner-bridge.js†L393-L435】
 
 4. **Extensibility Hooks**
    - Runtime keeps injector registration idempotent, enabling future additions (e.g., QA, UX) without duplicate sections.
-   - Bridge exposes methods to register or clear injectors, letting other subsystems (phase hooks, CLI) compose their own V6-inspired context packages.【F:lib/bmad-bridge.js†L117-L171】
+   - Bridge exposes methods to register or clear injectors, letting other subsystems (phase hooks, CLI) compose their own V6-inspired context packages.【F:.dev/lib/aidesigner-bridge.js†L438-L511】
 
 ## Next Steps
 

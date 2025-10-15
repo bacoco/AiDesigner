@@ -55,7 +55,7 @@ graph TD
     J --> L
 
     style A fill:#1a73e8,color:#fff
-    style I fill:#f9abaidesigneraidesigner,color:#fff
+    style I fill:#f9ab00,color:#fff
     style J fill:#34a853,color:#fff
 ```
 
@@ -99,7 +99,7 @@ The BMad framework employs a sophisticated template processing system orchestrat
 
 - **`create-doc.md`** (`aidesigner-core/tasks/`): Acts as the orchestration engine that manages the entire document generation workflow. This task coordinates template selection, manages user interaction modes (incremental vs. rapid generation), enforces template-format processing rules, and handles validation. It serves as the primary interface between users and the template system.
 
-- **`advanced-elicitation.md`** (`aidesigner-core/tasks/`): Provides an interactive refinement layer that can be embedded within templates through `[[LLM: instructions]]` blocks. This component offers 1aidesigner structured brainstorming actions, section-by-section review capabilities, and iterative improvement workflows to enhance content quality.
+- **`advanced-elicitation.md`** (`aidesigner-core/tasks/`): Provides an interactive refinement layer that can be embedded within templates through `[[LLM: instructions]]` blocks. This component offers 10 structured brainstorming actions, section-by-section review capabilities, and iterative improvement workflows to enhance content quality.
 
 The system maintains a clean separation of concerns: template markup is processed internally by AI agents but never exposed to users, while providing sophisticated AI processing capabilities through embedded intelligence within the templates themselves.
 
@@ -170,7 +170,7 @@ graph TD
     M --> N["Ready for SM/Dev Cycle"]
 
     style I fill:#34a853,color:#fff
-    style G fill:#f9abaidesigneraidesigner,color:#fff
+    style G fill:#f9ab00,color:#fff
     style L fill:#1a73e8,color:#fff
     style N fill:#34a853,color:#fff
 ```
@@ -213,7 +213,7 @@ graph TD
     M --> E
 
     style M fill:#34a853,color:#fff
-    style K fill:#f9abaidesigneraidesigner,color:#fff
+    style K fill:#f9ab00,color:#fff
 ```
 
 This cycle continues, with the Scrum Master, Developer, and optionally QA agents working together. The QA agent provides senior developer review capabilities through the `review-story` task, offering code refactoring, quality improvements, and knowledge transfer. This ensures high code quality while maintaining development velocity.
@@ -224,19 +224,19 @@ The upstream V6 alpha introduces a structured "toolset" registry and wraps each 
 
 ### 6.1. Summary of API Differences
 
-- **Discovery surface** – V6 advertises tools under semantic identifiers such as `project.context` and expects the registry to include metadata, titles, and versioning fields rather than the flat MCP list our server currently returns.【F:src/mcp-server/v6-tool-adapter.ts†L47-L12aidesigner】【F:src/mcp-server/v6-tool-adapter.ts†L166-L2aidesigner4】
-- **Invocation envelope** – Requests arrive as `{ tool, version, payload, context }` instead of the MCP-native `{ name, arguments }` tuple. The adapter must lift context hints (phase, lane, project ID) into the argument bag before delegating to the legacy handler.【F:src/mcp-server/v6-tool-adapter.ts†L9-L83】【F:src/mcp-server/v6-tool-adapter.ts†L122-L15aidesigner】
-- **Response contract** – V6 expects `{ tool, data, error? }`, so we need to wrap MCP responses (or errors) accordingly before handing them back to the V6 orchestrator.【F:src/mcp-server/v6-tool-adapter.ts†L31-L45】【F:src/mcp-server/v6-tool-adapter.ts†L152-L164】
+- **Discovery surface** – V6 advertises tools under semantic identifiers such as `project.context` and expects the registry to include metadata, titles, and versioning fields rather than the flat MCP list our server currently returns.【F:.dev/src/mcp-server/v6-tool-adapter.ts†L60-L83】【F:.dev/src/mcp-server/v6-tool-adapter.ts†L137-L213】
+- **Invocation envelope** – Requests arrive as `{ tool, version, payload, context }` instead of the MCP-native `{ name, arguments }` tuple. The adapter must lift context hints (phase, lane, project ID) into the argument bag before delegating to the legacy handler.【F:.dev/src/mcp-server/v6-tool-adapter.ts†L91-L114】
+- **Response contract** – V6 expects `{ tool, data, error? }`, so we need to wrap MCP responses (or errors) accordingly before handing them back to the V6 orchestrator.【F:.dev/src/mcp-server/v6-tool-adapter.ts†L121-L135】
 
 ### 6.2. Adapter Strategy
 
-We introduced `src/mcp-server/v6-tool-adapter.ts` to map between the two worlds. The module provides three core helpers:
+We introduced `.dev/src/mcp-server/v6-tool-adapter.ts` to map between the two worlds. The module provides three core helpers:
 
-1. `mapV6InvocationToLegacy` – Converts the V6 envelope into the legacy tool name plus normalized arguments, reusing upstream routing hints for lane/phase selection.【F:src/mcp-server/v6-tool-adapter.ts†L122-L15aidesigner】
-2. `mapLegacyResultToV6` – Packages MCP handler results or thrown errors into the V6 response format, preserving the tool identifier mapping for observability.【F:src/mcp-server/v6-tool-adapter.ts†L152-L164】
-3. `projectLegacyToolsToV6Catalog` – Re-exports the MCP tool catalog with V6-friendly identifiers, titles, and metadata so that discovery endpoints can serve both runtimes without duplicating schemas.【F:src/mcp-server/v6-tool-adapter.ts†L166-L2aidesigner4】
+1. `mapV6InvocationToLegacy` – Converts the V6 envelope into the legacy tool name plus normalized arguments, reusing upstream routing hints for lane/phase selection.【F:.dev/src/mcp-server/v6-tool-adapter.ts†L91-L114】
+2. `mapLegacyResultToV6` – Packages MCP handler results or thrown errors into the V6 response format, preserving the tool identifier mapping for observability.【F:.dev/src/mcp-server/v6-tool-adapter.ts†L121-L135】
+3. `projectLegacyToolsToV6Catalog` – Re-exports the MCP tool catalog with V6-friendly identifiers, titles, and metadata so that discovery endpoints can serve both runtimes without duplicating schemas.【F:.dev/src/mcp-server/v6-tool-adapter.ts†L194-L213】
 
-In addition, `describeToolBridging()` surfaces the exact legacy↔︎V6 mapping for diagnostics and documentation so that downstream teams can confirm which tool identifiers are currently supported.【F:src/mcp-server/v6-tool-adapter.ts†L2aidesigner6-L21aidesigner】
+In addition, `describeToolBridging()` surfaces the exact legacy↔︎V6 mapping for diagnostics and documentation so that downstream teams can confirm which tool identifiers are currently supported.【F:.dev/src/mcp-server/v6-tool-adapter.ts†L219-L222】
 
 ### 6.3. Integration Roadmap
 

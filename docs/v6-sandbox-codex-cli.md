@@ -4,7 +4,7 @@ This note documents how the Codex CLI behaves inside the V6 sandbox baseline and
 
 ## 1. Sandbox Preparation
 
-1. Provision a fresh V6 developer sandbox (Node.js ≥ 2aidesigner) and clone `BMAD-invisible`.
+1. Provision a fresh V6 developer sandbox (Node.js ≥ 20) and clone `BMAD-invisible`.
 2. Install project dependencies and rebuild the MCP bundles:
 
    ```bash
@@ -18,9 +18,9 @@ This note documents how the Codex CLI behaves inside the V6 sandbox baseline and
    codex --version
    ```
 
-## 2. MCP Configuration via `lib/codex`
+## 2. MCP Configuration via `.dev/lib/codex`
 
-The new defaults introduced in `lib/codex/config-manager` target the V6 CLI profile:
+The new defaults introduced in `.dev/lib/codex/config-manager` target the V6 CLI profile:
 
 - Model: `GPT-5-Codex`
 - Automated approvals for both CLI tools and MCP server actions
@@ -32,7 +32,7 @@ The new defaults introduced in `lib/codex/config-manager` target the V6 CLI prof
 To (re)generate the CLI config from the sandbox, run:
 
 ```bash
-node -e "(async () => { const { ensureCodexConfig } = require('./lib/codex/config-manager.js'); const result = await ensureCodexConfig({ nonInteractive: false }); console.log('Codex config written to', result.configPath); })();"
+node -e "(async () => { const { ensureCodexConfig } = require('./.dev/lib/codex/config-manager.js'); const result = await ensureCodexConfig({ nonInteractive: false }); console.log('Codex config written to', result.configPath); })();"
 ```
 
 This writes/updates `~/.codex/config.toml` with the auto-approval profile and ensures the aidesigner MCP server entry matches the compiled assets, while stubbing the optional helpers so Claude/Chromium tooling can be toggled on later.

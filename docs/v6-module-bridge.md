@@ -12,15 +12,15 @@ These assumptions allow us to discover v6 assets without hard-coding the final m
 
 ## 2. Module Discovery Strategy
 
-The new `V6ModuleLoader` scans `bmad/src/modules/*` and recursively indexes agents, tasks, templates, checklists, and data. It normalizes identifiers, records potential collisions, and exposes list/read helpers that return the owning module, filesystem path, and parsed YAML for agent definitions.【F:lib/v6-module-loader.js†L1-L205】 The loader caches its catalog so the invisible bridge can access v6 resources with the same APIs it uses for the legacy core.
+The new `V6ModuleLoader` scans `bmad/src/modules/*` and recursively indexes agents, tasks, templates, checklists, and data. It normalizes identifiers, records potential collisions, and exposes list/read helpers that return the owning module, filesystem path, and parsed YAML for agent definitions.【F:.dev/lib/v6-module-loader.js†L1-L208】 The loader caches its catalog so the invisible bridge can access v6 resources with the same APIs it uses for the legacy core.
 
 ## 3. Bridge Integration
 
-`aidesignerBridge` now auto-detects whether the legacy `aidesigner-core/` tree or the new v6 modules are installed. When it finds `bmad/src/modules`, it instantiates the module loader, exposes environment metadata, and routes agent/resource lookups through the v6 indexes while keeping the existing method signatures unchanged.【F:lib/bmad-bridge.js†L1-L451】 Listing helpers (`listAgents`, `listTasks`, `listTemplates`) now return module-qualified identifiers to reflect v6 packaging.【F:lib/bmad-bridge.js†L382-L451】
+`aidesignerBridge` now auto-detects whether the legacy `aidesigner-core/` tree or the new v6 modules are installed. When it finds `bmad/src/modules`, it instantiates the module loader, exposes environment metadata, and routes agent/resource lookups through the v6 indexes while keeping the existing method signatures unchanged.【F:.dev/lib/aidesigner-bridge.js†L21-L189】 Listing helpers (`listAgents`, `listTasks`, `listTemplates`) now return module-qualified identifiers to reflect v6 packaging.【F:.dev/lib/aidesigner-bridge.js†L764-L805】
 
 ## 4. Entry-Point Hook
 
-The MCP runtime still calls `aidesignerBridge` lazily, but it now logs whenever the bridge reports a v6 module environment so operators know the orchestrator bound to the new layout. This keeps the entry point compatible with both directory structures while documenting the detection in the server logs.【F:src/mcp-server/runtime.ts†L100-L138】
+The MCP runtime still calls `aidesignerBridge` lazily, but it now logs whenever the bridge reports a v6 module environment so operators know the orchestrator bound to the new layout. This keeps the entry point compatible with both directory structures while documenting the detection in the server logs.【F:.dev/src/mcp-server/runtime.ts†L996-L1020】
 
 ## 5. Agent Manifest Prototype
 

@@ -2,7 +2,7 @@
 
 This inventory captures the invisible-first features that must be preserved during any migration to the aidesigner V6 module architecture.
 
-## 1. MCP Server (`src/mcp-server`)
+## 1. MCP Server (`.dev/src/mcp-server`)
 
 ### Purpose
 
@@ -27,7 +27,7 @@ This inventory captures the invisible-first features that must be preserved duri
 - Dynamic imports rely on existing directory layout (`lib`, `hooks`), which will shift to V6 module packaging.
 - Approval hooks and lane tracking assume invisible orchestrator semantics that may not exist in the command-driven V6 runtime.
 
-## 2. BMAD Bridge (`lib/bmad-bridge.js`)
+## 2. BMAD Bridge (`.dev/lib/aidesigner-bridge.js`)
 
 ### Purpose
 
@@ -72,8 +72,8 @@ This inventory captures the invisible-first features that must be preserved duri
 ## Additional Custom Touchpoints
 
 - **Phase transition hooks (`hooks/phase-transition.js`)** and **context preservation (`hooks/context-preservation.js`)** provide invisible validation logic that current V6 command flow does not implement.
-- **Lane selector (`lib/lane-selector.js`)** integrates quick/complex heuristics absent from V6 scale-level routing, requiring adaptation.
-- **Auto-command execution (`lib/auto-commands.js`)** is invoked through approval-guarded pathways that V6 must continue to support.
+- **Lane selector (`.dev/lib/lane-selector.js`)** integrates quick/complex heuristics absent from V6 scale-level routing, requiring adaptation.
+- **Auto-command execution (`.dev/lib/auto-commands.js`)** is invoked through approval-guarded pathways that V6 must continue to support.
 
 ## Summary Checklist for Migration Effort
 

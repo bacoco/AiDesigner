@@ -63,7 +63,7 @@ User message
 
 ### Targeted epic specs & story workflow
 
-- `lib/deliverable-generator.js` now emits a dedicated spec bundle whenever the architect lane supplies `epicData.spec`.
+- `.dev/lib/deliverable-generator.js` now emits a dedicated spec bundle whenever the architect lane supplies `epicData.spec`.
   - Machine-consumable JSON → `docs/epics/epic-<n>-<slug>.spec.json`
   - Human-readable summary → `docs/epics/epic-<n>-<slug>.spec.md`
 - Story generation automatically loads the matching spec for the epic and injects an **Epic Spec Context** block into `docs/stories/story-<epic>-<story>-*.md`.

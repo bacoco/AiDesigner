@@ -194,5 +194,5 @@ V6 represents a major architectural rewrite of BMAD-METHOD currently in alpha st
 
 ---
 
-**Last Updated**: 2aidesigner25-1aidesigner-aidesigner2
+**Last Updated**: 2025-10-02
 **Decision**: Keep BMAD-Invisible on stable main, monitor v6 for future opportunities

@@ -1,6 +1,6 @@
 # Implementation Summary - BMAD-invisible
 
-> **⚠️ HISTORICAL DOCUMENT**: This file describes the early prototype phase from 2aidesigner24. BMAD-invisible is now fully functional (v1.2.aidesigner). See README.md and DUAL_LANE_ORCHESTRATION.md for current status.
+> **⚠️ HISTORICAL DOCUMENT**: This file describes the early prototype phase from 2024. BMAD-invisible is now fully functional (v1.2.0). See README.md and DUAL_LANE_ORCHESTRATION.md for current status.
 
 ## ✅ Completed Tasks
 
@@ -69,8 +69,8 @@ Complete overhaul with:
 #### Priority 1 (Functional)
 
 - Build CLI chat interface (`cli/invisible-chat.js`)
-- Create BMAD integration bridge (`lib/bmad-bridge.js`)
-- Implement LLM client (`lib/llm-client.js`)
+- Create BMAD integration bridge (`.dev/lib/aidesigner-bridge.js`)
+- Implement LLM client (`.dev/lib/llm-client.js`)
 - Add deliverable generation to `docs/` folder
 
 #### Priority 2 (UX)
@@ -185,13 +185,16 @@ npx aidesigner init                    # Initialize project
 ```javascript
 // cli/invisible-chat.js
 const readline = require('readline');
-const { runInvisibleOrchestrator } = require('../lib/orchestrator');
+const { AidesignerBridge } = require('../.dev/lib/aidesigner-bridge.js');
 
 async function chat() {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
+
+  const bridge = new AidesignerBridge();
+  await bridge.initialize();
 
   let context = await loadProjectState();
 
@@ -201,12 +204,16 @@ async function chat() {
     if (userInput === 'exit') break;
 
     // Process with invisible orchestrator
-    const response = await runInvisibleOrchestrator(userInput, context);
+    const result = await bridge.runAgent('invisible-orchestrator', {
+      ...context,
+      userInput,
+    });
+    const payload = JSON.parse(result.response);
 
-    console.log('\n' + response.message + '\n');
+    console.log('\n' + payload.message + '\n');
 
     // Save state
-    context = response.context;
+    context = payload.context;
     await saveProjectState(context);
   }
 }
@@ -231,7 +238,11 @@ async function chat() {
 
 ### Medium Term (Week 5-8)
 
-1aidesigner. Comprehensive testing 11. Error handling 12. Polish conversation flow 13. Community feedback 14. Release v1.aidesigner
+- Comprehensive testing
+- Error handling
+- Polish conversation flow
+- Community feedback
+- Release v1.0
 
 ## 🎉 Summary
 
