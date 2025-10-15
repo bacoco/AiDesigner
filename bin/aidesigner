@@ -18,6 +18,7 @@ const { runIntegrityPreflight } = require('../common/utils/integrity');
 const { buildAssistantSpawnEnv } = require('../common/utils/assistant-env');
 const { ProjectState } = require('../lib/project-state.js');
 const logger = require('../common/utils/logger');
+const shadcnRegistries = require('../common/shadcn-registries.json');
 
 let command;
 let args = [];
@@ -1716,12 +1717,7 @@ const commands = {
           components: '@/components',
           utils: '@/lib/utils',
         },
-        registries: {
-          '@originui': 'https://originui.com/r/{name}.json',
-          '@aceternity': 'https://aceternity.com/r/{name}.json',
-          '@magicui': 'https://magicui.design/r/{name}.json',
-          '@kiboui': 'https://www.kibo-ui.com/r/{name}.json',
-        },
+        registries: shadcnRegistries,
       };
 
       if (!fs.existsSync(componentsPath)) {
