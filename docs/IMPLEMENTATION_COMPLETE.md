@@ -8,70 +8,46 @@ Successfully implemented a **fully functional MCP-based invisible orchestrator**
 
 ### Core Infrastructure ✅
 
-1. **MCP Server** (`mcp/server.ts`) - **521 lines**
-   - 1aidesigner MCP tools for project orchestration
-   - Dynamic loading of BMAD agents
-   - Phase detection and transitions
-   - Deliverable generation
-   - State persistence integration
-   - Full BMAD workflow execution
+1. **MCP Server** (`.dev/src/mcp-server/runtime.ts`) - **4,353 lines**
+   - Full MCP surface including quick/complex lane orchestration, bridge bootstrapping, and V6 adapter wiring.
+   - Tool catalog now spans deliverable automation, Chrome MCP integration, UI iteration loops, and governance checkpoints.
+   - Dynamic agent loading, state hydration, and streaming safeguards keep the invisible experience stable across environments.【F:.dev/src/mcp-server/runtime.ts†L959-L1024】【F:.dev/src/mcp-server/runtime.ts†L2121-L2344】
 
-2. **Project State Management** (`lib/project-state.js`) - **312 lines**
-   - Conversation history tracking
-   - Phase transition history
-   - Requirements and decisions storage
-   - Deliverables tracking
-   - JSON persistence to `.aidesigner/`
+2. **Project State Management** (`.dev/lib/project-state.js`) - **1,046 lines**
+   - Tracks conversation history, confidence logs, deliverables, and validation outcomes across sessions.【F:.dev/lib/project-state.js†L1-L209】【F:.dev/lib/project-state.js†L926-L1046】
+   - Persists data under `.aidesigner/` with recovery helpers so workflows can resume mid-phase.
 
-3. **BMAD Integration Bridge** (`lib/bmad-bridge.js`) - **343 lines**
-   - Agent loading and persona extraction
-   - Template resolution
-   - Task and checklist loading
-   - Dependency resolution
-   - Phase-to-agent mapping
+3. **BMAD Integration Bridge** (`.dev/lib/aidesigner-bridge.js`) - **808 lines**
+   - Detects legacy vs. V6 module environments, normalizes resource lookups, and exposes context injection hooks for runtime enrichers.【F:.dev/lib/aidesigner-bridge.js†L11-L213】【F:.dev/lib/aidesigner-bridge.js†L342-L511】
 
-4. **Deliverable Generator** (`lib/deliverable-generator.js`) - **457 lines**
-   - Brief generation
-   - PRD generation with sharding
-   - Architecture with shards (coding standards, tech stack, source tree)
-   - Epic and story generation
-   - QA assessment generation
-   - Automatic file output to `docs/`
+4. **Deliverable Generator** (`.dev/lib/deliverable-generator.js`) - **868 lines**
+   - Automates PRD, architecture, story, and QA artifact creation with lane-aware templates and output writers.【F:.dev/lib/deliverable-generator.js†L1-L188】【F:.dev/lib/deliverable-generator.js†L803-L868】
 
 ### Hooks & Integration ✅
 
-5. **Phase Transition Hooks** (`hooks/phase-transition.js`) - Functional
-   - Safe phase transitions
-   - Confidence thresholds
-   - Context preservation
-   - Deliverable saving
+5. **Phase Transition Hooks** (`hooks/phase-transition.js`) - **189 lines**
+   - Enforces safe transitions with validation checks, lane overrides, and orchestrator telemetry.【F:hooks/phase-transition.js†L1-L189】
 
-6. **Context Preservation** (`hooks/context-preservation.js`) - Functional
-   - Requirements consolidation
-   - Decisions tracking
-   - Phase history maintenance
+6. **Context Preservation** (`hooks/context-preservation.js`) - **57 lines**
+   - Consolidates requirements, decisions, and history snapshots for downstream agents.【F:hooks/context-preservation.js†L1-L57】
 
 ### User Interface ✅
 
-7. **Invisible Orchestrator Agent** (`agents/invisible-orchestrator.md`) - **231 lines**
-   - Complete MCP tool instructions
-   - Phase flow documentation
-   - Validation checkpoint system
-   - Natural conversation examples
-   - Strict "invisibility" rules
+7. **Invisible Orchestrator Persona** (`agents/invisible-orchestrator.md`) - **566 lines**
+   - Defines zero-knowledge conversational behavior, MCP tooling expectations, and V6 module metadata for installers.【F:agents/invisible-orchestrator.md†L1-L40】【F:agents/invisible-orchestrator.md†L314-L566】
 
-8. **CLI Wrapper** (`bin/bmad-claude`) - **44 lines**
-   - Launches Claude CLI with MCP config
-   - Loads orchestrator agent
-   - User-friendly startup messages
+8. **CLI Wrapper** (`bin/aidesigner-claude`) - **159 lines**
+   - Boots the orchestrator persona, ensures MCP configs exist, and guides operators through Claude CLI startup.【F:bin/aidesigner-claude†L1-L159】
 
-9. **MCP Configuration** (`.claude/mcp-config.json`, `mcp/aidesigner-config.json`)
-   - Claude Code integration
-   - Workspace-relative paths
+9. **MCP Configuration** (`mcp/aidesigner-config.json` with legacy fallback `mcp/bmad-config.json`)
+   - Standardizes MCP server wiring for Claude Code and other clients.【F:mcp/aidesigner-config.json†L1-L42】
 
 ### Documentation ✅
 
-1aidesigner. **QUICKSTART.md** - Installation and first use 11. **USAGE.md** - Comprehensive usage guide 12. **DUAL_LANE_ORCHESTRATION.md** - Dual-lane routing guide 13. **Updated README.md** - Production-ready status
+- **user-guide.md** – End-to-end conversational workflow overview
+- **COMPLETE-WORKFLOW.md** – Detailed phase-by-phase execution walkthrough
+- **DUAL_LANE_ORCHESTRATION.md** – Dual-lane routing guide
+- **TROUBLESHOOTING.md** – Operational diagnostics and recovery steps
 
 ## Architecture
 
@@ -80,7 +56,7 @@ User Types Message
     ↓
 Claude CLI (with MCP)
     ↓
-MCP Server (1aidesigner tools)
+MCP Server (10 tools)
      ├→ get_project_context
      ├→ detect_phase
      ├→ load_agent_persona
@@ -112,9 +88,8 @@ docs/prd.md, architecture.md, etc.
 
 ## File Count
 
-- **Total New/Modified Files**: 18
-- **Total Lines of Code**: ~2,5aidesigneraidesigner
-- **Languages**: TypeScript (MCP), JavaScript (Node.js), Markdown (Agents/Docs)
+- **Core Runtime Footprint**: Thousands of lines of TypeScript/JavaScript spanning the MCP server, bridge, state store, and automation hooks.
+- **Languages**: TypeScript (MCP), JavaScript (runtime + tooling), Markdown/YAML (agents, docs).
 
 ## How to Use
 
@@ -202,18 +177,18 @@ npm test
 
 ## Comparison to Original Plan
 
-| Feature                | Planned | Implemented | Notes                           |
-| ---------------------- | ------- | ----------- | ------------------------------- |
-| MCP Server             | ✅      | ✅          | Enhanced with 1aidesigner tools |
-| Project State          | ✅      | ✅          | Full persistence                |
-| BMAD Bridge            | ✅      | ✅          | Complete integration            |
-| Deliverables           | ✅      | ✅          | 6 types supported               |
-| Phase Transitions      | ✅      | ✅          | With safety checks              |
-| CLI Wrapper            | ✅      | ✅          | Simple & effective              |
-| Validation Checkpoints | ✅      | ✅          | Built into orchestrator         |
-| Documentation          | ✅      | ✅          | Comprehensive                   |
-| LLM API Client         | ❌      | ❌          | Not needed with MCP!            |
-| Separate CLI           | ❌      | ❌          | Uses Claude CLI instead         |
+| Feature                | Planned | Implemented | Notes                   |
+| ---------------------- | ------- | ----------- | ----------------------- |
+| MCP Server             | ✅      | ✅          | Enhanced with 10 tools  |
+| Project State          | ✅      | ✅          | Full persistence        |
+| BMAD Bridge            | ✅      | ✅          | Complete integration    |
+| Deliverables           | ✅      | ✅          | 6 types supported       |
+| Phase Transitions      | ✅      | ✅          | With safety checks      |
+| CLI Wrapper            | ✅      | ✅          | Simple & effective      |
+| Validation Checkpoints | ✅      | ✅          | Built into orchestrator |
+| Documentation          | ✅      | ✅          | Comprehensive           |
+| LLM API Client         | ❌      | ❌          | Not needed with MCP!    |
+| Separate CLI           | ❌      | ❌          | Uses Claude CLI instead |
 
 ## Success Criteria
 
@@ -254,7 +229,7 @@ Need to support older automation or scripts? The legacy `npm run bmad*` aliases 
 **Status**: 🎉 **IMPLEMENTATION COMPLETE AND READY FOR USE**
 
 **Time to First Deliverable**: ~5 minutes of conversation
-**Cost**: $aidesigner (uses your existing Claude Pro subscription)
+**Cost**: $0 (uses your existing Claude Pro subscription)
 **Learning Curve**: Zero (just talk naturally)
 
 The invisible orchestrator is fully functional and ready to help users build projects through natural conversation!

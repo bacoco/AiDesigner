@@ -16,10 +16,10 @@
    - V6 alpha exposes `src/modules/bmm`, `bmb`, and `cis` only. No slot exists for an `invisible` orchestrator module, so assets
      cannot be registered without upstream changes.
 2. **CommonJS vs ESM incompatibility**
-   - `lib/bmad-bridge.js` exports via CommonJS and depends on `fs-extra`. V6 build graph expects ESM modules and fails to load the
+   - `.dev/lib/aidesigner-bridge.js` exports via CommonJS and depends on `fs-extra`. V6 build graph expects ESM modules and fails to load the
      bridge without shims.
 3. **TypeScript ESM import failure**
-   - Importing `src/mcp-server/runtime.ts` from an ESM context throws because it compiles to CommonJS paths and performs dynamic
+   - Importing `.dev/src/mcp-server/runtime.ts` from an ESM context throws because it compiles to CommonJS paths and performs dynamic
      `require()` calls. V6 modules run under pure ESM loaders, so the orchestrator runtime must be refactored.
 4. **Persona asset pipeline missing**
    - `agents/invisible-orchestrator.md` lacks a destination in the V6 module layout. There is no `agents/` asset folder or copy
