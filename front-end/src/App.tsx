@@ -255,6 +255,12 @@ function App() {
       setRegistryFeedback({ type: 'success', message: `${component.name} installation requested.` });
       await refreshInstalledComponents(projectId);
       await refreshUIPreview(projectId);
+      // Clear the installation status after successful refresh - the component is now in installedComponents
+      setInstallationStatus(prev => {
+        const next = { ...prev };
+        delete next[identifier];
+        return next;
+      });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       setInstallationStatus(prev => ({ ...prev, [identifier]: 'error' }));
