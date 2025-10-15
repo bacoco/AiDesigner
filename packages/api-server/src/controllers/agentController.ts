@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { agentService } from '../services/agentService';
 import { NotFoundError, BadRequestError } from '../middleware/errorHandler';
-import { io } from '../index';
+import { getSocketIO } from '../config/socketio';
 
 export class AgentController {
   async listAgents(req: Request, res: Response, next: NextFunction) {
@@ -39,7 +39,7 @@ export class AgentController {
       const result = await agentService.executeAgent(agentId, command, context);
       
       if (projectId) {
-        io.to(`project:${projectId}`).emit('agent:executed', {
+        getSocketIO().to(`project:${projectId}`).emit('agent:executed', {
           agentId,
           command,
           duration: result.duration,

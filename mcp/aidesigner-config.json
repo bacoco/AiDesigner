@@ -21,6 +21,10 @@
       "command": "npx",
       "args": ["-y", "@jpisnice/shadcn-ui-mcp-server"]
     },
+    "tweakcn": {
+      "command": "npx",
+      "args": ["-y", "tweakcn-mcp-server"]
+    },
     "github": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"]

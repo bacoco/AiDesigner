@@ -1,32 +1,20 @@
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
-import winston from 'winston';
 import { config } from 'dotenv';
 import { setupRoutes } from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
+import { logger } from './config/logger';
+import { initializeSocketIO, closeSocketIO } from './config/socketio';
+import { projectService } from './services/projectService';
 
 config();
 
-const PORT = process.env.API_PORT || 3000;
-
-export const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      ),
-    }),
-  ],
-});
+const PORT = process.env.API_PORT ? Number(process.env.API_PORT) : 3000;
+if (Number.isNaN(PORT)) {
+  throw new Error(`Invalid API_PORT: ${process.env.API_PORT}`);
+}
 
 const app = express();
 
@@ -47,13 +35,7 @@ setupRoutes(app);
 app.use(errorHandler);
 
 const httpServer = createServer(app);
-
-export const io = new SocketIOServer(httpServer, {
-  cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-    credentials: true,
-  },
-});
+const io = initializeSocketIO(httpServer);
 
 io.on('connection', (socket) => {
   logger.info(`WebSocket client connected: ${socket.id}`);
@@ -81,8 +63,18 @@ httpServer.listen(PORT, () => {
 
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully...');
-  httpServer.close(() => {
-    logger.info('Server closed');
-    process.exit(0);
-  });
+  try {
+    // Close Socket.IO first
+    closeSocketIO();
+    // Cleanup project service resources
+    projectService.shutdown();
+    // Then close HTTP server
+    httpServer.close(() => {
+      logger.info('Server closed');
+      process.exit(0);
+    });
+  } catch (err) {
+    logger.error('Error during shutdown', err);
+    process.exit(1);
+  }
 });

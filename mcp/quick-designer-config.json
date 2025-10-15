@@ -8,6 +8,14 @@
         "QUICK_DESIGNER_MODE": "ai-powered"
       }
     },
+    "shadcn": {
+      "command": "npx",
+      "args": ["-y", "@jpisnice/shadcn-ui-mcp-server"]
+    },
+    "tweakcn": {
+      "command": "npx",
+      "args": ["-y", "tweakcn-mcp-server"]
+    },
     "vibe-check": {
       "command": "npx",
       "args": ["-y", "vibe-check-mcp-server"],

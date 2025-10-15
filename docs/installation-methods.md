@@ -84,6 +84,9 @@ npx aidesigner@latest start --assistant=opencode --provider=gemini
 ### shadcn UI Integration
 
 During setup, you can opt-in to shadcn UI helpers. If enabled, the installer creates a `components.json` file following the [shadcn/ui schema](https://ui.shadcn.com/docs/installation), allowing commands like `npx shadcn@latest add button` to work without additional configuration.
+The template also preloads registries for OriginUI, Aceternity, MagicUI, and the
+official Kibo UI catalog so you can source components from those ecosystems
+immediately.
 
 > **💡 Tip**: Always use `@latest` to ensure you get the newest version!
 
