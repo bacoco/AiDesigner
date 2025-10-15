@@ -4,6 +4,10 @@ import type {
   Deliverable,
   Agent,
   AgentExecutionResult,
+  InstalledComponent,
+  UIRegistryComponent,
+  UIPreview,
+  UITheme,
 } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -45,6 +49,45 @@ class APIClient {
       method: 'POST',
       body: JSON.stringify({ name }),
     });
+  }
+
+  async listUIRegistry(): Promise<{ components: UIRegistryComponent[] }> {
+    return this.request('/api/ui/registry');
+  }
+
+  async getUIComponents(projectId: string): Promise<{
+    components: InstalledComponent[];
+    preview?: UIPreview;
+  }> {
+    return this.request(`/api/projects/${projectId}/ui/components`);
+  }
+
+  async installUIComponent(
+    projectId: string,
+    componentId: string
+  ): Promise<{ success: boolean; component?: InstalledComponent }> {
+    return this.request(`/api/projects/${projectId}/ui/components`, {
+      method: 'POST',
+      body: JSON.stringify({ componentId }),
+    });
+  }
+
+  async getUITheme(projectId: string): Promise<{ theme: UITheme }> {
+    return this.request(`/api/projects/${projectId}/ui/theme`);
+  }
+
+  async updateUITheme(
+    projectId: string,
+    theme: UITheme
+  ): Promise<{ theme: UITheme }> {
+    return this.request(`/api/projects/${projectId}/ui/theme`, {
+      method: 'PATCH',
+      body: JSON.stringify(theme),
+    });
+  }
+
+  async getUIPreview(projectId: string): Promise<UIPreview> {
+    return this.request(`/api/projects/${projectId}/ui/preview`);
   }
 
   async getState(projectId: string): Promise<ProjectState> {

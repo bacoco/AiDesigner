@@ -1,4 +1,41 @@
 
+export interface UITheme {
+  primary: string;
+  accent: string;
+  background: string;
+  updatedAt?: string;
+}
+
+export interface UIRegistryComponent {
+  id: string;
+  name: string;
+  description?: string;
+  tags?: string[];
+  source?: string;
+  category?: string;
+  previewUrl?: string;
+  framework?: string;
+}
+
+export interface InstalledComponent extends UIRegistryComponent {
+  version?: string;
+  installedAt?: string;
+  status?: 'installed' | 'pending' | 'failed';
+  previewHtml?: string;
+}
+
+export interface UIPreview {
+  html?: string;
+  url?: string;
+  updatedAt?: string;
+}
+
+export interface ProjectUIState {
+  components?: InstalledComponent[];
+  preview?: UIPreview;
+  theme?: UITheme;
+}
+
 export interface ProjectState {
   projectId?: string;
   projectName?: string;
@@ -9,6 +46,7 @@ export interface ProjectState {
   phaseHistory?: any[];
   createdAt?: string;
   updatedAt?: string;
+  ui?: ProjectUIState;
 }
 
 export interface Message {
@@ -78,6 +116,17 @@ export interface WSMessageAddedEvent {
 export interface WSDeliverableCreatedEvent {
   type: string;
   phase?: string;
+  timestamp: string;
+}
+
+export interface WSUIComponentsEvent {
+  components?: InstalledComponent[];
+  preview?: UIPreview;
+  timestamp: string;
+}
+
+export interface WSUIThemeEvent {
+  theme: UITheme;
   timestamp: string;
 }
 
