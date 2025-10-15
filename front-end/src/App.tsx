@@ -57,10 +57,12 @@ const normalizeHex = (value: string): string => {
     return value;
   }
   const trimmed = value.trim();
-  if (!trimmed.startsWith('#')) {
-    return trimmed;
+  const raw = trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
+
+  if (!/^[0-9a-fA-F]+$/.test(raw)) {
+    return trimmed; // Not a valid hex character sequence, return original.
   }
-  const raw = trimmed.slice(1);
+
   if (raw.length === 3) {
     return `#${raw.split('').map((char) => char + char).join('')}`;
   }
@@ -70,7 +72,8 @@ const normalizeHex = (value: string): string => {
   if (raw.length === 8) {
     return `#${raw.slice(0, 6)}`;
   }
-  return trimmed;
+
+  return trimmed; // Return original if not a supported length.
 };
 
 const hexToRgba = (value: string, alpha = 1): string => {
@@ -209,7 +212,9 @@ function App() {
           preview: response.preview ?? prev.ui?.preview,
         },
       }));
-    } catch (err) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setPreviewError(`Failed to load installed components: ${message}`);
       console.error('Failed to load installed components:', err);
     }
   }, []);
@@ -239,8 +244,8 @@ function App() {
   const loadThemeFromServer = useCallback(async (id: string) => {
     try {
       const { theme } = await apiClient.getUITheme(id);
-      if (theme && !areThemesEqual(theme, themeSettings)) {
-        setThemeSettings(theme);
+      if (theme) {
+        setThemeSettings((prev) => (areThemesEqual(prev, theme) ? prev : theme));
       }
       setProjectState(prev => ({
         ...prev,
@@ -249,10 +254,12 @@ function App() {
           theme: theme ?? prev.ui?.theme,
         },
       }));
-    } catch (err) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setThemeSyncError(`Failed to load theme: ${message}`);
       console.error('Failed to fetch UI theme:', err);
     }
-  }, [themeSettings]);
+  }, []);
 
   const loadRegistry = useCallback(async () => {
     if (registryComponents.length > 0) {
@@ -280,7 +287,6 @@ function App() {
     setInstallationStatus(prev => ({ ...prev, [identifier]: 'installing' }));
     try {
       await apiClient.installUIComponent(projectId, component.id);
-      setInstallationStatus(prev => ({ ...prev, [identifier]: 'success' }));
       setRegistryFeedback({ type: 'success', message: `${component.name} installation requested.` });
       await refreshInstalledComponents(projectId);
       await refreshUIPreview(projectId);
@@ -835,7 +841,7 @@ function App() {
                         srcDoc={previewState?.url ? undefined : previewHtml || undefined}
                         title="UI Preview"
                         className="w-full h-full border-0 bg-transparent"
-                        sandbox="allow-scripts allow-same-origin"
+                        sandbox="allow-scripts"
                       />
                     ) : (
                       <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-3 px-6 text-center">
@@ -1024,22 +1030,23 @@ function App() {
             ) : (
               <ScrollArea className="max-h-[60vh] pr-2">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {registryComponents.map((component) => {
-                    const identifier = component.id || component.name;
-                    const installState = installationStatus[identifier] ?? 'idle';
-                    const alreadyInstalled = installedComponents.some(
-                      (installed) => installed.id === component.id || installed.name === component.name,
-                    );
-                    const disabled = installState === 'installing' || alreadyInstalled;
-                    const buttonLabel = alreadyInstalled
-                      ? 'Installed'
-                      : installState === 'installing'
-                      ? 'Installing...'
-                      : installState === 'error'
-                      ? 'Retry Install'
-                      : 'Install Component';
+                  {(() => {
+                    const installedIds = new Set(installedComponents.map(c => c.id));
+                    const installedNames = new Set(installedComponents.map(c => c.name));
+                    return registryComponents.map((component) => {
+                      const identifier = component.id || component.name;
+                      const installState = installationStatus[identifier] ?? 'idle';
+                      const alreadyInstalled = installedIds.has(component.id) || installedNames.has(component.name);
+                      const disabled = installState === 'installing' || alreadyInstalled;
+                      const buttonLabel = alreadyInstalled
+                        ? 'Installed'
+                        : installState === 'installing'
+                        ? 'Installing...'
+                        : installState === 'error'
+                        ? 'Retry Install'
+                        : 'Install Component';
 
-                    return (
+                      return (
                       <Card key={identifier} className="p-4 bg-slate-950/80 border border-slate-800 space-y-4">
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -1114,8 +1121,9 @@ function App() {
                           </Button>
                         </div>
                       </Card>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                   {registryComponents.length === 0 && !registryLoading && (
                     <Card className="p-6 bg-slate-950/80 border border-slate-800 text-center text-slate-400">
                       The registry is empty or unavailable. Please try again later.
