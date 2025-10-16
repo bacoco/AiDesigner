@@ -22,12 +22,16 @@ risks when generating reports, fetching MCP evidence, and loading codemod tokens
    import * as path from 'path';
    import * as fs from 'fs';
 
-   export function safePathWithinCwd(targetPath: string, baseDir = process.cwd()): string {
+   export function safePathWithinCwd(
+     targetPath: string,
+     baseDir = process.cwd(),
+     opts: { allowBase?: boolean } = {}
+   ): string {
      const resolved = path.resolve(baseDir, targetPath);
 
      // Check before fs access to fail fast on obvious traversal
      const relative = path.relative(baseDir, resolved);
-     if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+     if ((!opts.allowBase && !relative) || relative.startsWith('..') || path.isAbsolute(relative)) {
        throw new Error(`Path traversal detected: ${targetPath}`);
      }
 
@@ -41,18 +45,31 @@ risks when generating reports, fetching MCP evidence, and loading codemod tokens
        if (fs.existsSync(parent)) {
          canonical = path.join(fs.realpathSync(parent), path.basename(resolved));
        } else {
-         canonical = resolved; // Will be created, use logical path
+         // Walk up to find nearest existing ancestor
+         let ancestor = parent;
+         let remaining = [path.basename(resolved)];
+         while (!fs.existsSync(ancestor) && ancestor !== baseDir) {
+           remaining.unshift(path.basename(ancestor));
+           ancestor = path.dirname(ancestor);
+         }
+         if (fs.existsSync(ancestor)) {
+           const canonicalAncestor = fs.realpathSync(ancestor);
+           canonical = path.join(canonicalAncestor, ...remaining);
+         } else {
+           canonical = resolved; // Will be created, use logical path
+         }
        }
      }
 
      const canonicalBase = fs.realpathSync(baseDir);
      const canonicalRelative = path.relative(canonicalBase, canonical);
 
-     if (!canonicalRelative || canonicalRelative.startsWith('..') || path.isAbsolute(canonicalRelative)) {
+     if ((!opts.allowBase && !canonicalRelative) || canonicalRelative.startsWith('..') || path.isAbsolute(canonicalRelative)) {
        throw new Error(`Path traversal detected (after symlink resolution): ${targetPath}`);
      }
 
-     return resolved;
+     // Return canonical path to prevent TOCTOU issues
+     return canonical;
    }
    ```
 
@@ -68,15 +85,29 @@ risks when generating reports, fetching MCP evidence, and loading codemod tokens
    export function assertSafeChildName(name: string): void {
      // Normalize: decode common encodings that could hide traversal sequences
      let normalized = name;
-     try {
-       // URL decode (may need multiple passes for double-encoding)
-       normalized = decodeURIComponent(name);
-     } catch {
-       throw new Error(`Invalid identifier (encoding error): ${name}`);
+
+     // Bounded repeated decoding to handle double-encoding like %252e%252e
+     for (let i = 0; i < 2; i++) {
+       try {
+         const decoded = decodeURIComponent(normalized);
+         if (decoded === normalized) break; // No more decoding needed
+         normalized = decoded;
+       } catch {
+         throw new Error(`Invalid identifier (encoding error): ${name}`);
+       }
      }
 
-     // Additional normalization: strip null bytes, normalize unicode, etc.
-     normalized = normalized.replace(/\0/g, '');
+     // Additional normalization: strip null bytes, normalize Unicode
+     normalized = normalized.replace(/\0/g, '').normalize('NFKC');
+
+     // Basic length and reserved-name safeguards (Windows)
+     if (normalized.length === 0 || normalized.length > 255) {
+       throw new Error(`Unsafe identifier: ${name}`);
+     }
+     const WINDOWS_RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+     if (WINDOWS_RESERVED.test(normalized)) {
+       throw new Error(`Unsafe identifier: ${name}`);
+     }
 
      // Reject special directory names
      if (normalized === '.' || normalized === '..') {
@@ -95,11 +126,18 @@ risks when generating reports, fetching MCP evidence, and loading codemod tokens
    attempts, absolute paths, symlink attacks, URL-encoded traversal sequences,
    null bytes, and unicode edge cases to lock in the behavior. Specific test
    cases should include:
-   - Symlinks pointing outside the project
-   - Double-encoded paths like `%252e%252e`
-   - Mixed separators (`../` vs `..\`)
-   - Unicode normalization attacks (e.g., `\u002e\u002e`)
-   - Long paths exceeding system limits
+   - Symlinks pointing outside the project (e.g., `reports/sneaky -> ../`)
+   - Double-encoded paths like `%252e%252e` (URL-encoded `%2e%2e`)
+   - Triple-encoded paths like `%25252e%25252e`
+   - Mixed separators (`../` vs `..\` on Windows)
+   - Unicode normalization attacks (e.g., `\u002e\u002e` which is `..`)
+   - Unicode dot lookalikes and NFKC normalization edge cases
+   - Windows reserved names (CON, PRN, AUX, NUL, COM1-9, LPT1-9)
+   - Long paths exceeding system limits (>260 chars on Windows)
+   - Empty strings and zero-length identifiers
+   - Path separators in identifiers (`foo/bar`, `foo\bar`)
+   - CRLF injection attempts in paths
+   - Trailing slashes/dots behavior
 
 ## Phase 2 – Harden report generation paths
 
