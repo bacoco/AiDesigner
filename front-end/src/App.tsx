@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   XCircle,
   Boxes,
+  ExternalLink,
 } from 'lucide-react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Button } from './components/ui/button';
@@ -27,6 +28,7 @@ import { ScrollArea } from './components/ui/scroll-area';
 import { Badge } from './components/ui/badge';
 import { Separator } from './components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
+import { ThemeEditor } from './components/ThemeEditor/ThemeEditor';
 import {
   Dialog,
   DialogContent,
@@ -619,6 +621,13 @@ function App() {
                   </>
                 )}
               </div>
+              <a
+                href="/showcase"
+                className="text-slate-400 hover:text-white transition-colors"
+                title="View Theme Editor Showcase"
+              >
+                <ExternalLink className="w-5 h-5" />
+              </a>
               <a
                 href="https://github.com/bacoco/AiDesigner"
                 target="_blank"
