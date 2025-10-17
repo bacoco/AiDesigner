@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   XCircle,
   Boxes,
+  ExternalLink,
 } from 'lucide-react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Button } from './components/ui/button';
@@ -27,6 +28,7 @@ import { ScrollArea } from './components/ui/scroll-area';
 import { Badge } from './components/ui/badge';
 import { Separator } from './components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
+import { ThemeEditor } from './components/ThemeEditor/ThemeEditor';
 import {
   Dialog,
   DialogContent,
@@ -604,6 +606,13 @@ function App() {
                 )}
               </div>
               <a
+                href="/showcase"
+                className="text-slate-400 hover:text-white transition-colors"
+                title="View Theme Editor Showcase"
+              >
+                <ExternalLink className="w-5 h-5" />
+              </a>
+              <a
                 href="https://github.com/bacoco/AiDesigner"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -643,6 +652,10 @@ function App() {
                   <TabsTrigger value="ui-preview" className="gap-2">
                     <Eye className="w-4 h-4" />
                     UI Preview
+                  </TabsTrigger>
+                  <TabsTrigger value="theme-editor" className="gap-2">
+                    <Palette className="w-4 h-4" />
+                    Theme Editor
                   </TabsTrigger>
                   <TabsTrigger value="tools" className="gap-2">
                     <Settings className="w-4 h-4" />
@@ -872,6 +885,10 @@ function App() {
                     )}
                   </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="theme-editor" className="flex-1 m-0 p-0 overflow-hidden">
+                <ThemeEditor />
               </TabsContent>
 
               <TabsContent value="tools" className="flex-1 m-0 p-6 overflow-auto">
