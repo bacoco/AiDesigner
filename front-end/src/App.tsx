@@ -48,6 +48,8 @@ import type {
 } from './api/types';
 import './App.css';
 import { createBackgroundStyle, ensureValidHex } from './lib/theme';
+import { ThemeEditor } from './components/ThemeEditor';
+import { useThemeStore } from './stores/themeStore';
 
 const THEME_SYNC_DEBOUNCE_MS = 350;
 type ThemeField = 'primary' | 'accent' | 'background';
@@ -101,6 +103,7 @@ function App() {
   const messageRegistryRef = useRef<Set<string>>(new Set());
   const themeSyncTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
   const wsSubscriptionsRef = useRef<Array<() => void>>([]);
+  const themeStore = useThemeStore();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -290,8 +293,21 @@ function App() {
     if (nextTheme) {
       // Use functional update to compare with current state and prevent overwriting user edits during debounce
       setThemeSettings((prev) => (areThemesEqual(nextTheme, prev) ? prev : nextTheme));
+      if (!areThemesEqual(nextTheme, themeStore.currentTheme)) {
+        themeStore.setTheme(nextTheme);
+      }
     }
-  }, [projectState.ui]);
+  }, [projectState.ui, themeStore]);
+
+  useEffect(() => {
+    if (!areThemesEqual(themeStore.currentTheme, themeSettings)) {
+      setThemeSettings(themeStore.currentTheme);
+      applyTheme(themeStore.currentTheme);
+      if (projectId) {
+        scheduleThemeSync(themeStore.currentTheme);
+      }
+    }
+  }, [themeStore.currentTheme, themeSettings, applyTheme, projectId, scheduleThemeSync]);
 
   useEffect(() => {
     let isMounted = true;
