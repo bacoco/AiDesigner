@@ -28,7 +28,6 @@ import { ScrollArea } from './components/ui/scroll-area';
 import { Badge } from './components/ui/badge';
 import { Separator } from './components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
-import { ThemeEditor } from './components/ThemeEditor/ThemeEditor';
 import {
   Dialog,
   DialogContent,
@@ -103,7 +102,8 @@ function App() {
   const messageRegistryRef = useRef<Set<string>>(new Set());
   const themeSyncTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
   const wsSubscriptionsRef = useRef<Array<() => void>>([]);
-  const themeStore = useThemeStore();
+  const currentTheme = useThemeStore((state) => state.currentTheme);
+  const setTheme = useThemeStore((state) => state.setTheme);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -293,21 +293,21 @@ function App() {
     if (nextTheme) {
       // Use functional update to compare with current state and prevent overwriting user edits during debounce
       setThemeSettings((prev) => (areThemesEqual(nextTheme, prev) ? prev : nextTheme));
-      if (!areThemesEqual(nextTheme, themeStore.currentTheme)) {
-        themeStore.setTheme(nextTheme);
+      if (!areThemesEqual(nextTheme, currentTheme)) {
+        setTheme(nextTheme);
       }
     }
-  }, [projectState.ui, themeStore]);
+  }, [projectState.ui, currentTheme, setTheme]);
 
   useEffect(() => {
-    if (!areThemesEqual(themeStore.currentTheme, themeSettings)) {
-      setThemeSettings(themeStore.currentTheme);
-      applyTheme(themeStore.currentTheme);
+    if (!areThemesEqual(currentTheme, themeSettings)) {
+      setThemeSettings(currentTheme);
+      applyTheme(currentTheme);
       if (projectId) {
-        scheduleThemeSync(themeStore.currentTheme);
+        scheduleThemeSync(currentTheme);
       }
     }
-  }, [themeStore.currentTheme, themeSettings, applyTheme, projectId, scheduleThemeSync]);
+  }, [currentTheme, themeSettings, applyTheme, projectId, scheduleThemeSync]);
 
   useEffect(() => {
     let isMounted = true;
@@ -906,11 +906,9 @@ function App() {
               <TabsContent value="theme" className="flex-1 m-0 p-0">
                 <div className="h-full bg-slate-950/60">
                   <ThemeEditor
-                    projectId={projectId || undefined}
                     onThemeChange={(theme) => {
                       setThemeSettings(theme);
                       applyTheme(theme);
-                      scheduleThemeSync(theme);
                     }}
                   />
                 </div>
