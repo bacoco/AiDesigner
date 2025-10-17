@@ -183,6 +183,76 @@ class APIClient {
   async healthCheck(): Promise<{ status: string; timestamp: string }> {
     return this.request('/health');
   }
+
+  async saveThemeConfiguration(
+    projectId: string,
+    theme: any
+  ): Promise<{ id: string; theme: any }> {
+    return this.request(`/api/projects/${projectId}/themes`, {
+      method: 'POST',
+      body: JSON.stringify(theme),
+    });
+  }
+
+  async listThemeConfigurations(projectId: string): Promise<{ themes: any[] }> {
+    return this.request(`/api/projects/${projectId}/themes`);
+  }
+
+  async getThemeConfiguration(
+    projectId: string,
+    themeId: string
+  ): Promise<{ theme: any }> {
+    return this.request(`/api/projects/${projectId}/themes/${themeId}`);
+  }
+
+  async updateThemeConfiguration(
+    projectId: string,
+    themeId: string,
+    theme: any
+  ): Promise<{ theme: any }> {
+    return this.request(`/api/projects/${projectId}/themes/${themeId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(theme),
+    });
+  }
+
+  async deleteThemeConfiguration(
+    projectId: string,
+    themeId: string
+  ): Promise<{ success: boolean }> {
+    return this.request(`/api/projects/${projectId}/themes/${themeId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async shareTheme(
+    projectId: string,
+    themeId: string,
+    isPublic: boolean
+  ): Promise<{ shareUrl?: string; success: boolean }> {
+    return this.request(`/api/projects/${projectId}/themes/${themeId}/share`, {
+      method: 'POST',
+      body: JSON.stringify({ isPublic }),
+    });
+  }
+
+  async listPublicThemes(): Promise<{ themes: any[] }> {
+    return this.request('/api/themes/public');
+  }
+
+  async generateColorSuggestions(baseColor: string): Promise<{ suggestions: any }> {
+    return this.request('/api/ai/color-suggestions', {
+      method: 'POST',
+      body: JSON.stringify({ baseColor }),
+    });
+  }
+
+  async generateDarkModeVariant(theme: any): Promise<{ darkTheme: any }> {
+    return this.request('/api/ai/generate-dark-mode', {
+      method: 'POST',
+      body: JSON.stringify({ theme }),
+    });
+  }
 }
 
 export const apiClient = new APIClient();
