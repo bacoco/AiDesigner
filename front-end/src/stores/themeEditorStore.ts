@@ -136,9 +136,27 @@ const defaultTheme: ThemeConfiguration = {
   tags: [],
 };
 
+/**
+ * Prunes redo history and pushes a new history entry.
+ * Removes all history entries after the current index before adding the new state.
+ * This ensures the redo stack is cleared when new changes are made after an undo.
+ * Also enforces a maximum history size to prevent memory leaks.
+ */
 const pushHistoryEntry = (state: ThemeEditorState) => {
-  state.history = state.history.slice(0, state.historyIndex + 1);
+  const MAX_HISTORY_SIZE = 50;
+
+  // Remove all redo history (more idiomatic with immer)
+  state.history.splice(state.historyIndex + 1);
+
+  // Add new history entry
   state.history.push({ ...state.currentTheme });
+
+  // Limit history size
+  if (state.history.length > MAX_HISTORY_SIZE) {
+    const overflow = state.history.length - MAX_HISTORY_SIZE;
+    state.history.splice(0, overflow);
+  }
+
   state.historyIndex = state.history.length - 1;
 };
 
