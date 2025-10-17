@@ -11,7 +11,7 @@ import type {
 
 const WS_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-type EventHandler<T = any> = (data: T) => void;
+type EventHandler<T = unknown> = (data: T) => void;
 
 export class WebSocketClient {
   private socket: Socket | null = null;
@@ -105,7 +105,7 @@ export class WebSocketClient {
     return this.on('ui:theme:updated', handler);
   }
 
-  private on<T = any>(event: string, handler: EventHandler<T>): () => void {
+  private on<T = unknown>(event: string, handler: EventHandler<T>): () => void {
     if (!this.socket) {
       console.warn(`Cannot register handler for ${event}: socket not connected`);
       return () => {};
