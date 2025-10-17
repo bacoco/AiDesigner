@@ -80,59 +80,90 @@ Examples:
 async function callMCPTool(toolCall) {
   return new Promise((resolve, reject) => {
     const server = spawn('node', [mcpServerPath], {
-      stdio: ['pipe', 'pipe', process.stderr],
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
 
-    let output = '';
+    let resolved = false;
+    let buffer = '';
 
-    server.stdout.on('data', (data) => {
-      output += data.toString();
-    });
+    const finish = (val, isError = false) => {
+      if (resolved) return;
+      resolved = true;
+      try { server.kill('SIGTERM'); } catch {}
+      isError ? reject(val) : resolve(val);
+    };
 
-    server.on('close', (code) => {
-      if (code !== 0) {
-        reject(new Error(`MCP server exited with code ${code}`));
-        return;
-      }
+    // Set timeout for MCP responses
+    const timeout = setTimeout(() => {
+      finish(new Error('MCP server response timeout'), true);
+    }, 10000);
 
-      try {
-        const lines = output.split('\n').filter((l) => l.trim());
-        const result = lines.find((l) => {
+    server.stdout.on('data', (chunk) => {
+      buffer += chunk.toString();
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const t = line.trim();
+        if (!t) continue;
+
+        let msg;
+        try { msg = JSON.parse(t); } catch { continue; }
+
+        // Handle tool call response (id: 1)
+        if (msg.id === 1 && msg.result && Array.isArray(msg.result.content)) {
+          clearTimeout(timeout);
           try {
-            const parsed = JSON.parse(l);
-            return parsed.content || parsed.error;
-          } catch {
-            return false;
+            const text = msg.result.content[0]?.text ?? '{}';
+            const payload = JSON.parse(text);
+            finish(payload, payload?.isError === true);
+          } catch (e) {
+            finish(e, true);
           }
-        });
-
-        if (result) {
-          const parsed = JSON.parse(result);
-          if (parsed.content && parsed.content[0]) {
-            const content = JSON.parse(parsed.content[0].text);
-            resolve(content);
-          } else if (parsed.error) {
-            reject(new Error(parsed.error));
-          } else {
-            resolve(parsed);
-          }
-        } else {
-          reject(new Error('No valid response from MCP server'));
+        } else if (msg.id === 1 && msg.error) {
+          clearTimeout(timeout);
+          finish(new Error(msg.error.message || 'MCP error'), true);
         }
-      } catch (error) {
-        reject(error);
       }
     });
 
-    const request = {
+    server.stderr.on('data', () => {
+      // Ignore stderr from MCP server (contains "Theme Editor MCP Server started")
+    });
+
+    server.on('error', (err) => {
+      clearTimeout(timeout);
+      finish(err, true);
+    });
+
+    server.on('close', (code, signal) => {
+      clearTimeout(timeout);
+      if (!resolved) {
+        finish(new Error(`MCP server exited before responding (code=${code}, signal=${signal})`), true);
+      }
+    });
+
+    // 1) Send initialize request
+    const init = {
+      jsonrpc: '2.0',
+      id: 0,
+      method: 'initialize',
+      params: {
+        protocolVersion: '1.0',
+        capabilities: {},
+        clientInfo: { name: 'theme-cli', version: '1.0.0' },
+      },
+    };
+    server.stdin.write(JSON.stringify(init) + '\n');
+
+    // 2) Send tool call request
+    const req = {
       jsonrpc: '2.0',
       id: 1,
       method: 'tools/call',
-      params: toolCall,
+      params: toolCall
     };
-
-    server.stdin.write(JSON.stringify(request) + '\n');
-    server.stdin.end();
+    server.stdin.write(JSON.stringify(req) + '\n');
   });
 }
 
@@ -155,10 +186,12 @@ async function main() {
   try {
     const toolCall = handler(...cmdArgs);
     const result = await callMCPTool(toolCall);
-    const success = typeof result.success === 'boolean' ? result.success : !result.error;
 
-    if (success) {
-      console.log('✓', result.message || 'Success');
+    // Handle both success flag and read-only operations (no success flag)
+    if (result.success !== false) {
+      if (result.message) {
+        console.log('✓', result.message);
+      }
       if (result.theme) {
         console.log('\nCurrent Theme:');
         console.log(JSON.stringify(result.theme, null, 2));
@@ -172,6 +205,10 @@ async function main() {
         for (const p of result.presets) {
           console.log(`  ${p.id.padEnd(12)} - ${p.name}: ${p.description}`);
         }
+      }
+      // Handle historyCount for get-current
+      if (typeof result.historyCount === 'number') {
+        console.log(`\nHistory entries: ${result.historyCount}`);
       }
     } else {
       console.error('❌ Failed:', result.error || 'Unknown error');

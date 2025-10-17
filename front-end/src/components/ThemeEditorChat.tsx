@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Card } from './ui/card';
 import { useThemeStore } from '../stores/themeStore';
+import { hexToHSL, hslToHex } from '../../../common/utils/colorUtils';
 
 interface Message {
   id: string;
@@ -205,10 +206,13 @@ export function ThemeEditorChat() {
       case 'generatePalette':
         themeStore.generatePalette(params.baseColor, params.style);
         break;
-      case 'export':
+      case 'export': {
         const exported = themeStore.exportTheme(params.format);
-        navigator.clipboard.writeText(exported);
+        navigator.clipboard.writeText(exported).catch(err => {
+          console.error('Failed to copy to clipboard:', err);
+        });
         break;
+      }
       case 'undo':
         themeStore.undo();
         break;
@@ -258,57 +262,6 @@ export function ThemeEditorChat() {
 
     themeStore.setColor('primary', adjustColor(current.primary));
     themeStore.setColor('accent', adjustColor(current.accent));
-  };
-
-  const hexToHSL = (hex: string): { h: number; s: number; l: number } => {
-    const r = Number.parseInt(hex.slice(1, 3), 16) / 255;
-    const g = Number.parseInt(hex.slice(3, 5), 16) / 255;
-    const b = Number.parseInt(hex.slice(5, 7), 16) / 255;
-
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const l = (max + min) / 2;
-    let h = 0;
-    let s = 0;
-
-    if (max !== min) {
-      const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      
-      switch (max) {
-        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-        case g: h = ((b - r) / d + 2) / 6; break;
-        case b: h = ((r - g) / d + 4) / 6; break;
-      }
-    }
-
-    return { h: h * 360, s: s * 100, l: l * 100 };
-  };
-
-  const hslToHex = (h: number, s: number, l: number): string => {
-    s /= 100;
-    l /= 100;
-
-    const c = (1 - Math.abs(2 * l - 1)) * s;
-    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-    const m = l - c / 2;
-    let r = 0;
-    let g = 0;
-    let b = 0;
-
-    if (h >= 0 && h < 60) { r = c; g = x; b = 0; }
-    else if (h >= 60 && h < 120) { r = x; g = c; b = 0; }
-    else if (h >= 120 && h < 180) { r = 0; g = c; b = x; }
-    else if (h >= 180 && h < 240) { r = 0; g = x; b = c; }
-    else if (h >= 240 && h < 300) { r = x; g = 0; b = c; }
-    else if (h >= 300 && h < 360) { r = c; g = 0; b = x; }
-
-    const toHex = (n: number) => {
-      const hex = Math.round((n + m) * 255).toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    };
-
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   };
 
   const handleSend = () => {
@@ -427,7 +380,7 @@ export function ThemeEditorChat() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
             placeholder="Make primary blue..."
             disabled={isProcessing}
             className="flex-1"
