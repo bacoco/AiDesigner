@@ -88,7 +88,7 @@ export function ThemeEditor() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="flex-1 flex flex-col">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'theme' | 'colors' | 'typography' | 'other' | 'generate')} className="flex-1 flex flex-col">
           <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
             <TabsTrigger
               value="theme"

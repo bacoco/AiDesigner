@@ -32,6 +32,7 @@ export function ColorPicker({ label, value, onChange, description }: ColorPicker
         onChange(parsed.toHex());
       }
     } catch {
+      // Invalid color
     }
   };
 

@@ -76,7 +76,7 @@ export function ColorSchemeExporter({ colors, onImport }: ColorSchemeExporterPro
       }
       
       setImportData('');
-    } catch (err) {
+    } catch {
       alert('Invalid JSON format. Please check your input.');
     }
   };
@@ -114,7 +114,7 @@ export function ColorSchemeExporter({ colors, onImport }: ColorSchemeExporterPro
 
             <div className="space-y-2">
               <Label>Export Format</Label>
-              <Tabs value={exportFormat} onValueChange={(v) => setExportFormat(v as any)}>
+              <Tabs value={exportFormat} onValueChange={(v) => setExportFormat(v as 'css' | 'json' | 'tailwind')}>
                 <TabsList className="grid grid-cols-3 w-full">
                   <TabsTrigger value="css">CSS</TabsTrigger>
                   <TabsTrigger value="json">JSON</TabsTrigger>
