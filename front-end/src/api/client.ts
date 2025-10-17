@@ -9,6 +9,7 @@ import type {
   UIPreview,
   UITheme,
 } from './types';
+import type { ThemeConfiguration } from '../types/theme';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -116,7 +117,7 @@ class APIClient {
     projectId: string,
     role: string,
     content: string,
-    metadata?: any
+    metadata?: Record<string, unknown>
   ): Promise<{ success: boolean }> {
     return this.request(`/api/projects/${projectId}/conversation`, {
       method: 'POST',
@@ -136,7 +137,7 @@ class APIClient {
     projectId: string,
     type: string,
     content: string,
-    metadata?: any
+    metadata?: Record<string, unknown>
   ): Promise<{ success: boolean }> {
     return this.request(`/api/projects/${projectId}/deliverables`, {
       method: 'POST',
@@ -144,14 +145,14 @@ class APIClient {
     });
   }
 
-  async getDecisions(projectId: string): Promise<{ decisions: Record<string, any> }> {
+  async getDecisions(projectId: string): Promise<{ decisions: Record<string, unknown> }> {
     return this.request(`/api/projects/${projectId}/decisions`);
   }
 
   async recordDecision(
     projectId: string,
     key: string,
-    value: any,
+    value: unknown,
     rationale?: string
   ): Promise<{ success: boolean }> {
     return this.request(`/api/projects/${projectId}/decisions`, {
@@ -171,7 +172,7 @@ class APIClient {
   async executeAgent(
     agentId: string,
     command: string,
-    context: any,
+    context: Record<string, unknown>,
     projectId?: string
   ): Promise<AgentExecutionResult> {
     return this.request(`/api/agents/${agentId}/execute`, {
@@ -186,30 +187,30 @@ class APIClient {
 
   async saveThemeConfiguration(
     projectId: string,
-    theme: any
-  ): Promise<{ id: string; theme: any }> {
+    theme: ThemeConfiguration
+  ): Promise<{ id: string; theme: ThemeConfiguration }> {
     return this.request(`/api/projects/${projectId}/themes`, {
       method: 'POST',
       body: JSON.stringify(theme),
     });
   }
 
-  async listThemeConfigurations(projectId: string): Promise<{ themes: any[] }> {
+  async listThemeConfigurations(projectId: string): Promise<{ themes: ThemeConfiguration[] }> {
     return this.request(`/api/projects/${projectId}/themes`);
   }
 
   async getThemeConfiguration(
     projectId: string,
     themeId: string
-  ): Promise<{ theme: any }> {
+  ): Promise<{ theme: ThemeConfiguration }> {
     return this.request(`/api/projects/${projectId}/themes/${themeId}`);
   }
 
   async updateThemeConfiguration(
     projectId: string,
     themeId: string,
-    theme: any
-  ): Promise<{ theme: any }> {
+    theme: Partial<ThemeConfiguration>
+  ): Promise<{ theme: ThemeConfiguration }> {
     return this.request(`/api/projects/${projectId}/themes/${themeId}`, {
       method: 'PATCH',
       body: JSON.stringify(theme),
@@ -236,18 +237,18 @@ class APIClient {
     });
   }
 
-  async listPublicThemes(): Promise<{ themes: any[] }> {
+  async listPublicThemes(): Promise<{ themes: ThemeConfiguration[] }> {
     return this.request('/api/themes/public');
   }
 
-  async generateColorSuggestions(baseColor: string): Promise<{ suggestions: any }> {
+  async generateColorSuggestions(baseColor: string): Promise<{ suggestions: Record<string, string> }> {
     return this.request('/api/ai/color-suggestions', {
       method: 'POST',
       body: JSON.stringify({ baseColor }),
     });
   }
 
-  async generateDarkModeVariant(theme: any): Promise<{ darkTheme: any }> {
+  async generateDarkModeVariant(theme: ThemeConfiguration): Promise<{ darkTheme: ThemeConfiguration }> {
     return this.request('/api/ai/generate-dark-mode', {
       method: 'POST',
       body: JSON.stringify({ theme }),
