@@ -135,6 +135,13 @@ const hslToHex = (h: number, s: number, l: number): string => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
+const cloneTheme = (theme: UITheme): UITheme => ({ ...theme });
+
+const themesEqual = (a?: UITheme, b?: UITheme): boolean => {
+  if (!a || !b) return false;
+  return a.primary === b.primary && a.accent === b.accent && a.background === b.background;
+};
+
 export const useThemeStore = create<ThemeState>((set, get) => ({
   currentTheme: DEFAULT_THEME,
   history: [{ id: '0', theme: DEFAULT_THEME, timestamp: Date.now(), action: 'Initial' }],
@@ -286,7 +293,33 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
   },
 
   setTheme: (theme) => {
-    set({ currentTheme: theme, isModified: false });
+    const slicedHistory = get().history.slice(0, get().historyIndex + 1);
+    const lastEntry = slicedHistory[slicedHistory.length - 1];
+    const nextTheme = cloneTheme(theme);
+
+    let updatedHistory = slicedHistory;
+
+    if (!lastEntry || !themesEqual(lastEntry.theme, nextTheme)) {
+      const newEntry: ThemeHistory = {
+        id: Date.now().toString(),
+        theme: nextTheme,
+        timestamp: Date.now(),
+        action: 'Loaded theme',
+      };
+
+      if (slicedHistory.length === 1 && slicedHistory[0].action === 'Initial') {
+        updatedHistory = [newEntry];
+      } else {
+        updatedHistory = [...slicedHistory, newEntry];
+      }
+    }
+
+    set({
+      currentTheme: nextTheme,
+      history: updatedHistory,
+      historyIndex: updatedHistory.length - 1,
+      isModified: false,
+    });
   },
 
   exportTheme: (format) => {

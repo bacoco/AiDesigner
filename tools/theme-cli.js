@@ -155,8 +155,9 @@ async function main() {
   try {
     const toolCall = handler(...cmdArgs);
     const result = await callMCPTool(toolCall);
+    const success = typeof result.success === 'boolean' ? result.success : !result.error;
 
-    if (result.success) {
+    if (success) {
       console.log('✓', result.message || 'Success');
       if (result.theme) {
         console.log('\nCurrent Theme:');
