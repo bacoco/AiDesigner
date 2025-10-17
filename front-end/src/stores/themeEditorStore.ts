@@ -38,6 +38,38 @@ interface ThemeEditorState {
   deleteTheme: (projectId: string, themeId: string) => Promise<void>;
 }
 
+const cloneTheme = (theme: ThemeConfiguration): ThemeConfiguration => ({
+  ...theme,
+  colors: { ...theme.colors },
+  typography: {
+    ...theme.typography,
+    fontFamily: {
+      ...theme.typography.fontFamily,
+      sans: [...theme.typography.fontFamily.sans],
+      serif: [...theme.typography.fontFamily.serif],
+      mono: [...theme.typography.fontFamily.mono],
+    },
+    fontSize: { ...theme.typography.fontSize },
+    fontWeight: { ...theme.typography.fontWeight },
+    lineHeight: { ...theme.typography.lineHeight },
+    letterSpacing: { ...theme.typography.letterSpacing },
+  },
+  borderRadius: { ...theme.borderRadius },
+  spacing: {
+    ...theme.spacing,
+    scale: [...theme.spacing.scale],
+  },
+  shadows: { ...theme.shadows },
+  animations: {
+    ...theme.animations,
+    duration: { ...theme.animations.duration },
+    easing: { ...theme.animations.easing },
+  },
+  createdAt: new Date(theme.createdAt),
+  updatedAt: new Date(theme.updatedAt),
+  tags: [...theme.tags],
+});
+
 const defaultTheme: ThemeConfiguration = {
   id: 'default',
   projectId: '',
@@ -138,11 +170,11 @@ const defaultTheme: ThemeConfiguration = {
 
 export const useThemeEditorStore = create<ThemeEditorState>()(
   immer((set, get) => ({
-    currentTheme: defaultTheme,
+    currentTheme: cloneTheme(defaultTheme),
     activeTab: 'colors',
     previewMode: 'light',
     previewViewport: 'desktop',
-    history: [defaultTheme],
+    history: [cloneTheme(defaultTheme)],
     historyIndex: 0,
     isSaving: false,
     isExporting: false,
@@ -152,7 +184,7 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.colors = { ...state.currentTheme.colors, ...colors };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
+        state.history.push(cloneTheme(state.currentTheme));
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -160,7 +192,7 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.typography = { ...state.currentTheme.typography, ...typography };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
+        state.history.push(cloneTheme(state.currentTheme));
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -168,7 +200,7 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.borderRadius = { ...state.currentTheme.borderRadius, ...borderRadius };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
+        state.history.push(cloneTheme(state.currentTheme));
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -176,7 +208,7 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.spacing = { ...state.currentTheme.spacing, ...spacing };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
+        state.history.push(cloneTheme(state.currentTheme));
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -184,7 +216,7 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.shadows = { ...state.currentTheme.shadows, ...shadows };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
+        state.history.push(cloneTheme(state.currentTheme));
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -192,7 +224,7 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.animations = { ...state.currentTheme.animations, ...animations };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
+        state.history.push(cloneTheme(state.currentTheme));
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -213,8 +245,8 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
 
     setTheme: (theme) =>
       set((state) => {
-        state.currentTheme = theme;
-        state.history = [theme];
+        state.currentTheme = cloneTheme(theme);
+        state.history = [cloneTheme(theme)];
         state.historyIndex = 0;
       }),
 
@@ -222,7 +254,7 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         if (state.historyIndex > 0) {
           state.historyIndex--;
-          state.currentTheme = state.history[state.historyIndex];
+          state.currentTheme = cloneTheme(state.history[state.historyIndex]);
         }
       }),
 
@@ -230,14 +262,14 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         if (state.historyIndex < state.history.length - 1) {
           state.historyIndex++;
-          state.currentTheme = state.history[state.historyIndex];
+          state.currentTheme = cloneTheme(state.history[state.historyIndex]);
         }
       }),
 
     reset: () =>
       set((state) => {
-        state.currentTheme = defaultTheme;
-        state.history = [defaultTheme];
+        state.currentTheme = cloneTheme(defaultTheme);
+        state.history = [cloneTheme(defaultTheme)];
         state.historyIndex = 0;
       }),
 
