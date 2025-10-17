@@ -9,6 +9,8 @@ import type {
 } from '../types/theme';
 import { apiClient } from '../api/client';
 
+const MAX_HISTORY = 100;
+
 interface ThemeEditorState {
   currentTheme: ThemeConfiguration;
   activeTab: ThemeTab;
@@ -19,7 +21,7 @@ interface ThemeEditorState {
   isSaving: boolean;
   isExporting: boolean;
   savedThemes: ThemeConfiguration[];
-  
+
   updateColors: (colors: Partial<ThemeColors>) => void;
   updateTypography: (typography: Partial<ThemeTypography>) => void;
   updateBorderRadius: (borderRadius: Partial<ThemeConfiguration['borderRadius']>) => void;
@@ -38,7 +40,8 @@ interface ThemeEditorState {
   deleteTheme: (projectId: string, themeId: string) => Promise<void>;
 }
 
-const defaultTheme: ThemeConfiguration = {
+// Factory function to create a fresh default theme to prevent mutation
+const createDefaultTheme = (): ThemeConfiguration => ({
   id: 'default',
   projectId: '',
   name: 'Default Theme',
@@ -134,15 +137,40 @@ const defaultTheme: ThemeConfiguration = {
   updatedAt: new Date(),
   isDefault: true,
   tags: [],
+});
+
+// Helper function to add to history with limit and deep cloning
+const addToHistory = (state: any) => {
+  // Truncate future history if we edited after undo
+  if (state.historyIndex < state.history.length - 1) {
+    state.history = state.history.slice(0, state.historyIndex + 1);
+  }
+
+  // Add deep clone to history
+  state.history.push(structuredClone(state.currentTheme));
+
+  // Enforce history limit
+  if (state.history.length > MAX_HISTORY) {
+    state.history = state.history.slice(-MAX_HISTORY);
+  }
+
+  state.historyIndex = state.history.length - 1;
 };
+
+// Helper to normalize date fields from API
+const normalizeDates = (theme: any): ThemeConfiguration => ({
+  ...theme,
+  createdAt: theme.createdAt ? new Date(theme.createdAt) : new Date(),
+  updatedAt: theme.updatedAt ? new Date(theme.updatedAt) : new Date(),
+});
 
 export const useThemeEditorStore = create<ThemeEditorState>()(
   immer((set, get) => ({
-    currentTheme: defaultTheme,
+    currentTheme: createDefaultTheme(),
     activeTab: 'colors',
     previewMode: 'light',
     previewViewport: 'desktop',
-    history: [defaultTheme],
+    history: [structuredClone(createDefaultTheme())],
     historyIndex: 0,
     isSaving: false,
     isExporting: false,
@@ -152,48 +180,42 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.colors = { ...state.currentTheme.colors, ...colors };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
-        state.historyIndex = state.history.length - 1;
+        addToHistory(state);
       }),
 
     updateTypography: (typography) =>
       set((state) => {
         state.currentTheme.typography = { ...state.currentTheme.typography, ...typography };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
-        state.historyIndex = state.history.length - 1;
+        addToHistory(state);
       }),
 
     updateBorderRadius: (borderRadius) =>
       set((state) => {
         state.currentTheme.borderRadius = { ...state.currentTheme.borderRadius, ...borderRadius };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
-        state.historyIndex = state.history.length - 1;
+        addToHistory(state);
       }),
 
     updateSpacing: (spacing) =>
       set((state) => {
         state.currentTheme.spacing = { ...state.currentTheme.spacing, ...spacing };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
-        state.historyIndex = state.history.length - 1;
+        addToHistory(state);
       }),
 
     updateShadows: (shadows) =>
       set((state) => {
         state.currentTheme.shadows = { ...state.currentTheme.shadows, ...shadows };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
-        state.historyIndex = state.history.length - 1;
+        addToHistory(state);
       }),
 
     updateAnimations: (animations) =>
       set((state) => {
         state.currentTheme.animations = { ...state.currentTheme.animations, ...animations };
         state.currentTheme.updatedAt = new Date();
-        state.history.push({ ...state.currentTheme });
-        state.historyIndex = state.history.length - 1;
+        addToHistory(state);
       }),
 
     setActiveTab: (tab) =>
@@ -213,8 +235,10 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
 
     setTheme: (theme) =>
       set((state) => {
-        state.currentTheme = theme;
-        state.history = [theme];
+        // Clone external theme to avoid mutation leaking in
+        const clonedTheme = structuredClone(theme);
+        state.currentTheme = clonedTheme;
+        state.history = [structuredClone(clonedTheme)];
         state.historyIndex = 0;
       }),
 
@@ -222,7 +246,7 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         if (state.historyIndex > 0) {
           state.historyIndex--;
-          state.currentTheme = state.history[state.historyIndex];
+          state.currentTheme = structuredClone(state.history[state.historyIndex]);
         }
       }),
 
@@ -230,14 +254,15 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         if (state.historyIndex < state.history.length - 1) {
           state.historyIndex++;
-          state.currentTheme = state.history[state.historyIndex];
+          state.currentTheme = structuredClone(state.history[state.historyIndex]);
         }
       }),
 
     reset: () =>
       set((state) => {
-        state.currentTheme = defaultTheme;
-        state.history = [defaultTheme];
+        const fresh = createDefaultTheme();
+        state.currentTheme = fresh;
+        state.history = [structuredClone(fresh)];
         state.historyIndex = 0;
       }),
 
@@ -266,8 +291,10 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
     loadThemes: async (projectId: string) => {
       try {
         const result = await apiClient.listThemeConfigurations(projectId);
+        // Normalize date fields from API
+        const themes = result.themes.map(normalizeDates);
         set((state) => {
-          state.savedThemes = result.themes;
+          state.savedThemes = themes;
         });
       } catch (error) {
         console.error('Failed to load themes:', error);

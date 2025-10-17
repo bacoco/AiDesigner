@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { CSSProperties } from 'react';
+import { Link } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import {
   Send,
@@ -605,13 +606,13 @@ function App() {
                   </>
                 )}
               </div>
-              <a
-                href="/showcase"
+              <Link
+                to="/showcase"
                 className="text-slate-400 hover:text-white transition-colors"
                 title="View Theme Editor Showcase"
               >
                 <ExternalLink className="w-5 h-5" />
-              </a>
+              </Link>
               <a
                 href="https://github.com/bacoco/AiDesigner"
                 target="_blank"

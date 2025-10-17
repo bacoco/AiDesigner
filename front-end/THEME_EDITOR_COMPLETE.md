@@ -347,8 +347,12 @@ The 5% not at 100% is due to backend API not being implemented yet, which was al
 ```json
 {
   "colord": "^2.9.3",
-  "react-router-dom": "^6.x",
-  "zustand": "^4.x"
+  "copy-to-clipboard": "^3.3.3",
+  "immer": "^10.1.3",
+  "prism-react-renderer": "^2.4.1",
+  "react-colorful": "^5.6.1",
+  "react-router-dom": "^6.24.1",
+  "zustand": "^5.0.8"
 }
 ```
 

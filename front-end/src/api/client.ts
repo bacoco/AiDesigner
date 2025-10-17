@@ -9,6 +9,7 @@ import type {
   UIPreview,
   UITheme,
 } from './types';
+import type { ThemeConfiguration } from '../types/theme';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -24,11 +25,12 @@ class APIClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+    const hasBody = options.body !== undefined && options.body !== null;
+
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
         ...options.headers,
       },
     });
@@ -39,6 +41,17 @@ class APIClient {
         message: response.statusText,
       }));
       throw new Error(error.message || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return undefined as unknown as T;
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      return (text ? JSON.parse(JSON.stringify(text)) : undefined) as unknown as T;
     }
 
     return response.json();
@@ -186,30 +199,30 @@ class APIClient {
 
   async saveThemeConfiguration(
     projectId: string,
-    theme: any
-  ): Promise<{ id: string; theme: any }> {
+    theme: ThemeConfiguration
+  ): Promise<{ id: string; theme: ThemeConfiguration }> {
     return this.request(`/api/projects/${projectId}/themes`, {
       method: 'POST',
       body: JSON.stringify(theme),
     });
   }
 
-  async listThemeConfigurations(projectId: string): Promise<{ themes: any[] }> {
+  async listThemeConfigurations(projectId: string): Promise<{ themes: ThemeConfiguration[] }> {
     return this.request(`/api/projects/${projectId}/themes`);
   }
 
   async getThemeConfiguration(
     projectId: string,
     themeId: string
-  ): Promise<{ theme: any }> {
+  ): Promise<{ theme: ThemeConfiguration }> {
     return this.request(`/api/projects/${projectId}/themes/${themeId}`);
   }
 
   async updateThemeConfiguration(
     projectId: string,
     themeId: string,
-    theme: any
-  ): Promise<{ theme: any }> {
+    theme: Partial<ThemeConfiguration>
+  ): Promise<{ theme: ThemeConfiguration }> {
     return this.request(`/api/projects/${projectId}/themes/${themeId}`, {
       method: 'PATCH',
       body: JSON.stringify(theme),
@@ -236,7 +249,7 @@ class APIClient {
     });
   }
 
-  async listPublicThemes(): Promise<{ themes: any[] }> {
+  async listPublicThemes(): Promise<{ themes: ThemeConfiguration[] }> {
     return this.request('/api/themes/public');
   }
 
@@ -247,7 +260,7 @@ class APIClient {
     });
   }
 
-  async generateDarkModeVariant(theme: any): Promise<{ darkTheme: any }> {
+  async generateDarkModeVariant(theme: ThemeConfiguration): Promise<{ darkTheme: ThemeConfiguration }> {
     return this.request('/api/ai/generate-dark-mode', {
       method: 'POST',
       body: JSON.stringify({ theme }),
