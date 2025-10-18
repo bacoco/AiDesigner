@@ -653,6 +653,40 @@ BMAD™ and BMAD-METHOD™ are trademarks of BMad Code, LLC.
 
 ---
 
+## Repository Overview
+
+| Path                                       | Purpose                                                                   |
+| ------------------------------------------ | ------------------------------------------------------------------------- |
+| `bin/`                                     | CLI entrypoints, including the `aidesigner` launcher used by `npx`.       |
+| `packages/compounding-engineering/cli.mjs` | Generates deterministic four-step engineering plans from a feature brief. |
+| `packages/meta-agents/`                    | Orchestrators, adapters, and tests that coordinate the specialist agents. |
+| `common/`                                  | Shared logging, environment, and performance utilities.                   |
+| `docs/`                                    | Methodology playbooks, workflow guides, and deep-dive reviews.            |
+
+For a detailed audit of the compounding engineering pipeline, see
+[`docs/final-function-review.md`](docs/final-function-review.md).
+
+## Final Validation Script
+
+Use the bundled [`final.sh`](final.sh) helper to recreate the production pipeline in
+one go:
+
+```bash
+./final.sh
+```
+
+The script performs the following in order:
+
+1. Installs dependencies (skipped automatically when `node_modules/` already exists).
+2. Runs Prettier in check mode to ensure formatting is stable.
+3. Executes the ESLint suite with the repository ruleset.
+4. Launches Jest for unit coverage.
+5. Builds the MCP server artifacts (`npm run build:mcp`).
+
+Each step logs progress with a `[final]` prefix so CI logs remain easy to scan.
+
+---
+
 ## Quality Assurance
 
 **🏆 Perfect 10/10 Setup Achieved**
