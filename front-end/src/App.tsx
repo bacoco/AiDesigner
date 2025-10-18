@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { CSSProperties } from 'react';
+import { Link } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import {
   Send,
@@ -28,7 +29,6 @@ import { ScrollArea } from './components/ui/scroll-area';
 import { Badge } from './components/ui/badge';
 import { Separator } from './components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
-import { ThemeEditor } from './components/ThemeEditor/ThemeEditor';
 import {
   Dialog,
   DialogContent,
@@ -103,7 +103,8 @@ function App() {
   const messageRegistryRef = useRef<Set<string>>(new Set());
   const themeSyncTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
   const wsSubscriptionsRef = useRef<Array<() => void>>([]);
-  const themeStore = useThemeStore();
+  const currentTheme = useThemeStore((state) => state.currentTheme);
+  const setTheme = useThemeStore((state) => state.setTheme);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -293,21 +294,21 @@ function App() {
     if (nextTheme) {
       // Use functional update to compare with current state and prevent overwriting user edits during debounce
       setThemeSettings((prev) => (areThemesEqual(nextTheme, prev) ? prev : nextTheme));
-      if (!areThemesEqual(nextTheme, themeStore.currentTheme)) {
-        themeStore.setTheme(nextTheme);
+      if (!areThemesEqual(nextTheme, currentTheme)) {
+        setTheme(nextTheme);
       }
     }
-  }, [projectState.ui, themeStore]);
+  }, [projectState.ui, currentTheme, setTheme]);
 
   useEffect(() => {
-    if (!areThemesEqual(themeStore.currentTheme, themeSettings)) {
-      setThemeSettings(themeStore.currentTheme);
-      applyTheme(themeStore.currentTheme);
+    if (!areThemesEqual(currentTheme, themeSettings)) {
+      setThemeSettings(currentTheme);
+      applyTheme(currentTheme);
       if (projectId) {
-        scheduleThemeSync(themeStore.currentTheme);
+        scheduleThemeSync(currentTheme);
       }
     }
-  }, [themeStore.currentTheme, themeSettings, applyTheme, projectId, scheduleThemeSync]);
+  }, [currentTheme, themeSettings, applyTheme, projectId, scheduleThemeSync]);
 
   useEffect(() => {
     let isMounted = true;
@@ -621,13 +622,13 @@ function App() {
                   </>
                 )}
               </div>
-              <a
-                href="/showcase"
+              <Link
+                to="/showcase"
                 className="text-slate-400 hover:text-white transition-colors"
                 title="View Theme Editor Showcase"
               >
                 <ExternalLink className="w-5 h-5" />
-              </a>
+              </Link>
               <a
                 href="https://github.com/bacoco/AiDesigner"
                 target="_blank"

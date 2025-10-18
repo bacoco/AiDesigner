@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Palette,
   Undo2,
@@ -26,10 +26,10 @@ import {
 import { useThemeStore } from '../stores/themeStore';
 import { ensureValidHex } from '../lib/theme';
 import { ThemeEditorChat } from './ThemeEditorChat';
+import type { UITheme } from '../api/types';
 
 interface ThemeEditorProps {
-  projectId?: string;
-  onThemeChange?: (theme: any) => void;
+  onThemeChange?: (theme: UITheme) => void;
 }
 
 export function ThemeEditor({ onThemeChange }: ThemeEditorProps) {
@@ -54,16 +54,26 @@ export function ThemeEditor({ onThemeChange }: ThemeEditorProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(false);
 
+  // Notify parent on every theme change
+  useEffect(() => {
+    onThemeChange?.(currentTheme);
+  }, [currentTheme, onThemeChange]);
+
   const handleColorChange = (field: keyof typeof currentTheme, value: string) => {
     const sanitized = ensureValidHex(value, currentTheme[field] || '#000000');
     setColor(field, sanitized);
-    onThemeChange?.(currentTheme);
   };
 
-  const handleCopy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(label);
-    setTimeout(() => setCopied(null), 2000);
+  const handleCopy = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(label);
+      setTimeout(() => setCopied(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+      // Fallback: show prompt dialog
+      window.prompt('Copy to clipboard:', text);
+    }
   };
 
   const handleExport = (format: 'css' | 'json' | 'tailwind') => {
@@ -346,7 +356,10 @@ export function ThemeEditor({ onThemeChange }: ThemeEditorProps) {
 
                   <Button
                     className="w-full"
-                    onClick={() => generatePalette(baseColor, paletteStyle)}
+                    onClick={() => {
+                      const safe = ensureValidHex(baseColor, currentTheme.primary);
+                      generatePalette(safe, paletteStyle);
+                    }}
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     Generate Palette

@@ -9,6 +9,8 @@ import type {
 } from '../types/theme';
 import { apiClient } from '../api/client';
 
+const MAX_HISTORY = 100;
+
 interface ThemeEditorState {
   currentTheme: ThemeConfiguration;
   activeTab: ThemeTab;
@@ -19,7 +21,7 @@ interface ThemeEditorState {
   isSaving: boolean;
   isExporting: boolean;
   savedThemes: ThemeConfiguration[];
-  
+
   updateColors: (colors: Partial<ThemeColors>) => void;
   updateTypography: (typography: Partial<ThemeTypography>) => void;
   updateBorderRadius: (borderRadius: Partial<ThemeConfiguration['borderRadius']>) => void;
@@ -166,7 +168,32 @@ const defaultTheme: ThemeConfiguration = {
   updatedAt: new Date(),
   isDefault: true,
   tags: [],
+});
+
+// Helper function to add to history with limit and deep cloning
+const addToHistory = (state: any) => {
+  // Truncate future history if we edited after undo
+  if (state.historyIndex < state.history.length - 1) {
+    state.history = state.history.slice(0, state.historyIndex + 1);
+  }
+
+  // Add deep clone to history
+  state.history.push(structuredClone(state.currentTheme));
+
+  // Enforce history limit
+  if (state.history.length > MAX_HISTORY) {
+    state.history = state.history.slice(-MAX_HISTORY);
+  }
+
+  state.historyIndex = state.history.length - 1;
 };
+
+// Helper to normalize date fields from API
+const normalizeDates = (theme: any): ThemeConfiguration => ({
+  ...theme,
+  createdAt: theme.createdAt ? new Date(theme.createdAt) : new Date(),
+  updatedAt: theme.updatedAt ? new Date(theme.updatedAt) : new Date(),
+});
 
 export const useThemeEditorStore = create<ThemeEditorState>()(
   immer((set, get) => ({
@@ -298,8 +325,10 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
     loadThemes: async (projectId: string) => {
       try {
         const result = await apiClient.listThemeConfigurations(projectId);
+        // Normalize date fields from API
+        const themes = result.themes.map(normalizeDates);
         set((state) => {
-          state.savedThemes = result.themes;
+          state.savedThemes = themes;
         });
       } catch (error) {
         console.error('Failed to load themes:', error);
