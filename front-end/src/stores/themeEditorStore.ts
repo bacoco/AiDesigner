@@ -170,24 +170,6 @@ const defaultTheme: ThemeConfiguration = {
   tags: [],
 });
 
-// Helper function to add to history with limit and deep cloning
-const addToHistory = (state: any) => {
-  // Truncate future history if we edited after undo
-  if (state.historyIndex < state.history.length - 1) {
-    state.history = state.history.slice(0, state.historyIndex + 1);
-  }
-
-  // Add deep clone to history
-  state.history.push(structuredClone(state.currentTheme));
-
-  // Enforce history limit
-  if (state.history.length > MAX_HISTORY) {
-    state.history = state.history.slice(-MAX_HISTORY);
-  }
-
-  state.historyIndex = state.history.length - 1;
-};
-
 // Helper to normalize date fields from API
 const normalizeDates = (theme: any): ThemeConfiguration => ({
   ...theme,
@@ -211,7 +193,19 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.colors = { ...state.currentTheme.colors, ...colors };
         state.currentTheme.updatedAt = new Date();
+
+        // Truncate future history if we edited after undo
+        if (state.historyIndex < state.history.length - 1) {
+          state.history = state.history.slice(0, state.historyIndex + 1);
+        }
+
         state.history.push(cloneTheme(state.currentTheme));
+
+        // Enforce history limit
+        if (state.history.length > MAX_HISTORY) {
+          state.history = state.history.slice(-MAX_HISTORY);
+        }
+
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -219,7 +213,19 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.typography = { ...state.currentTheme.typography, ...typography };
         state.currentTheme.updatedAt = new Date();
+
+        // Truncate future history if we edited after undo
+        if (state.historyIndex < state.history.length - 1) {
+          state.history = state.history.slice(0, state.historyIndex + 1);
+        }
+
         state.history.push(cloneTheme(state.currentTheme));
+
+        // Enforce history limit
+        if (state.history.length > MAX_HISTORY) {
+          state.history = state.history.slice(-MAX_HISTORY);
+        }
+
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -227,7 +233,19 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.borderRadius = { ...state.currentTheme.borderRadius, ...borderRadius };
         state.currentTheme.updatedAt = new Date();
+
+        // Truncate future history if we edited after undo
+        if (state.historyIndex < state.history.length - 1) {
+          state.history = state.history.slice(0, state.historyIndex + 1);
+        }
+
         state.history.push(cloneTheme(state.currentTheme));
+
+        // Enforce history limit
+        if (state.history.length > MAX_HISTORY) {
+          state.history = state.history.slice(-MAX_HISTORY);
+        }
+
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -235,7 +253,19 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.spacing = { ...state.currentTheme.spacing, ...spacing };
         state.currentTheme.updatedAt = new Date();
+
+        // Truncate future history if we edited after undo
+        if (state.historyIndex < state.history.length - 1) {
+          state.history = state.history.slice(0, state.historyIndex + 1);
+        }
+
         state.history.push(cloneTheme(state.currentTheme));
+
+        // Enforce history limit
+        if (state.history.length > MAX_HISTORY) {
+          state.history = state.history.slice(-MAX_HISTORY);
+        }
+
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -243,7 +273,19 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.shadows = { ...state.currentTheme.shadows, ...shadows };
         state.currentTheme.updatedAt = new Date();
+
+        // Truncate future history if we edited after undo
+        if (state.historyIndex < state.history.length - 1) {
+          state.history = state.history.slice(0, state.historyIndex + 1);
+        }
+
         state.history.push(cloneTheme(state.currentTheme));
+
+        // Enforce history limit
+        if (state.history.length > MAX_HISTORY) {
+          state.history = state.history.slice(-MAX_HISTORY);
+        }
+
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -251,7 +293,19 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       set((state) => {
         state.currentTheme.animations = { ...state.currentTheme.animations, ...animations };
         state.currentTheme.updatedAt = new Date();
+
+        // Truncate future history if we edited after undo
+        if (state.historyIndex < state.history.length - 1) {
+          state.history = state.history.slice(0, state.historyIndex + 1);
+        }
+
         state.history.push(cloneTheme(state.currentTheme));
+
+        // Enforce history limit
+        if (state.history.length > MAX_HISTORY) {
+          state.history = state.history.slice(-MAX_HISTORY);
+        }
+
         state.historyIndex = state.history.length - 1;
       }),
 
@@ -308,9 +362,16 @@ export const useThemeEditorStore = create<ThemeEditorState>()(
       try {
         const theme = get().currentTheme;
         const result = await apiClient.saveThemeConfiguration(projectId, theme);
-        
+
         set((state) => {
+          // Update current theme ID
           state.currentTheme.id = result.id;
+
+          // Update the current history entry with the new ID to keep history in sync
+          if (state.history[state.historyIndex]) {
+            state.history[state.historyIndex].id = result.id;
+          }
+
           state.isSaving = false;
         });
       } catch (error) {
