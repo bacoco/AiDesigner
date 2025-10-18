@@ -11,6 +11,18 @@ import type {
 } from './types';
 import type { ThemeConfiguration } from '../types/theme';
 
+export interface ColorSuggestion {
+  name: string;
+  description: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    foreground: string;
+  };
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 class APIClient {
@@ -253,11 +265,22 @@ class APIClient {
     return this.request('/api/themes/public');
   }
 
-  async generateColorSuggestions(baseColor: string): Promise<{ suggestions: Record<string, string> }> {
-    return this.request('/api/ai/color-suggestions', {
+  async generateColorSuggestions(baseColor: string): Promise<{ suggestions: ColorSuggestion[] }> {
+    const response = await this.request<{
+      suggestions?: ColorSuggestion[] | Record<string, ColorSuggestion>;
+    }>('/api/ai/color-suggestions', {
       method: 'POST',
       body: JSON.stringify({ baseColor }),
     });
+
+    const rawSuggestions = response?.suggestions;
+    const suggestions = Array.isArray(rawSuggestions)
+      ? rawSuggestions
+      : rawSuggestions
+        ? Object.values(rawSuggestions)
+        : [];
+
+    return { suggestions };
   }
 
   async generateDarkModeVariant(theme: ThemeConfiguration): Promise<{ darkTheme: ThemeConfiguration }> {

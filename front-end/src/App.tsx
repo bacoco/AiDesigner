@@ -670,9 +670,9 @@ function App() {
                     <Eye className="w-4 h-4" />
                     UI Preview
                   </TabsTrigger>
-                  <TabsTrigger value="theme" className="gap-2">
+                  <TabsTrigger value="theme-editor" className="gap-2">
                     <Palette className="w-4 h-4" />
-                    Theme
+                    Theme Editor
                   </TabsTrigger>
                   <TabsTrigger value="tools" className="gap-2">
                     <Settings className="w-4 h-4" />
@@ -904,15 +904,8 @@ function App() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="theme" className="flex-1 m-0 p-0">
-                <div className="h-full bg-slate-950/60">
-                  <ThemeEditor
-                    onThemeChange={(theme) => {
-                      setThemeSettings(theme);
-                      applyTheme(theme);
-                    }}
-                  />
-                </div>
+              <TabsContent value="theme-editor" className="flex-1 m-0 p-0 overflow-hidden">
+                <ThemeEditor />
               </TabsContent>
 
               <TabsContent value="tools" className="flex-1 m-0 p-6 overflow-auto">

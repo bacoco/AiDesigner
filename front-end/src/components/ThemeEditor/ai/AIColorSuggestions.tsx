@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { apiClient } from '../../../api/client';
+import type { ColorSuggestion } from '../../../api/client';
 import { useThemeEditorStore } from '../../../stores/themeEditorStore';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
@@ -7,18 +8,6 @@ import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
 import { Sparkles, Loader2, Wand2 } from 'lucide-react';
 import { colord } from 'colord';
-
-interface ColorSuggestion {
-  name: string;
-  description: string;
-  colors: {
-    primary: string;
-    secondary: string;
-    accent: string;
-    background: string;
-    foreground: string;
-  };
-}
 
 export function AIColorSuggestions() {
   const { updateColors } = useThemeEditorStore();
