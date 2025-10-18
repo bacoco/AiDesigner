@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useId, type ChangeEvent } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { colord } from 'colord';
 import { Input } from '../../ui/input';
@@ -16,18 +16,26 @@ interface ColorPickerProps {
 export function ColorPicker({ label, value, onChange, description }: ColorPickerProps) {
   const [localValue, setLocalValue] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
+  const inputId = useId();
+
+  // Sync local state when prop value changes
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
   const handleColorChange = (color: string) => {
     setLocalValue(color);
     onChange(color);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    setLocalValue(newValue);
-    
+    // Sanitize input to prevent XSS
+    const sanitized = newValue.replace(/[^#0-9a-fA-F]/g, '');
+    setLocalValue(sanitized);
+
     try {
-      const parsed = colord(newValue);
+      const parsed = colord(sanitized);
       if (parsed.isValid()) {
         onChange(parsed.toHex());
       }
@@ -54,7 +62,7 @@ export function ColorPicker({ label, value, onChange, description }: ColorPicker
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label htmlFor={label} className="text-sm font-medium">
+        <Label htmlFor={inputId} className="text-sm font-medium">
           {label}
         </Label>
       </div>
@@ -90,7 +98,7 @@ export function ColorPicker({ label, value, onChange, description }: ColorPicker
           </PopoverContent>
         </Popover>
         <Input
-          id={label}
+          id={inputId}
           value={localValue}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
