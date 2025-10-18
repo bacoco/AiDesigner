@@ -29,7 +29,6 @@ import { ScrollArea } from './components/ui/scroll-area';
 import { Badge } from './components/ui/badge';
 import { Separator } from './components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
-import { ThemeEditor } from './components/ThemeEditor/ThemeEditor';
 import {
   Dialog,
   DialogContent,
@@ -49,6 +48,8 @@ import type {
 } from './api/types';
 import './App.css';
 import { createBackgroundStyle, ensureValidHex } from './lib/theme';
+import { ThemeEditor } from './components/ThemeEditor';
+import { useThemeStore } from './stores/themeStore';
 
 const THEME_SYNC_DEBOUNCE_MS = 350;
 type ThemeField = 'primary' | 'accent' | 'background';
@@ -102,6 +103,8 @@ function App() {
   const messageRegistryRef = useRef<Set<string>>(new Set());
   const themeSyncTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
   const wsSubscriptionsRef = useRef<Array<() => void>>([]);
+  const currentTheme = useThemeStore((state) => state.currentTheme);
+  const setTheme = useThemeStore((state) => state.setTheme);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -291,8 +294,21 @@ function App() {
     if (nextTheme) {
       // Use functional update to compare with current state and prevent overwriting user edits during debounce
       setThemeSettings((prev) => (areThemesEqual(nextTheme, prev) ? prev : nextTheme));
+      if (!areThemesEqual(nextTheme, currentTheme)) {
+        setTheme(nextTheme);
+      }
     }
-  }, [projectState.ui]);
+  }, [projectState.ui, currentTheme, setTheme]);
+
+  useEffect(() => {
+    if (!areThemesEqual(currentTheme, themeSettings)) {
+      setThemeSettings(currentTheme);
+      applyTheme(currentTheme);
+      if (projectId) {
+        scheduleThemeSync(currentTheme);
+      }
+    }
+  }, [currentTheme, themeSettings, applyTheme, projectId, scheduleThemeSync]);
 
   useEffect(() => {
     let isMounted = true;
@@ -654,9 +670,9 @@ function App() {
                     <Eye className="w-4 h-4" />
                     UI Preview
                   </TabsTrigger>
-                  <TabsTrigger value="theme-editor" className="gap-2">
+                  <TabsTrigger value="theme" className="gap-2">
                     <Palette className="w-4 h-4" />
-                    Theme Editor
+                    Theme
                   </TabsTrigger>
                   <TabsTrigger value="tools" className="gap-2">
                     <Settings className="w-4 h-4" />
@@ -888,8 +904,15 @@ function App() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="theme-editor" className="flex-1 m-0 p-0 overflow-hidden">
-                <ThemeEditor />
+              <TabsContent value="theme" className="flex-1 m-0 p-0">
+                <div className="h-full bg-slate-950/60">
+                  <ThemeEditor
+                    onThemeChange={(theme) => {
+                      setThemeSettings(theme);
+                      applyTheme(theme);
+                    }}
+                  />
+                </div>
               </TabsContent>
 
               <TabsContent value="tools" className="flex-1 m-0 p-6 overflow-auto">

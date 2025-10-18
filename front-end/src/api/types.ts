@@ -40,10 +40,10 @@ export interface ProjectState {
   projectId?: string;
   projectName?: string;
   currentPhase?: string;
-  requirements?: Record<string, any>;
-  decisions?: Record<string, any>;
+  requirements?: Record<string, unknown>;
+  decisions?: Record<string, unknown>;
   nextSteps?: string;
-  phaseHistory?: any[];
+  phaseHistory?: unknown[];
   createdAt?: string;
   updatedAt?: string;
   ui?: ProjectUIState;
@@ -55,7 +55,7 @@ export interface Message {
   content: string;
   timestamp: Date | string;
   phase?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   toolCalls?: ToolCall[];
 }
 
@@ -63,7 +63,7 @@ export interface Deliverable {
   type: string;
   phase?: string;
   content: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   createdAt: Date | string;
 }
 
@@ -81,14 +81,14 @@ export interface Agent {
 
 export interface AgentExecutionResult {
   success: boolean;
-  output?: any;
+  output?: unknown;
   error?: string;
   duration: number;
 }
 
 export interface ToolCall {
   name: string;
-  args: Record<string, any>;
+  args: Record<string, unknown>;
   result?: string;
   duration?: number;
 }
@@ -132,7 +132,7 @@ export interface WSUIThemeEvent {
 
 export interface WSDecisionRecordedEvent {
   key: string;
-  value: any;
+  value: unknown;
   rationale?: string;
   timestamp: string;
 }
