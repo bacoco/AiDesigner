@@ -1,5 +1,5 @@
 import { Server as SocketIOServer } from 'socket.io';
-import { Server as HttpServer } from 'http';
+import type { Server as HttpServer } from 'node:http';
 
 let io: SocketIOServer | null = null;
 

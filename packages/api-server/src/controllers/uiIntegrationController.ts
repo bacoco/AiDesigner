@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { uiIntegrationService } from '../services/uiIntegrationService';
 import { BadRequestError } from '../middleware/errorHandler';
-import { io } from '../index';
+import { getSocketIO } from '../config/socketio';
 
 class UIIntegrationController {
   async installComponent(req: Request, res: Response, next: NextFunction) {
@@ -20,13 +20,15 @@ class UIIntegrationController {
         cwd,
       });
 
-      io.to(`project:${projectId}`).emit('ui:component-installed', {
-        projectId,
-        component: result.record.component,
-        record: result.record,
-        success: result.success,
-        timestamp: result.record.installedAt,
-      });
+      getSocketIO()
+        .to(`project:${projectId}`)
+        .emit('ui:component-installed', {
+          projectId,
+          component: result.record.component,
+          record: result.record,
+          success: result.success,
+          timestamp: result.record.installedAt,
+        });
 
       res.status(202).json(result);
     } catch (error) {
@@ -61,12 +63,14 @@ class UIIntegrationController {
         cwd,
       });
 
-      io.to(`project:${projectId}`).emit('ui:theme-updated', {
-        projectId,
-        record: result.record,
-        success: result.success,
-        timestamp: result.record.appliedAt,
-      });
+      getSocketIO()
+        .to(`project:${projectId}`)
+        .emit('ui:theme-updated', {
+          projectId,
+          record: result.record,
+          success: result.success,
+          timestamp: result.record.appliedAt,
+        });
 
       res.status(202).json(result);
     } catch (error) {

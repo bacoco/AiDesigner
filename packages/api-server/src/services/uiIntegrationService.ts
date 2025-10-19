@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { parse } from 'shell-quote';
 import { BadRequestError } from '../middleware/errorHandler';
-import { logger } from '../index';
+import { logger } from '../config/logger';
 import {
   projectService,
   ShadcnComponentInstallationRecord,
