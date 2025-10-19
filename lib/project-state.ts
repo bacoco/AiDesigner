@@ -508,30 +508,16 @@ export class ProjectState {
     this.state.updatedAt = new Date().toISOString();
 
     await Promise.all([
-      fs.writeJson(this.stateFile, this.state, { spaces: 2 }),
-      fs.writeJson(this.conversationFile, this.conversation, { spaces: 2 }),
-      fs.writeJson(this.deliverablesFile, this.deliverables, { spaces: 2 }),
-      fs.writeJson(this.reviewsFile, this.reviewHistory, { spaces: 2 }),
-      fs.writeJson(this.storiesFile, this.stories, { spaces: 2 }),
+      fs.outputJson(this.stateFile, this.state, { spaces: 2 }),
+      fs.outputJson(this.conversationFile, this.conversation, { spaces: 2 }),
+      fs.outputJson(this.deliverablesFile, this.deliverables, { spaces: 2 }),
+      fs.outputJson(this.reviewsFile, this.reviewHistory, { spaces: 2 }),
+      fs.outputJson(this.storiesFile, this.stories, { spaces: 2 }),
     ]);
   }
 
   getState(): ProjectStateData {
-    return {
-      ...this.state,
-      phaseHistory: [...this.state.phaseHistory],
-      laneHistory: [...this.state.laneHistory],
-      requirements: { ...this.state.requirements },
-      decisions: { ...this.state.decisions },
-      userPreferences: { ...this.state.userPreferences },
-      integrations: {
-        ...this.state.integrations,
-        drawbridge: {
-          ...this.state.integrations.drawbridge,
-          ingestions: [...this.state.integrations.drawbridge.ingestions],
-        },
-      },
-    };
+    return structuredClone(this.state);
   }
 
   async updateState(updates: Partial<ProjectStateData>): Promise<void> {
@@ -561,12 +547,12 @@ export class ProjectState {
 
   async addMessage(role: string, content: string, metadata: JsonRecord = {}): Promise<Message> {
     const message: Message = {
+      ...metadata,
       role,
       content,
       timestamp: new Date().toISOString(),
       phase: this.state.currentPhase,
-      ...metadata,
-    } as Message;
+    };
 
     this.conversation.push(message);
     await this.save();
@@ -576,10 +562,10 @@ export class ProjectState {
 
   getConversation(limit: number | null = null): Message[] {
     if (typeof limit === 'number' && limit > 0) {
-      return this.conversation.slice(-limit);
+      return this.conversation.slice(-limit).map((m) => ({ ...m }));
     }
 
-    return [...this.conversation];
+    return this.conversation.map((m) => ({ ...m }));
   }
 
   getPhaseConversation(phase: Phase): Message[] {
@@ -594,10 +580,10 @@ export class ProjectState {
     const timestamp = new Date().toISOString();
 
     const record: Deliverable = {
+      ...metadata,
       content,
       timestamp,
-      ...metadata,
-    } as Deliverable;
+    };
 
     if (type === 'story') {
       const structuredStory = this.normalizeStructuredStory(metadata, content, timestamp);
@@ -846,12 +832,18 @@ export class ProjectState {
   }
 
   getPhaseDeliverables(phase: Phase): DeliverableCollection {
-    return this.deliverables[phase] ? { ...this.deliverables[phase] } : {};
+    const src = this.deliverables[phase];
+    return src
+      ? Object.fromEntries(Object.entries(src).map(([k, v]) => [k, { ...v }]))
+      : {};
   }
 
   getAllDeliverables(): Deliverables {
     return Object.fromEntries(
-      Object.entries(this.deliverables).map(([phase, value]) => [phase, { ...value }]),
+      Object.entries(this.deliverables).map(([phase, coll]) => [
+        phase,
+        Object.fromEntries(Object.entries(coll).map(([k, v]) => [k, { ...v }])),
+      ]),
     );
   }
 
@@ -861,10 +853,10 @@ export class ProjectState {
     }
 
     const record: ReviewRecord = {
-      checkpoint,
       ...details,
+      checkpoint,
       timestamp: new Date().toISOString(),
-    } as ReviewRecord;
+    };
 
     this.reviewHistory.push(record);
     await this.save();
@@ -955,10 +947,6 @@ export class ProjectState {
     }
 
     this.state = this.createDefaultState();
-    this.state.projectId = this.generateProjectId();
-    this.state.createdAt = new Date().toISOString();
-    this.state.updatedAt = this.state.createdAt;
-
     this.conversation = [];
     this.deliverables = {};
     this.reviewHistory = [];
@@ -1125,21 +1113,21 @@ export class ProjectState {
           );
 
           const normalizedTask: DrawbridgeTask = {
-            id: typeof taskRecord.id === 'string' ? (taskRecord.id as string) : null,
-            summary: typeof taskRecord.summary === 'string' ? (taskRecord.summary as string) : null,
-            status: typeof taskRecord.status === 'string' ? (taskRecord.status as string) : null,
-            severity: typeof taskRecord.severity === 'string' ? (taskRecord.severity as string) : null,
-            action: typeof taskRecord.action === 'string' ? (taskRecord.action as string) : null,
-            lane: typeof taskRecord.lane === 'string' ? (taskRecord.lane as string) : null,
+            id: typeof taskRecord.id === 'string' ? taskRecord.id : null,
+            summary: typeof taskRecord.summary === 'string' ? taskRecord.summary : null,
+            status: typeof taskRecord.status === 'string' ? taskRecord.status : null,
+            severity: typeof taskRecord.severity === 'string' ? taskRecord.severity : null,
+            action: typeof taskRecord.action === 'string' ? taskRecord.action : null,
+            lane: typeof taskRecord.lane === 'string' ? taskRecord.lane : null,
             selectors,
             references,
             screenshot:
-              typeof taskRecord.screenshot === 'string' ? (taskRecord.screenshot as string) : null,
+              typeof taskRecord.screenshot === 'string' ? taskRecord.screenshot : null,
             markdownExcerpt:
               typeof taskRecord.markdownExcerpt === 'string'
-                ? (taskRecord.markdownExcerpt as string)
+                ? taskRecord.markdownExcerpt
                 : typeof taskRecord.markdown === 'string'
-                ? (taskRecord.markdown as string)
+                ? taskRecord.markdown
                 : null,
           };
 
@@ -1209,6 +1197,9 @@ export class ProjectState {
 
     return drawbridge.ingestions.map((record) => ({
       ...record,
+      source: { ...record.source },
+      metadata: { ...record.metadata },
+      docs: { ...record.docs },
       tasks: Array.isArray(record.tasks)
         ? record.tasks.map((task) => ({
             ...task,

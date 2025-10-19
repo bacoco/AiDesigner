@@ -1,13 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./",
-    "rootDir": "./",
     "declaration": true,
+    "emitDeclarationOnly": true,
     "declarationDir": "types",
-    "emitDeclarationOnly": false,
-    "removeComments": false,
-    "sourceMap": false
+    "stripInternal": true
   },
   "include": ["lib/**/*.ts"],
   "exclude": ["node_modules", "types", "dist"]
