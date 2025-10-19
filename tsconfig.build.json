@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./",
+    "rootDir": "./",
+    "declaration": true,
+    "declarationDir": "types",
+    "emitDeclarationOnly": false,
+    "removeComments": false,
+    "sourceMap": false
+  },
+  "include": ["lib/**/*.ts"],
+  "exclude": ["node_modules", "types", "dist"]
+}

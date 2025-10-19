@@ -18,6 +18,7 @@ web-bundles/
 # Build artifacts (TypeScript compilation output)
 dist/codex/
 dist/mcp/
+types/
 
 # Environment variables
 .env
