@@ -7,8 +7,8 @@ const DEFAULT_SLOW_REQUEST_THRESHOLD_MS = 1_000;
 export function requestLogger(req: Request, res: Response, next: NextFunction) {
   const start = process.hrtime.bigint();
   const requestId = crypto.randomUUID();
-  const configuredThreshold = Number(process.env.SLOW_REQUEST_THRESHOLD_MS ?? DEFAULT_SLOW_REQUEST_THRESHOLD_MS);
-  const slowThreshold = Number.isFinite(configuredThreshold)
+  const configuredThreshold = Number(process.env.SLOW_REQUEST_THRESHOLD_MS);
+  const slowThreshold = Number.isFinite(configuredThreshold) && configuredThreshold > 0
     ? configuredThreshold
     : DEFAULT_SLOW_REQUEST_THRESHOLD_MS;
 

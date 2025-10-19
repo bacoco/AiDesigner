@@ -63,8 +63,8 @@ httpServer.listen(PORT, () => {
 const gracefulShutdown = (signal: NodeJS.Signals) => {
   logger.info(`${signal} received, beginning graceful shutdown`, { signal });
 
-  const configuredTimeout = Number(process.env.SHUTDOWN_TIMEOUT_MS ?? 30_000);
-  const shutdownTimeout = Number.isFinite(configuredTimeout) ? configuredTimeout : 30_000;
+  const configuredTimeout = Number(process.env.SHUTDOWN_TIMEOUT_MS);
+  const shutdownTimeout = Number.isFinite(configuredTimeout) && configuredTimeout > 0 ? configuredTimeout : 30_000;
 
   const shutdownTimer = setTimeout(() => {
     logger.error('Graceful shutdown timed out, exiting forcefully');
@@ -98,4 +98,5 @@ process.on('unhandledRejection', (reason) => {
 
 process.on('uncaughtException', (error) => {
   logger.error('Uncaught exception', { error: error.message, stack: error.stack });
+  process.exit(1);
 });

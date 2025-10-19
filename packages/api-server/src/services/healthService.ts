@@ -65,7 +65,7 @@ function deriveOverallStatus(checks: Record<string, HealthCheckResult>): HealthS
 function checkProcessResources(): HealthCheckResult {
   const memoryUsage = process.memoryUsage();
   const loadAverage = os.loadavg();
-  const maxHeapBytes = Number(process.env.HEALTH_MAX_HEAP_BYTES ?? 0);
+  const maxHeapBytes = Math.max(0, parseInt(process.env.HEALTH_MAX_HEAP_BYTES || '0', 10)) || 0;
   const heapWarning =
     maxHeapBytes > 0 && memoryUsage.heapUsed > maxHeapBytes * 0.8 ? 'approaching-threshold' : undefined;
 
