@@ -8,6 +8,7 @@ import { requestLogger } from './middleware/requestLogger';
 import { logger } from './config/logger';
 import { initializeSocketIO, closeSocketIO } from './config/socketio';
 import { projectService } from './services/projectService';
+import { createHealthRouter } from './routes/health';
 
 config();
 
@@ -26,9 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+app.use(createHealthRouter());
 
 setupRoutes(app);
 
@@ -61,20 +60,42 @@ httpServer.listen(PORT, () => {
   logger.info(`Health check available at http://localhost:${PORT}/health`);
 });
 
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully...');
-  try {
-    // Close Socket.IO first
-    closeSocketIO();
-    // Cleanup project service resources
-    projectService.shutdown();
-    // Then close HTTP server
-    httpServer.close(() => {
-      logger.info('Server closed');
-      process.exit(0);
-    });
-  } catch (err) {
-    logger.error('Error during shutdown', err);
+const gracefulShutdown = (signal: NodeJS.Signals) => {
+  logger.info(`${signal} received, beginning graceful shutdown`, { signal });
+
+  const configuredTimeout = Number(process.env.SHUTDOWN_TIMEOUT_MS ?? 30_000);
+  const shutdownTimeout = Number.isFinite(configuredTimeout) ? configuredTimeout : 30_000;
+
+  const shutdownTimer = setTimeout(() => {
+    logger.error('Graceful shutdown timed out, exiting forcefully');
     process.exit(1);
-  }
+  }, shutdownTimeout);
+
+  shutdownTimer.unref?.();
+
+  closeSocketIO();
+  projectService.shutdown();
+
+  httpServer.close((error) => {
+    clearTimeout(shutdownTimer);
+
+    if (error) {
+      logger.error('Error during HTTP server shutdown', { error: error.message, stack: error.stack });
+      process.exit(1);
+    }
+
+    logger.info('Server closed gracefully');
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled promise rejection', { reason });
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception', { error: error.message, stack: error.stack });
 });

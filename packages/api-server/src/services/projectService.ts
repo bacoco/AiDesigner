@@ -1,5 +1,6 @@
-import path from 'path';
-import crypto from 'crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
 import { logger } from '../config/logger';
 import { NotFoundError } from '../middleware/errorHandler';
 
@@ -133,6 +134,7 @@ class ProjectService {
   private readonly MAX_PROJECTS = 1000; // Maximum number of projects to keep in memory
   private readonly PROJECT_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
   private cleanupTimer?: NodeJS.Timeout;
+  private lastCleanupRun: number | null = Date.now();
 
   constructor() {
     this.cleanupTimer = setInterval(() => this.cleanupStaleProjects(), 60 * 60 * 1000);
@@ -142,6 +144,7 @@ class ProjectService {
 
   private cleanupStaleProjects(): void {
     const now = Date.now();
+    this.lastCleanupRun = now;
     const projectsToDelete = new Set<string>();
 
     // Mark TTL-expired projects
@@ -384,6 +387,68 @@ class ProjectService {
     const state = project.getState();
     return state.decisions || {};
   }
+
+  public getMetrics(): ProjectServiceMetrics {
+    return {
+      activeProjects: this.projects.size,
+      maxProjects: this.MAX_PROJECTS,
+      projectTimeoutMs: this.PROJECT_TIMEOUT_MS,
+      lastCleanupAt: this.lastCleanupRun ? new Date(this.lastCleanupRun).toISOString() : null,
+    };
+  }
+
+  public getHealthStatus(): ProjectServiceHealth {
+    const moduleExists = fs.existsSync(projectStatePath);
+
+    const requiredMethods: Array<keyof ProjectStateInstance> = [
+      'initialize',
+      'updateState',
+      'getState',
+      'getConversation',
+      'addMessage',
+      'storeDeliverable',
+      'recordDecision',
+    ];
+
+    const missingMethods = moduleExists
+      ? requiredMethods.filter((method) => typeof ProjectStateClass.prototype?.[method] !== 'function')
+      : requiredMethods;
+
+    const cleanupTimerActive = Boolean(this.cleanupTimer);
+
+    let status: ProjectServiceHealth['status'] = 'pass';
+
+    if (!moduleExists) {
+      status = 'fail';
+    } else if (missingMethods.some((method) => method === 'initialize' || method === 'getState')) {
+      status = 'fail';
+    } else if (missingMethods.length > 0 || !cleanupTimerActive) {
+      status = 'warn';
+    }
+
+    return {
+      status,
+      moduleExists,
+      cleanupTimerActive,
+      missingMethods,
+      metrics: this.getMetrics(),
+    };
+  }
 }
 
 export const projectService = new ProjectService();
+
+export interface ProjectServiceMetrics {
+  activeProjects: number;
+  maxProjects: number;
+  projectTimeoutMs: number;
+  lastCleanupAt: string | null;
+}
+
+export interface ProjectServiceHealth {
+  status: 'pass' | 'warn' | 'fail';
+  moduleExists: boolean;
+  cleanupTimerActive: boolean;
+  missingMethods: Array<keyof ProjectStateInstance>;
+  metrics: ProjectServiceMetrics;
+}

@@ -4,6 +4,7 @@ import { createServer, Server as HttpServer } from 'http';
 import { setupRoutes } from '../src/routes';
 import { errorHandler } from '../src/middleware/errorHandler';
 import { initializeSocketIO, closeSocketIO } from '../src/config/socketio';
+import { createHealthRouter } from '../src/routes/health';
 
 let app: express.Application;
 let httpServer: HttpServer;
@@ -15,9 +16,7 @@ beforeAll(async () => {
   httpServer = createServer(app);
   initializeSocketIO(httpServer);
 
-  app.get('/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
+  app.use(createHealthRouter());
 
   setupRoutes(app);
   app.use(errorHandler);
@@ -48,8 +47,25 @@ describe('API Smoke Tests', () => {
     it('should return 200 OK', async () => {
       const response = await request(httpServer).get('/health');
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('status', 'ok');
+      expect(response.body).toHaveProperty('status', 'pass');
       expect(response.body).toHaveProperty('timestamp');
+      expect(response.body).toHaveProperty('uptimeMs');
+    });
+
+    it('should expose readiness report', async () => {
+      const response = await request(httpServer).get('/health/ready');
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('status');
+      expect(response.body).toHaveProperty('checks');
+      expect(response.body.checks).toHaveProperty('projectService');
+      expect(response.body.checks).toHaveProperty('processResources');
+    });
+
+    it('should expose detailed health report', async () => {
+      const response = await request(httpServer).get('/health/detailed');
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('metrics');
+      expect(response.body.metrics).toHaveProperty('uptimeMs');
     });
   });
 

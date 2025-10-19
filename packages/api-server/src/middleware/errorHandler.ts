@@ -13,11 +13,14 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ) {
-  logger.error('API Error:', {
+  const requestId = res.locals.requestId as string | undefined;
+
+  logger.error('API Error', {
     error: err.message,
     stack: err.stack,
     path: req.path,
     method: req.method,
+    requestId,
   });
 
   if (err instanceof ZodError) {
@@ -25,6 +28,7 @@ export function errorHandler(
       error: 'Validation Error',
       message: 'Invalid request data',
       details: err.errors,
+      requestId,
     });
   }
 
@@ -35,6 +39,7 @@ export function errorHandler(
     error: statusCode >= 500 ? 'Internal Server Error' : 'Error',
     message,
     ...(err.details && { details: err.details }),
+    ...(requestId && { requestId }),
   });
 }
 
