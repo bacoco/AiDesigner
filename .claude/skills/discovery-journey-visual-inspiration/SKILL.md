@@ -60,7 +60,7 @@ This Skill operationalizes AiDesigner’s discovery journey playbooks. It walks 
 
 # Tips
 
-- Pair with the **UI Design System Adherence Skill** to translate insights into component-level guidance.
+- Pair with the [**UI Design System Adherence Skill**](../ui-design-system-adherence/SKILL.md) to translate insights into component-level guidance.
 - Capture audio or transcript summaries during workshops for richer story extraction.
 - Revisit this Skill quarterly to keep research assets evergreen.
 
