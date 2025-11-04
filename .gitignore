@@ -41,7 +41,9 @@ Thumbs.db
 # AI assistant files
 CLAUDE.md
 .ai/*
-.claude
+# Local Claude configuration remains ignored except for committed seed Skills
+.claude/*
+!.claude/skills/
 .gemini
 .iflow
 
