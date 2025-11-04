@@ -17,7 +17,7 @@ required_tools:
   - documentation-suite
 related_artifacts:
   - expansion-packs/
-  - docs/creators
+  - docs/expansion-packs.md
   - packages/meta-agents
 ---
 
@@ -39,9 +39,10 @@ Empower subject-matter experts to author, test, and share AiDesigner expansions.
 2. **Assemble assets**
    - Populate the expansion folder structure under `expansion-packs/` with agents, prompts, and templates.
    - Ensure MCP tool integrations are listed with configuration guidance.
-   - Link supporting artifacts (datasets, references, diagrams) in the `docs/creators` section.
+   - Document supporting artifacts (datasets, references, diagrams) in the expansion's documentation.
 3. **Author Skill bundle**
-   - Use `bin/aidesigner skills generate --from expansion <path>` to convert assets into a Skill-compatible folder.
+   - _(Note: `bin/aidesigner skills generate` is planned but not yet implemented)_
+   - Manually create Skill documentation following the pattern in `.claude/skills/`.
    - Draft progressive disclosure instructions outlining setup, usage, and maintenance tips.
    - Add executable helpers only when deterministic automation is required.
 4. **Validate & iterate**

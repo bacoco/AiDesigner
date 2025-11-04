@@ -16,9 +16,9 @@ required_tools:
   - browser
   - whiteboard-or-miro
 related_artifacts:
-  - aidesigner-core/templates/discovery
-  - aidesigner-core/playbooks/journey-mapping
-  - prompts/inspiration
+  - aidesigner-core/workflows/greenfield-fullstack.yaml
+  - aidesigner-core/templates/project-brief-tmpl.yaml
+  - aidesigner-core/templates/market-research-tmpl.yaml
 ---
 
 # Overview
@@ -34,11 +34,11 @@ This Skill operationalizes AiDesigner’s discovery journey playbooks. It walks 
 # Workflow
 
 1. **Frame the opportunity**
-   - Clarify goals, success metrics, and constraints using the discovery brief template.
-   - Identify target personas stored in `aidesigner-core/templates/discovery/personas.yaml`.
+   - Clarify goals, success metrics, and constraints using `aidesigner-core/templates/project-brief-tmpl.yaml`.
+   - Document target personas and user research in your project's discovery documentation.
 2. **Run the journey session**
    - Facilitate the guided workshop agenda, capturing `moments`, `pain points`, and `opportunities`.
-   - Log artifacts in `aidesigner-core/playbooks/journey-mapping/journey-canvas.md`.
+   - Document journey mapping artifacts in your project's research documentation.
 3. **Collect visual inspiration**
    - Use the built-in inspiration prompt list to gather references.
    - Optionally trigger MCP-powered Chrome scraping tools to import screenshots or color palettes.
@@ -47,7 +47,8 @@ This Skill operationalizes AiDesigner’s discovery journey playbooks. It walks 
    - Summarize key observations, tensions, and design guardrails.
    - Extract tokens for handoff to the UI Design System Adherence Skill.
 5. **Publish discovery bundle**
-   - Run `bin/aidesigner discovery export --output artifacts/discovery` to package the session outputs.
+   - _(Note: `bin/aidesigner discovery export` is planned but not yet implemented)_
+   - Package the session outputs into your project's documentation directory.
    - Attach relevant inspiration boards and persona updates for downstream workflows.
 
 # Checklists

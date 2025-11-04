@@ -44,7 +44,6 @@ CLAUDE.md
 # Local Claude configuration remains ignored except for committed seed Skills
 .claude/*
 !.claude/skills/
-!.claude/skills/**
 .gemini
 .iflow
 

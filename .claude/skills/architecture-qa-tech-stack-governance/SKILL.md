@@ -15,9 +15,9 @@ required_tools:
   - aidesigner-cli
   - diagramming-tool
 related_artifacts:
-  - aidesigner-core/templates/architecture
-  - packages/meta-agents/architecture
-  - docs/plans/anthropic-skills-integration.md
+  - aidesigner-core/templates/fullstack-architecture-tmpl.yaml
+  - aidesigner-core/templates/architecture-tmpl.yaml
+  - packages/meta-agents
 ---
 
 # Overview
@@ -33,7 +33,7 @@ Ensure the delivery team adheres to vetted architecture decisions and tech stack
 # Workflow
 
 1. **Assemble architecture baseline**
-   - Load the latest architecture template from `aidesigner-core/templates/architecture/blueprint.md`.
+   - Load the latest architecture template from `aidesigner-core/templates/fullstack-architecture-tmpl.yaml`.
    - Import system context, deployment, and sequence diagrams.
    - Identify any deviations from the approved reference architecture.
 2. **Tech stack governance**
@@ -42,10 +42,11 @@ Ensure the delivery team adheres to vetted architecture decisions and tech stack
    - Flag risks for security, scalability, or compliance review.
 3. **Cross-functional review**
    - Schedule an architecture QA session with engineering, security, and product.
-   - Use `packages/meta-agents/architecture/checklists` to drive the conversation.
+   - Use architecture checklists from `aidesigner-core/checklists/` to drive the conversation.
    - Capture decisions and follow-ups in the architecture log.
 4. **Readiness certification**
-   - Run `bin/aidesigner architecture validate` to ensure diagrams and specs meet completeness criteria.
+   - _(Note: `bin/aidesigner architecture validate` is planned but not yet implemented)_
+   - Manually review diagrams and specs to ensure they meet completeness criteria.
    - Confirm observability, deployment, and rollback strategies are documented.
    - Approve or gate entry into sprint planning based on readiness.
 5. **Feedback loop**

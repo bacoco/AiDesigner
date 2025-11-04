@@ -27,9 +27,9 @@ This Skill packages the end-to-end flow for bootstrapping new AiDesigner Skills 
 
 # When to Use
 
-- You need to create a fresh Skill scaffold aligned with the Anthropic Skills roadmap.
-- You want to validate or publish updates to an existing Skill bundle.
-- You are wiring a Skill into local MCP or Claude CLI workflows and need consistent setup steps.
+- Creating a fresh Skill scaffold aligned with the Anthropic Skills roadmap.
+- Validating or publishing updates to an existing Skill bundle.
+- Wiring a Skill into local MCP or Claude CLI workflows and need consistent setup steps.
 
 # Workflow
 
@@ -37,16 +37,18 @@ This Skill packages the end-to-end flow for bootstrapping new AiDesigner Skills 
    - Run `npm install` at the repository root.
    - Export any provider credentials (e.g., `export ANTHROPIC_API_KEY=...`) required by local scripts.
 2. **Create or update the Skill**
-   - Execute `bin/aidesigner skills init <slug>` to generate a new Skill folder scaffold.
-   - Use `bin/aidesigner skills generate --from workflows/discovery` to transform existing assets into Skill instructions.
-   - Apply linting with `npm run skills:validate` once scaffolding is complete.
+   - _(Note: `bin/aidesigner skills` commands are planned but not yet implemented)_
+   - Manually create a new Skill folder following the pattern in `.claude/skills/`.
+   - Use existing workflow documentation as a basis for Skill instructions.
+   - Validate the Skill structure and metadata manually.
 3. **Preview in Claude**
    - Start the Claude orchestrator via `bin/aidesigner-claude start`.
    - Load the generated Skill folder into `~/.claude/skills` or pass `--skill-path` when launching the orchestrator.
    - Confirm entrypoint descriptions render correctly and linked assets resolve.
 4. **Publish or share** _(optional)_
-   - Package the Skill with `bin/aidesigner skills package --output dist/skills`.
-   - Share the archive internally or publish through future Anthropic API tooling once enabled.
+   - _(Note: `bin/aidesigner skills package` is planned but not yet implemented)_
+   - Share the Skill folder directly or create a git branch for review.
+   - Publish through future Anthropic API tooling once enabled.
 
 # Checklists
 
