@@ -57,7 +57,7 @@ This Skill packages the end-to-end flow for bootstrapping new AiDesigner Skills 
 
 # Tips
 
-- Pair this Skill with the **Expansion Creator Enablement Skill** when mentoring new maintainers.
+- Pair this Skill with the [**Expansion Creator Enablement Skill**](../expansion-creator-enablement/SKILL.md) when mentoring new maintainers.
 - Reference the integration roadmap at `docs/plans/anthropic-skills-integration.md` to track upcoming CLI surface changes.
 - Keep generated Skill folders under version control to preserve institutional knowledge.
 
