@@ -63,7 +63,7 @@ Empower subject-matter experts to author, test, and share AiDesigner expansions.
 
 # Tips
 
-- Pair with **Skill Builder & CLI Orchestration** to streamline publishing workflows.
+- Pair with [**Skill Builder & CLI Orchestration**](../skill-builder-cli-orchestration/SKILL.md) to streamline publishing workflows.
 - Capture video walkthroughs or annotated screenshots for faster onboarding.
 - Maintain a changelog to track updates across both expansion and Skill assets.
 
