@@ -60,7 +60,7 @@ Enforce design system rigor by guiding teams through translating discovery learn
 
 # Tips
 
-- Reference the **Architecture QA & Tech Stack Governance Skill** to align component decisions with technical constraints.
+- Reference the [**Architecture QA & Tech Stack Governance Skill**](../architecture-qa-tech-stack-governance/SKILL.md) to align component decisions with technical constraints.
 - Invite QA early to validate accessibility and localization impacts.
 - Maintain a changelog for component updates to inform future Skills.
 
