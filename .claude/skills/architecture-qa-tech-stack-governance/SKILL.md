@@ -63,7 +63,7 @@ Ensure the delivery team adheres to vetted architecture decisions and tech stack
 # Tips
 
 - Leverage MCP automation to fetch infrastructure inventories or cost baselines.
-- Pair this Skill with **Expansion Creator Enablement** when packaging domain-specific architecture patterns.
+- Pair this Skill with [**Expansion Creator Enablement**](../expansion-creator-enablement/SKILL.md) when packaging domain-specific architecture patterns.
 - Maintain a shared architecture decision register for audit readiness.
 
 # Next Steps
